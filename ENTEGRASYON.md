@@ -17,7 +17,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 16 Ekim gece (Mehmet'in `6867d20` commit'i okunduktan sonra)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (ruh fazı pushlandıktan sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -27,6 +27,11 @@
 | Test paneli | `Scripts/Loop/LoopDebugPanel.cs` | Editor'de faz, kaybetme ve bölüm butonları. Mehmet de kendi test sahnesinde kullanabilir. |
 | Metinler | `Resources/texts.csv`, `Scripts/Localization/Texts.cs` | `Texts.Get("anahtar")`, `Texts.Format(...)`, TR/EN. |
 | Keşke ekranı | `Scripts/UI/WishScreen.cs`, `WishLines.cs` | `LoopFailed` gelince kararır, F ile devam. Yeni denemede siyahtan açılır. |
+| Ruh fazı | `Scripts/Spirit/SpiritPhase.cs` | Faz `Spirit` olunca ruhu `Marker_PlayerBed` noktasının 1 m üstünde çıkarır, 60 sn sayar (minigame sırasında da), bitince `SetPhase(GamePhase.MainQuake)` çağırır. Statik `SpiritPhase.Running` ve `TimeLeft` alanları var. |
+| Ruh hareketi | `Scripts/Spirit/SpiritController.cs` | W/A/S/D ile uçar, collider'ı yok, duvardan geçer. Sınırlar `House` objesinin renderer'larından hesaplanır. Minigame açıkken durur. |
+| Eşya etkileşimi | `Scripts/Spirit/SpiritInteractor.cs` | `SecurableItem.All` içinden ruha en yakın sabitlenmemiş eşyayı bulur (X-Y düzleminde collider'a uzaklık, 1,2 m). F'ye basınca `RaiseMinigameOpened(id, tip)` çağırır. Minigame'ler hazır olana kadar eşyayı test için anında `Secure()` eder. |
+| Eşya vurgusu | `Scripts/Spirit/SpiritHighlighter.cs` | Ruh fazında sabitlenmemiş her eşyanın önüne nabız gibi atan bir point light koyar. Geçici çözüm; kontur shader'ı gelince değişecek. |
+| Ruh HUD'u | `Scripts/UI/SpiritHud.cs` | Sayaç, "F: Sabitle" ve "W/A/S/D: Uç" yazıları. |
 
 ### Faz akışı: kim neyi çağırır
 
@@ -59,7 +64,7 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 ### Sorular (Mehmet cevaplasın)
 
 - **B1. Bootstrap:** Berke'nin sistem prefab'ı (`LoopManager` + `WishScreen`) `Prefabs/Berke/` altına konacak. Bootstrap bu klasördeki prefab'ları otomatik mi yükleyecek, yoksa bir listeye mi eklenecek? Bootstrap henüz yok mu?
-- **B2. Ruh fazında kamera:** Cinemachine ruh fazında oyuncu yerine ruhu takip etmeli. Öneri: ruh objesine bir `Spirit` tag'i verelim; Mehmet'in kamerası `PhaseChanged(Spirit)` gelince bu tag'li objeyi takip etsin, faz bitince oyuncuya dönsün. Tag eklemek ProjectSettings değişikliği olduğu için Mehmet'in yapması gerekiyor. Uygun mu?
+- **B2. Ruh fazında kamera** (artık acil; ruh fazı pushlandı): Cinemachine ruh fazında oyuncu yerine ruhu takip etmeli. Ruh objesi `SpiritPhase` tarafından çalışma anında `Spirit` adıyla oluşturuluyor ve sadece ruh fazında aktif. Tag gerekmeden en kolay yol şu: Mehmet'in kamerası `PhaseChanged(Spirit)` gelince bir kare sonra `GameObject.Find("Spirit")` ile objeyi bulup takip etsin, faz bitince oyuncuya dönsün. Tag'i tercih edersen Berke tarafı ruh objesine `Spirit` tag'ini verir; tag'i ProjectSettings'e Mehmet ekler. Hangisi?
 - **B3. Ruh fazı görünümü:** GDD'deki "Ruh fazı" Volume profiline Mehmet'in sistemi `PhaseChanged(Spirit)` gelince geçsin mi? Berke `Assets/Settings/` klasörüne dokunmuyor.
 - **B4. İşaret noktaları:** Ruh fazı ruhu `Marker_PlayerBed` noktasından çıkaracak. Çanta malzemeleri `Marker_FirstAid` ve `Marker_Flashlight` noktalarına, deprem çantası `Marker_Bag` noktasına konacak. Bu noktaları isimle (`GameObject.Find("Markers/...")`) aramak uygun mu, yoksa yerleri değişebilir mi?
 - **B5. Input Actions:** Berke şimdilik `Keyboard.current` ve `Mouse.current` ile doğrudan okuyor. `InputSystem_Actions.inputactions` dosyasında ortak bir action haritası kuracak mıyız?

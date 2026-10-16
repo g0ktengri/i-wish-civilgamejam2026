@@ -8,6 +8,8 @@ prompt.continue,F: Devam,F: Continue
 prompt.stand_up,F: Kalk,F: Get up
 prompt.duck_cover,C: Çök-Kapan-Tutun,C: Drop-Cover-Hold On
 prompt.interact,F: Etkileşim,F: Interact
+prompt.secure,F: Sabitle,F: Secure
+prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
 
 # Keşke ekranları: wish = cümle, info = altındaki bilgi, final = final listesindeki hali
 wish.ignored_foreshock,Keşke dikkate alsaydım,I wish I had taken it seriously

@@ -138,64 +138,20 @@ namespace Deprem.UI
 
         void BuildCanvas()
         {
-            if (!font) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var canvas = UiBuilder.CreateCanvas(transform, "WishCanvas", sortingOrder);
+            group = canvas.GetComponent<CanvasGroup>();
 
-            var canvasObject = new GameObject("WishCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(CanvasGroup));
-            canvasObject.transform.SetParent(transform, false);
+            var background = UiBuilder.CreateImage(canvas.transform, "Background", Color.black);
+            UiBuilder.Stretch(background.rectTransform, Vector2.zero, Vector2.one);
 
-            var canvas = canvasObject.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = sortingOrder;
+            wishText = UiBuilder.CreateText(canvas.transform, "Wish", font, wishFontSize, wishColor);
+            UiBuilder.Stretch(wishText.rectTransform, new Vector2(0.1f, 0.5f), new Vector2(0.9f, 0.65f));
 
-            var scaler = canvasObject.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(960, 540); // GDD UI referans çözünürlüğü
-            scaler.matchWidthOrHeight = 0.5f;
+            infoText = UiBuilder.CreateText(canvas.transform, "Info", font, infoFontSize, infoColor);
+            UiBuilder.Stretch(infoText.rectTransform, new Vector2(0.2f, 0.32f), new Vector2(0.8f, 0.48f));
 
-            group = canvasObject.GetComponent<CanvasGroup>();
-            group.blocksRaycasts = false;
-            group.interactable = false;
-
-            var background = CreateChild<Image>(canvasObject.transform, "Background");
-            background.color = Color.black;
-            Stretch(background.rectTransform, Vector2.zero, Vector2.one);
-
-            wishText = CreateText(canvasObject.transform, "Wish", wishFontSize, wishColor);
-            Stretch(wishText.rectTransform, new Vector2(0.1f, 0.5f), new Vector2(0.9f, 0.65f));
-
-            infoText = CreateText(canvasObject.transform, "Info", infoFontSize, infoColor);
-            Stretch(infoText.rectTransform, new Vector2(0.2f, 0.32f), new Vector2(0.8f, 0.48f));
-
-            hintText = CreateText(canvasObject.transform, "Hint", infoFontSize, infoColor);
-            Stretch(hintText.rectTransform, new Vector2(0.3f, 0.05f), new Vector2(0.7f, 0.12f));
-        }
-
-        Text CreateText(Transform parent, string name, int size, Color color)
-        {
-            var text = CreateChild<Text>(parent, name);
-            text.font = font;
-            text.fontSize = size;
-            text.color = color;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.raycastTarget = false;
-            return text;
-        }
-
-        static T CreateChild<T>(Transform parent, string name) where T : Component
-        {
-            var child = new GameObject(name, typeof(RectTransform), typeof(T));
-            child.transform.SetParent(parent, false);
-            return child.GetComponent<T>();
-        }
-
-        static void Stretch(RectTransform rect, Vector2 min, Vector2 max)
-        {
-            rect.anchorMin = min;
-            rect.anchorMax = max;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            hintText = UiBuilder.CreateText(canvas.transform, "Hint", font, infoFontSize, infoColor);
+            UiBuilder.Stretch(hintText.rectTransform, new Vector2(0.3f, 0.05f), new Vector2(0.7f, 0.12f));
         }
     }
 }
