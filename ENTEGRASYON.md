@@ -220,3 +220,17 @@ Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin
 - `SpeechBubble` artık `UiBuilder.CreateSpeechBubble(canvas, null, fontSize)` + `SetText` + `Root.anchoredPosition` kullanıyor; kendi renkleri ve kutusu kalktı, görünüş tamamen `UiStyle`'dan geliyor.
 - Şablonlar `Sablonlar/UI/`: `konusma_balonu.png` (48 × 32), `konusma_balonu_kuyruk.png` (16 × 12, ucu alt ortada). `hud_ipucu.png` (192 × 32) yeniden üretildi. 9-slice kenarı yeşil çizgiyle işaretli. `hud_sayac` şablonu kaldırıldı.
 - `ArtTextureImporter`: `Assets/Art/UI/konusma_balonu.png` ve `hud_ipucu.png` için `spriteBorder = (8, 8, 8, 8)` (`ArtTextureImporter.SliceBorder`). Başka 9-slice görsel eklersen adını yaz, listeye eklerim.
+
+### Play testi 3: görev dağılımı (17 Ekim gece)
+
+**Berke'ye düşen**
+
+- **M12. Font çok kötü: telifsiz bir pixel font.** Şartlar: lisansı serbest (SIL OFL ya da CC0; teslimde beyan edilecek, kaynak ve lisans commit mesajına), Türkçe harfler eksiksiz (ğ Ğ ş Ş ı İ ç Ç ö Ö ü Ü), 16 px'te okunaklı. Adaylar (Google Fonts, OFL): **Pixelify Sans**, **Tiny5**, **Silkscreen**, **Press Start 2P**. Türkçe harfleri dosyada mutlaka denetle; eksik olanı ele. Font `Assets/Art/Fonts/` + `UiStyle.font`; balon, HUD, menü, keşke ekranı ve kabin tabelası (`UiBuilder.DefaultFont`) kendiliğinden alır. Lisans dosyasını (OFL.txt) fontun yanına koy.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. **Çök-kapan-tutun çok uzun:** ana deprem 12 sn'den ~7 sn'ye iner; C basılıyken ekranda "tutma" çubuğu (ne kadar kaldığı) görünür. Çubuk `UiBuilder.CreatePanel` ile, senin stilinde. İş yok.
+2. **Güvenli yerler mantıksız:** AFAD'ın tarifine göre güvenli nokta artık **sağlam bir masanın altı**. Her odada önde (karakterin önünde) sağlam bir masa ya da çalışma masası olur; C ile altına çökülür. Güvenli noktaların yeri biraz kayar ama `SafeSpot` aynı. İş yok.
+3. **Mobilyaların yeri saçma:** odalar baştan yerleşir: yatak ve tablo hizası, gardırop ve annenin durduğu yer, kitaplık ve baba vb. Aile işaretleri (`Marker_Father/Mother/Sibling`) biraz kayabilir; adla aradığın için iş yok. **`Marker_Flashlight` mutfaktaki önde duran masanın üstüne taşınabilir**; çanta malzemesi orada görünür.
+4. **Depremde efekt az:** tavandan toz ve sıva dökülmesi, eşya devrilince toz bulutu, lambaların sallanması, tabloların tıkırdaması. İş yok.
+5. **Elektrik gidince her şey rahatça görünüyor:** elektrik kesilince ev gerçekten karanlık olur. Oyuncunun çevresinde küçük bir görüş ışığı kalır, el feneri asıl ışık olur. Ruh fazı ve sabah görünümü değişmez. İş yok.
