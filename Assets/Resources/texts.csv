@@ -17,9 +17,9 @@ prompt.put_in_bag,F: Çantaya koy,F: Put in bag
 hud.carrying,Taşınan: {0},Carrying: {0}
 
 # Minigame'ler
-minigame.screw.hint,Fareyle saat yönünde daire çizerek vidayı sık,Draw clockwise circles with the mouse to tighten the screw
-minigame.carry.hint,Eşyayı sürükleyip güvenli yere bırak,Drag the item to a safe spot
-minigame.lock.hint,İbre yeşil alandayken tıkla,Click when the needle is in the green zone
+minigame.screw.hint,Halkanın içinde fareyle saat yönünde daire çiz; ters dönersen vida gevşer,"Circle the mouse clockwise inside the ring; turning back loosens the screw"
+minigame.carry.hint,Eşyayı duvardaki boşluktan geçirip güvenli yere bırak,Drag the item through the gap in the wall to the safe spot
+minigame.lock.hint,İbre yeşil alandayken tıkla; {0} kez tuttur,Click when the needle is in the green zone; hit it {0} times
 
 # Keşke ekranları: wish = cümle, info = altındaki bilgi, final = final listesindeki hali
 wish.ignored_foreshock,Keşke dikkate alsaydım,I wish I had taken it seriously

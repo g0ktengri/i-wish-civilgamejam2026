@@ -181,12 +181,18 @@ MonoBehaviour:
   panelColor: {r: 0.1, g: 0.12, b: 0.16, a: 0.95}
   successColor: {r: 0.2, g: 0.4, b: 0.25, a: 0.95}
   successHold: 0.4
-  screwTurns: 2.5
-  screwClockwiseOnly: 1
-  screwMinRadius: 20
-  carrySnapRadius: 30
-  lockCyclesPerSecond: 0.8
-  lockZoneWidth: 0.2
+  screwTurns: 4
+  screwReversePenalty: 1
+  screwMinRadius: 35
+  screwMaxRadius: 110
+  screwIdleLoosen: 0.3
+  carrySnapRadius: 14
+  carryGapHeight: 70
+  lockCyclesPerSecond: 0.9
+  lockZoneWidth: 0.22
+  lockRequiredHits: 3
+  lockShrinkPerHit: 0.7
+  lockSpeedUpPerHit: 1.25
 --- !u!114 &1714028265692669343
 MonoBehaviour:
   m_ObjectHideFlags: 0

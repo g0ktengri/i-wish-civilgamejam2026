@@ -24,17 +24,28 @@ namespace Deprem.Minigames
         [SerializeField] Color successColor = new Color(0.2f, 0.4f, 0.25f, 0.95f);
         [SerializeField] float successHold = 0.4f;
 
+        // GDD: 60 sn'de 5-6 eşya (yol dahil); her minigame yaklaşık 5-7 sn sürmeli
+
         [Header("Vida sıkma")]
-        [SerializeField] float screwTurns = 2.5f;
-        [SerializeField] bool screwClockwiseOnly = true;
-        [SerializeField] float screwMinRadius = 20f;
+        [SerializeField] float screwTurns = 4f;
+        [Tooltip("Ters yönde dönmenin geri alma katsayısı (1 = aynı hızda gevşer)")]
+        [SerializeField] float screwReversePenalty = 1f;
+        [SerializeField] float screwMinRadius = 35f;
+        [SerializeField] float screwMaxRadius = 110f;
+        [Tooltip("Hiç dönülmezse saniyede gevşeyen tur")]
+        [SerializeField] float screwIdleLoosen = 0.3f;
 
         [Header("Taşı ve yerleştir")]
-        [SerializeField] float carrySnapRadius = 30f;
+        [SerializeField] float carrySnapRadius = 14f;
+        [Tooltip("Duvardaki boşluğun yüksekliği (eşya 44)")]
+        [SerializeField] float carryGapHeight = 70f;
 
         [Header("Kilitle")]
-        [SerializeField] float lockCyclesPerSecond = 0.8f;
-        [SerializeField] float lockZoneWidth = 0.2f;
+        [SerializeField] float lockCyclesPerSecond = 0.9f;
+        [SerializeField] float lockZoneWidth = 0.22f;
+        [SerializeField] int lockRequiredHits = 3;
+        [SerializeField] float lockShrinkPerHit = 0.7f;
+        [SerializeField] float lockSpeedUpPerHit = 1.25f;
 
         CanvasGroup group;
         Image panel;
@@ -102,7 +113,9 @@ namespace Deprem.Minigames
             panel.color = panelColor;
             current.Build(content);
 
-            hintText.text = Texts.Get(HintKey(type));
+            hintText.text = type == MinigameType.Lock
+                ? Texts.Format(HintKey(type), lockRequiredHits)
+                : Texts.Get(HintKey(type));
             cancelText.text = Texts.Get("prompt.cancel");
             group.alpha = 1f;
             Cursor.visible = true;
@@ -186,9 +199,13 @@ namespace Deprem.Minigames
         {
             switch (type)
             {
-                case MinigameType.CarryAndPlace: return new CarryMinigame(carrySnapRadius);
-                case MinigameType.Lock: return new LockMinigame(lockCyclesPerSecond, lockZoneWidth);
-                default: return new ScrewMinigame(screwTurns, screwClockwiseOnly, screwMinRadius);
+                case MinigameType.CarryAndPlace: return new CarryMinigame(carrySnapRadius, carryGapHeight);
+                case MinigameType.Lock:
+                    return new LockMinigame(lockCyclesPerSecond, lockZoneWidth, lockRequiredHits, lockShrinkPerHit,
+                        lockSpeedUpPerHit);
+                default:
+                    return new ScrewMinigame(screwTurns, screwReversePenalty, screwMinRadius, screwMaxRadius,
+                        screwIdleLoosen);
             }
         }
 

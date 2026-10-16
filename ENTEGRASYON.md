@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (final ekranı, menüler ve ipucu HUD'u pushlandıktan sonra)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (Mehmet'in `a1bc0ba` play testi notları M6–M8 işlendikten sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -53,6 +53,12 @@
 
 - **M1. Tuş ipuçları:** Tamam, `PromptChanged` için teşekkürler. `PromptHud` bunu dinliyor ve `BerkeSystems` prefab'ında. Main yeniden kurulunca `showDebugPrompt` kapatılabilir. Eski not: Berke'nin HUD'u Mehmet'in sınıfına (`QuakePrompts`) doğrudan bağlanmasın. Core'a küçük bir ekleme öneriyorum: `GameEvents.PromptChanged(string key)` + `RaisePromptChanged(string key)`. Boş anahtar ipucunu gizler. Event'i Mehmet tetiklediği için Core commit'ini Mehmet atsın (CLAUDE.md'ye göre tek başına küçük bir commit). Berke'nin HUD'u bu event'i dinleyip `Texts.Get(key)` ile ekranın altında gösterecek. O zamana kadar `showDebugPrompt` açık kalsın.
 - **M2. Sistem prefab'ı:** Hazır: `Prefabs/Berke/BerkeSystems.prefab`. İçinde `LoopManager`, `LoopDebugPanel` (sadece Editor ve Development Build'de görünür), `WishScreen`, `SpiritPhase`, `SpiritHighlighter`, `SpiritHud`, `MinigameHost` ve `BagSystem` var. Prefab'ı Berke tarafı `Tools > Deprem > Berke: Sistem Prefab'ını Kur` ile yeniden üretir; elle düzenlenmez. Mehmet Main'i yeniden kurup `QuakeSystem.devStartLoop` değerini 0 yapabilir; artık döngüyü `LoopManager` başlatıyor.
+- **M6. Minigame'ler zorlaştı:** Ayarların hepsi `MinigameHost`'ta `[SerializeField]`; hedef minigame başına 5–7 sn.
+  - Vida sıkma: halkanın içinde saat yönünde 4 tur. Ters dönmek geri alır, dönülmezse vida yavaşça gevşer.
+  - Taşı-yerleştir: arada bir duvar var, boşluğu rastgele yerde. Duvara çarpınca eşya düşüp başa döner. Güvenli alan dar.
+  - Kilitle: 3 isabet gerekir. Her isabette yeşil alan %30 daralır ve ibre hızlanır; ıskalayınca bir isabet geri gider.
+- **M7. Ruh sınırı:** `SpiritController` artık `HouseBounds.Instance.ClampToHouse(pozisyon, 0.3)` kullanıyor; `HouseBounds` yoksa eski renderer sınırlarına düşüyor.
+- **M8. Kontur shader'ı:** Gördüm, teşekkürler. Bir sonraki Berke commit'inde `SpiritHighlighter`, `ItemOutline` olan eşyalarda point light koymayacak ve ruhun yanındaki eşyada `SetEmphasis(true)` çağıracak.
 - **M4. Çanta malzemeleri:** Tamam, öyle çalışıyor. Malzeme ruh fazında alınıp çantaya konunca `GameState.AddBagItem(id)` çağrılıyor (`BagDropPoint`). Sadece alınan ama çantaya konmayan malzeme sayılmıyor; ruh fazı biterken yerine dönüyor.
 - **M3. Kurtarma süresi:** Sürenin de göstergenin de tamamen Mehmet'te olmasını öneriyorum. GDD'deki gösterge sayı değil; ekran kenarında titreşen sarsıntı çubuğu, sallanan lamba, kalp atışı ve uğultu. Bunlar deprem hissinin parçası ve ses de Mehmet'te. Böylece Core'a yeni event gerekmiyor. Süre bitince `FailLoop(LoseReason.RescueTimeout, enÇokYavaşlatanEşya)`; gizli bonus için `GameState.FailedAttempts`. Mehmet çubuğu UI ile yapmak isterse `Deprem.UI.UiBuilder` kullanılabilir.
 

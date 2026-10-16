@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 namespace Deprem.Spirit
 {
     // Ruh hareketi: W/A/S/D ile serbest uçar, duvarlardan ve katlardan geçer (collider yok).
-    // Evin sınırları dışına çıkamaz. Minigame açıkken durur.
+    // Evin sınırları dışına çıkamaz (HouseBounds varsa kat sınırları). Minigame açıkken durur.
     public class SpiritController : MonoBehaviour
     {
         [SerializeField] float speed = 5f;
@@ -56,9 +56,18 @@ namespace Deprem.Spirit
             Vector2 input = MovementEnabled ? ReadInput() : Vector2.zero;
             velocity = Vector2.MoveTowards(velocity, input * speed, acceleration * Time.deltaTime);
 
-            var position = transform.position;
-            position.x = Mathf.Clamp(position.x + velocity.x * Time.deltaTime, boundsMin.x, boundsMax.x);
-            position.y = Mathf.Clamp(position.y + velocity.y * Time.deltaTime, boundsMin.y, boundsMax.y);
+            var position = transform.position + (Vector3)(velocity * Time.deltaTime);
+            // Evin kat sınırları Mehmet'in HouseBounds'unda (ENTEGRASYON M7); yoksa renderer sınırları
+            var houseBounds = Player.HouseBounds.Instance;
+            if (houseBounds)
+            {
+                position = houseBounds.ClampToHouse(position, boundsPadding);
+            }
+            else
+            {
+                position.x = Mathf.Clamp(position.x, boundsMin.x, boundsMax.x);
+                position.y = Mathf.Clamp(position.y, boundsMin.y, boundsMax.y);
+            }
             transform.position = position;
 
             if (visual) visual.localPosition = new Vector3(0f, Mathf.Sin(Time.time * bobSpeed) * bobHeight, 0f);
