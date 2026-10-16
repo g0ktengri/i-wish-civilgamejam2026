@@ -114,13 +114,13 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 
 ## Mehmet → Berke
 
-*Son güncelleme: Mehmet'in Claude'u, 17 Ekim (B9 şablonlarından sonra)*
+*Son güncelleme: Mehmet'in Claude'u, 17 Ekim akşam (Play testi 2 görev dağılımı, en altta)*
 
 ### Mehmet'in pushladıkları
 
 | Sistem | Dosya | Ne yapar |
 |---|---|---|
-| Ev üretici | `Editor/HouseBuilder/` | Tools > Deprem > Evi Yeniden Kur. 7 oda, merdiven, kabin, 9 eşya, lambalar, `Marker_*` noktaları, güvenli noktalar. Ölçüler `HouseLayout.cs`'te (GDD'den büyütüldü: koridor 12 m). |
+| Ev üretici | `Editor/HouseBuilder/` | Tools > Deprem > Evi Yeniden Kur. 7 oda, merdiven, kabin, 9 eşya, mobilyalar (yataklar, kanepe, mutfak), lambalar, `Marker_*` noktaları, güvenli noktalar. Ölçüler `HouseLayout.cs`'te (GDD'den büyütüldü: koridor 12 m). Eşya ve mobilya şekilleri parçalı (`FurnitureShapes.cs`); çarpışma yine dış kutu, `SecurableItem` ve collider değişmedi. |
 | Oyuncu | `Scripts/Player/PlayerController.cs` | A/D, Space, S. Diğer sistemler için: `InputEnabled`, `SetScriptedInput(...)`, `SpeedMultiplier`, `Teleport(...)`, `LieDown` / `GetUp`, `IsLying`. |
 | F etkileşimi | `Scripts/Player/Interaction.cs`, `PlayerInteractor.cs` | Bedenle (kurtarma fazında) F: merdiven, ileride kabin ve aile. Ruh fazında kullanılmaz. |
 | Merdiven | `Scripts/Player/StairPath.cs` | Merdiven koridorun arka şeridinde; dibinde/başında F ile çıkılır, inilir. |
@@ -170,3 +170,23 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 - **B9: tamam.** Tablondaki "yok" olanların hepsi `Sablonlar/UI/` altında aynı adla ve boyutla üretildi: `minigame_panel`, `minigame_vida_basi` (ortasında dönme merkezi işaretli), `minigame_tasi`, `minigame_duvar`, `minigame_guvenli_alan`, `minigame_yatak_rafi`, `minigame_ayna`, `minigame_cerceve`, `minigame_esya`, `minigame_ibre`, `hud_ipucu`, `hud_sayac`, `menu_arka_plan`, `logo` (320 × 96). UI şablonlarının arka planı saydam. Yeni yuva eklersen tabloya yaz; `ArtTemplates.cs`'teki listeye ekleyip yeniden üretirim.
 - **M6, M7, M8:** Gördüm, teşekkürler; kapandı.
 - Döngü 1–2 akışı değişmedi (ders sırası aynı), sadece konuşma balonları eklendi; `LoopManager`'da değişiklik gerekmiyor.
+
+### Play testi 2: görev dağılımı (17 Ekim akşam)
+
+Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin maddeleri önce yazıldı ki hemen başlayabilsin; cevapları ve "bitti" notlarını kendi bölümüne yaz.
+
+**Berke'ye düşenler**
+
+- **M9. Ruh F'ye basınca bir süre olduğu yerde kalıyor.** `SpiritController` minigame açıkken durur (`minigamesOpen` sayacı). Şüpheliler: başarı panelinin beklemesi (`MinigameHost.successHold`; panel yeşilken ruh hâlâ kilitli), ya da `MinigameOpened` / `MinigameClosed` sayılarının eşleşmediği bir yol (çanta malzemesi `Open()` ile, eşya event ile açılıyor). İstenen: ruh sadece panel ekrandayken dursun, panel kapanır kapanmaz hareket etsin; F'ye basınca panel açılmıyorsa da hiç durmasın.
+- **M10. Konuşma balonları ve ipuçları çok çirkin.** Balonun bileşeni (`Scripts/Player/SpeechBubble.cs`) Mehmet'te ama görünüş UI işi, senin `UiBuilder`'ında olsun ki bütün oyunda tek stil olsun. Öneri: `UiBuilder.CreateSpeechBubble(Transform parent, Font font)` → kök `RectTransform` ve `Text` dönsün; 9-slice `UI/konusma_balonu.png` + altta kuyruk `UI/konusma_balonu_kuyruk.png`, pixel font, yazıya göre genişleyen boyut, dosya yoksa düz renkli kenarlıklı kutu. Hazır olunca buraya yaz; Mehmet `SpeechBubble`'ı ona bağlar. İki dosyanın şablonunu Mehmet üretir (boyut önerin varsa yaz, yoksa 48 × 32 ve 16 × 12). `PromptHud` ve ruh sayacı da aynı stile uysun.
+- **M11. Deprem kabininin ne olduğu hiç anlaşılmıyor (UI kısmı).** Kurtarma fazı başlayınca ekranda hedef yazısı: "Aileni bul ve deprem kabinine götür" (sayı/ok gerekirse kabine yön). Oyuncunun kabini ilk kez gördüğü an için kısa açıklama (ör. ilk keşke ekranında ya da ruh fazında bir satır: "Merdiven altındaki deprem kabini: ailen içine girerse güvende"). Metinler `texts.csv`'de. Dünyadaki kısım (kabinin şekli, tabelası, kapısı, kurtarmada parlaması) Mehmet'te, aşağıda.
+
+**Mehmet'in yapacakları (bilgi için; senin tarafında iş yoksa "yok" yazılı)**
+
+1. **Kapılar kapalı, her yer görünmüyor.** Odalar arası kapı boşluklarına kapı gelir, başta kapalı; bedenle F ile açılır. Oyuncunun görmediği odalar siyah örtüyle kapalı; oyuncu odaya girince ya da açık kapıdan bakınca örtü kalkar. Örtünün arkasındaki her şey (aile, çanta malzemeleri) görünmez. **Ruh fazı:** ruh duvardan geçtiği için girdiği odanın örtüsünü kaldırır (ruhu `Spirit` adıyla bulurum, senin kodunda değişiklik gerekmez). İtirazın varsa (ör. ruh her yeri görsün) yaz.
+2. **Oyunun başında oyuncu kalktıktan sonra kendi kendine yürüyor.** Yataktan kalkınca otomatik yürüme ve döngü 2'deki senaryolu koşu kalkıyor; balon yine çıkar ama kontrol oyuncuda. Ders sırası ve `FailLoop` sebepleri aynı kalır; `LoopManager`'da iş yok.
+3. **Tavandan düşen parça başın arkasına düşüyor.** Parça karakterin önünden, başına düşecek.
+4. **Konumlandırma.** Yatan oyuncu yeni yatağa düzgün oturacak (şilte üstü, başlıktan kesilmeden). Aile yer tutucuları editörde (0, 0, 0)'da duruyordu; Play'de yerine gidiyorlardı ama sahnede evin solundaki **mavi kutu bu (baba)**. Kurulumda işaret noktalarına konacak. İş yok.
+5. **Kabin (dünya kısmı).** Kabin kutudan şekle dönecek (çerçeve, kapı, tabela), kurtarma fazında girişi parlayacak; yanına "Deprem kabini" tabelası. Tabela metni `texts.csv`'de `# Mehmet` başlığına eklenir.
+6. **Aile üyesine eşya düştüğünü görünce oyuncu tepki vermiyor.** Oyuncu durur, balon çıkar ("Baba!" vb.), kısa bir bekleme, sonra keşke ekranı (`FailLoop` aynı). Bekleme ~1,5 sn uzar, `WishScreen`'i etkilemez.
+7. **Karanlıkta kırmızı ışık olmasın.** Elektrik kesilince acil durum lambaları, `ElektrikKesik` Volume'undaki kırmızı vinyet ve kurtarma süresinin son 15 sn'sindeki kırmızı nabız kalkıyor; karanlık soğuk ve loş olacak. İş yok.
