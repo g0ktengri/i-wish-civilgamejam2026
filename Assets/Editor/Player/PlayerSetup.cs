@@ -129,6 +129,11 @@ namespace Deprem.Player
 
             // Deprem sarsıntısı: şiddetini QuakeDirector ayarlar
             go.AddComponent<Deprem.Quake.QuakeCameraShake>();
+            // Ruh fazında ruhu takip et
+            var target = go.AddComponent<PlayerCameraTarget>();
+            var so = new SerializedObject(target);
+            so.FindProperty("player").objectReferenceValue = player;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static Transform FindInScene(Scene scene, string name)

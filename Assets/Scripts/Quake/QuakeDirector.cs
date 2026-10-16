@@ -43,15 +43,15 @@ namespace Deprem.Quake
         [SerializeField, Range(0f, 1f)] private float mainQuakeIntensity = 1f;
         [Tooltip("Eşyalar bu aralıkta, rastgele sırayla devrilir (deprem başından itibaren sn)")]
         [SerializeField] private Vector2 toppleWindow = new Vector2(1.5f, 5f);
-        [Tooltip("C uyarısından sonra basmaya başlamak için süre")]
-        [SerializeField] private float duckCoverGrace = 1.5f;
+        [Tooltip("C uyarısından sonra güvenli noktaya yürüyüp basmak için süre")]
+        [SerializeField] private float duckCoverGrace = 3.5f;
         [Tooltip("C kısa süre bırakılırsa affedilir")]
         [SerializeField] private float duckCoverTolerance = 0.35f;
 
         [Header("Artçılar")]
         [SerializeField] private float aftershockDuration = 3.5f;
         [SerializeField, Range(0f, 1f)] private float aftershockIntensity = 0.5f;
-        [SerializeField] private float aftershockGrace = 1.2f;
+        [SerializeField] private float aftershockGrace = 2.5f;
         [SerializeField] private float injuredSpeedMultiplier = 0.6f;
         [Tooltip("Oyuncu bu alanlara girince artçı olur (her deneme bir kez). GDD: koridor, merdiven, üst kat")]
         [SerializeField] private AftershockZone[] aftershockZones =
@@ -66,6 +66,10 @@ namespace Deprem.Quake
         [SerializeField] private float bedHeight = 0.5f;
         [SerializeField] private Key standUpKey = Key.F;
         [SerializeField] private Key duckCoverKey = Key.C;
+
+        [Header("Tavandan düşen parça")]
+        [Tooltip("Sıva parçası materyali (QuakeSetup atar)")]
+        [SerializeField] private Material debrisMaterial;
 
         [Header("Geliştirme")]
         [Tooltip("Sahnede döngü yöneticisi yoksa bu döngüyle başlat (0 = kapalı)")]
@@ -297,20 +301,25 @@ namespace Deprem.Quake
 
         // ------------------------------------------------------------------ Ortak parçalar
 
-        /// <summary>Süre boyunca C basılı tutulmalı. Tutarken oyuncu çömelir ve hareket edemez.</summary>
+        /// <summary>
+        /// Süre boyunca güvenli noktada C basılı tutulmalı. Güvenli noktalar yerde parlar;
+        /// nokta dışında C işe yaramaz, oyuncu yürüyebilir. Tutarken çömelir ve hareket edemez.
+        /// </summary>
         private IEnumerator DuckCoverHold(float duration, float grace, Action<bool> result)
         {
             QuakePrompts.Set(QuakePrompts.DuckCover);
+            SafeSpot.ShowAll(true);
             var check = new DuckCoverHoldCheck(grace, duckCoverTolerance);
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
-                bool holding = Held(duckCoverKey);
+                bool holding = Held(duckCoverKey) && SafeSpot.AnyContains(player.transform.position);
                 check.Update(Time.deltaTime, holding);
                 player.InputEnabled = !holding;
                 player.SetScriptedInput(0f, crouch: holding);
                 if (check.Failed) break;
                 yield return null;
             }
+            SafeSpot.ShowAll(false);
             QuakePrompts.Clear();
             player.SetScriptedInput(0f);
             player.InputEnabled = true;
@@ -337,15 +346,42 @@ namespace Deprem.Quake
             foreach (var toppler in topplers) toppler.Rattle(intensity);
         }
 
+        /// <summary>Oyuncunun tam üstündeki tavandan bir sıva parçası ve kırıntılar düşer.</summary>
         private IEnumerator HitByDebris()
         {
             QuakePrompts.Clear();
-            var debris = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            debris.name = "Debris";
-            debris.transform.localScale = new Vector3(0.6f, 0.35f, 0.5f);
-            debris.transform.position = player.transform.position + Vector3.up * 2.6f;
-            debris.AddComponent<Rigidbody>().mass = 15f;
-            yield return new WaitForSeconds(0.8f);
+            SafeSpot.ShowAll(false);
+            var head = player.transform.position + Vector3.up * player.StandingHeight;
+            float ceilingY = head.y + 1.5f;
+            foreach (var hit in Physics.RaycastAll(head, Vector3.up, 4f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.rigidbody == player.Body) continue;
+                ceilingY = Mathf.Min(ceilingY, hit.point.y);
+            }
+
+            var center = new Vector3(player.transform.position.x, ceilingY - 0.1f, playerPlaneZ);
+            SpawnDebris("Plaster", center, new Vector3(0.9f, 0.1f, 0.6f), 25f);
+            for (int i = 0; i < 4; i++)
+            {
+                var offset = new Vector3(UnityEngine.Random.Range(-0.5f, 0.5f), UnityEngine.Random.Range(-0.1f, 0f), UnityEngine.Random.Range(-0.25f, 0.25f));
+                float size = UnityEngine.Random.Range(0.1f, 0.22f);
+                SpawnDebris("Chunk", center + offset, Vector3.one * size, 2f);
+            }
+            QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, 0.6f);
+            yield return new WaitForSeconds(0.9f);
+        }
+
+        private void SpawnDebris(string name, Vector3 position, Vector3 size, float mass)
+        {
+            var piece = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            piece.name = name;
+            piece.transform.position = position;
+            piece.transform.rotation = Quaternion.Euler(UnityEngine.Random.Range(-15f, 15f), 0f, UnityEngine.Random.Range(-15f, 15f));
+            piece.transform.localScale = size;
+            if (debrisMaterial != null) piece.GetComponent<MeshRenderer>().sharedMaterial = debrisMaterial;
+            var body = piece.AddComponent<Rigidbody>();
+            body.mass = mass;
+            body.linearVelocity = Vector3.down * 1.5f;
         }
 
         private void Fail(LoseReason reason, ItemId item = ItemId.None)
@@ -358,6 +394,7 @@ namespace Deprem.Quake
         {
             StopAllCoroutines();
             ApplyShake(0f);
+            SafeSpot.ShowAll(false);
             QuakePrompts.Clear();
             aftershockRunning = false;
         }

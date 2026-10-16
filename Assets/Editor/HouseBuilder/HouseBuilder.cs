@@ -53,6 +53,7 @@ namespace Deprem.HouseBuilder
             var scene = OpenOrCreateMainScene();
             Deprem.Player.PlayerSetup.SetupInScene(scene);
             Deprem.Quake.QuakeSetup.SetupInScene(scene, 3);
+            BerkeSystemsSetup.SetupInScene(scene);
             EditorSceneManager.SaveScene(scene);
             var whole = new Vector3(16.25f, 3.6f, -39f);
             HousePreview.Render("Logs/house_preview.png", 0.08f, whole, 2048, 1024);
@@ -113,6 +114,7 @@ namespace Deprem.HouseBuilder
 
             BuildLights(Child(root.transform, "Lights"));
             BuildMarkers(Child(root.transform, "Markers"));
+            BuildSafeSpots(Child(root.transform, "SafeSpots"));
 
             AssetDatabase.SaveAssets();
             return root;
@@ -443,6 +445,37 @@ namespace Deprem.HouseBuilder
                 go.transform.SetParent(parent, false);
                 go.transform.position = marker.Position;
                 if (icon != null) EditorGUIUtility.SetIconForObject(go, icon);
+            }
+        }
+
+        /// <summary>Güvenli noktalar: karakter düzleminde, yerde parlayan şerit (sarsıntıda görünür)</summary>
+        private static void BuildSafeSpots(Transform parent)
+        {
+            var mat = GetMaterial("guvenli_nokta", "Assets/Art/Decals/guvenli_nokta.png", new Color(0.55f, 1f, 0.6f));
+            mat.EnableKeyword("_EMISSION");
+            mat.SetColor("_EmissionColor", new Color(0.35f, 0.9f, 0.45f) * 1.5f);
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+
+            foreach (var (roomKey, x) in HouseLayout.SafeSpots)
+            {
+                var room = HouseLayout.Room(roomKey);
+                var go = new GameObject("SafeSpot_" + roomKey);
+                go.transform.SetParent(parent, false);
+                go.transform.position = new Vector3(x, room.FloorY, HouseDims.PlayerPlaneZ);
+
+                var glow = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                glow.name = "Glow";
+                Object.DestroyImmediate(glow.GetComponent<Collider>());
+                glow.transform.SetParent(go.transform, false);
+                glow.transform.localPosition = new Vector3(0f, 0.01f, 0f);
+                glow.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                glow.transform.localScale = new Vector3(HouseLayout.SafeSpotWidth, 0.8f, 1f);
+                var renderer = glow.GetComponent<MeshRenderer>();
+                renderer.sharedMaterial = mat;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                glow.SetActive(false);
+
+                go.AddComponent<Deprem.Quake.SafeSpot>().Configure(HouseLayout.SafeSpotWidth, glow);
             }
         }
 

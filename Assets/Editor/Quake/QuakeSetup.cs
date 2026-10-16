@@ -46,10 +46,33 @@ namespace Deprem.Quake
                 throw new System.InvalidOperationException(folder + " yok; önce oyuncu kurulumu çalışmalı");
 
             var root = new GameObject(SystemName);
-            root.AddComponent<QuakeDirector>();
+            var director = root.AddComponent<QuakeDirector>();
+            var so = new SerializedObject(director);
+            so.FindProperty("debrisMaterial").objectReferenceValue = DebrisMaterial();
+            so.ApplyModifiedPropertiesWithoutUndo();
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        /// <summary>Tavandan düşen sıva: sanatçı dokusu (Assets/Art/Particles/siva.png) varsa onu kullanır</summary>
+        private static Material DebrisMaterial()
+        {
+            const string folder = "Assets/Generated/Quake";
+            const string path = folder + "/siva.mat";
+            if (!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder("Assets/Generated", "Quake");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Particles/siva.png");
+            mat.SetTexture("_BaseMap", tex);
+            mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(0.82f, 0.78f, 0.7f));
+            mat.SetFloat("_Smoothness", 0.05f);
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
     }
 }

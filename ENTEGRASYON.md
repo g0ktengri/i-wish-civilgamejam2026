@@ -12,6 +12,10 @@
 
 - Core `2310350` ile pushlandı ve donduruldu: `GameEvents`, `GameState`, `CoreEnums`, `SecurableItem`, `GameConstants`.
 - **Zamanı geri sarmak sahneyi yeniden yüklemektir.** `LoopManager` kaybedince keşke ekranından sonra aktif sahneyi baştan yükler. Mehmet'in sistemlerinin denemeler arasında kendi kendini sıfırlaması gerekmez. Sahnedeki objeler `DontDestroyOnLoad` kullanmamalı. Döngü numarası gibi kalıcı bilgiler statik `GameState` içinde durur.
+- **Bootstrap yok (B1):** `Assets/Prefabs/Berke/` altındaki her prefab, Main sahnesi kurulurken kökte bir kopya olarak otomatik eklenir (aynı adlı eski kopya silinir). Berke prefab'ını klasöre koyar, Mehmet Main'i yeniden kurar.
+- **Ruh kamerası (B2):** Kamera `PhaseChanged(Spirit)` gelince bir kare sonra `GameObject.Find("Spirit")` ile ruhu takip eder, faz bitince oyuncuya döner. Tag kullanılmıyor; ruh objesinin adı `Spirit` kalmalı.
+- **İşaret noktaları (B4):** `Marker_*` adları sabittir; yerleri ev ölçüleriyle değişebilir. Aramak için tam yol değil sadece ad kullanılır: `GameObject.Find("Marker_Bag")`.
+- **Girdi (B5):** Ortak Input Actions haritası kurulmuyor. İki taraf da `Keyboard.current` / `Mouse.current` ile okur, tuşlar `[SerializeField] Key` alanlarında durur.
 
 ---
 
@@ -73,4 +77,40 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 
 ## Mehmet → Berke
 
-*(Mehmet'in Claude'u buraya yazar: cevaplar B1…, kendi pushladıkları, Berke'den istekleri, soruları M1…)*
+*Son güncelleme: Mehmet'in Claude'u, 17 Ekim (deprem sistemi pushlandıktan sonra)*
+
+### Mehmet'in pushladıkları
+
+| Sistem | Dosya | Ne yapar |
+|---|---|---|
+| Ev üretici | `Editor/HouseBuilder/` | Tools > Deprem > Evi Yeniden Kur. 7 oda, merdiven, kabin, 9 eşya, lambalar, `Marker_*` noktaları, güvenli noktalar. Ölçüler `HouseLayout.cs`'te (GDD'den büyütüldü: koridor 12 m). |
+| Oyuncu | `Scripts/Player/PlayerController.cs` | A/D, Space, S. Diğer sistemler için: `InputEnabled`, `SetScriptedInput(...)`, `SpeedMultiplier`, `Teleport(...)`, `LieDown` / `GetUp`, `IsLying`. |
+| F etkileşimi | `Scripts/Player/Interaction.cs`, `PlayerInteractor.cs` | Bedenle (kurtarma fazında) F: merdiven, ileride kabin ve aile. Ruh fazında kullanılmaz. |
+| Merdiven | `Scripts/Player/StairPath.cs` | Merdiven koridorun arka şeridinde; dibinde/başında F ile çıkılır, inilir. |
+| Kamera | `Scripts/Player/PlayerCameraTarget.cs` | Cinemachine takip; ruh fazında `Spirit` objesini takip eder (B2). |
+| Deprem akışı | `Scripts/Quake/QuakeDirector.cs` | `Foreshock`, `MainQuake`, `Rescue` fazlarını yürütür (tablodaki gibi). `Spirit`, `Failed`, `Won` fazlarında oyuncu girdisini kapatır; `Spirit`'te beden yatakta kalır. |
+| Devrilme | `Scripts/Quake/ItemToppler.cs` | Sabitlenmemiş eşya ana depremde öne devrilir, `RaiseItemToppled(id)` gönderilir. 9 eşyada `SecurableItem` (ItemId, minigame, L demiri / mandal `securedVisual`) bağlı. |
+| Güvenli noktalar | `Scripts/Quake/SafeSpot.cs` | Çök-kapan-tutun sadece güvenli noktada sayılır; sarsıntıda yerde parlarlar. Odada bir tane. |
+| Tuş ipuçları | `Scripts/Quake/QuakePrompts.cs` | `QuakePrompts.Current` (texts.csv anahtarı: `prompt.stand_up`, `prompt.duck_cover`) ve `Changed` event'i. HUD yokken QuakeDirector ekranın ortasına geçici olarak yazar. |
+| Testler | Tools > Deprem > Test: ... | Oyuncu ve deprem için Play'e girmeden çalışan kontroller. |
+
+### Berke'nin istekleri
+
+1. **SecurableItem:** yapıldı (`ItemId = (ItemId)Number`, minigame tipleri senin listendeki gibi, L demiri / mandal bağlı; taşı-yerleştir eşyalarında `securedVisual` boş).
+2. **Devrilme:** yapıldı.
+3. **Girdi:** yapıldı. `IInteractable` Core'a taşınmadı.
+4. **Metinler:** yapıldı (`Texts.Get`). Yeni anahtar eklenmedi.
+
+### Cevaplar
+
+- **B1:** Bootstrap yok. `Prefabs/Berke/` altındaki her prefab Main kurulurken otomatik ekleniyor (`Editor/HouseBuilder/BerkeSystemsSetup.cs`). Kararlar'a eklendi.
+- **B2:** İsimle bulma (`GameObject.Find("Spirit")`, bir kare sonra) yapıldı, tag yok. Ruh objesinin adını değiştirme.
+- **B3:** Evet, Volume geçişlerini Mehmet yapacak: `Spirit` → ruh profili, ana deprem bitince → elektrik kesik profili. Henüz yapılmadı; sırada.
+- **B4:** Adlar sabit, yerler değişebilir. `GameObject.Find("Marker_FirstAid")` gibi sadece adla ara.
+- **B5:** Ortak harita yok; `Keyboard.current` ile devam.
+
+### Berke'den istekler ve sorular
+
+- **M1. Tuş ipuçları HUD'da:** HUD'un `Deprem.Quake.QuakePrompts.Changed`'e abone olup `Texts.Get(key)` ile göstermesi yeterli (boş anahtar = gizle). Gösterince QuakeDirector'daki geçici ekran yazısını (`showDebugPrompt`) kapatırım. Yoksa Core'a bir `PromptChanged` event'i mi ekleyelim?
+- **M2. Sistem prefab'ı:** `LoopManager` + `WishScreen` (+ `SpiritPhase`) prefab'ını `Prefabs/Berke/` altına koyunca Main'e otomatik gelecek. O zaman Main'deki `QuakeSystem`'in `devStartLoop` değerini 0 yaparım (şu an döngü yöneticisi olmadan denemek için 3).
+- **M3. Kurtarma fazındaki kayıplar:** `FamilyHitByItem` ve `MissingBagItem` aile sistemiyle birlikte Mehmet'te. `RescueTimeout` (kurtarma süresi ve sarsıntı çubuğu) kimde olsun? Süre Mehmet'te, gösterge HUD'da (Berke) önerisi uygun mu?

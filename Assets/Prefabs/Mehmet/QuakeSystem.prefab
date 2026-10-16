@@ -53,11 +53,11 @@ MonoBehaviour:
   mainQuakeDuration: 12
   mainQuakeIntensity: 1
   toppleWindow: {x: 1.5, y: 5}
-  duckCoverGrace: 1.5
+  duckCoverGrace: 3.5
   duckCoverTolerance: 0.35
   aftershockDuration: 3.5
   aftershockIntensity: 0.5
-  aftershockGrace: 1.2
+  aftershockGrace: 2.5
   injuredSpeedMultiplier: 0.6
   aftershockZones:
   - name: "Koridora giri\u015F"
@@ -73,5 +73,6 @@ MonoBehaviour:
   bedHeight: 0.5
   standUpKey: 20
   duckCoverKey: 17
+  debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
   devStartLoop: 0
   showDebugPrompt: 1

@@ -175,6 +175,23 @@ namespace Deprem.HouseBuilder
             new MarkerDef("Marker_StairTop", new Vector3(HouseDims.StairHoleX1 + 0.3f, Up, Z)),
         };
 
+        /// <summary>
+        /// Çök-kapan-tutun için güvenli noktalar: (oda, merkez X). Devrilen eşyaların düşeceği yerlerden uzak,
+        /// artçı alanlarına yakın. Sanatçı sağlam eşya (masa, yatak kenarı) çizerse buraya hizalanır.
+        /// </summary>
+        public static readonly (string room, float x)[] SafeSpots =
+        {
+            ("oyuncu", 3.2f),   // yatağın yanı; döngü 4'te ruh bedene dönünce burada ayağa kalkar
+            ("koridor", 7f),    // artçı: koridora giriş
+            ("salon", 25.5f),   // TV ünitesi ve kitaplıktan uzak
+            ("mutfak", 28.3f),  // üst dolapların önünden uzak
+            ("kardes", 5.6f),   // artçı: üst kat, kardeşin odası
+            ("sahanlik", 15.2f),// artçı: merdiven başı
+            ("ebeveyn", 20f),   // gardıroptan uzak
+        };
+
+        public const float SafeSpotWidth = 1.4f;
+
         public static RoomDef Room(string key)
         {
             foreach (var room in Rooms)

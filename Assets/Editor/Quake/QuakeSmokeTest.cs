@@ -129,6 +129,32 @@ namespace Deprem.Quake
                 if (floorKeys.Any(k => toppler.name.EndsWith(k)))
                     Check(bounds.min.z < 1.25f && tilt > 45f, $"{toppler.name}: karakterin yolunu kesiyor (ön z={bounds.min.z:F2})");
             }
+
+            TestSafeSpots(topplers);
+        }
+
+        private static void TestSafeSpots(List<ItemToppler> toppled)
+        {
+            var spots = Object.FindObjectsByType<SafeSpot>(FindObjectsSortMode.None);
+            foreach (var spot in spots) spot.Register();
+            Check(spots.Length == 7, $"Her odada bir güvenli nokta var ({spots.Length})");
+
+            foreach (var spot in spots)
+            {
+                var p = spot.transform.position;
+                var covering = toppled.Where(t =>
+                {
+                    var b = t.CombinedBounds();
+                    bool sameFloor = b.min.y < p.y + 1.5f && b.max.y > p.y - 0.1f;
+                    bool overX = b.max.x > p.x - 0.7f && b.min.x < p.x + 0.7f;
+                    return sameFloor && overX && b.min.z < 1.25f && b.max.z > 0.75f;
+                }).Select(t => t.name).ToList();
+                Check(covering.Count == 0, $"{spot.name}: devrilen eşyaların altında kalmıyor{(covering.Count > 0 ? " (" + string.Join(", ", covering) + ")" : "")}");
+            }
+
+            var bed = GameObject.Find("Marker_PlayerBed").transform.position;
+            Check(SafeSpot.AnyContains(new Vector3(bed.x + 0.8f, 0f, 1f)), "Ruh fazı sonrası ayağa kalkılan yer güvenli noktada");
+            Check(!SafeSpot.AnyContains(new Vector3(12f, 0f, 1f)), "Koridorun ortası güvenli nokta değil");
         }
 
         private static void Step(PlayerController player, List<ItemToppler> topplers, float seconds)
