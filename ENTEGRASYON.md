@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (ruh fazı pushlandıktan sonra)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (minigame'ler pushlandıktan sonra; Mehmet'in `e5b4e47` commit'i okundu)*
 
 ### Berke'nin pushladıkları
 
@@ -31,11 +31,23 @@
 | Test paneli | `Scripts/Loop/LoopDebugPanel.cs` | Editor'de faz, kaybetme ve bölüm butonları. Mehmet de kendi test sahnesinde kullanabilir. |
 | Metinler | `Resources/texts.csv`, `Scripts/Localization/Texts.cs` | `Texts.Get("anahtar")`, `Texts.Format(...)`, TR/EN. |
 | Keşke ekranı | `Scripts/UI/WishScreen.cs`, `WishLines.cs` | `LoopFailed` gelince kararır, F ile devam. Yeni denemede siyahtan açılır. |
-| Ruh fazı | `Scripts/Spirit/SpiritPhase.cs` | Faz `Spirit` olunca ruhu `Marker_PlayerBed` noktasının 1 m üstünde çıkarır, 60 sn sayar (minigame sırasında da), bitince `SetPhase(GamePhase.MainQuake)` çağırır. Statik `SpiritPhase.Running` ve `TimeLeft` alanları var. |
+| Ruh fazı | `Scripts/Spirit/SpiritPhase.cs` | Faz `Spirit` olunca `Spirit` adlı ruh objesini `Marker_PlayerBed` noktasının 1 m üstünde çıkarır. 60 sn sayar (minigame sırasında da), bitince `SetPhase(GamePhase.MainQuake)` çağırır. Statik `SpiritPhase.Running` ve `TimeLeft` alanları var. |
 | Ruh hareketi | `Scripts/Spirit/SpiritController.cs` | W/A/S/D ile uçar, collider'ı yok, duvardan geçer. Sınırlar `House` objesinin renderer'larından hesaplanır. Minigame açıkken durur. |
-| Eşya etkileşimi | `Scripts/Spirit/SpiritInteractor.cs` | `SecurableItem.All` içinden ruha en yakın sabitlenmemiş eşyayı bulur (X-Y düzleminde collider'a uzaklık, 1,2 m). F'ye basınca `RaiseMinigameOpened(id, tip)` çağırır. Minigame'ler hazır olana kadar eşyayı test için anında `Secure()` eder. |
+| Eşya etkileşimi | `Scripts/Spirit/SpiritInteractor.cs` | `SecurableItem.All` içinden ruha en yakın sabitlenmemiş eşyayı bulur (X-Y düzleminde collider'a uzaklık, 1,2 m). F'ye basınca `RaiseMinigameOpened(id, tip)` çağırır. Sahnede `MinigameHost` yoksa test için eşyayı anında `Secure()` eder. |
 | Eşya vurgusu | `Scripts/Spirit/SpiritHighlighter.cs` | Ruh fazında sabitlenmemiş her eşyanın önüne nabız gibi atan bir point light koyar. Geçici çözüm; kontur shader'ı gelince değişecek. |
 | Ruh HUD'u | `Scripts/UI/SpiritHud.cs` | Sayaç, "F: Sabitle" ve "W/A/S/D: Uç" yazıları. |
+| Minigame'ler | `Scripts/Minigames/MinigameHost.cs` + `ScrewMinigame`, `CarryMinigame`, `LockMinigame` | `MinigameOpened` gelince eşyanın tipine göre ekranın ortasında yakın çekim panelini açar. Başarılıysa `SecurableItem.Secure()`, sonra `RaiseMinigameClosed(id, başarı)`. Esc ile vazgeçilir, faz `Spirit`'ten çıkarsa başarısız kapanır. Çanta için `MinigameHost.Instance.Open(tip, sonuç)` (event'ler `ItemId.None` ile). |
+
+### Mehmet'in yaptıkları (Berke tarafı okudu)
+
+- İstekler 1–4 tamam: `SecurableItem` 9 eşyada, devrilme, girdinin kapatılması, `Texts.Get`. Teşekkürler.
+- B1–B5 cevapları Kararlar'a işlendi, Berke tarafı onlara göre çalışıyor: ruh objesinin adı `Spirit` kalacak; işaret noktaları sadece adla aranacak; `Keyboard.current` ile devam.
+
+### Cevaplar (M1–M3)
+
+- **M1. Tuş ipuçları:** Berke'nin HUD'u Mehmet'in sınıfına (`QuakePrompts`) doğrudan bağlanmasın. Core'a küçük bir ekleme öneriyorum: `GameEvents.PromptChanged(string key)` + `RaisePromptChanged(string key)`. Boş anahtar ipucunu gizler. Event'i Mehmet tetiklediği için Core commit'ini Mehmet atsın (CLAUDE.md'ye göre tek başına küçük bir commit). Berke'nin HUD'u bu event'i dinleyip `Texts.Get(key)` ile ekranın altında gösterecek. O zamana kadar `showDebugPrompt` açık kalsın.
+- **M2. Sistem prefab'ı:** Bir sonraki Berke commit'inde gelecek: `Prefabs/Berke/BerkeSystems.prefab` (`LoopManager`, `WishScreen`, `SpiritPhase`, `SpiritHighlighter`, `SpiritHud`, `MinigameHost`; `LoopDebugPanel` sadece Editor'de görünür). Prefab gelince `devStartLoop` 0 yapılabilir.
+- **M3. Kurtarma süresi:** Sürenin de göstergenin de tamamen Mehmet'te olmasını öneriyorum. GDD'deki gösterge sayı değil; ekran kenarında titreşen sarsıntı çubuğu, sallanan lamba, kalp atışı ve uğultu. Bunlar deprem hissinin parçası ve ses de Mehmet'te. Böylece Core'a yeni event gerekmiyor. Süre bitince `FailLoop(LoseReason.RescueTimeout, enÇokYavaşlatanEşya)`; gizli bonus için `GameState.FailedAttempts`. Mehmet çubuğu UI ile yapmak isterse `Deprem.UI.UiBuilder` kullanılabilir.
 
 ### Faz akışı: kim neyi çağırır
 
@@ -52,26 +64,9 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 - Kurtarma süresine gizli bonus için kaç kez kaybedildiği `GameState.FailedAttempts` içinde tutuluyor (GDD: her başarısızlıkta +10 sn, en fazla +30 sn).
 - Döngü ilerlemesini `LoopManager` yapar. Döngünün dersiyle kaybedilirse sonraki döngüye geçilir (1: öncüyü önemsememek, 2: çök-kapan-tutun yapmamak, 3: eşya devrilmesi, 4: çanta eksikliği). Başka bir sebeple kaybedilirse aynı döngü tekrarlanır.
 
-### Mehmet'ten istenenler
+### Açık sorular (Mehmet cevaplasın)
 
-1. **SecurableItem bileşeni:** HouseBuilder, 9 eşyaya `Deprem.Core.SecurableItem` eklesin. `ItemDef.Number` doğrudan `ItemId` değerine karşılık geliyor: `(ItemId)item.Number`. Minigame tipleri GDD'ye göre şöyle:
-   - Vida sıkma (`ScrewTighten`): 2 Kitaplık, 3 TV ünitesi, 5 Ayakkabılık, 7 Oyuncak rafı, 8 Gardırop
-   - Taşı ve yerleştir (`CarryAndPlace`): 1 Yatağın üstündeki raf, 6 Ayna, 9 Çerçeve
-   - Kilitle (`Lock`): 4 Mutfak üst dolapları
-
-   L demiri ya da mandal objesi varsa `securedVisual` alanına bağlanabilir. Bunun için SerializeField'a editör scriptinden `SerializedObject` ile yazılır.
-2. **Devrilme:** Deprem sırasında `IsSecured == false` olan eşyalar devrilsin ve `GameEvents.RaiseItemToppled(id)` çağrılsın.
-3. **Girdi:** `GameEvents.PhaseChanged` dinlenip `Spirit`, `Failed` ve `Won` fazlarında `PlayerController.InputEnabled = false` yapılsın. Bu fazlarda F, W/A/S/D ve fare Berke'nin sistemlerinde (ruh, minigame, keşke ekranı). Ruh fazında oyuncunun bedeni yatakta kalır; ruh ayrı bir obje olarak uçar ve bedeni hareket ettirmez.
-   - `IInteractable` şimdilik Core'a taşınmasın. Ruh fazındaki F etkileşimini Berke kendi sisteminde `SecurableItem.All` üzerinden yapacak; `IInteractable`'a ihtiyacı yok.
-4. **Metinler:** Oyuncuya görünen metinler için `Deprem.Localization.Texts.Get(...)` kullanılsın. Şu an hazır olan anahtarlar: `prompt.stand_up` ("F: Kalk"), `prompt.duck_cover` ("C: Çök-Kapan-Tutun"), `prompt.interact`. Yeni anahtar gerekirse `texts.csv`'nin en sonuna bir `# Mehmet` başlığı açılıp altına eklenebilir. Bu dosya Berke'nin ama sona ekleme yapmak conflict çıkarmaz.
-
-### Sorular (Mehmet cevaplasın)
-
-- **B1. Bootstrap:** Berke'nin sistem prefab'ı (`LoopManager` + `WishScreen`) `Prefabs/Berke/` altına konacak. Bootstrap bu klasördeki prefab'ları otomatik mi yükleyecek, yoksa bir listeye mi eklenecek? Bootstrap henüz yok mu?
-- **B2. Ruh fazında kamera** (artık acil; ruh fazı pushlandı): Cinemachine ruh fazında oyuncu yerine ruhu takip etmeli. Ruh objesi `SpiritPhase` tarafından çalışma anında `Spirit` adıyla oluşturuluyor ve sadece ruh fazında aktif. Tag gerekmeden en kolay yol şu: Mehmet'in kamerası `PhaseChanged(Spirit)` gelince bir kare sonra `GameObject.Find("Spirit")` ile objeyi bulup takip etsin, faz bitince oyuncuya dönsün. Tag'i tercih edersen Berke tarafı ruh objesine `Spirit` tag'ini verir; tag'i ProjectSettings'e Mehmet ekler. Hangisi?
-- **B3. Ruh fazı görünümü:** GDD'deki "Ruh fazı" Volume profiline Mehmet'in sistemi `PhaseChanged(Spirit)` gelince geçsin mi? Berke `Assets/Settings/` klasörüne dokunmuyor.
-- **B4. İşaret noktaları:** Ruh fazı ruhu `Marker_PlayerBed` noktasından çıkaracak. Çanta malzemeleri `Marker_FirstAid` ve `Marker_Flashlight` noktalarına, deprem çantası `Marker_Bag` noktasına konacak. Bu noktaları isimle (`GameObject.Find("Markers/...")`) aramak uygun mu, yoksa yerleri değişebilir mi?
-- **B5. Input Actions:** Berke şimdilik `Keyboard.current` ve `Mouse.current` ile doğrudan okuyor. `InputSystem_Actions.inputactions` dosyasında ortak bir action haritası kuracak mıyız?
+- Şu an yok. M1'deki Core önerisine "tamam" ya da "hayır" demen yeterli.
 
 ---
 

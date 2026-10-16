@@ -10,6 +10,12 @@ prompt.duck_cover,C: Çök-Kapan-Tutun,C: Drop-Cover-Hold On
 prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
 prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
+prompt.cancel,Esc: Vazgeç,Esc: Cancel
+
+# Minigame'ler
+minigame.screw.hint,Fareyle saat yönünde daire çizerek vidayı sık,Draw clockwise circles with the mouse to tighten the screw
+minigame.carry.hint,Eşyayı sürükleyip güvenli yere bırak,Drag the item to a safe spot
+minigame.lock.hint,İbre yeşil alandayken tıkla,Click when the needle is in the green zone
 
 # Keşke ekranları: wish = cümle, info = altındaki bilgi, final = final listesindeki hali
 wish.ignored_foreshock,Keşke dikkate alsaydım,I wish I had taken it seriously

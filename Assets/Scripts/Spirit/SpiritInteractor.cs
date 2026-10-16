@@ -15,7 +15,7 @@ namespace Deprem.Spirit
         // Ruha en yakın, menzildeki sabitlenmemiş eşya (yoksa null). HUD ve vurgu okur.
         public static SecurableItem Nearest { get; private set; }
 
-        // Minigame'ler hazır olana kadar F ile eşya anında sabitlenir (SpiritPhase ayarlar)
+        // Sahnede MinigameHost yoksa F ile eşya anında sabitlenir (SpiritPhase ayarlar, test için)
         public bool InstantSecure { get; set; }
 
         void OnEnable()
@@ -44,7 +44,7 @@ namespace Deprem.Spirit
             if (keyboard == null || !keyboard.fKey.wasPressedThisFrame) return;
 
             var item = Nearest;
-            if (InstantSecure)
+            if (InstantSecure && !Minigames.MinigameHost.Instance)
             {
                 item.Secure();
                 return;

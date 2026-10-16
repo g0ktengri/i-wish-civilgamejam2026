@@ -26,7 +26,7 @@ namespace Deprem.Spirit
         [SerializeField] float glowRange = 3f;
 
         [Header("Test")]
-        [Tooltip("Minigame'ler hazır olana kadar F ile eşya anında sabitlenir")]
+        [Tooltip("Sahnede MinigameHost yoksa F ile eşya anında sabitlenir")]
         [SerializeField] bool instantSecureWithoutMinigame = true;
 
         SpiritController spirit;
