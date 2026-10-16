@@ -114,7 +114,7 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 
 ## Mehmet → Berke
 
-*Son güncelleme: Mehmet'in Claude'u, 17 Ekim (Mehmet'in ilk tam oyun testinden sonra)*
+*Son güncelleme: Mehmet'in Claude'u, 17 Ekim (B9 şablonlarından sonra)*
 
 ### Mehmet'in pushladıkları
 
@@ -166,5 +166,7 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 - **M6. Minigame'ler çok basit.** Mehmet'in ilk izlenimi: hepsi çok kolay ve kısa geliyor. Öneriler: vida sıkmada farenin doğru yönde (saat yönünde) dairesel hareketi, ters dönünce geri gitme; taşı-yerleştirde güvenli yerin dar olması ya da yolda bir engel; kilitlemede zamanlama penceresinin her denemede daralması. Ruh fazında 60 sn'de 5-6 eşyaya yetecek kadar sürmeleri hedef (GDD).
 - **M7. Ruh haritanın dışına çıkabiliyor.** `SpiritController` sınırlarını `HouseBounds.Instance.ClampToHouse(pozisyon, yarıçap)` ile kesebilirsin; kat sınırlarını ev üretici yazıyor, ev ölçüleri değişince kendiliğinden güncellenir.
 - **M8. Eşya vurgusu: kontur hazır.** `Deprem/Outline` shader'ı + her eşyada `Deprem.Visual.ItemOutline`. Kendi kendine çalışıyor: `Spirit` fazında sabitlenmemiş eşyalarda açık mavi kontur nabız gibi yanar, `ItemSecured` gelince ya da faz bitince söner. Senin tarafında yapılacak tek şey: `SpiritHighlighter`'ın point light'larını kaldırmak (ya da istersen bırak). Ruhun yanındaki eşyayı öne çıkarmak istersen `item.GetComponent<ItemOutline>().SetEmphasis(true/false)` (sarı kontur).
-- **Sanatçı şablonları:** `Sablonlar/` klasöründe 118 PNG (odalar, eşyalar, karakter şeritleri, dekor, decal, UI). UI ikonları ve tuş ipuçları da var (`Sablonlar/UI/`); senin UI'ın bu adlarla `Assets/Art/UI/` altından okuyabilir.
+- **Sanatçı şablonları:** `Sablonlar/` klasöründe 132 PNG (odalar, eşyalar, karakter şeritleri, dekor, decal, UI). UI ikonları ve tuş ipuçları da var (`Sablonlar/UI/`); senin UI'ın bu adlarla `Assets/Art/UI/` altından okuyabilir.
+- **B9: tamam.** Tablondaki "yok" olanların hepsi `Sablonlar/UI/` altında aynı adla ve boyutla üretildi: `minigame_panel`, `minigame_vida_basi` (ortasında dönme merkezi işaretli), `minigame_tasi`, `minigame_duvar`, `minigame_guvenli_alan`, `minigame_yatak_rafi`, `minigame_ayna`, `minigame_cerceve`, `minigame_esya`, `minigame_ibre`, `hud_ipucu`, `hud_sayac`, `menu_arka_plan`, `logo` (320 × 96). UI şablonlarının arka planı saydam. Yeni yuva eklersen tabloya yaz; `ArtTemplates.cs`'teki listeye ekleyip yeniden üretirim.
+- **M6, M7, M8:** Gördüm, teşekkürler; kapandı.
 - Döngü 1–2 akışı değişmedi (ders sırası aynı), sadece konuşma balonları eklendi; `LoopManager`'da değişiklik gerekmiyor.

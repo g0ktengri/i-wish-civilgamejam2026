@@ -154,10 +154,24 @@ namespace Deprem.HouseBuilder
                 ("UI/tus_f.png", 32, 32), ("UI/tus_c.png", 32, 32), ("UI/tus_space.png", 32, 32), ("UI/tus_esc.png", 32, 32),
                 ("UI/sarsinti_cubugu.png", 192, 16),
                 ("UI/minigame_vida.png", 256, 256), ("UI/minigame_l_demiri.png", 256, 256), ("UI/minigame_dolap_kapagi.png", 256, 256),
+                // Berke'nin UI yuvaları (ENTEGRASYON B9)
+                ("UI/minigame_panel.png", 256, 256), ("UI/minigame_tasi.png", 256, 256),
+                ("UI/minigame_duvar.png", 16, 256), ("UI/minigame_guvenli_alan.png", 64, 64),
+                ("UI/minigame_yatak_rafi.png", 48, 48), ("UI/minigame_ayna.png", 48, 48), ("UI/minigame_cerceve.png", 48, 48),
+                ("UI/minigame_esya.png", 48, 48), ("UI/minigame_ibre.png", 8, 32),
+                ("UI/hud_ipucu.png", 192, 32), ("UI/hud_sayac.png", 64, 32),
+                ("UI/menu_arka_plan.png", 960, 540), ("UI/logo.png", 320, 96),
                 ("Tiles/kesit.png", 64, 64), ("Tiles/merdiven_basamak.png", 64, 64),
             };
             foreach (var (path, w, h) in sizes)
                 Save(path, w, h, transparent: !path.StartsWith("Tiles/"));
+
+            // Vida başı kodla döner: dönme merkezi tam ortada
+            Save("UI/minigame_vida_basi.png", 48, 48, tex =>
+            {
+                VLine(tex, 24, Guide, 1);
+                HLine(tex, 0, 48, 24, Guide);
+            }, transparent: true);
         }
 
         // ------------------------------------------------------------------ Çizim
