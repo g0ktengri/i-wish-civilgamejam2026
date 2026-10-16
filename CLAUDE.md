@@ -20,6 +20,7 @@ Claude yalnızca o kişinin sahip olduğu klasörlerde dosya oluşturur ve düze
 | `Assets/Scripts/Audio/` | Mehmet | Ses yöneticisi ve ses tetikleyicileri |
 | `Assets/Editor/HouseBuilder/` | Mehmet | Evi ve 9 eşyayı kodla kuran editör scripti, texture import scripti |
 | `Assets/Editor/Player/` | Mehmet | Oyuncu ve kamera kurulum scripti, oyuncu kontrolcüsü testi |
+| `Assets/Editor/Quake/` | Mehmet | Deprem sistemi kurulum scripti ve testi |
 | `Assets/Generated/` | Mehmet (otomatik) | HouseBuilder'ın ürettiği materyaller; elle düzenlenmez, her kurulumda yenilenir |
 | `Assets/Settings/` (Volume, URP) | Mehmet | Işık, Volume profilleri |
 | `Assets/Scripts/Loop/` | Berke | Döngü yöneticisi, kontrol noktaları, kaybetme durumları |

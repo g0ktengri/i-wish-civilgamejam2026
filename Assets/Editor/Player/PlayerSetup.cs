@@ -127,8 +127,8 @@ namespace Deprem.Player
             tracker.PositionDamping = new Vector3(0.6f, 0.4f, 0f);
             follow.TrackerSettings = tracker;
 
-            // Deprem sarsıntısı (GDD: Cinemachine Impulse) Quake sistemi tarafından tetiklenecek
-            go.AddComponent<CinemachineImpulseListener>();
+            // Deprem sarsıntısı: şiddetini QuakeDirector ayarlar
+            go.AddComponent<Deprem.Quake.QuakeCameraShake>();
         }
 
         private static Transform FindInScene(Scene scene, string name)

@@ -52,6 +52,7 @@ namespace Deprem.HouseBuilder
         {
             var scene = OpenOrCreateMainScene();
             Deprem.Player.PlayerSetup.SetupInScene(scene);
+            Deprem.Quake.QuakeSetup.SetupInScene(scene, 3);
             EditorSceneManager.SaveScene(scene);
             var whole = new Vector3(16.25f, 3.6f, -39f);
             HousePreview.Render("Logs/house_preview.png", 0.08f, whole, 2048, 1024);
@@ -104,6 +105,7 @@ namespace Deprem.HouseBuilder
             stairs.gameObject.AddComponent<Deprem.Player.StairPath>().Configure(StairRoute());
             BuildCabin(root.transform);
             BuildWindow(root.transform);
+            BuildFrontBarrier(Child(root.transform, "FrontBarrier"));
 
             var items = Child(root.transform, "Items");
             foreach (var item in HouseLayout.Items)
@@ -226,6 +228,19 @@ namespace Deprem.HouseBuilder
             };
         }
 
+        /// <summary>Evin önünde görünmez duvar: devrilen eşyalar kesit çizgisinden boşluğa düşmesin</summary>
+        private static void BuildFrontBarrier(Transform parent)
+        {
+            foreach (var room in HouseLayout.Rooms)
+            {
+                var go = new GameObject("Barrier_" + room.Key);
+                go.transform.SetParent(parent, false);
+                go.transform.position = new Vector3((room.X0 + room.X1) * 0.5f, (room.FloorY + room.CeilingY) * 0.5f, -0.1f);
+                go.isStatic = true;
+                go.AddComponent<BoxCollider>().size = new Vector3(room.Width, room.Height, 0.2f);
+            }
+        }
+
         private static void BuildCabin(Transform parent)
         {
             var go = AddBox(parent, "Cabin", HouseDims.CabinMin, HouseDims.CabinMax, "kabin", new Color(0.85f, 0.55f, 0.15f), false);
@@ -259,14 +274,24 @@ namespace Deprem.HouseBuilder
         private static void BuildItem(ItemDef item, Transform parent)
         {
             var room = HouseLayout.Room(item.Room);
-            float frontZ = item.Mount == ItemMount.BackWall ? room.Depth - item.Size.z : HouseLayout.FloorItemFrontZ;
+            float frontZ = item.Mount == ItemMount.BackWall ? room.Depth - item.Size.z : HouseLayout.FloorItemFront(item);
             var min = new Vector3(item.CenterX - item.Size.x * 0.5f, room.FloorY + item.BaseY, frontZ);
             var max = min + item.Size;
 
             var go = AddBox(parent, $"Item_{item.Number}_{item.Key}", min, max, item.Key, ItemColor(item.Number), item.PlainSides);
             var body = go.AddComponent<Rigidbody>();
-            body.mass = Mathf.Max(2f, item.Size.x * item.Size.y * item.Size.z * 120f);
+            body.mass = Mathf.Max(5f, item.Size.x * item.Size.y * item.Size.z * 300f);
             body.isKinematic = true; // deprem sistemi sabitlenmemiş eşyayı serbest bırakır
+            go.AddComponent<Deprem.Quake.ItemToppler>();
+
+            // Core: Berke'nin minigame'i Secure() çağırır, deprem IsSecured okur
+            var securedVisual = BuildSecuredVisual(item, go.transform, min, max);
+            var securable = go.AddComponent<Deprem.Core.SecurableItem>();
+            var so = new SerializedObject(securable);
+            so.FindProperty("id").enumValueIndex = item.Number;
+            so.FindProperty("minigame").enumValueIndex = (int)item.Minigame;
+            so.FindProperty("securedVisual").objectReferenceValue = securedVisual;
+            so.ApplyModifiedPropertiesWithoutUndo();
 
             if (item.Key == "tv_unitesi")
             {
@@ -282,6 +307,50 @@ namespace Deprem.HouseBuilder
                         "mutfak_kapagi", new Color(0.75f, 0.7f, 0.6f), true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sabitlenince görünen parça: vidalı eşyalarda üst-arka köşede L demiri, dolapta mandal.
+        /// Taşı-yerleştir eşyalarında yok (eşyanın kendisi güvenli yere taşınır).
+        /// </summary>
+        private static GameObject BuildSecuredVisual(ItemDef item, Transform parent, Vector3 min, Vector3 max)
+        {
+            var metal = GetMaterial("l_demiri", "Assets/Art/Items/l_demiri.png", new Color(0.55f, 0.57f, 0.6f));
+            GameObject visual;
+            if (item.Minigame == Deprem.Core.MinigameType.ScrewTighten)
+            {
+                visual = new GameObject("SecuredVisual");
+                visual.transform.SetParent(parent, false);
+                for (int side = 0; side < 2; side++)
+                {
+                    float x = side == 0 ? min.x + 0.1f : max.x - 0.25f;
+                    var bracketMin = new Vector3(x, max.y, max.z - 0.15f);
+                    AddDecorBox(visual.transform, "Bracket_" + side, bracketMin, bracketMin + new Vector3(0.15f, 0.03f, 0.15f), metal);
+                }
+            }
+            else if (item.Minigame == Deprem.Core.MinigameType.Lock)
+            {
+                var latchMin = new Vector3((min.x + max.x) * 0.5f - 0.06f, min.y + 0.3f, min.z - 0.06f);
+                visual = AddDecorBox(parent, "SecuredVisual", latchMin, latchMin + new Vector3(0.12f, 0.15f, 0.03f), metal);
+            }
+            else
+            {
+                return null;
+            }
+            visual.SetActive(false);
+            return visual;
+        }
+
+        /// <summary>Çarpışmasız, tek materyalli küçük kutu</summary>
+        private static GameObject AddDecorBox(Transform parent, string name, Vector3 min, Vector3 max, Material mat)
+        {
+            var mesh = BoxMeshBuilder.Build(name, min, max, BoxMeshBuilder.FitUv(min, max), face => 0, 1);
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = (min + max) * 0.5f;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+            return go;
         }
 
         private static Color ItemColor(int number)
@@ -327,8 +396,23 @@ namespace Deprem.HouseBuilder
 
         private static void BuildLights(Transform parent)
         {
+            var lamps = new List<Light>();
+            var emergency = new List<Light>();
             foreach (var room in HouseLayout.Rooms)
             {
+                // Elektrik kesilince yanan kırmızı acil durum ışığı (deprem sistemi açar)
+                var red = new GameObject("Emergency_" + room.Key);
+                red.transform.SetParent(parent, false);
+                red.transform.position = new Vector3(room.X0 + 0.6f, room.CeilingY - 0.3f, HouseDims.PlayerPlaneZ - 0.4f);
+                var redLight = red.AddComponent<Light>();
+                redLight.type = LightType.Point;
+                redLight.color = new Color(1f, 0.12f, 0.08f);
+                redLight.intensity = 1.6f;
+                redLight.range = room.Width * 0.9f;
+                redLight.shadows = LightShadows.Soft;
+                redLight.enabled = false;
+                emergency.Add(redLight);
+
                 // Uzun odalara (koridor, sahanlık) iki lamba
                 int count = room.Width > 8f ? 2 : 1;
                 float span = room.Width / count;
@@ -344,8 +428,10 @@ namespace Deprem.HouseBuilder
                     light.intensity = 2.5f;
                     light.range = Mathf.Max(span, room.Depth) * 1.1f;
                     light.shadows = LightShadows.Soft;
+                    lamps.Add(light);
                 }
             }
+            parent.gameObject.AddComponent<Deprem.Quake.HouseLights>().Configure(lamps.ToArray(), emergency.ToArray());
         }
 
         private static void BuildMarkers(Transform parent)

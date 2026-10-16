@@ -23,6 +23,8 @@ namespace Deprem.Player
             if (visual == null) return;
             float height = player.IsCrouching ? player.CrouchHeight / player.StandingHeight : 1f;
             visual.localScale = new Vector3(player.Facing, height, 1f);
+            // Yer tutucu: yatarken yan yatır (sprite gelince "yatakta uyuma" animasyonu)
+            visual.localRotation = player.IsLying ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
         }
     }
 }

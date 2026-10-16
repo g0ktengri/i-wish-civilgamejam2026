@@ -74,7 +74,9 @@ namespace Deprem.HouseBuilder
 
     internal sealed class ItemDef
     {
+        /// <summary>Core'daki ItemId ile aynı numara (GDD sırası)</summary>
         public int Number;
+        public Deprem.Core.MinigameType Minigame;
         /// <summary>Doku dosya adı ön eki: Assets/Art/Items/{Key}_on.png, _yan.png, _ust.png</summary>
         public string Key;
         public string Name;
@@ -123,28 +125,36 @@ namespace Deprem.HouseBuilder
         public static readonly ItemDef[] Items =
         {
             new ItemDef { Number = 1, Key = "yatak_rafi", Name = "Yatağın üstündeki raf", Room = "oyuncu",
-                Size = new Vector3(1f, 0.5f, 0.25f), CenterX = 2f, BaseY = 1.6f, Mount = ItemMount.BackWall },
+                Size = new Vector3(1f, 0.5f, 0.25f), CenterX = 2f, BaseY = 1.6f, Mount = ItemMount.BackWall,
+                Minigame = Deprem.Core.MinigameType.CarryAndPlace },
             new ItemDef { Number = 2, Key = "kitaplik", Name = "Kitaplık", Room = "salon",
                 Size = new Vector3(1f, 2f, 0.375f), CenterX = 22f, Mount = ItemMount.Floor },
             new ItemDef { Number = 3, Key = "tv_unitesi", Name = "TV ünitesi", Room = "salon",
                 Size = new Vector3(1.5f, 0.5f, 0.5f), CenterX = 19.25f, Mount = ItemMount.Floor },
             new ItemDef { Number = 4, Key = "mutfak_dolabi", Name = "Mutfak üst dolapları", Room = "mutfak",
-                Size = new Vector3(1.5f, 0.75f, 0.375f), CenterX = 30f, BaseY = 1.8f, Mount = ItemMount.BackWall },
-            // Merdivenin altında: basamak altı burada 1 m'den yüksek
+                Size = new Vector3(1.5f, 0.75f, 0.375f), CenterX = 30f, BaseY = 1.8f, Mount = ItemMount.BackWall,
+                Minigame = Deprem.Core.MinigameType.Lock },
+            // Kabinin sağında: devrilince salondan kabine giden yolu kapatır.
+            // (Merdivenin alçak kısmının altında devrilirken basamağa takılıyordu.)
             new ItemDef { Number = 5, Key = "ayakkabilik", Name = "Ayakkabılık", Room = "koridor",
-                Size = new Vector3(1f, 1f, 0.375f), CenterX = HouseDims.StairX0 + 1.85f, Mount = ItemMount.Floor },
+                Size = new Vector3(1f, 1f, 0.375f), CenterX = HouseDims.StairX0 + 4.7f, Mount = ItemMount.Floor },
             new ItemDef { Number = 6, Key = "ayna", Name = "Merdivendeki ayna", Room = "sahanlik",
-                Size = new Vector3(0.75f, 1f, 0.0625f), CenterX = 8f, BaseY = 1f, Mount = ItemMount.BackWall, PlainSides = true },
+                Size = new Vector3(0.75f, 1f, 0.0625f), CenterX = 8f, BaseY = 1f, Mount = ItemMount.BackWall, PlainSides = true,
+                Minigame = Deprem.Core.MinigameType.CarryAndPlace },
             new ItemDef { Number = 7, Key = "oyuncak_rafi", Name = "Oyuncak rafı", Room = "kardes",
                 Size = new Vector3(1f, 1.5f, 0.375f), CenterX = 3.5f, Mount = ItemMount.Floor },
             new ItemDef { Number = 8, Key = "gardirop", Name = "Gardırop", Room = "ebeveyn",
                 Size = new Vector3(1.5f, 2f, 0.5f), CenterX = 23.5f, Mount = ItemMount.Floor },
             new ItemDef { Number = 9, Key = "cerceve", Name = "Ebeveyn yatağının üstündeki çerçeve", Room = "ebeveyn",
-                Size = new Vector3(0.75f, 0.5f, 0.0625f), CenterX = 20.5f, BaseY = 1.4f, Mount = ItemMount.BackWall, PlainSides = true },
+                Size = new Vector3(0.75f, 0.5f, 0.0625f), CenterX = 20.5f, BaseY = 1.4f, Mount = ItemMount.BackWall, PlainSides = true,
+                Minigame = Deprem.Core.MinigameType.CarryAndPlace },
         };
 
-        // Yerde duran eşyaların ön yüzü bu Z'de: devrilince karakter düzlemine düşerler
+        // Yerde duran eşyaların ön yüzü en az bu Z'de: devrilince karakter düzlemine düşerler.
+        // Uzun eşyalar daha geride durur ki devrilince evin önünden (Z = 0) taşmasınlar.
         public const float FloorItemFrontZ = 1.5f;
+
+        public static float FloorItemFront(ItemDef item) => Mathf.Max(FloorItemFrontZ, item.Size.y + 0.1f);
 
         private const float Z = HouseDims.PlayerPlaneZ;
         private const float Up = HouseDims.UpperFloorY;
@@ -156,7 +166,7 @@ namespace Deprem.HouseBuilder
             new MarkerDef("Marker_Father", new Vector3(22f, 0f, Z)),
             new MarkerDef("Marker_Mother", new Vector3(23.5f, Up, Z)),
             new MarkerDef("Marker_Sibling", new Vector3(3.5f, Up, Z)),
-            new MarkerDef("Marker_Bag", new Vector3(HouseDims.StairX0 + 4.6f, 0f, 1.3f)),
+            new MarkerDef("Marker_Bag", new Vector3(HouseDims.StairX0 + 5.7f, 0f, 1.3f)),
             new MarkerDef("Marker_Flashlight", new Vector3(28.5f, 0.9f, 3f)),
             new MarkerDef("Marker_FirstAid", new Vector3(19.5f, Up + 0.6f, 4.5f)),
             new MarkerDef("Marker_CabinEntrance", new Vector3(HouseDims.StairX0 + 3.35f, 0f, Z)),

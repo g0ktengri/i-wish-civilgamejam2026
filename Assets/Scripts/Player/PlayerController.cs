@@ -14,6 +14,7 @@ namespace Deprem.Player
     ///   SpeedMultiplier       -> yaralanınca yavaşlama (artçıda yaralanma)
     ///   FollowPath(...)       -> karakteri noktalar boyunca taşır (merdiven)
     ///   Teleport(...)         -> döngü başında yerine koyma
+    ///   LieDown / GetUp       -> yatakta uyuma ve kalkma (öncü sarsıntı)
     /// </summary>
     [RequireComponent(typeof(Rigidbody), typeof(CapsuleCollider))]
     public sealed class PlayerController : MonoBehaviour
@@ -46,6 +47,7 @@ namespace Deprem.Player
         public bool IsGrounded { get; private set; }
         public bool IsCrouching { get; private set; }
         public bool IsOnPath => path != null;
+        public bool IsLying { get; private set; }
         /// <summary>1 sağ, -1 sol</summary>
         public int Facing { get; private set; } = 1;
         /// <summary>-1..1, animasyon için</summary>
@@ -108,7 +110,7 @@ namespace Deprem.Player
 
         private void Update()
         {
-            if (!InputEnabled || IsOnPath) return;
+            if (!InputEnabled || IsOnPath || IsLying) return;
             var keyboard = Keyboard.current;
             if (keyboard != null && keyboard[jumpKey].wasPressedThisFrame) jumpRequestTime = clock;
         }
@@ -127,6 +129,7 @@ namespace Deprem.Player
                 StepPath(dt);
                 return;
             }
+            if (IsLying) return;
 
             float move;
             bool crouchHeld;
@@ -197,9 +200,39 @@ namespace Deprem.Player
             MoveInput = 0f;
         }
 
+        /// <summary>Yatağa yatırır: fizik dışı, girdi kapalı.</summary>
+        public void LieDown(Vector3 position)
+        {
+            if (IsOnPath) EndPath(false);
+            InputEnabled = false;
+            IsLying = true;
+            IsCrouching = false;
+            SetCapsuleHeight(standingHeight);
+            body.linearVelocity = Vector3.zero;
+            body.isKinematic = true;
+            body.constraints = RigidbodyConstraints.FreezeRotation;
+            body.position = position;
+            transform.position = position;
+            MoveInput = 0f;
+        }
+
+        /// <summary>Yataktan kalkıp karakter düzlemindeki noktaya yürür.</summary>
+        public void GetUp(Vector3 standPosition, Action onDone = null)
+        {
+            if (!IsLying) return;
+            IsLying = false;
+            FollowPath(new[] { standPosition }, 1.5f, onDone);
+        }
+
         public void Teleport(Vector3 position)
         {
             if (IsOnPath) EndPath(false);
+            if (IsLying)
+            {
+                IsLying = false;
+                body.isKinematic = false;
+                body.constraints = PlaneConstraints;
+            }
             body.position = position;
             transform.position = position;
             body.linearVelocity = Vector3.zero;
