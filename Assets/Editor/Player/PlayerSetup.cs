@@ -79,6 +79,23 @@ namespace Deprem.Player
             so.FindProperty("visual").objectReferenceValue = visual.transform;
             so.ApplyModifiedPropertiesWithoutUndo();
 
+            // El feneri: çantada varsa kurtarma fazında yanar
+            var spotGo = new GameObject("Flashlight");
+            spotGo.transform.SetParent(root.transform, false);
+            var spot = spotGo.AddComponent<Light>();
+            spot.type = LightType.Spot;
+            spot.color = new Color(1f, 0.95f, 0.8f);
+            spot.intensity = 6f;
+            spot.range = 8f;
+            spot.spotAngle = 55f;
+            spot.innerSpotAngle = 30f;
+            spot.shadows = LightShadows.Soft;
+            spot.enabled = false;
+            var flashlight = root.AddComponent<PlayerFlashlight>();
+            var flashSo = new SerializedObject(flashlight);
+            flashSo.FindProperty("spot").objectReferenceValue = spot;
+            flashSo.ApplyModifiedPropertiesWithoutUndo();
+
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;

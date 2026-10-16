@@ -53,6 +53,7 @@ namespace Deprem.HouseBuilder
             var scene = OpenOrCreateMainScene();
             Deprem.Player.PlayerSetup.SetupInScene(scene);
             Deprem.Quake.QuakeSetup.SetupInScene(scene, 3);
+            Deprem.Family.FamilySetup.SetupInScene(scene);
             BerkeSystemsSetup.SetupInScene(scene);
             EditorSceneManager.SaveScene(scene);
             var whole = new Vector3(16.25f, 3.6f, -39f);
@@ -402,18 +403,22 @@ namespace Deprem.HouseBuilder
             var emergency = new List<Light>();
             foreach (var room in HouseLayout.Rooms)
             {
-                // Elektrik kesilince yanan kırmızı acil durum ışığı (deprem sistemi açar)
-                var red = new GameObject("Emergency_" + room.Key);
-                red.transform.SetParent(parent, false);
-                red.transform.position = new Vector3(room.X0 + 0.6f, room.CeilingY - 0.3f, HouseDims.PlayerPlaneZ - 0.4f);
-                var redLight = red.AddComponent<Light>();
-                redLight.type = LightType.Point;
-                redLight.color = new Color(1f, 0.12f, 0.08f);
-                redLight.intensity = 1.6f;
-                redLight.range = room.Width * 0.9f;
-                redLight.shadows = LightShadows.Soft;
-                redLight.enabled = false;
-                emergency.Add(redLight);
+                // Elektrik kesilince yanan kırmızı acil durum ışığı (deprem sistemi açar).
+                // Kardeşin odasında yok: oda karanlık kalır, kardeş ancak el feneriyle görünür (GDD).
+                if (room.Key != "kardes")
+                {
+                    var red = new GameObject("Emergency_" + room.Key);
+                    red.transform.SetParent(parent, false);
+                    red.transform.position = new Vector3(room.X0 + 0.6f, room.CeilingY - 0.3f, HouseDims.PlayerPlaneZ - 0.4f);
+                    var redLight = red.AddComponent<Light>();
+                    redLight.type = LightType.Point;
+                    redLight.color = new Color(1f, 0.12f, 0.08f);
+                    redLight.intensity = 1.6f;
+                    redLight.range = room.Width * 0.9f;
+                    redLight.shadows = LightShadows.Soft;
+                    redLight.enabled = false;
+                    emergency.Add(redLight);
+                }
 
                 // Uzun odalara (koridor, sahanlık) iki lamba
                 int count = room.Width > 8f ? 2 : 1;

@@ -30,6 +30,13 @@ namespace Deprem.Player
             All.Remove(interactable);
         }
 
+        /// <summary>Listeyi boşaltır (Play başında; editör testlerinde sahne yeniden açılınca)</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        public static void Clear()
+        {
+            All.Clear();
+        }
+
         /// <summary>X-Y düzleminde menzil içindeki en yakın etkileşilebilir (Z, 2.5D'de önemsiz)</summary>
         public static IInteractable FindNearest(PlayerController player)
         {
