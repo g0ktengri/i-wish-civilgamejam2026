@@ -76,7 +76,7 @@ MonoBehaviour:
   duckCoverKey: 17
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
   devStartLoop: 0
-  showDebugPrompt: 1
+  showDebugPrompt: 0
 --- !u!114 &5854064733218507754
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -97,6 +97,8 @@ MonoBehaviour:
   finalShockDuration: 2
   graceShake: 0.25
   slowRange: 1.2
+  playerPlaneZ: 1
+  playerRadius: 0.25
   barSprite: {fileID: 0}
   barSize: {x: 192, y: 16}
   barTopMargin: 14

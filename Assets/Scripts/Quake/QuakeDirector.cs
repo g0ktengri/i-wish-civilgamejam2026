@@ -74,8 +74,8 @@ namespace Deprem.Quake
         [Header("Geliştirme")]
         [Tooltip("Sahnede döngü yöneticisi yoksa bu döngüyle başlat (0 = kapalı)")]
         [SerializeField, Range(0, GameConstants.LoopCount)] private int devStartLoop;
-        [Tooltip("HUD yokken tuş ipucunu ekranın ortasında göster")]
-        [SerializeField] private bool showDebugPrompt = true;
+        [Tooltip("HUD yokken tuş ipucunu ekranın ortasında göster (Berke'nin PromptHud'u varken kapalı)")]
+        [SerializeField] private bool showDebugPrompt;
 
         private PlayerController player;
         private HouseLights lights;

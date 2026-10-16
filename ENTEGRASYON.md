@@ -95,7 +95,7 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 | Deprem akışı | `Scripts/Quake/QuakeDirector.cs` | `Foreshock`, `MainQuake`, `Rescue` fazlarını yürütür (tablodaki gibi). `Spirit`, `Failed`, `Won` fazlarında oyuncu girdisini kapatır; `Spirit`'te beden yatakta kalır. |
 | Devrilme | `Scripts/Quake/ItemToppler.cs` | Sabitlenmemiş eşya ana depremde öne devrilir, `RaiseItemToppled(id)` gönderilir. 9 eşyada `SecurableItem` (ItemId, minigame, L demiri / mandal `securedVisual`) bağlı. |
 | Güvenli noktalar | `Scripts/Quake/SafeSpot.cs` | Çök-kapan-tutun sadece güvenli noktada sayılır; sarsıntıda yerde parlarlar. Odada bir tane. |
-| Tuş ipuçları | `Scripts/Quake/QuakePrompts.cs` | İpucu değişince Core'daki `GameEvents.RaisePromptChanged(key)` tetiklenir (`prompt.stand_up`, `prompt.duck_cover`; boş = gizle). Berke'nin HUD'u gösterene kadar QuakeDirector ekranın ortasına geçici olarak da yazar (`showDebugPrompt`). |
+| Tuş ipuçları | `Scripts/Quake/QuakePrompts.cs` | İpucu değişince Core'daki `GameEvents.RaisePromptChanged(key)` tetiklenir (`prompt.stand_up`, `prompt.duck_cover`; boş = gizle). Berke'nin `PromptHud`'u gösterir. |
 | Kurtarma süresi | `Scripts/Quake/RescueTimer.cs` | `Rescue` fazında başlar (75 sn + kayıp başına gizli +10, en fazla +30). Ekranın üstünde titreşen sarsıntı çubuğu (sayı yok), son 15 sn kamera titremesi ve kırmızı ışık nabzı. Çubuk bitince 6 sn gizli tolerans, sonra büyük artçı ve `FailLoop(RescueTimeout, en çok yavaşlatan eşya)`. Kazanınca (`Won`) durur. |
 | Aile | `Scripts/Family/FamilyMember.cs` | Baba (salon, camla yaralı, ilk yardımla F basılı 3 sn), kardeş (karanlık üst kat, el feneri gerekli), anne (F). Eşyası devrilirse oyuncu yanına gelince `FailLoop(FamilyHitByItem, eşya)`; çanta malzemesi yoksa `FailLoop(MissingBagItem)`. Kurtarılınca `GameState.MarkRescued`. |
 | Takip ve kabin | `Scripts/Family/FamilyDirector.cs` | Kurtarılanlar oyuncunun izinden yürür. Kabin girişinde F: takip edenler girer (`RaiseFamilyMemberEnteredCabin`); herkes içerideyse oyuncu girer (`RaisePlayerEnteredCabin`) ve `GameState.WinLoop()`. |
@@ -124,4 +124,4 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 ### Berke'den istekler ve sorular
 
 - ~~M1, M2, M3, M4~~: hepsi cevaplandı ve kapandı (yukarıdaki Cevaplar).
-- **M5. HUD'da ipucu:** `GameEvents.PromptChanged`'i dinleyip `Texts.Get(key)` ile gösterebilirsin; gösterdiğinde bu dosyada haber ver, geçici yazıyı kapatayım.
+- ~~M5. HUD'da ipucu~~: `PromptHud` ile tamam; QuakeDirector'daki geçici ekran yazısı kapatıldı.
