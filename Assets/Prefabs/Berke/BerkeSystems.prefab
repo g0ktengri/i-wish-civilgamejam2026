@@ -1,0 +1,224 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6629230742301011747
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4254345270415386335}
+  - component: {fileID: 518827233432490796}
+  - component: {fileID: 6677620427549865778}
+  - component: {fileID: 2871459565107993894}
+  - component: {fileID: 4963408217483958064}
+  - component: {fileID: 1341424902961339471}
+  - component: {fileID: 6448518412914014748}
+  - component: {fileID: 5672897155684826516}
+  - component: {fileID: 1714028265692669343}
+  m_Layer: 0
+  m_Name: BerkeSystems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4254345270415386335
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &518827233432490796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b180616dc5088dd468daddddf8727703, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Loop.LoopManager
+  startOnPlay: 1
+  firstLoop: 1
+  waitForWishScreen: 0
+  autoContinueDelay: 3
+  reloadSceneOnRestart: 1
+  lessonPerLoop: 01000000020000000300000004000000
+--- !u!114 &6677620427549865778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51e5fd1fec10a6b418256bd3c200c78c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Loop.LoopDebugPanel
+  visible: 1
+  area:
+    serializedVersion: 2
+    x: 10
+    y: 10
+    width: 260
+    height: 520
+--- !u!114 &2871459565107993894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82602726594590944beda558a6ebb708, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.WishScreen
+  fadeToBlack: 0.6
+  wishDelay: 0.8
+  infoDelay: 1.2
+  minShowTime: 2.5
+  fadeFromBlack: 0.8
+  font: {fileID: 0}
+  wishFontSize: 32
+  infoFontSize: 14
+  wishColor: {r: 1, g: 1, b: 1, a: 1}
+  infoColor: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+  sortingOrder: 100
+--- !u!114 &4963408217483958064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec33bfa992b1d5740ae086db755ca236, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Spirit.SpiritPhase
+  duration: 60
+  spawnPoint: {fileID: 0}
+  spawnMarkerName: Marker_PlayerBed
+  spawnOffset: {x: 0, y: 1, z: 0}
+  spiritPrefab: {fileID: 0}
+  glowColor: {r: 0.55, g: 0.8, b: 1, a: 1}
+  glowIntensity: 3
+  glowRange: 3
+  instantSecureWithoutMinigame: 1
+--- !u!114 &1341424902961339471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30ff47f3ffdb9234eaf997a23227036c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Spirit.SpiritHighlighter
+  color: {r: 1, g: 0.85, b: 0.45, a: 1}
+  baseIntensity: 0.6
+  pulseAmount: 0.4
+  pulseSpeed: 3
+  nearestIntensity: 2.5
+  range: 1.8
+  frontOffset: 0.4
+--- !u!114 &6448518412914014748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72080e1c0eca97348bf3491e16cac61d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.SpiritHud
+  font: {fileID: 0}
+  timerFontSize: 28
+  promptFontSize: 14
+  timerColor: {r: 0.8, g: 0.92, b: 1, a: 1}
+  warningColor: {r: 1, g: 0.45, b: 0.4, a: 1}
+  warningSeconds: 10
+  sortingOrder: 50
+--- !u!114 &5672897155684826516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0ab2ed9f201ff144819ff8189a6f265, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Minigames.MinigameHost
+  font: {fileID: 0}
+  sortingOrder: 80
+  panelSize: {x: 256, y: 256}
+  overlayColor: {r: 0.02, g: 0.04, b: 0.1, a: 0.6}
+  panelColor: {r: 0.1, g: 0.12, b: 0.16, a: 0.95}
+  successColor: {r: 0.2, g: 0.4, b: 0.25, a: 0.95}
+  successHold: 0.4
+  screwTurns: 2.5
+  screwClockwiseOnly: 1
+  screwMinRadius: 20
+  carrySnapRadius: 30
+  lockCyclesPerSecond: 0.8
+  lockZoneWidth: 0.2
+--- !u!114 &1714028265692669343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d96550d3a7bc75247a86045d3295466f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Bag.BagSystem
+  supplies:
+  - id: 1
+    enabled: 1
+    markerName: Marker_FirstAid
+    offset: {x: 0, y: 0, z: 0}
+    color: {r: 0.85, g: 0.2, b: 0.2, a: 1}
+  - id: 2
+    enabled: 1
+    markerName: Marker_Flashlight
+    offset: {x: 0, y: 0, z: 0}
+    color: {r: 0.95, g: 0.8, b: 0.25, a: 1}
+  - id: 3
+    enabled: 0
+    markerName: Marker_Flashlight
+    offset: {x: 0.6, y: 0, z: 0}
+    color: {r: 0.4, g: 0.7, b: 1, a: 1}
+  - id: 4
+    enabled: 0
+    markerName: Marker_FirstAid
+    offset: {x: 0.6, y: 0, z: 0}
+    color: {r: 0.7, g: 0.7, b: 0.75, a: 1}
+  bagMarkerName: Marker_Bag
+  supplySize: 0.3
+  bagSize: {x: 0.6, y: 0.6, z: 0.35}
+  bagColor: {r: 0.9, g: 0.45, b: 0.15, a: 1}
+  interactRange: 1.2
+  carryOffset: {x: 0.35, y: -0.25, z: 0}
