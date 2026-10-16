@@ -17,6 +17,7 @@ namespace Deprem.Quake
         public bool PowerOn { get; private set; } = true;
 
         private float[] baseIntensities;
+        private float[] emergencyBaseIntensities;
 
         public void Configure(Light[] lampLights, Light[] emergency)
         {
@@ -28,7 +29,18 @@ namespace Deprem.Quake
         {
             baseIntensities = new float[lamps.Length];
             for (int i = 0; i < lamps.Length; i++) baseIntensities[i] = lamps[i].intensity;
+            emergencyBaseIntensities = new float[emergencyLights.Length];
+            for (int i = 0; i < emergencyLights.Length; i++) emergencyBaseIntensities[i] = emergencyLights[i].intensity;
             SetPower(true);
+        }
+
+        /// <summary>Acil durum ışıklarını nabız gibi attırır (0 = sabit, 1 = en güçlü). Kurtarma süresi azalırken.</summary>
+        public void PulseEmergency(float amount)
+        {
+            if (PowerOn || emergencyBaseIntensities == null) return;
+            float pulse = 1f - amount * 0.5f * (1f + Mathf.Sin(Time.time * Mathf.Lerp(3f, 10f, amount)));
+            for (int i = 0; i < emergencyLights.Length; i++)
+                emergencyLights[i].intensity = emergencyBaseIntensities[i] * pulse;
         }
 
         public void SetPower(bool on)

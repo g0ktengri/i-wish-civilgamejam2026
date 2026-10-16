@@ -52,7 +52,8 @@ namespace Deprem.HouseBuilder
         {
             var scene = OpenOrCreateMainScene();
             Deprem.Player.PlayerSetup.SetupInScene(scene);
-            Deprem.Quake.QuakeSetup.SetupInScene(scene, 3);
+            // Döngüyü Berke'nin LoopManager'ı (BerkeSystems prefab'ı) başlatıyor; geliştirme başlatıcısı kapalı
+            Deprem.Quake.QuakeSetup.SetupInScene(scene, 0);
             Deprem.Family.FamilySetup.SetupInScene(scene);
             BerkeSystemsSetup.SetupInScene(scene);
             EditorSceneManager.SaveScene(scene);

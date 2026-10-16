@@ -81,7 +81,7 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 
 ## Mehmet → Berke
 
-*Son güncelleme: Mehmet'in Claude'u, 17 Ekim (aile sistemi pushlandıktan sonra)*
+*Son güncelleme: Mehmet'in Claude'u, 17 Ekim (PromptChanged ve kurtarma süresinden sonra)*
 
 ### Mehmet'in pushladıkları
 
@@ -95,7 +95,8 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 | Deprem akışı | `Scripts/Quake/QuakeDirector.cs` | `Foreshock`, `MainQuake`, `Rescue` fazlarını yürütür (tablodaki gibi). `Spirit`, `Failed`, `Won` fazlarında oyuncu girdisini kapatır; `Spirit`'te beden yatakta kalır. |
 | Devrilme | `Scripts/Quake/ItemToppler.cs` | Sabitlenmemiş eşya ana depremde öne devrilir, `RaiseItemToppled(id)` gönderilir. 9 eşyada `SecurableItem` (ItemId, minigame, L demiri / mandal `securedVisual`) bağlı. |
 | Güvenli noktalar | `Scripts/Quake/SafeSpot.cs` | Çök-kapan-tutun sadece güvenli noktada sayılır; sarsıntıda yerde parlarlar. Odada bir tane. |
-| Tuş ipuçları | `Scripts/Quake/QuakePrompts.cs` | `QuakePrompts.Current` (texts.csv anahtarı: `prompt.stand_up`, `prompt.duck_cover`) ve `Changed` event'i. HUD yokken QuakeDirector ekranın ortasına geçici olarak yazar. |
+| Tuş ipuçları | `Scripts/Quake/QuakePrompts.cs` | İpucu değişince Core'daki `GameEvents.RaisePromptChanged(key)` tetiklenir (`prompt.stand_up`, `prompt.duck_cover`; boş = gizle). Berke'nin HUD'u gösterene kadar QuakeDirector ekranın ortasına geçici olarak da yazar (`showDebugPrompt`). |
+| Kurtarma süresi | `Scripts/Quake/RescueTimer.cs` | `Rescue` fazında başlar (75 sn + kayıp başına gizli +10, en fazla +30). Ekranın üstünde titreşen sarsıntı çubuğu (sayı yok), son 15 sn kamera titremesi ve kırmızı ışık nabzı. Çubuk bitince 6 sn gizli tolerans, sonra büyük artçı ve `FailLoop(RescueTimeout, en çok yavaşlatan eşya)`. Kazanınca (`Won`) durur. |
 | Aile | `Scripts/Family/FamilyMember.cs` | Baba (salon, camla yaralı, ilk yardımla F basılı 3 sn), kardeş (karanlık üst kat, el feneri gerekli), anne (F). Eşyası devrilirse oyuncu yanına gelince `FailLoop(FamilyHitByItem, eşya)`; çanta malzemesi yoksa `FailLoop(MissingBagItem)`. Kurtarılınca `GameState.MarkRescued`. |
 | Takip ve kabin | `Scripts/Family/FamilyDirector.cs` | Kurtarılanlar oyuncunun izinden yürür. Kabin girişinde F: takip edenler girer (`RaiseFamilyMemberEnteredCabin`); herkes içerideyse oyuncu girer (`RaisePlayerEnteredCabin`) ve `GameState.WinLoop()`. |
 | El feneri | `Scripts/Player/PlayerFlashlight.cs` | Çantada el feneri varsa kurtarma fazında oyuncunun elinde spot ışığı. Kardeşin odasında acil durum ışığı yok, oda karanlık. |
@@ -115,10 +116,12 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 - **B3:** Evet, Volume geçişlerini Mehmet yapacak: `Spirit` → ruh profili, ana deprem bitince → elektrik kesik profili. Henüz yapılmadı; sırada.
 - **B4:** Adlar sabit, yerler değişebilir. `GameObject.Find("Marker_FirstAid")` gibi sadece adla ara.
 - **B5:** Ortak harita yok; `Keyboard.current` ile devam.
+- **M1 önerisi: tamam.** Core'a `GameEvents.PromptChanged(string key)` + `RaisePromptChanged` eklendi, tek başına commit `6601248` olarak pushlandı (var olan hiçbir şey değişmedi). `QuakePrompts` artık bunu tetikliyor. HUD gösterince bu bölüme yaz; QuakeDirector'daki geçici ekran yazısını (`showDebugPrompt`) o zaman kapatırım.
+- **B6: tamam.** Çantada olması yeterli; aile sistemi zaten `GameState.HasBagItem` okuyor, bedenle ek etkileşim yok.
+- **M3 önerisi: tamam.** Kurtarma süresi ve göstergesi tamamen Mehmet'te; `RescueTimer` olarak yapıldı (tablo). Ses (uğultu, kalp atışı) ses işiyle birlikte eklenecek.
+- **M2:** `BerkeSystems` prefab'ı Main'e otomatik eklendi, `QuakeSystem.devStartLoop` 0 yapıldı. Main artık döngü 1'den `LoopManager` ile başlıyor.
 
 ### Berke'den istekler ve sorular
 
-- **M1. Tuş ipuçları HUD'da:** HUD'un `Deprem.Quake.QuakePrompts.Changed`'e abone olup `Texts.Get(key)` ile göstermesi yeterli (boş anahtar = gizle). Gösterince QuakeDirector'daki geçici ekran yazısını (`showDebugPrompt`) kapatırım. Yoksa Core'a bir `PromptChanged` event'i mi ekleyelim?
-- **M2. Sistem prefab'ı:** `LoopManager` + `WishScreen` (+ `SpiritPhase`) prefab'ını `Prefabs/Berke/` altına koyunca Main'e otomatik gelecek. O zaman Main'deki `QuakeSystem`'in `devStartLoop` değerini 0 yaparım (şu an döngü yöneticisi olmadan denemek için 3).
-- **M4. Çanta malzemeleri:** Aile sistemi `GameState.HasBagItem(FirstAidKit / Flashlight)` okuyor. Ruh fazında malzeme toplanınca (ya da çantaya konunca) `GameState.AddBagItem(...)` çağrılması yeterli; döngü 5 bununla kazanılabilir hale geliyor.
-- **M3. Kurtarma fazındaki kayıplar:** `FamilyHitByItem` ve `MissingBagItem` aile sistemiyle birlikte Mehmet'te. `RescueTimeout` (kurtarma süresi ve sarsıntı çubuğu) kimde olsun? Süre Mehmet'te, gösterge HUD'da (Berke) önerisi uygun mu?
+- ~~M1, M2, M3, M4~~: hepsi cevaplandı ve kapandı (yukarıdaki Cevaplar).
+- **M5. HUD'da ipucu:** `GameEvents.PromptChanged`'i dinleyip `Texts.Get(key)` ile gösterebilirsin; gösterdiğinde bu dosyada haber ver, geçici yazıyı kapatayım.

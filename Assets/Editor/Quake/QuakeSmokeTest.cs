@@ -131,6 +131,59 @@ namespace Deprem.Quake
             }
 
             TestSafeSpots(topplers);
+            TestRescueTimer(player, topplers);
+        }
+
+        private static void TestRescueTimer(PlayerController player, List<ItemToppler> toppled)
+        {
+            var timer = Object.FindFirstObjectByType<RescueTimer>();
+            Check(timer != null, "Sahnede RescueTimer var");
+            if (timer == null) return;
+            timer.Initialize();
+
+            // İki kayıptan sonra gizli bonus: +20 sn
+            GameState.ResetAll();
+            GameState.BeginAttempt(3);
+            GameState.FailLoop(LoseReason.NoDuckCoverHold);
+            GameState.BeginAttempt(3);
+            GameState.FailLoop(LoseReason.NoDuckCoverHold);
+            GameState.BeginAttempt(5);
+            GameState.SetPhase(GamePhase.Rescue);
+            timer.OnPhaseChanged(GamePhase.Rescue);
+            float baseDuration = timer.Duration - 20f;
+            Check(timer.IsRunning && Mathf.Abs(timer.Duration - baseDuration - 20f) < 0.01f, $"Süre başladı, 2 kayıp için +20 sn bonus ({timer.Duration:F0} sn)");
+
+            // Oyuncu devrilmiş ayakkabılığın yanında oyalanır
+            var shoeRack = toppled.First(t => t.name.EndsWith("ayakkabilik"));
+            var b = shoeRack.CombinedBounds();
+            player.Teleport(new Vector3(b.center.x, 0f, 1f));
+            TickTimer(timer, 4f);
+            player.Teleport(new Vector3(3f, 0f, 1f));
+            TickTimer(timer, timer.Remaining - 1f);
+            Check(GameState.Phase == GamePhase.Rescue && timer.IsRunning, "Süre bitmeden kayıp yok");
+
+            TickTimer(timer, 1f + 5f);
+            Check(GameState.Phase == GamePhase.Rescue, "Çubuk bitince gizli tolerans: büyük artçı hemen vurmadı");
+            TickTimer(timer, 4f);
+            Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.RescueTimeout,
+                $"Tolerans da bitince büyük artçı: RescueTimeout ({GameState.LastLoseReason})");
+            Check(GameState.LastLoseItem == ItemId.ShoeRack, $"Keşke cümlesi en çok yavaşlatan eşyayı söylüyor ({GameState.LastLoseItem})");
+
+            // Kabine yetişilirse süre durur
+            GameState.BeginAttempt(5);
+            GameState.SetPhase(GamePhase.Rescue);
+            timer.OnPhaseChanged(GamePhase.Rescue);
+            TickTimer(timer, 10f);
+            GameState.WinLoop();
+            timer.OnPhaseChanged(GamePhase.Won);
+            TickTimer(timer, timer.Duration + 20f);
+            Check(GameState.Phase == GamePhase.Won && !timer.IsRunning, "Kazanınca süre durdu, kayıp yok");
+            GameState.ResetAll();
+        }
+
+        private static void TickTimer(RescueTimer timer, float seconds)
+        {
+            for (float t = 0f; t < seconds; t += Dt) timer.Tick(Dt);
         }
 
         private static void TestSafeSpots(List<ItemToppler> toppled)

@@ -8,7 +8,10 @@ namespace Deprem.Quake
     /// </summary>
     public sealed class QuakeCameraShake : CinemachineExtension
     {
+        /// <summary>Deprem ve artçılar (QuakeDirector)</summary>
         public static float Intensity { get; set; }
+        /// <summary>Kurtarma süresi azalırken hafif titreme (RescueTimer); ikisinden büyüğü uygulanır</summary>
+        public static float AmbientIntensity { get; set; }
 
         [SerializeField] private float amplitude = 0.2f;
         [SerializeField] private float frequency = 9f;
@@ -17,12 +20,13 @@ namespace Deprem.Quake
         protected override void PostPipelineStageCallback(CinemachineVirtualCameraBase vcam,
             CinemachineCore.Stage stage, ref CameraState state, float deltaTime)
         {
-            if (stage != CinemachineCore.Stage.Noise || Intensity <= 0f) return;
+            float intensity = Mathf.Max(Intensity, AmbientIntensity);
+            if (stage != CinemachineCore.Stage.Noise || intensity <= 0f) return;
 
             float t = Time.time * frequency;
             var offset = new Vector3(Mathf.PerlinNoise(t, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, t) - 0.5f, 0f);
-            state.PositionCorrection += offset * (2f * amplitude * Intensity);
-            float roll = (Mathf.PerlinNoise(t, t) - 0.5f) * 2f * rollDegrees * Intensity;
+            state.PositionCorrection += offset * (2f * amplitude * intensity);
+            float roll = (Mathf.PerlinNoise(t, t) - 0.5f) * 2f * rollDegrees * intensity;
             state.OrientationCorrection *= Quaternion.Euler(0f, 0f, roll);
         }
 
@@ -30,6 +34,7 @@ namespace Deprem.Quake
         private static void ResetOnPlay()
         {
             Intensity = 0f;
+            AmbientIntensity = 0f;
         }
     }
 }

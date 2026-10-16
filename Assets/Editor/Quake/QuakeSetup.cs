@@ -50,6 +50,15 @@ namespace Deprem.Quake
             var so = new SerializedObject(director);
             so.FindProperty("debrisMaterial").objectReferenceValue = DebrisMaterial();
             so.ApplyModifiedPropertiesWithoutUndo();
+
+            var timer = root.AddComponent<RescueTimer>();
+            var bar = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/sarsinti_cubugu.png");
+            if (bar != null)
+            {
+                var timerSo = new SerializedObject(timer);
+                timerSo.FindProperty("barSprite").objectReferenceValue = bar;
+                timerSo.ApplyModifiedPropertiesWithoutUndo();
+            }
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;

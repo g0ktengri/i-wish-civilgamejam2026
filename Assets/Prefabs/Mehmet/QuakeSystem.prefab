@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2292042419153155489}
   - component: {fileID: 2660099299824387731}
+  - component: {fileID: 5854064733218507754}
   m_Layer: 0
   m_Name: QuakeSystem
   m_TagString: Untagged
@@ -76,3 +77,29 @@ MonoBehaviour:
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
   devStartLoop: 0
   showDebugPrompt: 1
+--- !u!114 &5854064733218507754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5663881144789177165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f3ecea6ad993364187932b9f36647cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Quake.RescueTimer
+  baseDuration: 75
+  bonusPerFailure: 10
+  maxBonus: 30
+  hiddenTolerance: 6
+  tensionWindow: 15
+  finalShockDuration: 2
+  graceShake: 0.25
+  slowRange: 1.2
+  barSprite: {fileID: 0}
+  barSize: {x: 192, y: 16}
+  barTopMargin: 14
+  calmColor: {r: 1, g: 0.85, b: 0.45, a: 1}
+  urgentColor: {r: 1, g: 0.15, b: 0.1, a: 1}
+  barMaxJitter: 4
