@@ -242,9 +242,6 @@ MonoBehaviour:
   headHeight: 2.1
   fontSize: 14
   maxTextWidth: 220
-  padding: {x: 10, y: 6}
-  background: {r: 1, g: 1, b: 1, a: 0.92}
-  textColor: {r: 0.08, g: 0.08, b: 0.1, a: 1}
 --- !u!114 &8684074246600651156
 MonoBehaviour:
   m_ObjectHideFlags: 0

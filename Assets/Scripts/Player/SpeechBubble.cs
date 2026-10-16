@@ -1,26 +1,23 @@
 using Deprem.Localization;
 using Deprem.UI;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Deprem.Player
 {
     /// <summary>
-    /// Karakterin başının üstünde kısa konuşma balonu (döngü 1-2'de karakterin ne düşündüğü).
+    /// Karakterin başının üstünde kısa konuşma balonu (döngü 1-2'de karakterin ne düşündüğü, aile tepkisi).
     /// Metin texts.csv anahtarıyla verilir: Say("bubble.ignore_foreshock", 3f).
+    /// Görünüş Berke'nin ortak UI stilinden (UiBuilder.CreateSpeechBubble, UiStyle: font, balon, kuyruk).
     /// </summary>
     public sealed class SpeechBubble : MonoBehaviour
     {
+        [Tooltip("Kuyruğun ucunun karakterin ayağından yüksekliği (m)")]
         [SerializeField] private float headHeight = 2.1f;
         [SerializeField] private int fontSize = 14;
         [SerializeField] private float maxTextWidth = 220f;
-        [SerializeField] private Vector2 padding = new Vector2(10f, 6f);
-        [SerializeField] private Color background = new Color(1f, 1f, 1f, 0.92f);
-        [SerializeField] private Color textColor = new Color(0.08f, 0.08f, 0.1f);
 
         private Canvas canvas;
-        private RectTransform bubble;
-        private Text label;
+        private UiBubble bubble;
         private float hideAt;
 
         public bool IsShowing => bubble != null && bubble.gameObject.activeSelf;
@@ -28,16 +25,7 @@ namespace Deprem.Player
         public void Say(string key, float seconds)
         {
             EnsureUi();
-            label.text = Texts.Get(key);
-
-            // Önce en geniş haliyle ölç, sonra yazıya göre daralt
-            label.rectTransform.sizeDelta = new Vector2(maxTextWidth, 0f);
-            float width = Mathf.Min(maxTextWidth, label.preferredWidth);
-            label.rectTransform.sizeDelta = new Vector2(width, 0f);
-            float height = label.preferredHeight;
-            label.rectTransform.sizeDelta = new Vector2(width, height);
-            bubble.sizeDelta = new Vector2(width, height) + padding * 2f;
-
+            bubble.SetText(Texts.Get(key), maxTextWidth);
             bubble.gameObject.SetActive(true);
             hideAt = Time.time + seconds;
             LateUpdate();
@@ -62,22 +50,14 @@ namespace Deprem.Player
             var screen = cam.WorldToScreenPoint(transform.position + Vector3.up * headHeight);
             var canvasRect = (RectTransform)canvas.transform;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out var local))
-                bubble.anchoredPosition = local;
+                bubble.Root.anchoredPosition = local; // kökün pivotu kuyruğun ucu
         }
 
         private void EnsureUi()
         {
             if (canvas != null) return;
             canvas = UiBuilder.CreateCanvas(transform, "SpeechBubbleCanvas", 30);
-
-            var image = UiBuilder.CreateImage(canvas.transform, "Bubble", background);
-            bubble = image.rectTransform;
-            bubble.anchorMin = bubble.anchorMax = new Vector2(0.5f, 0.5f);
-            bubble.pivot = new Vector2(0.5f, 0f);
-
-            label = UiBuilder.CreateText(bubble, "Text", null, fontSize, textColor);
-            label.rectTransform.anchorMin = label.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            label.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            bubble = UiBuilder.CreateSpeechBubble(canvas.transform, null, fontSize);
             bubble.gameObject.SetActive(false);
         }
     }

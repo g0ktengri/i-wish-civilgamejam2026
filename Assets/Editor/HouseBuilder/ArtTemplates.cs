@@ -202,12 +202,30 @@ namespace Deprem.HouseBuilder
                 ("UI/minigame_duvar.png", 16, 256), ("UI/minigame_guvenli_alan.png", 64, 64),
                 ("UI/minigame_yatak_rafi.png", 48, 48), ("UI/minigame_ayna.png", 48, 48), ("UI/minigame_cerceve.png", 48, 48),
                 ("UI/minigame_esya.png", 48, 48), ("UI/minigame_ibre.png", 8, 32),
-                ("UI/hud_ipucu.png", 192, 32), ("UI/hud_sayac.png", 64, 32),
                 ("UI/menu_arka_plan.png", 960, 540), ("UI/logo.png", 320, 96),
                 ("Tiles/kesit.png", 64, 64), ("Tiles/merdiven_basamak.png", 64, 64),
             };
             foreach (var (path, w, h) in sizes)
                 Save(path, w, h, transparent: !path.StartsWith("Tiles/"));
+
+            // 9-slice paneller (ENTEGRASYON M10): yeşil çizgiler 8 px kenar; köşeler olduğu gibi kalır,
+            // aradaki kısımlar yazıya göre uzar. Kenar değeri ArtTextureImporter.SliceBorder ile aynı.
+            int slice = ArtTextureImporter.SliceBorder;
+            void SliceGuides(Texture2D tex)
+            {
+                VLine(tex, slice, Guide, 1);
+                VLine(tex, tex.width - 1 - slice, Guide, 1);
+                HLine(tex, 0, tex.width, slice, Guide);
+                HLine(tex, 0, tex.width, tex.height - 1 - slice, Guide);
+            }
+            Save("UI/hud_ipucu.png", 192, 32, SliceGuides, transparent: true);
+            Save("UI/konusma_balonu.png", 48, 32, SliceGuides, transparent: true);
+            // Kuyruk: gövdenin altına ortalanır, ucu alt kenarın ortasında
+            Save("UI/konusma_balonu_kuyruk.png", 16, 12, tex =>
+            {
+                tex.SetPixel(7, 0, Guide);
+                tex.SetPixel(8, 0, Guide);
+            }, transparent: true);
 
             // Vida başı kodla döner: dönme merkezi tam ortada
             Save("UI/minigame_vida_basi.png", 48, 48, tex =>

@@ -215,3 +215,8 @@ Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin
 - **Aile tepkisi:** keşke ekranı fark ettikten 3 sn sonra (önce 1,5 sn). Bu sürede oyuncu durur ve konuşur (`bubble.family_hit.*`, `bubble.family_missing.*`).
 - **Kabin:** `Scripts/Family/CabinBeacon.cs`. Tabela `cabin.sign`; kurtarma fazında yeşil ışık ve parlama. M11'deki hedef yazısı sende.
 - **Döngü 2:** senaryolu koşu kalktı, oyuncu serbest. Ana depremden 2,5 sn sonra tavan yine çöker (`FailLoop(NoDuckCoverHold)`); ders sırası aynı.
+
+**M10 istekleri: tamam.**
+- `SpeechBubble` artık `UiBuilder.CreateSpeechBubble(canvas, null, fontSize)` + `SetText` + `Root.anchoredPosition` kullanıyor; kendi renkleri ve kutusu kalktı, görünüş tamamen `UiStyle`'dan geliyor.
+- Şablonlar `Sablonlar/UI/`: `konusma_balonu.png` (48 × 32), `konusma_balonu_kuyruk.png` (16 × 12, ucu alt ortada). `hud_ipucu.png` (192 × 32) yeniden üretildi. 9-slice kenarı yeşil çizgiyle işaretli. `hud_sayac` şablonu kaldırıldı.
+- `ArtTextureImporter`: `Assets/Art/UI/konusma_balonu.png` ve `hud_ipucu.png` için `spriteBorder = (8, 8, 8, 8)` (`ArtTextureImporter.SliceBorder`). Başka 9-slice görsel eklersen adını yaz, listeye eklerim.
