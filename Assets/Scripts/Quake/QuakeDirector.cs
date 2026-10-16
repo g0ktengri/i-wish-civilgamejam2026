@@ -65,6 +65,8 @@ namespace Deprem.Quake
         [SerializeField] private float playerPlaneZ = 1f;
         [SerializeField] private float bedHeight = 0.5f;
         [SerializeField] private Key standUpKey = Key.F;
+        [SerializeField] private Key walkLeftKey = Key.A;
+        [SerializeField] private Key walkRightKey = Key.D;
         [SerializeField] private Key duckCoverKey = Key.C;
 
         [Header("Tavandan düşen parça")]
@@ -163,23 +165,27 @@ namespace Deprem.Quake
 
             if (GameState.CurrentLoop == 1)
             {
-                // Döngü 1 (senaryolu): uyumaya devam eder
+                // Döngü 1 (senaryolu): sarsıntıyla uyanır, önemsemez, uyumaya devam eder
+                Say("bubble.ignore_foreshock", 3.5f);
                 yield return new WaitForSeconds(scriptedWaitBeforeMainQuake);
             }
             else if (!GameState.StandUpUnlocked)
             {
-                // Döngü 2 (senaryolu): kalkar
+                // Döngü 2 (senaryolu): bu sefer ciddiye alır ama çök-kapan-tutun yerine kaçmaya çalışır
+                Say("bubble.panic_run", 2.5f);
+                yield return new WaitForSeconds(1f);
                 yield return GetUp();
                 yield return new WaitForSeconds(scriptedWaitBeforeMainQuake * 0.5f);
             }
             else
             {
-                // Döngü 3+: "F: Kalk"
+                // Döngü 3+ (serbest): "F: Kalk"; yürümeye başlamak da kaldırır
+                Say("bubble.wake", 2f);
                 QuakePrompts.Set(QuakePrompts.StandUp);
                 bool stoodUp = false;
                 for (float t = 0f; t < standUpWindow; t += Time.deltaTime)
                 {
-                    if (Pressed(standUpKey))
+                    if (Pressed(standUpKey) || Held(walkLeftKey) || Held(walkRightKey))
                     {
                         stoodUp = true;
                         break;
@@ -403,6 +409,12 @@ namespace Deprem.Quake
         {
             StopQuake();
             StartCoroutine(routine);
+        }
+
+        private void Say(string key, float seconds)
+        {
+            var bubble = player != null ? player.GetComponent<SpeechBubble>() : null;
+            if (bubble != null) bubble.Say(key, seconds);
         }
 
         private void LieInBed()

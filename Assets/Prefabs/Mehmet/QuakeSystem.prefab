@@ -73,6 +73,8 @@ MonoBehaviour:
   playerPlaneZ: 1
   bedHeight: 0.5
   standUpKey: 20
+  walkLeftKey: 15
+  walkRightKey: 18
   duckCoverKey: 17
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
   devStartLoop: 0

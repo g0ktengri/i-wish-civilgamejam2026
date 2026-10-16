@@ -108,3 +108,8 @@ menu.language,Dil: Türkçe,Language: English
 menu.quit,Çıkış,Quit
 menu.resume,Devam et,Resume
 menu.main_menu,Ana menü,Main menu
+
+# Mehmet: konuşma balonları (deprem akışı)
+bubble.ignore_foreshock,"Amaan, ne olacak ki... Uyumaya devam.","Oh, it's nothing... Back to sleep."
+bubble.panic_run,Deprem! Hemen buradan çıkmalıyım!,Earthquake! I have to get out of here!
+bubble.wake,Ne oluyor?,What's happening?

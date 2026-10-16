@@ -60,6 +60,7 @@ namespace Deprem.Player
             root.AddComponent<CapsuleCollider>();
             root.AddComponent<PlayerController>();
             root.AddComponent<PlayerInteractor>();
+            root.AddComponent<SpeechBubble>();
 
             // Görsel kök ayakta: ölçek (yön çevirme, eğilme) ayak hizasından uygulanır
             var visual = new GameObject("Visual");

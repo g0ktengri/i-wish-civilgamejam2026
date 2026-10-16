@@ -81,7 +81,7 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 
 ## Mehmet → Berke
 
-*Son güncelleme: Mehmet'in Claude'u, 17 Ekim (PromptChanged ve kurtarma süresinden sonra)*
+*Son güncelleme: Mehmet'in Claude'u, 17 Ekim (Mehmet'in ilk tam oyun testinden sonra)*
 
 ### Mehmet'in pushladıkları
 
@@ -100,6 +100,8 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 | Aile | `Scripts/Family/FamilyMember.cs` | Baba (salon, camla yaralı, ilk yardımla F basılı 3 sn), kardeş (karanlık üst kat, el feneri gerekli), anne (F). Eşyası devrilirse oyuncu yanına gelince `FailLoop(FamilyHitByItem, eşya)`; çanta malzemesi yoksa `FailLoop(MissingBagItem)`. Kurtarılınca `GameState.MarkRescued`. |
 | Takip ve kabin | `Scripts/Family/FamilyDirector.cs` | Kurtarılanlar oyuncunun izinden yürür. Kabin girişinde F: takip edenler girer (`RaiseFamilyMemberEnteredCabin`); herkes içerideyse oyuncu girer (`RaisePlayerEnteredCabin`) ve `GameState.WinLoop()`. |
 | El feneri | `Scripts/Player/PlayerFlashlight.cs` | Çantada el feneri varsa kurtarma fazında oyuncunun elinde spot ışığı. Kardeşin odasında acil durum ışığı yok, oda karanlık. |
+| Ev sınırları | `Scripts/Player/HouseBounds.cs` | `House` kökünde; her katın iç sınırları. Oyuncu bunları aşamaz. Ruh için: `HouseBounds.Instance.ClampToHouse(pozisyon, yarıçap)` (mutfağın üstü gibi üst katın olmadığı yerleri de keser). |
+| Konuşma balonu | `Scripts/Player/SpeechBubble.cs` | Oyuncunun başının üstünde balon, `UiBuilder` ile. Döngü 1: "Amaan, ne olacak ki...", döngü 2: "Deprem! Hemen buradan çıkmalıyım!", döngü 3+: "Ne oluyor?". Metinler `texts.csv`'nin sonunda `# Mehmet` başlığı altında (`bubble.*`). |
 | Testler | Tools > Deprem > Test: ... | Oyuncu, deprem ve aile için Play'e girmeden çalışan kontroller. |
 
 ### Berke'nin istekleri
@@ -125,3 +127,10 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 
 - ~~M1, M2, M3, M4~~: hepsi cevaplandı ve kapandı (yukarıdaki Cevaplar).
 - ~~M5. HUD'da ipucu~~: `PromptHud` ile tamam; QuakeDirector'daki geçici ekran yazısı kapatıldı.
+
+**Mehmet'in Play testinden çıkanlar (Berke'ye düşenler):**
+
+- **M6. Minigame'ler çok basit.** Mehmet'in ilk izlenimi: hepsi çok kolay ve kısa geliyor. Öneriler: vida sıkmada farenin doğru yönde (saat yönünde) dairesel hareketi, ters dönünce geri gitme; taşı-yerleştirde güvenli yerin dar olması ya da yolda bir engel; kilitlemede zamanlama penceresinin her denemede daralması. Ruh fazında 60 sn'de 5-6 eşyaya yetecek kadar sürmeleri hedef (GDD).
+- **M7. Ruh haritanın dışına çıkabiliyor.** `SpiritController` sınırlarını `HouseBounds.Instance.ClampToHouse(pozisyon, yarıçap)` ile kesebilirsin; kat sınırlarını ev üretici yazıyor, ev ölçüleri değişince kendiliğinden güncellenir.
+- **M8. Eşya vurgusu:** Sabitlenebilir eşyalar düz kutu oldukları için yavan duruyor. Mehmet tarafında: sanatçılar için doğru boyutta şablon PNG'ler ve bir kontur (outline) shader'ı yapılacak. Shader hazır olunca `SpiritHighlighter`'ın point light yerine onu açıp kapatması gerekecek; hazır olunca bu dosyaya yazarım.
+- Döngü 1–2 akışı değişmedi (ders sırası aynı), sadece konuşma balonları eklendi; `LoopManager`'da değişiklik gerekmiyor.

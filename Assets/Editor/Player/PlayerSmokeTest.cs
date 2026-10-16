@@ -44,6 +44,9 @@ namespace Deprem.Player
                 if (player == null) return Report();
                 player.Initialize();
                 player.InputEnabled = false;
+                var bounds = Object.FindFirstObjectByType<HouseBounds>();
+                Check(bounds != null, "Sahnede HouseBounds var");
+                bounds?.Activate();
 
                 var stairs = Object.FindObjectsByType<StairPath>(FindObjectsSortMode.None).FirstOrDefault();
                 Check(stairs != null, "Sahnede StairPath var");
@@ -88,6 +91,7 @@ namespace Deprem.Player
                 Check(!player.IsCrouching && Mathf.Abs(capsule.height - player.StandingHeight) < 0.01f, "Bırakınca kalktı");
 
                 TestStairs(stairs);
+                TestHouseEnds();
             }
             catch (System.Exception e)
             {
@@ -135,6 +139,35 @@ namespace Deprem.Player
             Step(8f);
             p = player.transform.position;
             Check(Mathf.Abs(p.y) < 0.05f && Mathf.Abs(p.x - bottom.x) < 0.05f, $"Merdivenden indi (x={p.x:F2}, y={p.y:F2})");
+        }
+
+        /// <summary>Evin dört ucuna doğru yürü (ve zıpla): karakter evin içinde kalmalı</summary>
+        private static void TestHouseEnds()
+        {
+            const float up = 3.75f;
+            var cases = new[]
+            {
+                ("Zemin kat, sol uç", new Vector3(3f, 0f, 1f), -1f, 0f, 32.5f),
+                ("Zemin kat, sağ uç", new Vector3(30f, 0f, 1f), 1f, 0f, 32.5f),
+                ("Üst kat, sol uç", new Vector3(3f, up, 1f), -1f, 0f, 27f),
+                ("Üst kat, sağ uç", new Vector3(25f, up, 1f), 1f, 0f, 27f),
+            };
+            foreach (var (name, start, dir, minX, maxX) in cases)
+            {
+                player.Teleport(start);
+                Step(0.3f);
+                player.SetScriptedInput(dir);
+                for (int i = 0; i < 6; i++)
+                {
+                    player.SetScriptedInput(dir, jump: true);
+                    Step(0.5f);
+                }
+                player.SetScriptedInput(0f);
+                Step(0.5f);
+                var p = player.transform.position;
+                Check(p.x > minX + 0.2f && p.x < maxX - 0.2f && Mathf.Abs(p.y - start.y) < 0.1f,
+                    $"{name}: evin içinde kaldı (x={p.x:F2}, y={p.y:F2})");
+            }
         }
 
         private static void Step(float seconds)

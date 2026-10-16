@@ -63,6 +63,9 @@ namespace Deprem.HouseBuilder
             var gameCamera = Camera.main;
             if (gameCamera != null)
                 HousePreview.Render("Logs/house_preview_game.png", 0.08f, gameCamera.transform.position, 1920, 1080);
+            var salon = HouseLayout.Room("salon");
+            HousePreview.Render("Logs/house_preview_salon.png", 0.08f,
+                new Vector3((salon.X0 + salon.X1) * 0.5f, 1.9f, -12f), 1920, 1080);
             Debug.Log("[HouseBuilder] Batch tamam");
         }
 
@@ -98,6 +101,7 @@ namespace Deprem.HouseBuilder
 
             var root = new GameObject(RootName);
             SceneManager.MoveGameObjectToScene(root, scene);
+            root.AddComponent<Deprem.Player.HouseBounds>().Configure(FloorBounds());
 
             var rooms = Child(root.transform, "Rooms");
             foreach (var room in HouseLayout.Rooms)
@@ -206,6 +210,19 @@ namespace Deprem.HouseBuilder
                 var max = new Vector3(xa + run, top, HouseDims.StairZ1);
                 AddPiece(parent, $"Step_{i:00}", min, max, BoxMeshBuilder.TileUv, mat);
             }
+        }
+
+        /// <summary>Her katın iç sınırları: dış duvarların iç yüzleri arası</summary>
+        private static Deprem.Player.HouseBounds.Floor[] FloorBounds()
+        {
+            const float half = HouseDims.Thickness * 0.5f;
+            return HouseLayout.Rooms.GroupBy(r => r.Floor).OrderBy(g => g.Key).Select(g => new Deprem.Player.HouseBounds.Floor
+            {
+                minX = g.Min(r => r.X0) + half,
+                maxX = g.Max(r => r.X1) - half,
+                floorY = g.First().FloorY,
+                ceilingY = g.First().CeilingY,
+            }).ToArray();
         }
 
         /// <summary>
@@ -402,6 +419,13 @@ namespace Deprem.HouseBuilder
         {
             var lamps = new List<Light>();
             var emergency = new List<Light>();
+            var fixtures = new List<Renderer>();
+            var fixtureOn = GetMaterial("tavan_lambasi", "Assets/Art/Decor/tavan_lambasi.png", new Color(1f, 0.92f, 0.75f));
+            fixtureOn.EnableKeyword("_EMISSION");
+            fixtureOn.SetColor("_EmissionColor", new Color(1f, 0.85f, 0.6f) * 2f);
+            fixtureOn.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            var fixtureOff = GetMaterial("tavan_lambasi_sonuk", "Assets/Art/Decor/tavan_lambasi.png", new Color(0.35f, 0.33f, 0.3f));
+
             foreach (var room in HouseLayout.Rooms)
             {
                 // Elektrik kesilince yanan kırmızı acil durum ışığı (deprem sistemi açar).
@@ -410,7 +434,7 @@ namespace Deprem.HouseBuilder
                 {
                     var red = new GameObject("Emergency_" + room.Key);
                     red.transform.SetParent(parent, false);
-                    red.transform.position = new Vector3(room.X0 + 0.6f, room.CeilingY - 0.3f, HouseDims.PlayerPlaneZ - 0.4f);
+                    red.transform.position = new Vector3(room.X0 + 0.6f, room.CeilingY - 0.3f, room.Depth * 0.5f);
                     var redLight = red.AddComponent<Light>();
                     redLight.type = LightType.Point;
                     redLight.color = new Color(1f, 0.12f, 0.08f);
@@ -428,18 +452,38 @@ namespace Deprem.HouseBuilder
                 {
                     var go = new GameObject(count == 1 ? "Lamp_" + room.Key : $"Lamp_{room.Key}_{i}");
                     go.transform.SetParent(parent, false);
-                    // Karakter düzleminin önünde: kameraya bakan 2D karakterler ve eşyaların ön yüzü ışık alsın
-                    go.transform.position = new Vector3(room.X0 + span * (i + 0.5f), room.CeilingY - 0.4f, HouseDims.PlayerPlaneZ - 0.4f);
+                    // Tavanın ortasında; kameraya bakan yüzleri önden gelen dolgu ışığı aydınlatır
+                    var center = new Vector3(room.X0 + span * (i + 0.5f), room.CeilingY, room.Depth * 0.5f);
+                    go.transform.position = center + Vector3.down * 0.35f;
                     var light = go.AddComponent<Light>();
                     light.type = LightType.Point;
                     light.color = new Color(1f, 0.85f, 0.65f);
-                    light.intensity = 2.5f;
-                    light.range = Mathf.Max(span, room.Depth) * 1.1f;
+                    light.intensity = 3f;
+                    light.range = Mathf.Max(span, room.Depth) * 1.2f;
                     light.shadows = LightShadows.Soft;
                     lamps.Add(light);
+
+                    // Tavandaki lamba gövdesi (ışığın kendi gölgesine girmesin diye gölge vermez)
+                    var fixtureMin = center + new Vector3(-0.2f, -0.12f, -0.2f);
+                    var fixture = AddDecorBox(go.transform, "Fixture", fixtureMin, fixtureMin + new Vector3(0.4f, 0.12f, 0.4f), fixtureOn);
+                    var fixtureRenderer = fixture.GetComponent<MeshRenderer>();
+                    fixtureRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    fixtures.Add(fixtureRenderer);
                 }
             }
-            parent.gameObject.AddComponent<Deprem.Quake.HouseLights>().Configure(lamps.ToArray(), emergency.ToArray());
+            parent.gameObject.AddComponent<Deprem.Quake.HouseLights>()
+                .Configure(lamps.ToArray(), emergency.ToArray(), fixtures.ToArray(), fixtureOn, fixtureOff);
+
+            // Önden zayıf ay ışığı dolgusu: lambalar tavanın ortasındayken karakterlerin ve eşyaların
+            // kameraya bakan yüzleri kararmasın. Gölgesiz; elektrik kesilince de kalır.
+            var fill = new GameObject("Fill_Moonlight");
+            fill.transform.SetParent(parent, false);
+            fill.transform.rotation = Quaternion.Euler(12f, 8f, 0f);
+            var fillLight = fill.AddComponent<Light>();
+            fillLight.type = LightType.Directional;
+            fillLight.color = new Color(0.62f, 0.7f, 0.95f);
+            fillLight.intensity = 0.35f;
+            fillLight.shadows = LightShadows.None;
         }
 
         private static void BuildMarkers(Transform parent)
@@ -542,7 +586,29 @@ namespace Deprem.HouseBuilder
         {
             int index = System.Array.IndexOf(HouseLayout.Rooms, room);
             var fallback = Color.HSVToRGB(index / (float)HouseLayout.Rooms.Length, 0.12f, value);
-            return GetMaterial($"{room.Key}_{surface}", $"Assets/Art/Rooms/{room.Key}_{surface}.png", fallback);
+            return GetMaterial($"{room.Key}_{surface}", RoomTexturePath(room.Key, surface), fallback);
+        }
+
+        /// <summary>
+        /// Oda dokusu, ilk bulunan: Rooms/{oda}_{yüzey}.png, Rooms/{oda}/{yüzey}.png;
+        /// duvarlar için tek doku da olur: Rooms/{oda}_duvar.png ya da Rooms/{oda}/duvar.png (arka ve yan duvara).
+        /// Doku yüzeye sığdırılır; en iyi sonuç GDD'deki boyutlarda (ör. salon arka 576x224).
+        /// </summary>
+        private static string RoomTexturePath(string room, string surface)
+        {
+            var candidates = new List<string>
+            {
+                $"Assets/Art/Rooms/{room}_{surface}.png",
+                $"Assets/Art/Rooms/{room}/{surface}.png",
+            };
+            if (surface == "arka" || surface == "yan")
+            {
+                candidates.Add($"Assets/Art/Rooms/{room}_duvar.png");
+                candidates.Add($"Assets/Art/Rooms/{room}/duvar.png");
+            }
+            foreach (var path in candidates)
+                if (AssetDatabase.LoadAssetAtPath<Texture2D>(path) != null) return path;
+            return candidates[0];
         }
 
         private static Material SectionMaterial()

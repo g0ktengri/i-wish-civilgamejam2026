@@ -110,6 +110,7 @@ GameObject:
   - component: {fileID: 382243030584336322}
   - component: {fileID: 3811161841924820453}
   - component: {fileID: 5532818211175703949}
+  - component: {fileID: 2938270592028414152}
   - component: {fileID: 8684074246600651156}
   - component: {fileID: 704763786387298917}
   m_Layer: 0
@@ -226,6 +227,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.PlayerInteractor
   interactKey: 20
+--- !u!114 &2938270592028414152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4785924010238185731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53badf8b1bc7c204d959ef82726ac364, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.SpeechBubble
+  headHeight: 2.1
+  fontSize: 14
+  maxTextWidth: 220
+  padding: {x: 10, y: 6}
+  background: {r: 1, g: 1, b: 1, a: 0.92}
+  textColor: {r: 0.08, g: 0.08, b: 0.1, a: 1}
 --- !u!114 &8684074246600651156
 MonoBehaviour:
   m_ObjectHideFlags: 0

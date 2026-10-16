@@ -65,6 +65,7 @@ namespace Deprem.Player
         private readonly Collider[] overlaps = new Collider[8];
 
         private float clock;
+        private Vector3 lastSafePosition;
         private float lastGroundedTime = float.NegativeInfinity;
         private float jumpRequestTime = float.NegativeInfinity;
         private float scriptedMove;
@@ -103,6 +104,7 @@ namespace Deprem.Player
                 bounceCombine = PhysicsMaterialCombine.Minimum,
             };
             SetCapsuleHeight(standingHeight);
+            lastSafePosition = transform.position;
         }
 
         private static RigidbodyConstraints PlaneConstraints =>
@@ -170,11 +172,40 @@ namespace Deprem.Player
 
             if (velocity.y < 0f) velocity.y += Physics.gravity.y * (fallGravityMultiplier - 1f) * dt;
             velocity.z = 0f;
+            velocity.x = KeepInsideHouse(velocity.x);
             body.linearVelocity = velocity;
 
             MoveInput = move;
             if (move > 0.01f) Facing = 1;
             else if (move < -0.01f) Facing = -1;
+        }
+
+        /// <summary>
+        /// Emniyet: duvarlar ne olursa olsun evin dışına çıkılmaz. Kat sınırına gelince dışarı doğru hız sıfırlanır;
+        /// bir yerden düşerse son güvenli (yerde olduğu) noktaya geri konur.
+        /// </summary>
+        private float KeepInsideHouse(float velocityX)
+        {
+            var bounds = HouseBounds.Instance;
+            if (bounds == null) return velocityX;
+
+            var p = body.position;
+            if (p.y < bounds.Floors[0].floorY - 3f)
+            {
+                Teleport(lastSafePosition);
+                return 0f;
+            }
+
+            float clamped = bounds.ClampX(p, radius);
+            if (!Mathf.Approximately(clamped, p.x))
+            {
+                bool pushedRight = clamped > p.x; // sol sınırdan içeri itildi
+                p.x = clamped;
+                body.position = p;
+                if ((pushedRight && velocityX < 0f) || (!pushedRight && velocityX > 0f)) velocityX = 0f;
+            }
+            if (IsGrounded) lastSafePosition = body.position;
+            return velocityX;
         }
 
         public void SetScriptedInput(float move, bool jump = false, bool crouch = false)
