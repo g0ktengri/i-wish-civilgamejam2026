@@ -19,6 +19,7 @@ Claude yalnızca o kişinin sahip olduğu klasörlerde dosya oluşturur ve düze
 | `Assets/Scripts/Family/` | Mehmet | Baba, anne, kardeş, takip, kabin |
 | `Assets/Scripts/Audio/` | Mehmet | Ses yöneticisi ve ses tetikleyicileri |
 | `Assets/Editor/HouseBuilder/` | Mehmet | Evi ve 9 eşyayı kodla kuran editör scripti, texture import scripti |
+| `Assets/Generated/` | Mehmet (otomatik) | HouseBuilder'ın ürettiği materyaller; elle düzenlenmez, her kurulumda yenilenir |
 | `Assets/Settings/` (Volume, URP) | Mehmet | Işık, Volume profilleri |
 | `Assets/Scripts/Loop/` | Berke | Döngü yöneticisi, kontrol noktaları, kaybetme durumları |
 | `Assets/Scripts/Spirit/` | Berke | Ruh fazı, ruh hareketi, 60 sn sayaç, eşya vurgusu |
@@ -77,4 +78,6 @@ Hızlı kontrol asmdef'leri ve Unity'nin kod üretimini kapsamaz. Build almadan 
 - Ayarlanabilir değerler (süreler, hızlar) `[SerializeField]` olarak açılır; denge testinde koda dokunmadan değiştirilir.
 
 ## Beyan
-- Kullanılan her hazır kaynak eklendiği anda `ASSETS.md`'ye, her AI kullanımı `AI.md`'ye yazılır.
+- Hazır kaynak ve AI beyanı teslimde web formunda yapılır (görsel, ses, kod, metin, diğer). Eksik beyan diskalifiye sebebidir.
+- Unutulmasın diye hazır kaynak (ses, font vb.) eklerken adını, kaynak bağlantısını ve lisansını commit mesajına yazın.
+- Yeniden dağıtımı kısıtlı olduğu için repoya konmayan kaynakların nereden ve nasıl ekleneceği README'ye yazılır (kural 3.6).
