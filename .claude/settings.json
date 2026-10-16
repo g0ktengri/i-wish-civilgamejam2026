@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "PowerShell|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "Tools/hooks/guard-commit.ps1"],
+            "timeout": 120,
+            "statusMessage": "Commit/push oncesi derleme kontrolu..."
+          }
+        ]
+      }
+    ]
+  }
+}

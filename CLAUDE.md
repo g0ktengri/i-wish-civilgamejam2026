@@ -60,6 +60,16 @@ Claude yalnızca o kişinin sahip olduğu klasörlerde dosya oluşturur ve düze
 - `.meta` dosyaları her zaman commit edilir; dosya taşırken/silerken meta ile birlikte.
 - Conflict çıkarsa: kimin klasörüyse onun sürümü geçerlidir; Core'da çıkarsa birlikte çözülür.
 
+## Claude'un kod yazma döngüsü (yaz → kontrol et → düzelt)
+Claude kod yazdıktan sonra kullanıcıya teslim etmeden önce şu döngüyü uygular:
+1. **Derle:** `powershell -ExecutionPolicy Bypass -File Tools\quick-compile.ps1` (Editor açıkken de çalışır, ~3 sn).
+2. **Hata varsa düzelt ve 1'e dön.** En fazla **3 düzeltme turu**. 3. turdan sonra hâlâ hata varsa durur, denediklerini ve kalan hatayı kullanıcıya yazar; aynı düzeltmeyi tekrar denemez.
+3. **Kendi değişikliğini gözden geçir** (bir kez, döngüye girmeden): sadece kendi kişisinin klasörüne mi yazdı, namespace doğru mu, ayarlanabilir değerler `[SerializeField]` mı, oyuncuya görünen metin koda gömülü mü, oyun kodunda `UnityEditor` var mı, başka sistemi doğrudan çağırıyor mu (GameEvents kullanılmalı).
+4. **Rapor et:** ne değişti, kontrol sonucu, Unity'de elle denenmesi gereken ne var.
+5. **Commit/push sadece kullanıcı onayıyla.** `.claude/settings.json` içindeki hook, her commit/push öncesi hızlı kontrolü yeniden çalıştırır ve hata varsa engeller.
+
+Hızlı kontrol asmdef'leri ve Unity'nin kod üretimini kapsamaz. Build almadan önce Editor kapalıyken `Tools\check-compile.ps1` (batchmode, kesin kontrol) çalıştırılır ya da Editor Console'a bakılır. Assets altında `.asmdef` kullanmayın.
+
 ## Kod stili
 - C#, sınıf adları İngilizce PascalCase, oyuncuya görünen metinler sadece `texts.csv` içinde.
 - Her sistem kendi namespace'inde: `Deprem.Player`, `Deprem.Quake`, `Deprem.Loop` vb.
