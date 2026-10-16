@@ -54,6 +54,7 @@ Claude yalnızca o kişinin sahip olduğu klasörlerde dosya oluşturur ve düze
 
 ## Git kuralları
 - Her oturuma başlamadan: `git pull --rebase`
+- Claude pull'dan önce `git fetch` yapar ve gelecek commit'leri `git log --stat HEAD..origin/main` ile inceler. Pull'dan sonra kullanıcıya diğer kişinin ne getirdiğini kısaca özetler. `CLAUDE.md`, `Core/`, `.claude/`, `Tools/`, `Packages/` ya da `ProjectSettings/` değiştiyse bunları ayrıca belirtir ve yeni bir kural geldiyse ona göre çalışır.
 - Sadece derlenen (Console'da kırmızı hata yok) kodu push et. Derlenmeyen kod diğer kişinin işini durdurur.
 - Küçük ve sık commit: her çalışan özellik sonrası commit + push.
 - Commit mesajı başına kişi: `[Mehmet] artçı tetikleyicileri eklendi`, `[Berke] vida minigame'i`.
