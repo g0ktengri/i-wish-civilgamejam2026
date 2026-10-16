@@ -51,6 +51,7 @@ namespace Deprem.HouseBuilder
         public static void BuildMainSceneBatch()
         {
             var scene = OpenOrCreateMainScene();
+            Deprem.Player.PlayerSetup.SetupInScene(scene);
             EditorSceneManager.SaveScene(scene);
             var whole = new Vector3(16.25f, 3.6f, -39f);
             HousePreview.Render("Logs/house_preview.png", 0.08f, whole, 2048, 1024);
@@ -98,7 +99,9 @@ namespace Deprem.HouseBuilder
             foreach (var room in HouseLayout.Rooms)
                 BuildRoom(room, Child(rooms, "Room_" + room.Key));
 
-            BuildStairs(Child(root.transform, "Stairs"));
+            var stairs = Child(root.transform, "Stairs");
+            BuildStairs(stairs);
+            stairs.gameObject.AddComponent<Deprem.Player.StairPath>().Configure(StairRoute());
             BuildCabin(root.transform);
             BuildWindow(root.transform);
 
@@ -197,6 +200,30 @@ namespace Deprem.HouseBuilder
                 var max = new Vector3(xa + run, top, HouseDims.StairZ1);
                 AddPiece(parent, $"Step_{i:00}", min, max, BoxMeshBuilder.TileUv, mat);
             }
+        }
+
+        /// <summary>
+        /// Merdiven yolu: karakter düzleminden arka şeride geç, basamak burunları boyunca çık,
+        /// sahanlıkta karakter düzlemine dön. İniş aynı yolun tersi.
+        /// </summary>
+        private static Vector3[] StairRoute()
+        {
+            float run = HouseDims.StairLength / HouseDims.StairSteps;
+            float rise = HouseDims.UpperFloorY / HouseDims.StairSteps;
+            float x0 = HouseDims.StairX0;
+            float x1 = HouseDims.StairX0 + HouseDims.StairLength;
+            float lane = (HouseDims.StairZ0 + HouseDims.StairZ1) * 0.5f;
+            float plane = HouseDims.PlayerPlaneZ;
+            float up = HouseDims.UpperFloorY;
+            return new[]
+            {
+                new Vector3(x0 - 0.2f, 0f, plane),
+                new Vector3(x0 - 0.2f, 0f, lane),
+                new Vector3(x0, rise, lane),
+                new Vector3(x0 + (HouseDims.StairSteps - 1) * run, up, lane),
+                new Vector3(x1 + 0.3f, up, lane),
+                new Vector3(x1 + 0.3f, up, plane),
+            };
         }
 
         private static void BuildCabin(Transform parent)

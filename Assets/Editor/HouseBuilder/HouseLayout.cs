@@ -160,10 +160,9 @@ namespace Deprem.HouseBuilder
             new MarkerDef("Marker_Flashlight", new Vector3(28.5f, 0.9f, 3f)),
             new MarkerDef("Marker_FirstAid", new Vector3(19.5f, Up + 0.6f, 4.5f)),
             new MarkerDef("Marker_CabinEntrance", new Vector3(HouseDims.StairX0 + 3.35f, 0f, Z)),
-            new MarkerDef("Marker_StairBottom", new Vector3(HouseDims.StairX0, 0f, Z)),
-            new MarkerDef("Marker_StairPathStart", new Vector3(HouseDims.StairX0 - 0.15f, 0f, 2.6f)),
-            new MarkerDef("Marker_StairPathEnd", new Vector3(HouseDims.StairHoleX1 + 0.25f, Up, 2.6f)),
-            new MarkerDef("Marker_StairTop", new Vector3(HouseDims.StairHoleX1 + 0.25f, Up, Z)),
+            // Merdiven yolunun iki ucu (asıl yol House/Stairs üzerindeki StairPath'te)
+            new MarkerDef("Marker_StairBottom", new Vector3(HouseDims.StairX0 - 0.2f, 0f, Z)),
+            new MarkerDef("Marker_StairTop", new Vector3(HouseDims.StairHoleX1 + 0.3f, Up, Z)),
         };
 
         public static RoomDef Room(string key)
