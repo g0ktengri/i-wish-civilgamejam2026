@@ -41,6 +41,9 @@ namespace Deprem.Loop
         bool waitingToContinue;
 
         public static LoopManager Instance { get; private set; }
+
+        // Sahnede keşke ekranı varsa otomatik devam edilmez; ekran ContinueAfterWish() çağırır
+        public static bool WishScreenPresent { get; set; }
         public bool WaitingToContinue => waitingToContinue;
 
         void Awake()
@@ -98,7 +101,7 @@ namespace Deprem.Loop
         {
             nextLoop = NextLoopAfter(GameState.CurrentLoop, reason);
             waitingToContinue = true;
-            if (!waitForWishScreen) StartCoroutine(AutoContinue());
+            if (!waitForWishScreen && !WishScreenPresent) StartCoroutine(AutoContinue());
         }
 
         IEnumerator AutoContinue()
@@ -134,6 +137,7 @@ namespace Deprem.Loop
         {
             pendingLoop = 0;
             Instance = null;
+            WishScreenPresent = false;
         }
     }
 }
