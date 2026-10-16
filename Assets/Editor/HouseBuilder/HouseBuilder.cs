@@ -55,6 +55,7 @@ namespace Deprem.HouseBuilder
             // Döngüyü Berke'nin LoopManager'ı (BerkeSystems prefab'ı) başlatıyor; geliştirme başlatıcısı kapalı
             Deprem.Quake.QuakeSetup.SetupInScene(scene, 0);
             Deprem.Family.FamilySetup.SetupInScene(scene);
+            var volumes = Deprem.Visual.VolumeSetup.SetupInScene(scene);
             BerkeSystemsSetup.SetupInScene(scene);
             EditorSceneManager.SaveScene(scene);
             var whole = new Vector3(16.25f, 3.6f, -39f);
@@ -67,19 +68,23 @@ namespace Deprem.HouseBuilder
             var salonCamera = new Vector3((salon.X0 + salon.X1) * 0.5f, 1.9f, -12f);
             HousePreview.Render("Logs/house_preview_salon.png", null, salonCamera, 1920, 1080);
 
-            // Elektrik kesik hali (ana depremden sonra)
+            // Elektrik kesik hali (ana depremden sonra): ışıklar ve Volume
             var houseLights = Object.FindFirstObjectByType<Deprem.Quake.HouseLights>();
             if (houseLights != null)
             {
                 houseLights.SetPower(false);
+                volumes.SetImmediate(volumes.PowerOut);
                 HousePreview.Render("Logs/house_preview_salon_dark.png", null, salonCamera, 1920, 1080);
+                volumes.SetImmediate(volumes.Night);
                 houseLights.SetPower(true);
             }
 
-            // Kontur kontrolü: ruh fazındaki gibi bütün konturlar açık
+            // Ruh fazı: Volume ve sabitlenmemiş eşyalarda kontur
             var outlines = Object.FindObjectsByType<Deprem.Visual.ItemOutline>(FindObjectsSortMode.None);
             foreach (var outline in outlines) outline.SetVisible(true);
-            HousePreview.Render("Logs/house_preview_outline.png", null, salonCamera, 1920, 1080);
+            volumes.SetImmediate(volumes.Spirit);
+            HousePreview.Render("Logs/house_preview_spirit.png", null, salonCamera, 1920, 1080);
+            volumes.SetImmediate(volumes.Night);
             foreach (var outline in outlines) outline.SetVisible(false);
 
             ArtTemplates.Generate();

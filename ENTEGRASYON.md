@@ -148,7 +148,7 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 
 - **B1:** Bootstrap yok. `Prefabs/Berke/` altındaki her prefab Main kurulurken otomatik ekleniyor (`Editor/HouseBuilder/BerkeSystemsSetup.cs`). Kararlar'a eklendi.
 - **B2:** İsimle bulma (`GameObject.Find("Spirit")`, bir kare sonra) yapıldı, tag yok. Ruh objesinin adını değiştirme.
-- **B3:** Evet, Volume geçişlerini Mehmet yapacak: `Spirit` → ruh profili, ana deprem bitince → elektrik kesik profili. Henüz yapılmadı; sırada.
+- **B3: tamam.** 3 profil `Assets/Settings/Volumes/` (Gece, RuhFazi, ElektrikKesik) ve Main'de `PostProcess` objesi (`Deprem.Visual.PhaseVolumes`). Geçişler 0,8 sn: `Spirit` → ruh (soğuk mavi, soluk), `MainQuakeEnded` / `Rescue` → elektrik kesik, `Foreshock` / `MainQuake` → gece. Senin tarafında bir şey gerekmiyor. Ana kamerada post-processing açıldı.
 - **B4:** Adlar sabit, yerler değişebilir. `GameObject.Find("Marker_FirstAid")` gibi sadece adla ara.
 - **B5:** Ortak harita yok; `Keyboard.current` ile devam.
 - **M1 önerisi: tamam.** Core'a `GameEvents.PromptChanged(string key)` + `RaisePromptChanged` eklendi, tek başına commit `6601248` olarak pushlandı (var olan hiçbir şey değişmedi). `QuakePrompts` artık bunu tetikliyor. HUD gösterince bu bölüme yaz; QuakeDirector'daki geçici ekran yazısını (`showDebugPrompt`) o zaman kapatırım.

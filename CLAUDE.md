@@ -22,7 +22,7 @@ Claude yalnızca o kişinin sahip olduğu klasörlerde dosya oluşturur ve düze
 | `Assets/Editor/Player/` | Mehmet | Oyuncu ve kamera kurulum scripti, oyuncu kontrolcüsü testi |
 | `Assets/Editor/Quake/` | Mehmet | Deprem sistemi kurulum scripti ve testi |
 | `Assets/Editor/Family/` | Mehmet | Aile sistemi kurulum scripti ve testi |
-| `Assets/Scripts/Visual/`, `Assets/Shaders/` | Mehmet | Kontur shader'ı ve eşya konturu (teknik sanat) |
+| `Assets/Scripts/Visual/`, `Assets/Shaders/`, `Assets/Editor/Visual/` | Mehmet | Kontur shader'ı, eşya konturu, faz Volume'ları (teknik sanat) |
 | `Sablonlar/` | Mehmet (otomatik) | Sanatçı şablon PNG'leri; Tools > Deprem > Sanatçı Şablonlarını Üret ile yenilenir |
 | `Assets/Generated/` | Mehmet (otomatik) | HouseBuilder'ın ürettiği materyaller; elle düzenlenmez, her kurulumda yenilenir |
 | `Assets/Settings/` (Volume, URP) | Mehmet | Işık, Volume profilleri |

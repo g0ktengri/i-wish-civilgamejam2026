@@ -1,6 +1,7 @@
 using System.IO;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Deprem.HouseBuilder
 {
@@ -19,6 +20,10 @@ namespace Deprem.HouseBuilder
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.05f, 0.05f, 0.07f);
             cam.transform.position = cameraPosition;
+            // Oyundaki gibi: Volume efektleri açık, kenar yumuşatma kapalı
+            var data = cam.GetUniversalAdditionalCameraData();
+            data.renderPostProcessing = true;
+            data.antialiasing = UnityEngine.Rendering.Universal.AntialiasingMode.None;
 
             var rt = new RenderTexture(width, height, 24);
             cam.targetTexture = rt;
