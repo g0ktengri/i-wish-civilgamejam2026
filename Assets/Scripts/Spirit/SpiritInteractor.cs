@@ -11,8 +11,6 @@ namespace Deprem.Spirit
     {
         [SerializeField] float range = 1.2f;
 
-        bool minigameOpen;
-
         // Ruha en yakın, menzildeki sabitlenmemiş eşya (yoksa null). Vurgu okur.
         public static SecurableItem Nearest { get; private set; }
         // Eşyadan daha yakın bir ISpiritTarget varsa o (yoksa null)
@@ -23,27 +21,12 @@ namespace Deprem.Spirit
         // Sahnede MinigameHost yoksa F ile eşya anında sabitlenir (SpiritPhase ayarlar, test için)
         public bool InstantSecure { get; set; }
 
-        void OnEnable()
-        {
-            minigameOpen = false;
-            GameEvents.MinigameOpened += HandleMinigameOpened;
-            GameEvents.MinigameClosed += HandleMinigameClosed;
-        }
-
-        void OnDisable()
-        {
-            GameEvents.MinigameOpened -= HandleMinigameOpened;
-            GameEvents.MinigameClosed -= HandleMinigameClosed;
-            Clear();
-        }
-
-        void HandleMinigameOpened(ItemId id, MinigameType type) => minigameOpen = true;
-        void HandleMinigameClosed(ItemId id, bool success) => minigameOpen = false;
+        void OnDisable() => Clear();
 
         void Update()
         {
             Clear();
-            if (minigameOpen || GameState.Phase != GamePhase.Spirit) return;
+            if (Minigames.MinigameHost.AnyOpen || GameState.Phase != GamePhase.Spirit) return;
 
             var position = transform.position;
             float itemDistance = FindNearestItem(position, out var item);

@@ -21,10 +21,6 @@ namespace Deprem.UI
         [SerializeField] float warningSeconds = 10f;
         [SerializeField] int sortingOrder = 50;
 
-        [Header("Görseller (Assets/Art/UI, prefab kurulurken bağlanır)")]
-        [Tooltip("hud_sayac.png, 64 x 32: sayacın arka planı")]
-        [SerializeField] Sprite timerSprite;
-
         CanvasGroup group;
         Text timerText;
         Text promptText;
@@ -40,14 +36,11 @@ namespace Deprem.UI
             var canvas = UiBuilder.CreateCanvas(transform, "SpiritHudCanvas", sortingOrder);
             group = canvas.GetComponent<CanvasGroup>();
 
-            if (timerSprite)
-            {
-                var timerBack = UiBuilder.CreateImage(canvas.transform, "TimerBack", Color.white);
-                timerBack.sprite = timerSprite;
-                var rect = timerBack.rectTransform;
-                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.915f);
-                rect.sizeDelta = new Vector2(64f, 32f);
-            }
+            // Sayaç paneli tuş ipucuyla aynı stilde (UiStyle.panel)
+            var timerBack = UiBuilder.CreatePanel(canvas.transform, "TimerBack");
+            var rect = timerBack.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.915f);
+            rect.sizeDelta = new Vector2(80f, 36f);
             timerText = UiBuilder.CreateText(canvas.transform, "Timer", font, timerFontSize, timerColor);
             UiBuilder.Stretch(timerText.rectTransform, new Vector2(0.4f, 0.86f), new Vector2(0.6f, 0.97f));
 

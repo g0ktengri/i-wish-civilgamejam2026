@@ -45,8 +45,6 @@ namespace Deprem.Loop.EditorTools
             (typeof(BagSystem), "waterIcon", "ikon_su"),
             (typeof(BagSystem), "whistleIcon", "ikon_duduk"),
             (typeof(BagSystem), "bagSprite", "deprem_cantasi"),
-            (typeof(PromptHud), "backSprite", "hud_ipucu"),
-            (typeof(SpiritHud), "timerSprite", "hud_sayac"),
             (typeof(MainMenu), "backgroundSprite", "menu_arka_plan"),
             (typeof(MainMenu), "logoSprite", "logo"),
         };
@@ -55,7 +53,16 @@ namespace Deprem.Loop.EditorTools
         static readonly Type[] FontUsers =
         {
             typeof(WishScreen), typeof(SpiritHud), typeof(MinigameHost), typeof(PromptHud),
-            typeof(FinalScreen), typeof(PauseMenu), typeof(MainMenu),
+            typeof(FinalScreen), typeof(PauseMenu), typeof(MainMenu), typeof(ObjectiveHud),
+        };
+
+        // Ortak UI stili (Assets/Resources/UiStyle.asset): alan → Assets/Art/UI dosyası
+        const string StylePath = "Assets/Resources/UiStyle.asset";
+        static readonly (string field, string file)[] StyleSprites =
+        {
+            ("bubble", "konusma_balonu"),
+            ("bubbleTail", "konusma_balonu_kuyruk"),
+            ("panel", "hud_ipucu"),
         };
 
         [MenuItem("Tools/Deprem/Berke: Sistem Prefab'ını Kur")]
@@ -75,6 +82,7 @@ namespace Deprem.Loop.EditorTools
                 root.AddComponent<MinigameHost>();
                 root.AddComponent<BagSystem>();
                 root.AddComponent<PromptHud>();
+                root.AddComponent<ObjectiveHud>();
                 root.AddComponent<FinalScreen>();
                 root.AddComponent<PauseMenu>();
                 root.AddComponent<MainMenu>();
@@ -108,6 +116,26 @@ namespace Deprem.Loop.EditorTools
 
             var font = FindFont();
             foreach (var type in FontUsers) SetReference(root.GetComponent(type), "font", font);
+
+            // Ortak stil: balon, panel ve font bütün oyunda (Mehmet'in SpeechBubble'ı dahil) buradan
+            var style = AssetDatabase.LoadAssetAtPath<UiStyle>(StylePath);
+            if (!style)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(StylePath));
+                style = ScriptableObject.CreateInstance<UiStyle>();
+                AssetDatabase.CreateAsset(style, StylePath);
+            }
+            style.font = font;
+            foreach (var (field, file) in StyleSprites)
+            {
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"{UiArtFolder}/{file}.png");
+                if (sprite) bound.Add(file);
+                else missing.Add(file);
+                var serialized = new SerializedObject(style);
+                serialized.FindProperty(field).objectReferenceValue = sprite;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+            EditorUtility.SetDirty(style);
 
             Debug.Log($"[BerkeSystemsPrefab] Font: {(font ? AssetDatabase.GetAssetPath(font) : "yok (Unity'nin yerleşik fontu)")}");
             Debug.Log($"[BerkeSystemsPrefab] Bağlanan görseller ({bound.Count}): {string.Join(", ", bound)}");

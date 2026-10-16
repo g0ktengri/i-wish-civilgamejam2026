@@ -62,6 +62,8 @@ namespace Deprem.Minigames
 
         public static MinigameHost Instance { get; private set; }
         public bool IsOpen => current != null;
+        // Sahnede açık bir minigame paneli var mı (başarı beklemesi dahil, panel kapanınca false)
+        public static bool AnyOpen => Instance && Instance.IsOpen;
 
         void Awake()
         {

@@ -26,28 +26,14 @@ namespace Deprem.Spirit
         Transform visual;
         Vector2 velocity;
         bool boundsReady;
-        int minigamesOpen;
 
-        public bool MovementEnabled => minigamesOpen == 0 && GameState.Phase == GamePhase.Spirit;
+        // Sadece minigame paneli ekrandayken durur (ENTEGRASYON M9). Event saymak yerine panele bakılır:
+        // açılamayan minigame'de ya da event sırası karışınca ruh takılı kalmaz.
+        public bool MovementEnabled => GameState.Phase == GamePhase.Spirit && !Minigames.MinigameHost.AnyOpen;
 
         public void SetVisual(Transform target) => visual = target;
 
-        void OnEnable()
-        {
-            velocity = Vector2.zero;
-            minigamesOpen = 0;
-            GameEvents.MinigameOpened += HandleMinigameOpened;
-            GameEvents.MinigameClosed += HandleMinigameClosed;
-        }
-
-        void OnDisable()
-        {
-            GameEvents.MinigameOpened -= HandleMinigameOpened;
-            GameEvents.MinigameClosed -= HandleMinigameClosed;
-        }
-
-        void HandleMinigameOpened(ItemId id, MinigameType type) => minigamesOpen++;
-        void HandleMinigameClosed(ItemId id, bool success) => minigamesOpen = Mathf.Max(0, minigamesOpen - 1);
+        void OnEnable() => velocity = Vector2.zero;
 
         void Update()
         {

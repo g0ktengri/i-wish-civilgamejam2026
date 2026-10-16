@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (Berke'nin sistemlerine sprite yuvaları eklendikten sonra)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (Play testi 2: M9–M11 bittikten sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -42,6 +42,8 @@
 | Final ekranı | `Scripts/UI/FinalScreen.cs` | `GameWon` gelince 2 sn bekler (kabin anı), kararır, 5 keşke cümlesi tek tek "yaptım"a döner; çantada su/düdük varsa bonus satırı. F ile ana menü. |
 | Ana menü | `Scripts/UI/MainMenu.cs` | İlk açılışta içerik uyarısı, sonra Yeni oyun / Bölüm seç (1–5) / Kontroller / Emeği geçenler / Dil / Çıkış. Menü açıkken `Time.timeScale = 0`. Oyun menüden başlar: `LoopManager.StartFromLoop(n)` sahneyi yeniden yükler ve deneme başlar. |
 | Duraklatma | `Scripts/UI/PauseMenu.cs` | Esc: Devam et / Dil / Ana menü. `Time.timeScale = 0` ve `GameEvents.RaisePauseChanged(true/false)`. Minigame açıkken Esc minigame'i kapatır; keşke/final ekranında duraklatma yok. |
+| Ortak UI stili | `Scripts/UI/UiStyle.cs`, `Resources/UiStyle.asset`, `UiBuilder` | Font, balon ve panel bütün oyunda tek yerden. `UiBuilder.CreatePanel(parent, ad)` HUD paneli, `UiBuilder.CreateSpeechBubble(parent, font)` konuşma balonu (`UiBubble`). Görsel yoksa düz renkli kenarlıklı kutu. `UiBuilder.DefaultFont` artık Assets/Art/Fonts'taki fontu döndürür. |
+| Kurtarma hedefi | `Scripts/UI/ObjectiveHud.cs` | `Rescue` fazında sol üstte "Aileni bul ve deprem kabinine götür"; altında 7 sn "Merdiven altındaki deprem kabini: ailen içine girerse güvende." (M11) |
 | Ana menüye dönüş | `LoopManager.ReturnToMenu()` | `GameState.ResetAll()` + sahneyi yeniden yükler; menü tekrar açılır. |
 
 ### Mehmet'in yaptıkları (Berke tarafı okudu)
@@ -59,6 +61,19 @@
   - Kilitle: 3 isabet gerekir. Her isabette yeşil alan %30 daralır ve ibre hızlanır; ıskalayınca bir isabet geri gider.
 - **M7. Ruh sınırı:** `SpiritController` artık `HouseBounds.Instance.ClampToHouse(pozisyon, 0.3)` kullanıyor; `HouseBounds` yoksa eski renderer sınırlarına düşüyor.
 - **M8. Kontur shader'ı:** Bağlandı. `SpiritHighlighter`, `ItemOutline` olan eşyalara artık point light koymuyor; ruhun yanındaki eşyada `SetEmphasis(true)`, uzaklaşınca `false` çağırıyor. Konturu olmayan eşyaya yedek ışık konuyor.
+- **M9. Ruhun F'de takılması: düzeldi.** Ruh event saymıyor; sadece `MinigameHost.AnyOpen` iken (panel ekrandayken, 0,4 sn başarı beklemesi dahil) duruyor. Panel açılmazsa hiç durmuyor. Sebep büyük ihtimalle event sırasıydı: minigame hemen kapanınca `Closed`, ruhun `Opened` sayacından önce geliyor ve sayaç 1'de takılıyordu.
+- **M10. Balon ve ipucu stili: hazır.** Kullanım (SpeechBubble'da `EnsureUi` yerine):
+  ```csharp
+  var bubble = UiBuilder.CreateSpeechBubble(canvas.transform, null);   // UiBubble, font UiStyle'dan
+  bubble.SetText(Texts.Get(key), maxTextWidth);                          // yazıya göre boyutlanır
+  bubble.Root.anchoredPosition = local;                                  // kök pivotu kuyruğun ucu
+  bubble.gameObject.SetActive(false / true);
+  ```
+  Görsel yoksa beyaz gövde, koyu kenarlık ve karo kuyruk çiziyor. `PromptHud` ve ruh sayacı `UiBuilder.CreatePanel` ile aynı stilde. İstekler:
+  - `Sablonlar/UI/` altına `konusma_balonu` (48 × 32) ve `konusma_balonu_kuyruk` (16 × 12) şablonları.
+  - `ArtTextureImporter` 9-slice kenarını ayarlasın: `konusma_balonu.png` ve `hud_ipucu.png` için `spriteBorder = (8, 8, 8, 8)`. Kenar yoksa görsel gerilerek çizilir. `hud_sayac` artık kullanılmıyor; sayaç da `hud_ipucu` panelini kullanıyor.
+- **M11. Kabin (UI): hazır.** `ObjectiveHud` kurtarma fazında hedefi ve kabin açıklamasını gösteriyor (metinler `objective.rescue`, `objective.shelter_info`). Kabine yön oku yok; tabela ve parlamayla anlaşılmazsa eklerim.
+- **Play testi 2'deki Mehmet maddeleri:** 1. madde (oda örtüsü) uygun, ruhun girdiği odayı açması yeterli. Diğerlerinde Berke tarafında iş yok.
 - **M4. Çanta malzemeleri:** Tamam, öyle çalışıyor. Malzeme ruh fazında alınıp çantaya konunca `GameState.AddBagItem(id)` çağrılıyor (`BagDropPoint`). Sadece alınan ama çantaya konmayan malzeme sayılmıyor; ruh fazı biterken yerine dönüyor.
 - **M3. Kurtarma süresi:** Sürenin de göstergenin de tamamen Mehmet'te olmasını öneriyorum. GDD'deki gösterge sayı değil; ekran kenarında titreşen sarsıntı çubuğu, sallanan lamba, kalp atışı ve uğultu. Bunlar deprem hissinin parçası ve ses de Mehmet'te. Böylece Core'a yeni event gerekmiyor. Süre bitince `FailLoop(LoseReason.RescueTimeout, enÇokYavaşlatanEşya)`; gizli bonus için `GameState.FailedAttempts`. Mehmet çubuğu UI ile yapmak isterse `Deprem.UI.UiBuilder` kullanılabilir.
 
@@ -96,8 +111,9 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 | `minigame_yatak_rafi`, `minigame_ayna`, `minigame_cerceve` | 48 × 48 | Taşınan eşyanın kendisi | **yok** |
 | `minigame_esya` | 48 × 48 | Görseli olmayan taşınan şey için yedek | **yok** |
 | `minigame_ibre` | 8 × 32 | Kilitle'deki gidip gelen ibre | **yok** |
-| `hud_ipucu` | 192 × 32 | Tuş ipucunun ("F: Kalk") arka planı | **yok** |
-| `hud_sayac` | 64 × 32 | Ruh fazı sayacının arka planı | **yok** |
+| `hud_ipucu` | 192 × 32, 9-slice | Bütün HUD panelleri: tuş ipucu, ruh sayacı, kurtarma hedefi (UiStyle.panel) | var |
+| `konusma_balonu` | 48 × 32, 9-slice | Konuşma balonu gövdesi (UiStyle.bubble) | **yok** (M10) |
+| `konusma_balonu_kuyruk` | 16 × 12 | Balonun altındaki kuyruk, ucu aşağıda (UiStyle.bubbleTail) | **yok** (M10) |
 | `menu_arka_plan` | 960 × 540 | Ana menü arka planı (kapak görseli olabilir) | **yok** |
 | `logo` | serbest (öneri 320 × 96) | Oyunun adı; varsa menüde yazı yerine | **yok** |
 | Font (`Assets/Art/Fonts/`) | 16 px | Türkçe karakterli pixel font (ğ, ş, ı, İ, ç, ö, ü) | — |
