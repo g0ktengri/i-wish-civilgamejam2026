@@ -673,7 +673,7 @@ namespace Deprem.HouseBuilder
                     var dimLight = dim.AddComponent<Light>();
                     dimLight.type = LightType.Point;
                     dimLight.color = new Color(0.55f, 0.65f, 0.9f);
-                    dimLight.intensity = 0.9f;
+                    dimLight.intensity = 0.35f; // Play testi 3: elektrik gidince her yer rahat görünüyordu
                     dimLight.range = Mathf.Max(room.Width, room.Height) * 1.1f;
                     dimLight.shadows = LightShadows.Soft;
                     dimLight.enabled = false;

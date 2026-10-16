@@ -5,12 +5,15 @@ namespace Deprem.Player
 {
     /// <summary>
     /// El feneri (GDD: Spot Light, karakterin yönüne bakar). Çantada el feneri varsa kurtarma fazında yanar;
-    /// karanlık üst katta kardeş ancak bununla görünür.
+    /// karanlık üst katta kardeş ancak bununla görünür. Elektrik kesikken (kurtarma fazı) ev karanlıktır;
+    /// gözün karanlığa alışması için oyuncunun çevresinde küçük, loş bir görüş ışığı kalır.
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public sealed class PlayerFlashlight : MonoBehaviour
     {
         [SerializeField] private Light spot;
+        [Tooltip("Elektrik kesikken oyuncunun çevresindeki loş ışık")]
+        [SerializeField] private Light nightSight;
         [SerializeField] private float height = 1.3f;
         [Tooltip("Aşağı eğim (derece)")]
         [SerializeField] private float downTilt = 12f;
@@ -24,8 +27,10 @@ namespace Deprem.Player
 
         private void LateUpdate()
         {
+            bool dark = GameState.Phase == GamePhase.Rescue && !player.IsLying;
+            if (nightSight != null) nightSight.enabled = dark;
             if (spot == null) return;
-            bool on = GameState.Phase == GamePhase.Rescue && GameState.HasBagItem(BagItemId.Flashlight) && !player.IsLying;
+            bool on = dark && GameState.HasBagItem(BagItemId.Flashlight);
             spot.enabled = on;
             if (!on) return;
             spot.transform.localPosition = new Vector3(0.2f * player.Facing, height, -0.1f);

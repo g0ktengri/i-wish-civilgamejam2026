@@ -208,6 +208,23 @@ namespace Deprem.HouseBuilder
                     s.Add(0f, h - 0.04f, 0f, w, h, d);
                     break;
 
+                case "calisma_masasi": // sağlam çalışma masası: tabla, solda çekmeceli ayak, sağda iki ayak
+                    s.Add(0f, h - 0.05f, 0f, w, h, d);
+                    s.Add(0.02f, 0f, 0.02f, 0.42f, h - 0.05f, d - 0.02f);
+                    s.Add(0.05f, h - 0.25f, 0f, 0.39f, h - 0.08f, 0.02f);
+                    s.Add(0.05f, 0.08f, 0f, 0.39f, h - 0.28f, 0.02f);
+                    s.Add(w - 0.08f, 0f, 0.03f, w - 0.02f, h - 0.05f, 0.09f);
+                    s.Add(w - 0.08f, 0f, d - 0.09f, w - 0.02f, h - 0.05f, d - 0.03f);
+                    s.Add(0.42f, h - 0.15f, d - 0.05f, w - 0.02f, h - 0.05f, d - 0.02f); // arka kuşak
+                    break;
+
+                case "konsol": // sağlam konsol masa: tabla, iki yan panel, altta raf
+                    s.Add(0f, h - 0.05f, 0f, w, h, d);
+                    s.Add(0.03f, 0f, 0.02f, 0.09f, h - 0.05f, d - 0.02f);
+                    s.Add(w - 0.09f, 0f, 0.02f, w - 0.03f, h - 0.05f, d - 0.02f);
+                    s.Add(0.09f, 0.12f, 0.04f, w - 0.09f, 0.16f, d - 0.04f);
+                    break;
+
                 case "sandalye": // oturak, ayaklar, sırtlık sağda (masaya bakar)
                     Legs(s, size, 0.42f, 0.04f, 0.02f, 0.02f);
                     s.Add(0f, 0.42f, 0f, w, 0.47f, d);

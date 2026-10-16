@@ -51,6 +51,14 @@ namespace Deprem.Quake
             so.FindProperty("debrisMaterial").objectReferenceValue = DebrisMaterial();
             so.ApplyModifiedPropertiesWithoutUndo();
 
+            // Tavandan toz ve sıva: her odanın tavanının altı (ev ölçüleri HouseLayout'tan)
+            var ceilings = Deprem.HouseBuilder.HouseLayout.Rooms.Select(room => new QuakeEffects.Ceiling
+            {
+                center = new Vector3((room.X0 + room.X1) * 0.5f, room.CeilingY - 0.05f, room.Depth * 0.45f),
+                size = new Vector2(room.Width - 0.4f, room.Depth * 0.7f),
+            }).ToArray();
+            root.AddComponent<QuakeEffects>().Configure(ceilings, DustMaterial(), DebrisMaterial());
+
             var timer = root.AddComponent<RescueTimer>();
             var bar = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/sarsinti_cubugu.png");
             if (bar != null)
@@ -62,6 +70,35 @@ namespace Deprem.Quake
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        /// <summary>Toz tanesi ve toz bulutu: URP Particles/Unlit, saydam; renk parçacıktan gelir.
+        /// Sanatçı dokusu (Assets/Art/Particles/toz_kucuk.png) varsa onu kullanır.</summary>
+        private static Material DustMaterial()
+        {
+            const string folder = "Assets/Generated/Quake";
+            const string path = folder + "/toz.mat";
+            if (!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder("Assets/Generated", "Quake");
+            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 0f);
+            mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_ZWrite", 0f);
+            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Particles/toz_kucuk.png"));
+            mat.SetColor("_BaseColor", Color.white);
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         /// <summary>Tavandan düşen sıva: sanatçı dokusu (Assets/Art/Particles/siva.png) varsa onu kullanır</summary>

@@ -41,12 +41,13 @@ namespace Deprem.Quake
         [SerializeField] private float scriptedHitDelay = 2.5f;
 
         [Header("Ana deprem")]
-        [SerializeField] private float mainQuakeDuration = 12f;
+        [Tooltip("Play testi 3: 12 sn çok uzundu")]
+        [SerializeField] private float mainQuakeDuration = 7f;
         [SerializeField, Range(0f, 1f)] private float mainQuakeIntensity = 1f;
         [Tooltip("Eşyalar bu aralıkta, rastgele sırayla devrilir (deprem başından itibaren sn)")]
         [SerializeField] private Vector2 toppleWindow = new Vector2(1.5f, 5f);
         [Tooltip("C uyarısından sonra güvenli noktaya yürüyüp basmak için süre")]
-        [SerializeField] private float duckCoverGrace = 3.5f;
+        [SerializeField] private float duckCoverGrace = 3f;
         [Tooltip("C kısa süre bırakılırsa affedilir")]
         [SerializeField] private float duckCoverTolerance = 0.35f;
 
@@ -66,6 +67,8 @@ namespace Deprem.Quake
         [Header("Oyuncu")]
         [SerializeField] private float playerPlaneZ = 1f;
         [SerializeField] private float bedHeight = 0.5f;
+        [Tooltip("Kalkınca yatağın ortasından bu kadar sağda durur (odanın güvenli masasının önü)")]
+        [SerializeField] private float standUpOffsetX = 1.2f;
         [SerializeField] private Key standUpKey = Key.F;
         [SerializeField] private Key walkLeftKey = Key.A;
         [SerializeField] private Key walkRightKey = Key.D;
@@ -89,6 +92,8 @@ namespace Deprem.Quake
         private readonly List<ItemToppler> topplers = new List<ItemToppler>();
         private bool[] zoneTriggered;
         private bool aftershockRunning;
+        private DuckCoverBar duckCoverBar;
+        private QuakeEffects effects;
 
         private void Awake()
         {
@@ -98,6 +103,8 @@ namespace Deprem.Quake
             bed = bedMarker != null ? bedMarker.transform : null;
             topplers.AddRange(FindObjectsByType<ItemToppler>(FindObjectsSortMode.None));
             zoneTriggered = new bool[aftershockZones.Length];
+            if (!TryGetComponent(out duckCoverBar)) duckCoverBar = gameObject.AddComponent<DuckCoverBar>();
+            TryGetComponent(out effects);
         }
 
         private void OnEnable() => GameEvents.PhaseChanged += HandlePhaseChanged;
@@ -328,9 +335,11 @@ namespace Deprem.Quake
                 check.Update(Time.deltaTime, holding);
                 player.InputEnabled = !holding;
                 player.SetScriptedInput(0f, crouch: holding);
+                if (duckCoverBar != null) duckCoverBar.Show(1f - t / duration, holding);
                 if (check.Failed) break;
                 yield return null;
             }
+            if (duckCoverBar != null) duckCoverBar.Hide();
             SafeSpot.ShowAll(false);
             QuakePrompts.Clear();
             player.SetScriptedInput(0f);
@@ -355,6 +364,7 @@ namespace Deprem.Quake
         {
             QuakeCameraShake.Intensity = intensity;
             if (lights != null) lights.Flicker(intensity);
+            if (effects != null) effects.SetIntensity(intensity);
             foreach (var toppler in topplers) toppler.Rattle(intensity);
         }
 
@@ -411,6 +421,7 @@ namespace Deprem.Quake
             ApplyShake(0f);
             SafeSpot.ShowAll(false);
             QuakePrompts.Clear();
+            if (duckCoverBar != null) duckCoverBar.Hide();
             aftershockRunning = false;
         }
 
@@ -444,7 +455,7 @@ namespace Deprem.Quake
         private Vector3 StandPosition()
         {
             var basePosition = bed != null ? bed.position : player.transform.position;
-            return new Vector3(basePosition.x + 0.8f, 0f, playerPlaneZ);
+            return new Vector3(basePosition.x + standUpOffsetX, 0f, playerPlaneZ);
         }
 
         private static bool Pressed(Key key)

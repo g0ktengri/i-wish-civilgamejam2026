@@ -19,13 +19,22 @@ namespace Deprem.Quake
         [SerializeField] private Light fill;
         [SerializeField] private Color fillPowerOn = new Color(1f, 0.88f, 0.74f);
         [SerializeField] private Color fillPowerOff = new Color(0.62f, 0.7f, 0.95f);
+        [Tooltip("Elektrik kesikken dolgu ışığının oranı (karanlık gerçekten karanlık olsun)")]
+        [SerializeField] private float fillPowerOffScale = 0.25f;
+        [Tooltip("Elektrik kesikken ortam ışığının oranı")]
+        [SerializeField] private float ambientPowerOffScale = 0.2f;
         [Tooltip("Sarsıntı en güçlüyken lambanın kısılabileceği oran")]
         [SerializeField] private float flickerAmount = 0.6f;
+        [Tooltip("Sarsıntı en güçlüyken lambanın sallanma genliği (m)")]
+        [SerializeField] private float swayAmount = 0.25f;
 
         public bool PowerOn { get; private set; } = true;
 
         private float[] baseIntensities;
         private float[] emergencyBaseIntensities;
+        private Vector3[] lampBasePositions;
+        private float fillBaseIntensity;
+        private Color ambientBase;
 
         public void Configure(Light[] lampLights, Light[] emergency, Renderer[] fixtures, Material on, Material off, Light fillLight)
         {
@@ -40,9 +49,16 @@ namespace Deprem.Quake
         private void Awake()
         {
             baseIntensities = new float[lamps.Length];
-            for (int i = 0; i < lamps.Length; i++) baseIntensities[i] = lamps[i].intensity;
+            lampBasePositions = new Vector3[lamps.Length];
+            for (int i = 0; i < lamps.Length; i++)
+            {
+                baseIntensities[i] = lamps[i].intensity;
+                lampBasePositions[i] = lamps[i].transform.localPosition;
+            }
             emergencyBaseIntensities = new float[emergencyLights.Length];
             for (int i = 0; i < emergencyLights.Length; i++) emergencyBaseIntensities[i] = emergencyLights[i].intensity;
+            fillBaseIntensity = fill != null ? fill.intensity : 0f;
+            ambientBase = RenderSettings.ambientLight;
             SetPower(true);
         }
 
@@ -63,7 +79,15 @@ namespace Deprem.Quake
             if (lampFixtures != null)
                 foreach (var fixture in lampFixtures)
                     if (fixture != null) fixture.sharedMaterial = on ? fixtureOn : fixtureOff;
-            if (fill != null) fill.color = on ? fillPowerOn : fillPowerOff;
+            if (fill != null)
+            {
+                fill.color = on ? fillPowerOn : fillPowerOff;
+                // Awake'ten önce çağrılırsa (edit mode önizleme) taban değeri o anki değerdir
+                if (fillBaseIntensity <= 0f) fillBaseIntensity = fill.intensity;
+                fill.intensity = on ? fillBaseIntensity : fillBaseIntensity * fillPowerOffScale;
+            }
+            if (ambientBase == default) ambientBase = RenderSettings.ambientLight;
+            RenderSettings.ambientLight = on ? ambientBase : ambientBase * ambientPowerOffScale;
             if (on) Flicker(0f);
         }
 
@@ -75,6 +99,9 @@ namespace Deprem.Quake
             {
                 float dim = intensity > 0f ? Random.Range(0f, flickerAmount * intensity) : 0f;
                 lamps[i].intensity = baseIntensities[i] * (1f - dim);
+                // Lamba sallanır: ışık kayar, gölgeler odada gidip gelir
+                var sway = new Vector3(Mathf.Sin(Time.time * 6f + i * 1.7f), 0f, Mathf.Cos(Time.time * 4.5f + i) * 0.5f);
+                lamps[i].transform.localPosition = lampBasePositions[i] + sway * (swayAmount * intensity);
             }
         }
     }

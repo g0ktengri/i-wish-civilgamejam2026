@@ -140,7 +140,7 @@ namespace Deprem.HouseBuilder
         public static readonly ItemDef[] Items =
         {
             new ItemDef { Number = 1, Key = "yatak_rafi", Name = "Yatağın üstündeki raf", Room = "oyuncu",
-                Size = new Vector3(1f, 0.5f, 0.25f), CenterX = 2f, BaseY = 1.6f, Mount = ItemMount.BackWall,
+                Size = new Vector3(1f, 0.5f, 0.25f), CenterX = 1.5f, BaseY = 1.6f, Mount = ItemMount.BackWall,
                 Minigame = Deprem.Core.MinigameType.CarryAndPlace },
             new ItemDef { Number = 2, Key = "kitaplik", Name = "Kitaplık", Room = "salon",
                 Size = new Vector3(1f, 2f, 0.375f), CenterX = 22f, Mount = ItemMount.Floor },
@@ -179,22 +179,38 @@ namespace Deprem.HouseBuilder
         /// <summary>TV ünitesinin üstündeki televizyon (Assets/Art/Items/tv_on.png ...)</summary>
         public static readonly Vector3 TvSize = new Vector3(1f, 0.625f, 0.125f);
 
+        // Önde duran sağlam masalar: karakterin önünde (Z 0,15–0,85), altına çök-kapan-tutun yapılır (AFAD)
+        public const float SafeTableZ = 0.15f;
+        private static readonly Vector3 DeskSize = new Vector3(1.3f, 0.78f, 0.6f);
+        private static readonly Vector3 TableSize = new Vector3(1.3f, 0.78f, 0.7f);
+        private static readonly Vector3 ConsoleSize = new Vector3(1.2f, 0.8f, 0.45f);
+
         /// <summary>
-        /// Mobilyalar: karakter düzleminin arkasında, çarpışmasız. Yataklar yan görünüşte (başlık solda);
-        /// oyuncunun yatağı Marker_PlayerBed'in altında (QuakeDirector.bedHeight = şilte üstü 0,5 m),
+        /// Mobilyalar, çarpışmasız. Arkadakiler (yatak, kanepe, tezgah...) karakter düzleminin arkasında;
+        /// yataklar yan görünüşte (başlık solda), duvardaki raf / tablo yatağın ortasında.
+        /// Öndekiler her odanın güvenli noktasındaki sağlam masa (SafeSpots ile aynı X).
+        /// Oyuncunun yatağı Marker_PlayerBed'in altında (QuakeDirector.bedHeight = şilte üstü 0,5 m),
         /// ilk yardım çantası komodinin, el feneri mutfak masasının üstünde.
         /// </summary>
         public static readonly DecorDef[] Decor =
         {
-            new DecorDef { Key = "tek_kisilik_yatak", Room = "oyuncu", X0 = 1f, Z0 = 3.2f, Size = new Vector3(2f, 0.8f, 1f) },
-            new DecorDef { Key = "tek_kisilik_yatak", Room = "kardes", X0 = 4.6f, Z0 = 3.2f, Size = new Vector3(2f, 0.8f, 1f) },
-            new DecorDef { Key = "ebeveyn_yatagi", Room = "ebeveyn", X0 = 19.85f, Z0 = 3.3f, Size = new Vector3(2.2f, 0.9f, 1.7f) },
-            new DecorDef { Key = "komodin", Room = "ebeveyn", X0 = 19.2f, Z0 = 4.3f, Size = new Vector3(0.55f, 0.55f, 0.5f) },
+            new DecorDef { Key = "tek_kisilik_yatak", Room = "oyuncu", X0 = 0.5f, Z0 = 3.2f, Size = new Vector3(2f, 0.8f, 1f) },
+            new DecorDef { Key = "tek_kisilik_yatak", Room = "kardes", X0 = 0.4f, Z0 = 3.2f, Size = new Vector3(2f, 0.8f, 1f) },
+            new DecorDef { Key = "ebeveyn_yatagi", Room = "ebeveyn", X0 = 19.4f, Z0 = 3.3f, Size = new Vector3(2.2f, 0.9f, 1.7f) },
+            new DecorDef { Key = "komodin", Room = "ebeveyn", X0 = 18.75f, Z0 = 4.3f, Size = new Vector3(0.55f, 0.55f, 0.5f) },
             new DecorDef { Key = "kanepe", Room = "salon", X0 = 23.4f, Z0 = 4.55f, Size = new Vector3(2.2f, 0.85f, 0.9f) },
-            new DecorDef { Key = "masa", Room = "mutfak", X0 = 27.8f, Z0 = 2.55f, Size = new Vector3(1.2f, 0.85f, 0.9f) },
-            new DecorDef { Key = "sandalye", Room = "mutfak", X0 = 29.1f, Z0 = 2.78f, Size = new Vector3(0.45f, 0.9f, 0.45f) },
             new DecorDef { Key = "tezgah", Room = "mutfak", X0 = 28.85f, Z0 = 3.9f, Size = new Vector3(2.7f, 0.9f, 0.6f) },
             new DecorDef { Key = "buzdolabi", Room = "mutfak", X0 = 31.6f, Z0 = 3.85f, Size = new Vector3(0.75f, 1.8f, 0.65f) },
+
+            // Güvenli masalar (önde)
+            new DecorDef { Key = "calisma_masasi", Room = "oyuncu", X0 = 3.2f - DeskSize.x * 0.5f, Z0 = SafeTableZ, Size = DeskSize },
+            new DecorDef { Key = "konsol", Room = "koridor", X0 = 7.1f - ConsoleSize.x * 0.5f, Z0 = SafeTableZ, Size = ConsoleSize },
+            new DecorDef { Key = "masa", Room = "salon", X0 = 25.5f - TableSize.x * 0.5f, Z0 = SafeTableZ, Size = TableSize },
+            new DecorDef { Key = "masa", Room = "mutfak", X0 = 28.3f - TableSize.x * 0.5f, Z0 = SafeTableZ, Size = TableSize },
+            new DecorDef { Key = "sandalye", Room = "mutfak", X0 = 29.05f, Z0 = 0.25f, Size = new Vector3(0.45f, 0.9f, 0.45f) },
+            new DecorDef { Key = "calisma_masasi", Room = "kardes", X0 = 5.6f - DeskSize.x * 0.5f, Z0 = SafeTableZ, Size = DeskSize },
+            new DecorDef { Key = "konsol", Room = "sahanlik", X0 = 15.2f - ConsoleSize.x * 0.5f, Z0 = SafeTableZ, Size = ConsoleSize },
+            new DecorDef { Key = "calisma_masasi", Room = "ebeveyn", X0 = 25.6f - DeskSize.x * 0.5f, Z0 = SafeTableZ, Size = DeskSize },
         };
 
         // Yerde duran eşyaların ön yüzü en az bu Z'de: devrilince karakter düzlemine düşerler.
@@ -208,14 +224,17 @@ namespace Deprem.HouseBuilder
 
         public static readonly MarkerDef[] Markers =
         {
-            new MarkerDef("Marker_PlayerBed", new Vector3(2f, 0f, 3.6f)),
+            // Yatağın ortası (yatak X 0,5–2,5); kalkınca QuakeDirector.standUpOffsetX kadar sağda, masanın önünde
+            new MarkerDef("Marker_PlayerBed", new Vector3(1.5f, 0f, 3.6f)),
             new MarkerDef("Marker_PlayerStart", new Vector3(3f, 0f, Z)),
-            new MarkerDef("Marker_Father", new Vector3(22f, 0f, Z)),
-            new MarkerDef("Marker_Mother", new Vector3(23.5f, Up, Z)),
-            new MarkerDef("Marker_Sibling", new Vector3(3.5f, Up, Z)),
+            // Aile, devrilecek eşyasının hemen yanında (önünde değil): yer tutucu eşyanın parçası gibi görünmesin
+            new MarkerDef("Marker_Father", new Vector3(22.75f, 0f, Z)),
+            new MarkerDef("Marker_Mother", new Vector3(24.45f, Up, Z)),
+            new MarkerDef("Marker_Sibling", new Vector3(4.2f, Up, Z)),
             new MarkerDef("Marker_Bag", new Vector3(HouseDims.StairX0 + 5.7f, 0f, 1.3f)),
-            new MarkerDef("Marker_Flashlight", new Vector3(28.5f, 0.9f, 3f)),
-            new MarkerDef("Marker_FirstAid", new Vector3(19.5f, Up + 0.6f, 4.5f)),
+            // Mutfakta önde duran masanın üstü; ilk yardım ebeveyn odasındaki komodinin üstü
+            new MarkerDef("Marker_Flashlight", new Vector3(28.3f, 0.9f, 0.5f)),
+            new MarkerDef("Marker_FirstAid", new Vector3(19.02f, Up + 0.62f, 4.55f)),
             new MarkerDef("Marker_CabinEntrance", new Vector3(HouseDims.StairX0 + 3.35f, 0f, Z)),
             // Merdiven yolunun iki ucu (asıl yol House/Stairs üzerindeki StairPath'te)
             new MarkerDef("Marker_StairBottom", new Vector3(HouseDims.StairX0 - 0.2f, 0f, Z)),
@@ -223,18 +242,18 @@ namespace Deprem.HouseBuilder
         };
 
         /// <summary>
-        /// Çök-kapan-tutun için güvenli noktalar: (oda, merkez X). Devrilen eşyaların düşeceği yerlerden uzak,
-        /// artçı alanlarına yakın. Sanatçı sağlam eşya (masa, yatak kenarı) çizerse buraya hizalanır.
+        /// Çök-kapan-tutun için güvenli noktalar: (oda, merkez X). Her biri önde duran sağlam bir masanın altı
+        /// (Decor'daki güvenli masalar aynı X'te); devrilen eşyaların düşeceği yerlerden uzak, artçı alanlarına yakın.
         /// </summary>
         public static readonly (string room, float x)[] SafeSpots =
         {
-            ("oyuncu", 3.2f),   // yatağın yanı; döngü 4'te ruh bedene dönünce burada ayağa kalkar
-            ("koridor", 7f),    // artçı: koridora giriş
-            ("salon", 25.5f),   // TV ünitesi ve kitaplıktan uzak
-            ("mutfak", 28.3f),  // üst dolapların önünden uzak
-            ("kardes", 5.6f),   // artçı: üst kat, kardeşin odası
-            ("sahanlik", 15.2f),// artçı: merdiven başı
-            ("ebeveyn", 20f),   // gardıroptan uzak
+            ("oyuncu", 3.2f),   // çalışma masası; döngü 4'te ruh bedene dönünce burada ayağa kalkar
+            ("koridor", 7.1f),  // konsol; artçı: koridora giriş
+            ("salon", 25.5f),   // yemek masası; TV ünitesi ve kitaplıktan uzak
+            ("mutfak", 28.3f),  // mutfak masası; üst dolapların önünden uzak
+            ("kardes", 5.6f),   // çalışma masası; artçı: üst kat, kardeşin odası
+            ("sahanlik", 15.2f),// konsol; artçı: merdiven başı
+            ("ebeveyn", 25.6f), // çalışma masası; gardıroptan uzak
         };
 
         // Şerit dokusu 96 x 48 px = 1,5 x 0,75 m (Decals/guvenli_nokta.png)

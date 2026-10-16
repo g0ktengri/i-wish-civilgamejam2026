@@ -92,9 +92,22 @@ namespace Deprem.Player
             spot.innerSpotAngle = 30f;
             spot.shadows = LightShadows.Soft;
             spot.enabled = false;
+            // Elektrik kesikken oyuncunun çevresindeki loş görüş ışığı (karanlıkta sadece yakını görünür)
+            var sightGo = new GameObject("NightSight");
+            sightGo.transform.SetParent(root.transform, false);
+            sightGo.transform.localPosition = new Vector3(0f, 1.2f, -0.4f);
+            var sight = sightGo.AddComponent<Light>();
+            sight.type = LightType.Point;
+            sight.color = new Color(0.7f, 0.78f, 1f);
+            sight.intensity = 0.9f;
+            sight.range = 3f;
+            sight.shadows = LightShadows.None;
+            sight.enabled = false;
+
             var flashlight = root.AddComponent<PlayerFlashlight>();
             var flashSo = new SerializedObject(flashlight);
             flashSo.FindProperty("spot").objectReferenceValue = spot;
+            flashSo.FindProperty("nightSight").objectReferenceValue = sight;
             flashSo.ApplyModifiedPropertiesWithoutUndo();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);

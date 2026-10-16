@@ -91,7 +91,7 @@ namespace Deprem.Quake
             Step(player, null, 1f);
             Check(player.IsLying && (player.transform.position - bed).sqrMagnitude < 0.0001f, "Yatakta yatıyor ve yerinden oynamadı");
 
-            var stand = new Vector3(bed.x + 0.8f, 0f, 1f);
+            var stand = new Vector3(bed.x + 1.2f, 0f, 1f);
             bool done = false;
             player.GetUp(stand, () => done = true);
             Step(player, null, 3f);
@@ -206,7 +206,7 @@ namespace Deprem.Quake
             }
 
             var bed = GameObject.Find("Marker_PlayerBed").transform.position;
-            Check(SafeSpot.AnyContains(new Vector3(bed.x + 0.8f, 0f, 1f)), "Ruh fazı sonrası ayağa kalkılan yer güvenli noktada");
+            Check(SafeSpot.AnyContains(new Vector3(bed.x + 1.2f, 0f, 1f)), "Ruh fazı sonrası ayağa kalkılan yer güvenli noktada");
             Check(!SafeSpot.AnyContains(new Vector3(12f, 0f, 1f)), "Koridorun ortası güvenli nokta değil");
         }
 

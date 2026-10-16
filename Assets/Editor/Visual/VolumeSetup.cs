@@ -74,10 +74,10 @@ namespace Deprem.Visual
             {
                 Get<Tonemapping>(p).mode.Override(TonemappingMode.Neutral);
                 var color = Get<ColorAdjustments>(p);
-                // Karanlık ama oynanabilir: oyuncu devrilmiş eşyaları ve güvenli noktaları görebilmeli
+                // Gerçekten karanlık: oyuncu yakınını görüş ışığıyla (PlayerFlashlight.nightSight), uzağı el feneriyle görür
                 color.saturation.Override(-30f);
                 color.contrast.Override(15f);
-                color.postExposure.Override(0.25f);
+                color.postExposure.Override(-0.2f);
                 color.colorFilter.Override(new Color(0.85f, 0.9f, 1f));
                 var bloom = Get<Bloom>(p);
                 bloom.intensity.Override(0.8f);

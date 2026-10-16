@@ -1,0 +1,162 @@
+using System;
+using System.Collections;
+using Deprem.Core;
+using UnityEngine;
+
+namespace Deprem.Quake
+{
+    /// <summary>
+    /// Sarsıntının görsel efektleri (Play testi 3: "depremde efekt az"):
+    ///   - her odanın tavanından sarsıntının şiddetine göre toz, güçlüyken sıva parçaları dökülür,
+    ///   - devrilen eşya yere vurunca tabanında toz bulutu kalkar.
+    /// Şiddeti QuakeDirector verir (SetIntensity); oda tavanlarını ve materyalleri QuakeSetup yazar.
+    /// Parçacıklar kare (pixel art); sanatçı dokusu gelince materyallere takılır (Particles/toz_*.png, siva.png).
+    /// </summary>
+    public sealed class QuakeEffects : MonoBehaviour
+    {
+        [Serializable]
+        public struct Ceiling
+        {
+            [Tooltip("Tavanın hemen altı, odanın ortası (dünya)")] public Vector3 center;
+            [Tooltip("X: genişlik, Y: derinlik (Z)")] public Vector2 size;
+        }
+
+        [SerializeField] private Ceiling[] ceilings;
+        [SerializeField] private Material dustMaterial;
+        [SerializeField] private Material chunkMaterial;
+
+        [Header("Tavandan toz")]
+        [Tooltip("Tam şiddette oda başına saniyede toz tanesi")]
+        [SerializeField] private float dustRate = 70f;
+        [SerializeField] private Color dustColor = new Color(0.78f, 0.74f, 0.66f, 0.8f);
+        [Tooltip("Tam şiddette oda başına saniyede sıva parçası (şiddet 0,5'in üstünde başlar)")]
+        [SerializeField] private float chunkRate = 5f;
+
+        [Header("Devrilince toz bulutu")]
+        [SerializeField] private int puffCount = 45;
+        [Tooltip("Devrilme başladıktan yere vurana kadar (sn)")]
+        [SerializeField] private float puffDelay = 0.55f;
+        [SerializeField] private Color puffColor = new Color(0.72f, 0.68f, 0.6f, 0.55f);
+
+        private ParticleSystem[] dust;
+        private ParticleSystem[] chunks;
+        private ParticleSystem puff;
+
+        public void Configure(Ceiling[] roomCeilings, Material dustMat, Material chunkMat)
+        {
+            ceilings = roomCeilings;
+            dustMaterial = dustMat;
+            chunkMaterial = chunkMat;
+        }
+
+        private void Awake()
+        {
+            if (ceilings == null) ceilings = new Ceiling[0];
+            dust = new ParticleSystem[ceilings.Length];
+            chunks = new ParticleSystem[ceilings.Length];
+            for (int i = 0; i < ceilings.Length; i++)
+            {
+                var c = ceilings[i];
+                var box = new Vector3(c.size.x, 0.05f, c.size.y);
+                dust[i] = CreateSystem("Dust_" + i, dustMaterial, c.center, box, 0.02f, 0.06f, 1.6f, 0.35f, dustColor, 400);
+                chunks[i] = CreateSystem("Chunks_" + i, chunkMaterial != null ? chunkMaterial : dustMaterial,
+                    c.center, box, 0.06f, 0.13f, 1.4f, 1f, Color.white, 60);
+            }
+            puff = CreateSystem("ToppleDust", dustMaterial, transform.position, Vector3.one * 0.1f, 0.15f, 0.35f, 1.2f, -0.03f, puffColor, 400);
+            var size = puff.sizeOverLifetime;
+            size.enabled = true;
+            size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.6f, 1f, 1.6f));
+        }
+
+        private void OnEnable() => GameEvents.ItemToppled += OnItemToppled;
+        private void OnDisable() => GameEvents.ItemToppled -= OnItemToppled;
+
+        /// <summary>0 = sakin, 1 = ana depremin en güçlü anı</summary>
+        public void SetIntensity(float intensity)
+        {
+            if (dust == null) return;
+            intensity = Mathf.Clamp01(intensity);
+            for (int i = 0; i < dust.Length; i++)
+            {
+                var dustEmission = dust[i].emission;
+                dustEmission.rateOverTime = intensity * dustRate;
+                var chunkEmission = chunks[i].emission;
+                chunkEmission.rateOverTime = Mathf.Max(0f, intensity - 0.5f) * 2f * chunkRate;
+            }
+        }
+
+        private void OnItemToppled(ItemId id)
+        {
+            var item = SecurableItem.Find(id);
+            if (item != null) StartCoroutine(PuffAfterImpact(item));
+        }
+
+        private IEnumerator PuffAfterImpact(SecurableItem item)
+        {
+            yield return new WaitForSeconds(puffDelay);
+            if (item == null) yield break;
+            var collider = item.GetComponent<Collider>();
+            var bounds = collider != null ? collider.bounds : new Bounds(item.transform.position, Vector3.one);
+            var basePosition = new Vector3(bounds.center.x, bounds.min.y + 0.1f, Mathf.Max(0.3f, bounds.center.z));
+            for (int i = 0; i < puffCount; i++)
+            {
+                var emit = new ParticleSystem.EmitParams
+                {
+                    position = basePosition + new Vector3(UnityEngine.Random.Range(-bounds.extents.x, bounds.extents.x), 0f,
+                        UnityEngine.Random.Range(-0.2f, 0.2f)),
+                    velocity = new Vector3(UnityEngine.Random.Range(-1.6f, 1.6f), UnityEngine.Random.Range(0.1f, 0.9f),
+                        UnityEngine.Random.Range(-0.3f, 0.3f)),
+                    applyShapeToPosition = false,
+                };
+                puff.Emit(emit, 1);
+            }
+        }
+
+        private ParticleSystem CreateSystem(string name, Material material, Vector3 position, Vector3 box,
+            float minSize, float maxSize, float lifetime, float gravity, Color color, int maxParticles)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            go.transform.position = position;
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            var main = ps.main;
+            main.loop = true;
+            main.playOnAwake = false;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(lifetime * 0.7f, lifetime);
+            main.startSpeed = 0f;
+            main.startSize = new ParticleSystem.MinMaxCurve(minSize, maxSize);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI);
+            main.gravityModifier = gravity;
+            main.startColor = color;
+            main.maxParticles = maxParticles;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0f;
+
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = box;
+
+            // Ömrünün sonunda solar
+            var fade = ps.colorOverLifetime;
+            fade.enabled = true;
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 0.6f), new GradientAlphaKey(0f, 1f) });
+            fade.color = new ParticleSystem.MinMaxGradient(gradient);
+
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.renderMode = ParticleSystemRenderMode.Billboard;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+
+            ps.Play();
+            return ps;
+        }
+    }
+}

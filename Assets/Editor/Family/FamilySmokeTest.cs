@@ -89,7 +89,7 @@ namespace Deprem.Family
             StartAttempt(5, new[] { BagItemId.FirstAidKit, BagItemId.Flashlight });
 
             // Baba: F basılı tutularak tedavi
-            player.Teleport(new Vector3(21.2f, 0f, 1f));
+            player.Teleport(new Vector3(22.2f, 0f, 1f));
             TickMembers(2f);
             Check(GameState.Phase == GamePhase.Rescue, "Döngü 5: ilk yardım varken babanın yanında kaybedilmedi");
             var target = Interactables.FindNearest(player);
@@ -124,7 +124,7 @@ namespace Deprem.Family
             director.OnMemberRescued(FamilyMemberId.Sibling);
 
             // Anne
-            player.Teleport(new Vector3(22.6f, Up, 1f));
+            player.Teleport(new Vector3(23.6f, Up, 1f));
             StepWorld(0.2f);
             target = Interactables.FindNearest(player);
             Check(ReferenceEquals(target, mother), "Annenin yanında F ile etkileşilebilir");
@@ -155,7 +155,7 @@ namespace Deprem.Family
         private static void MotherHitByWardrobe()
         {
             StartAttempt(5, new[] { BagItemId.FirstAidKit, BagItemId.Flashlight }, ItemId.Wardrobe);
-            player.Teleport(new Vector3(21f, Up, 1f));
+            player.Teleport(new Vector3(22f, Up, 1f));
             TickMembers(3.5f);
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.FamilyHitByItem
                   && GameState.LastLoseItem == ItemId.Wardrobe, $"Gardırop anneye devrildi, 'Keşke gardırobu sabitleseydim' ({GameState.LastLoseItem})");

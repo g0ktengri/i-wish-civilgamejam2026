@@ -236,3 +236,9 @@ Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin
 3. **Mobilyaların yeri saçma:** odalar baştan yerleşir: yatak ve tablo hizası, gardırop ve annenin durduğu yer, kitaplık ve baba vb. Aile işaretleri (`Marker_Father/Mother/Sibling`) biraz kayabilir; adla aradığın için iş yok. **`Marker_Flashlight` mutfaktaki önde duran masanın üstüne taşınabilir**; çanta malzemesi orada görünür.
 4. **Depremde efekt az:** tavandan toz ve sıva dökülmesi, eşya devrilince toz bulutu, lambaların sallanması, tabloların tıkırdaması. İş yok.
 5. **Elektrik gidince her şey rahatça görünüyor:** elektrik kesilince ev gerçekten karanlık olur. Oyuncunun çevresinde küçük bir görüş ışığı kalır, el feneri asıl ışık olur. Ruh fazı ve sabah görünümü değişmez. İş yok.
+
+**Mehmet tarafı: 1–5 yapıldı** (Play'de son kontrol bekliyor). Değişen işaret noktaları (adla aradığın için iş yok, bilgi için):
+- `Marker_Flashlight` (28,3; 0,9; 0,5): mutfakta önde duran masanın üstü.
+- `Marker_FirstAid` (19,02; üst kat + 0,62; 4,55): ebeveyn odasındaki komodinin üstü.
+- `Marker_PlayerBed` x 1,5 (ruhun çıktığı yer). `Marker_Father` 22,75, `Marker_Mother` 24,45, `Marker_Sibling` 4,2.
+- Efektler `Scripts/Quake/QuakeEffects.cs`. Tutma çubuğu `Scripts/Quake/DuckCoverBar.cs` (`UiBuilder.CreatePanel`); fontu da senin `UiStyle`'ından alır.

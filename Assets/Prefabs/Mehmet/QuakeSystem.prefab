@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2292042419153155489}
   - component: {fileID: 2660099299824387731}
+  - component: {fileID: 2793190379505330756}
   - component: {fileID: 5854064733218507754}
   m_Layer: 0
   m_Name: QuakeSystem
@@ -52,10 +53,10 @@ MonoBehaviour:
   standUpWindow: 8
   waitAfterStandUp: 3
   scriptedHitDelay: 2.5
-  mainQuakeDuration: 12
+  mainQuakeDuration: 7
   mainQuakeIntensity: 1
   toppleWindow: {x: 1.5, y: 5}
-  duckCoverGrace: 3.5
+  duckCoverGrace: 3
   duckCoverTolerance: 0.35
   aftershockDuration: 3.5
   aftershockIntensity: 0.5
@@ -73,6 +74,7 @@ MonoBehaviour:
     max: {x: 6.8, y: 5}
   playerPlaneZ: 1
   bedHeight: 0.5
+  standUpOffsetX: 1.2
   standUpKey: 20
   walkLeftKey: 15
   walkRightKey: 18
@@ -81,6 +83,41 @@ MonoBehaviour:
   debrisFrontOffset: 0.15
   devStartLoop: 0
   showDebugPrompt: 0
+--- !u!114 &2793190379505330756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5663881144789177165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e876b1201b0e3df40a67adb7f16544ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Quake.QuakeEffects
+  ceilings:
+  - center: {x: 3, y: 3.45, z: 2.0249999}
+    size: {x: 5.6, y: 3.1499999}
+  - center: {x: 12, y: 3.45, z: 1.5749999}
+    size: {x: 11.6, y: 2.45}
+  - center: {x: 22.5, y: 3.45, z: 2.475}
+    size: {x: 8.6, y: 3.85}
+  - center: {x: 29.75, y: 3.45, z: 2.0249999}
+    size: {x: 5.1, y: 3.1499999}
+  - center: {x: 3.5, y: 6.95, z: 2.0249999}
+    size: {x: 6.6, y: 3.1499999}
+  - center: {x: 12.5, y: 6.95, z: 1.5749999}
+    size: {x: 10.6, y: 2.45}
+  - center: {x: 22.5, y: 6.95, z: 2.25}
+    size: {x: 8.6, y: 3.5}
+  dustMaterial: {fileID: 2100000, guid: 9fba79fa06ac6734687aabd9422fb93f, type: 2}
+  chunkMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
+  dustRate: 70
+  dustColor: {r: 0.78, g: 0.74, b: 0.66, a: 0.8}
+  chunkRate: 5
+  puffCount: 45
+  puffDelay: 0.55
+  puffColor: {r: 0.72, g: 0.68, b: 0.6, a: 0.55}
 --- !u!114 &5854064733218507754
 MonoBehaviour:
   m_ObjectHideFlags: 0
