@@ -1,14 +1,17 @@
 using System.Collections.Generic;
 using Deprem.Core;
+using Deprem.Visual;
 using UnityEngine;
 
 namespace Deprem.Spirit
 {
-    // Ruh fazında sabitlenmemiş eşyaları vurgular: her eşyanın önünde nabız gibi atan bir ışık,
-    // ruhun yanındaki eşyada daha parlak. Sabitlenen eşyanın ışığı söner.
-    // Geçici çözüm: GDD'deki kontur (outline) shader'ı gelince bunun yerini alır.
+    // Ruh fazında sabitlenmemiş eşyaları vurgular.
+    // Eşyada Mehmet'in ItemOutline'ı varsa kontur kendi kendine yanar; burada sadece ruhun yanındaki
+    // eşya SetEmphasis ile öne çıkarılır (ENTEGRASYON M8). Konturu olmayan eşyaya yedek olarak
+    // önünde nabız gibi atan bir ışık konur.
     public class SpiritHighlighter : MonoBehaviour
     {
+        [Header("Yedek ışık (konturu olmayan eşyalar)")]
         [SerializeField] Color color = new Color(1f, 0.85f, 0.45f);
         [SerializeField] float baseIntensity = 0.6f;
         [SerializeField] float pulseAmount = 0.4f;
@@ -19,6 +22,7 @@ namespace Deprem.Spirit
         [SerializeField] float frontOffset = 0.4f;
 
         readonly Dictionary<SecurableItem, Light> lights = new Dictionary<SecurableItem, Light>();
+        ItemOutline emphasized;
 
         void OnEnable()
         {
@@ -38,7 +42,8 @@ namespace Deprem.Spirit
             Clear();
             if (phase != GamePhase.Spirit) return;
             foreach (var item in SecurableItem.All)
-                if (!item.IsSecured) lights[item] = CreateLight(item);
+                if (!item.IsSecured && !item.GetComponent<ItemOutline>())
+                    lights[item] = CreateLight(item);
         }
 
         void HandleItemSecured(ItemId id)
@@ -53,11 +58,21 @@ namespace Deprem.Spirit
 
         void Update()
         {
+            var nearest = SpiritInteractor.Nearest;
+            Emphasize(nearest ? nearest.GetComponent<ItemOutline>() : null);
+
             if (lights.Count == 0) return;
             float pulse = baseIntensity + Mathf.Sin(Time.time * pulseSpeed) * pulseAmount;
-            var nearest = SpiritInteractor.Nearest;
             foreach (var pair in lights)
                 if (pair.Value) pair.Value.intensity = pair.Key == nearest ? nearestIntensity : pulse;
+        }
+
+        void Emphasize(ItemOutline outline)
+        {
+            if (outline == emphasized) return;
+            if (emphasized) emphasized.SetEmphasis(false);
+            emphasized = outline;
+            if (emphasized) emphasized.SetEmphasis(true);
         }
 
         Light CreateLight(SecurableItem item)
@@ -78,6 +93,7 @@ namespace Deprem.Spirit
 
         void Clear()
         {
+            Emphasize(null);
             foreach (var light in lights.Values)
                 if (light) Destroy(light.gameObject);
             lights.Clear();
