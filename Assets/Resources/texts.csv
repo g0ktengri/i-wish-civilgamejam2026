@@ -115,3 +115,18 @@ menu.main_menu,Ana menü,Main menu
 bubble.ignore_foreshock,"Amaan, ne olacak ki... Uyumaya devam.","Oh, it's nothing... Back to sleep."
 bubble.panic_run,Deprem! Hemen buradan çıkmalıyım!,Earthquake! I have to get out of here!
 bubble.wake,Ne oluyor?,What's happening?
+bubble.family_hit.father,"Baba! Hayır, hayır...","Dad! No, no..."
+bubble.family_hit.mother,"Anne! Hayır... Anne!","Mom! No... Mom!"
+bubble.family_hit.sibling,"Hayır! Kardeşim... Bunu ben önleyebilirdim.","No! My little sibling... I could have prevented this."
+bubble.family_missing.firstaidkit,"Kanaması durmuyor... Elimde sarabileceğim hiçbir şey yok!","He's bleeding... I have nothing to bandage him with!"
+bubble.family_missing.flashlight,"Hiçbir şey göremiyorum... Neredesin? Ses ver!","I can't see anything... Where are you? Say something!"
+cabin.sign,DEPREM KABİNİ,EARTHQUAKE SHELTER
+
+# Mehmet: F ipuçları (kapı, merdiven, aile, kabin)
+prompt.open_door,F: Kapıyı aç,F: Open the door
+prompt.stairs_up,F: Yukarı çık,F: Go upstairs
+prompt.stairs_down,F: Aşağı in,F: Go downstairs
+prompt.treat,F (basılı tut): Yarayı sar,F (hold): Treat the wound
+prompt.take_along,F: Yanına al,F: Take along
+prompt.cabin_family,F: Kabine yerleştir,F: Get them into the shelter
+prompt.cabin_enter,F: Kabine gir,F: Enter the shelter

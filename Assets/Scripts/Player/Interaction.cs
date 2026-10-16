@@ -15,6 +15,12 @@ namespace Deprem.Player
         void Interact(PlayerController player);
     }
 
+    /// <summary>İsteğe bağlı: etkileşilebilirin F ipucu (texts.csv anahtarı). Yoksa "prompt.interact".</summary>
+    public interface IPromptSource
+    {
+        string PromptKey { get; }
+    }
+
     /// <summary>Sahnedeki etkileşilebilirlerin listesi; collider gerektirmez.</summary>
     public static class Interactables
     {

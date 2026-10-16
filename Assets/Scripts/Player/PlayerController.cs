@@ -247,12 +247,21 @@ namespace Deprem.Player
             MoveInput = 0f;
         }
 
-        /// <summary>Yataktan kalkıp karakter düzlemindeki noktaya yürür.</summary>
+        /// <summary>
+        /// Yataktan kalkar: karakter düzleminde, yatağın önünde ayakta belirir. Kendi kendine yürümez;
+        /// girdiyi açmak çağıranın işi (sprite gelince araya "kalkma" animasyonu girer).
+        /// </summary>
         public void GetUp(Vector3 standPosition, Action onDone = null)
         {
             if (!IsLying) return;
-            IsLying = false;
-            FollowPath(new[] { standPosition }, 1.5f, onDone);
+            Teleport(standPosition);
+            onDone?.Invoke();
+        }
+
+        /// <summary>Yerinden oynamadan bir yöne döner (1 = sağ, -1 = sol); örneğin bir şeye bakarken.</summary>
+        public void Face(int direction)
+        {
+            if (direction != 0) Facing = direction > 0 ? 1 : -1;
         }
 
         public void Teleport(Vector3 position)

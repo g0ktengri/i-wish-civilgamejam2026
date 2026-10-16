@@ -69,23 +69,23 @@ namespace Deprem.Visual
                 Get<ChromaticAberration>(p).intensity.Override(0.2f);
             });
 
-            // Elektrik kesik: karanlık, sert, kenarlar kırmızımsı (ışığı acil durum lambaları verir)
+            // Elektrik kesik: karanlık, soğuk ve loş; kırmızı yok (Play testi 2)
             var powerOut = Profile("ElektrikKesik", p =>
             {
                 Get<Tonemapping>(p).mode.Override(TonemappingMode.Neutral);
                 var color = Get<ColorAdjustments>(p);
                 // Karanlık ama oynanabilir: oyuncu devrilmiş eşyaları ve güvenli noktaları görebilmeli
-                color.saturation.Override(-20f);
+                color.saturation.Override(-30f);
                 color.contrast.Override(15f);
                 color.postExposure.Override(0.25f);
-                color.colorFilter.Override(new Color(1f, 0.92f, 0.92f));
+                color.colorFilter.Override(new Color(0.85f, 0.9f, 1f));
                 var bloom = Get<Bloom>(p);
                 bloom.intensity.Override(0.8f);
                 bloom.threshold.Override(0.9f);
                 var vignette = Get<Vignette>(p);
                 vignette.intensity.Override(0.45f);
                 vignette.smoothness.Override(0.55f);
-                vignette.color.Override(new Color(0.18f, 0.02f, 0.02f));
+                vignette.color.Override(new Color(0.01f, 0.02f, 0.05f));
                 Get<FilmGrain>(p).intensity.Override(0.3f);
                 Get<ChromaticAberration>(p).intensity.Override(0.05f);
             });

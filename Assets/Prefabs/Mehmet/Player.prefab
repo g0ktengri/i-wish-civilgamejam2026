@@ -258,6 +258,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.PlayerVisual
   visual: {fileID: 6463735103144113447}
+  lyingThickness: 0.6
 --- !u!114 &704763786387298917
 MonoBehaviour:
   m_ObjectHideFlags: 0

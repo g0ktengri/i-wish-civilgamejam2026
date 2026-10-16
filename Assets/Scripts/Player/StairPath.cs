@@ -53,7 +53,7 @@ namespace Deprem.Player
             return route;
         }
 
-        private sealed class Endpoint : IInteractable
+        private sealed class Endpoint : IInteractable, IPromptSource
         {
             private readonly StairPath stairs;
             private readonly bool isBottom;
@@ -64,6 +64,7 @@ namespace Deprem.Player
                 this.isBottom = isBottom;
             }
 
+            public string PromptKey => isBottom ? "prompt.stairs_up" : "prompt.stairs_down";
             public Vector3 InteractionPoint => isBottom ? stairs.points[0] : stairs.points[stairs.points.Length - 1];
             public float InteractionRange => stairs.interactionRange;
 

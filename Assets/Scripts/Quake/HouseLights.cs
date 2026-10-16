@@ -4,7 +4,7 @@ namespace Deprem.Quake
 {
     /// <summary>
     /// Evin tavan lambaları ve acil durum ışıkları. Sarsıntıda titrer; ana deprem bitince
-    /// elektrik kesilir, ev karanlık ve kırmızı acil durum ışığına geçer (GDD).
+    /// elektrik kesilir, ev karanlık ve loş, soğuk bir ışıkla kalır ("emergency" ışıklar; kırmızı değil).
     /// Diziler HouseBuilder tarafından doldurulur.
     /// </summary>
     public sealed class HouseLights : MonoBehaviour

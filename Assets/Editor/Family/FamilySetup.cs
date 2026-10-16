@@ -10,7 +10,7 @@ namespace Deprem.Family
 {
     /// <summary>
     /// Aile sistemini prefab olarak (Assets/Prefabs/Mehmet/FamilySystem.prefab) sahneye koyar:
-    /// FamilyDirector + baba, anne, kardeş. Üyeler çalışma anında kendi Marker_* noktalarına yerleşir.
+    /// FamilyDirector + baba, anne, kardeş. Üyeler kurulumda ve çalışma anında kendi Marker_* noktalarına yerleşir.
     /// </summary>
     internal static class FamilySetup
     {
@@ -57,6 +57,15 @@ namespace Deprem.Family
                 Object.DestroyImmediate(old);
             var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
             instance.name = SystemName;
+
+            // Çalışma anında da yerleşirler; editörde de yerlerinde görünsünler, (0, 0, 0)'da evin solunda değil
+            var transforms = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Transform>(true)).ToList();
+            foreach (var def in Members)
+            {
+                var member = instance.transform.Find(def.Name);
+                var marker = transforms.FirstOrDefault(t => t.name == def.Marker);
+                if (member != null && marker != null) member.position = marker.position;
+            }
             return instance;
         }
 

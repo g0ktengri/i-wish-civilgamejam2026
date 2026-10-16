@@ -165,6 +165,17 @@ namespace Deprem.HouseBuilder
                 Minigame = Deprem.Core.MinigameType.CarryAndPlace },
         };
 
+        /// <summary>Odalar arası kapının kanadı (Assets/Art/Decor/kapi_yan.png asıl yüz: açılınca kameraya döner)</summary>
+        public static readonly Vector3 DoorLeafSize = new Vector3(0.12f, HouseDims.DoorHeight - 0.02f, HouseDims.DoorZ1 - HouseDims.DoorZ0);
+
+        /// <summary>Aynı kattaki sağ komşu oda (yoksa null)</summary>
+        public static RoomDef RightNeighbor(RoomDef room)
+        {
+            foreach (var other in Rooms)
+                if (other != room && other.Floor == room.Floor && Mathf.Approximately(other.X0, room.X1)) return other;
+            return null;
+        }
+
         /// <summary>TV ünitesinin üstündeki televizyon (Assets/Art/Items/tv_on.png ...)</summary>
         public static readonly Vector3 TvSize = new Vector3(1f, 0.625f, 0.125f);
 

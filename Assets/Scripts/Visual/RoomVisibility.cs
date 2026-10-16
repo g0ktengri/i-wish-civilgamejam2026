@@ -1,0 +1,177 @@
+using System;
+using System.Collections.Generic;
+using Deprem.Core;
+using Deprem.Player;
+using UnityEngine;
+
+namespace Deprem.Visual
+{
+    /// <summary>
+    /// Oda örtüsü: oyuncunun görmediği odalar evin önünde siyah bir örtüyle kapalıdır.
+    /// Bir oda, bakan (beden; ruh fazında "Spirit") içine girince ya da yanındaki açık kapıdan bakınca açılır
+    /// ve deneme boyunca açık kalır. Merdiven koridorla sahanlığı birbirine açar.
+    /// Örtüler editörde gizli (sahne düzenlenebilsin), oyun başlayınca kapanır. HouseBuilder kurar.
+    /// </summary>
+    public sealed class RoomVisibility : MonoBehaviour
+    {
+        [Serializable]
+        public struct Area
+        {
+            public string key;
+            public float x0;
+            public float x1;
+            public float floorY;
+            public float ceilingY;
+            public Renderer cover;
+        }
+
+        /// <summary>
+        /// İki oda arasında kapısız bağlantı (merdiven): bakan bu X aralığında ve minY'nin üstündeyse
+        /// (basamaklarda ya da üst katta) iki oda da açılır
+        /// </summary>
+        [Serializable]
+        public struct Link
+        {
+            public string a;
+            public string b;
+            public float x0;
+            public float x1;
+            public float minY;
+        }
+
+        private const string SpiritObjectName = "Spirit"; // Kararlar B2: ruh objesinin adı sabit
+
+        [SerializeField] private Area[] areas;
+        [SerializeField] private Link[] links;
+        [SerializeField] private HouseDoor[] doors;
+        [SerializeField] private float fadeTime = 0.4f;
+        [Tooltip("Bakanın odasını bulurken tavan / zemin payı (m)")]
+        [SerializeField] private float verticalMargin = 0.3f;
+
+        private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+        private bool[] revealed;
+        private float[] alpha;
+        private MaterialPropertyBlock block;
+        private PlayerController player;
+        private Transform spirit;
+
+        public void Configure(Area[] roomAreas, Link[] roomLinks, HouseDoor[] houseDoors)
+        {
+            areas = roomAreas;
+            links = roomLinks;
+            doors = houseDoors;
+        }
+
+        public bool IsRevealed(string key)
+        {
+            int i = IndexOf(key);
+            return i >= 0 && revealed != null && revealed[i];
+        }
+
+        private void Awake() => Initialize();
+
+        /// <summary>Örtüleri kapatır, hiçbir oda açık değil. Awake'te çağrılır; testlerde elle çağrılabilir.</summary>
+        public void Initialize()
+        {
+            revealed = new bool[areas.Length];
+            alpha = new float[areas.Length];
+            for (int i = 0; i < areas.Length; i++)
+            {
+                alpha[i] = 1f;
+                if (areas[i].cover != null) areas[i].cover.enabled = true;
+                ApplyAlpha(i);
+            }
+        }
+
+        private void Update()
+        {
+            if (player == null) player = FindFirstObjectByType<PlayerController>();
+            Transform viewer = player != null ? player.transform : null;
+            if (GameState.Phase == GamePhase.Spirit)
+            {
+                if (spirit == null)
+                {
+                    var go = GameObject.Find(SpiritObjectName);
+                    if (go != null) spirit = go.transform;
+                }
+                if (spirit != null) viewer = spirit;
+            }
+            if (viewer != null) Tick(viewer.position, Time.deltaTime);
+        }
+
+        /// <summary>Bakanın konumuna göre odaları açar ve örtüleri soldurur. Testlerde elle çağrılabilir.</summary>
+        public void Tick(Vector3 viewer, float dt)
+        {
+            int current = AreaAt(viewer);
+            if (current >= 0)
+            {
+                Reveal(current);
+                string key = areas[current].key;
+                foreach (var door in doors)
+                {
+                    if (door == null || !door.IsOpen) continue;
+                    if (door.LeftRoom == key) Reveal(IndexOf(door.RightRoom));
+                    else if (door.RightRoom == key) Reveal(IndexOf(door.LeftRoom));
+                }
+            }
+            foreach (var link in links)
+            {
+                if (viewer.x < link.x0 || viewer.x > link.x1 || viewer.y < link.minY) continue;
+                int a = IndexOf(link.a), b = IndexOf(link.b);
+                if (current == a || current == b)
+                {
+                    Reveal(a);
+                    Reveal(b);
+                }
+            }
+
+            for (int i = 0; i < areas.Length; i++)
+            {
+                if (!revealed[i] || alpha[i] <= 0f) continue;
+                alpha[i] = fadeTime > 0f ? Mathf.Max(0f, alpha[i] - dt / fadeTime) : 0f;
+                ApplyAlpha(i);
+            }
+        }
+
+        private void Reveal(int index)
+        {
+            if (index >= 0) revealed[index] = true;
+        }
+
+        private int AreaAt(Vector3 p)
+        {
+            // Üst kat önce: merdivenin başında iki katın payı çakışır
+            int best = -1;
+            for (int i = 0; i < areas.Length; i++)
+            {
+                var a = areas[i];
+                if (p.x < a.x0 || p.x >= a.x1) continue;
+                if (p.y < a.floorY - verticalMargin || p.y > a.ceilingY + verticalMargin) continue;
+                if (best < 0 || a.floorY > areas[best].floorY) best = i;
+            }
+            return best;
+        }
+
+        private int IndexOf(string key)
+        {
+            for (int i = 0; i < areas.Length; i++)
+                if (areas[i].key == key) return i;
+            return -1;
+        }
+
+        private void ApplyAlpha(int i)
+        {
+            var cover = areas[i].cover;
+            if (cover == null) return;
+            if (alpha[i] <= 0f)
+            {
+                cover.enabled = false;
+                return;
+            }
+            block ??= new MaterialPropertyBlock();
+            cover.GetPropertyBlock(block);
+            block.SetColor(BaseColor, new Color(0f, 0f, 0f, alpha[i]));
+            cover.SetPropertyBlock(block);
+        }
+    }
+}

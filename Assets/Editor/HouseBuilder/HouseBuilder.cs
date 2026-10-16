@@ -88,6 +88,22 @@ namespace Deprem.HouseBuilder
             volumes.SetImmediate(volumes.Night);
             foreach (var outline in outlines) outline.SetVisible(false);
 
+            // Oyun başındaki oda örtüsü: sadece oyuncunun odası açık, koridor kapısı açık (sahne kaydedildikten sonra)
+            var visibility = Object.FindFirstObjectByType<Deprem.Visual.RoomVisibility>();
+            if (visibility != null)
+            {
+                foreach (var door in Object.FindObjectsByType<Deprem.Player.HouseDoor>(FindObjectsSortMode.None))
+                    if (door.LeftRoom == "oyuncu")
+                    {
+                        door.Open(0f);
+                        var hinge = door.transform.Find("Hinge");
+                        if (hinge != null) hinge.localRotation = Quaternion.Euler(0f, -90f, 0f);
+                    }
+                visibility.Initialize();
+                visibility.Tick(new Vector3(5.5f, 0f, 1f), 1f);
+                HousePreview.Render("Logs/house_preview_covers.png", null, whole, 2048, 1024);
+            }
+
             ArtTemplates.Generate();
             Debug.Log("[HouseBuilder] Batch tamam");
         }
@@ -143,6 +159,14 @@ namespace Deprem.HouseBuilder
             var decor = Child(root.transform, "Decor");
             foreach (var piece in HouseLayout.Decor)
                 BuildDecor(piece, decor);
+
+            var doors = BuildDoors(Child(root.transform, "Doors"));
+            var covers = BuildRoomCovers(Child(root.transform, "RoomCovers"));
+            var stairLink = new Deprem.Visual.RoomVisibility.Link
+            {
+                a = "koridor", b = "sahanlik", x0 = HouseDims.StairX0, x1 = HouseDims.StairHoleX1 + 0.4f, minY = 0.3f,
+            };
+            root.AddComponent<Deprem.Visual.RoomVisibility>().Configure(covers, new[] { stairLink }, doors);
 
             BuildLights(Child(root.transform, "Lights"));
             BuildMarkers(Child(root.transform, "Markers"));
@@ -221,6 +245,103 @@ namespace Deprem.HouseBuilder
             AddPiece(parent, name + "_Back", new Vector3(xa, y0, z1), new Vector3(xb, ceil, d), uv, mat);
         }
 
+        // ---------------------------------------------------------------- Kapılar ve oda örtüsü
+
+        /// <summary>
+        /// Aynı kattaki komşu odalar arasındaki kapı boşluğuna kapı: menteşe boşluğun arka kenarında,
+        /// kanat öne uzanır ve karakterin yolunu keser. F ile açılır (Player.HouseDoor).
+        /// </summary>
+        private static Deprem.Player.HouseDoor[] BuildDoors(Transform parent)
+        {
+            var doors = new List<Deprem.Player.HouseDoor>();
+            var color = new Color(0.55f, 0.4f, 0.28f);
+            foreach (var room in HouseLayout.Rooms)
+            {
+                var right = HouseLayout.RightNeighbor(room);
+                if (right == null) continue;
+
+                float b = room.X1;
+                var go = new GameObject($"Door_{room.Key}_{right.Key}");
+                go.transform.SetParent(parent, false);
+                go.transform.position = new Vector3(b, room.FloorY, HouseDims.PlayerPlaneZ);
+
+                var hinge = new GameObject("Hinge");
+                hinge.transform.SetParent(go.transform, false);
+                hinge.transform.position = new Vector3(b, room.FloorY, HouseDims.DoorZ1);
+
+                var size = HouseLayout.DoorLeafSize;
+                var min = new Vector3(b - size.x * 0.5f, room.FloorY, HouseDims.DoorZ1 - size.z);
+                var leaf = AddShape(hinge.transform, "Leaf", min, min + size, "Decor", "kapi", color, false, true);
+
+                var door = go.AddComponent<Deprem.Player.HouseDoor>();
+                door.Configure(hinge.transform, leaf.GetComponent<Collider>(), room.Key, right.Key);
+                doors.Add(door);
+            }
+            return doors.ToArray();
+        }
+
+        /// <summary>
+        /// Her odanın önünde siyah örtü (evin önünden biraz önde). Editörde gizli; oyunda RoomVisibility
+        /// açar ve oyuncu odayı görünce soldurur.
+        /// </summary>
+        private static Deprem.Visual.RoomVisibility.Area[] BuildRoomCovers(Transform parent)
+        {
+            const float t = HouseDims.Thickness;
+            const float half = t * 0.5f;
+            var mat = CoverMaterial();
+            var areas = new List<Deprem.Visual.RoomVisibility.Area>();
+            foreach (var room in HouseLayout.Rooms)
+            {
+                float x0 = room.X0 - (HouseLayout.HasNeighbor(room, false) ? 0f : half);
+                float x1 = room.X1 + (HouseLayout.HasNeighbor(room, true) ? 0f : half);
+                float y0 = room.FloorY - (room.Floor == 0 ? t : half);
+                float y1 = room.CeilingY + (HouseLayout.HasRoomAbove(room) ? half : t);
+
+                var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                quad.name = "Cover_" + room.Key;
+                Object.DestroyImmediate(quad.GetComponent<Collider>());
+                quad.transform.SetParent(parent, false);
+                quad.transform.position = new Vector3((x0 + x1) * 0.5f, (y0 + y1) * 0.5f, -0.03f);
+                quad.transform.localScale = new Vector3(x1 - x0, y1 - y0, 1f);
+                var renderer = quad.GetComponent<MeshRenderer>();
+                renderer.sharedMaterial = mat;
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+                renderer.enabled = false;
+
+                areas.Add(new Deprem.Visual.RoomVisibility.Area
+                {
+                    key = room.Key, x0 = room.X0, x1 = room.X1, floorY = room.FloorY, ceilingY = room.CeilingY, cover = renderer,
+                });
+            }
+            return areas.ToArray();
+        }
+
+        /// <summary>URP Unlit, saydam siyah; saydamlık oda başına MaterialPropertyBlock ile</summary>
+        private static Material CoverMaterial()
+        {
+            string path = $"{MaterialFolder}/oda_ortusu.mat";
+            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 0f);
+            mat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_ZWrite", 0f);
+            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = (int)RenderQueue.Transparent + 100;
+            mat.SetColor("_BaseColor", Color.black);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
         // ---------------------------------------------------------------- Merdiven, kabin, pencere
 
         private static void BuildStairs(Transform parent)
@@ -290,8 +411,44 @@ namespace Deprem.HouseBuilder
 
         private static void BuildCabin(Transform parent)
         {
-            var go = AddShape(parent, "Cabin", HouseDims.CabinMin, HouseDims.CabinMax, "Items", "kabin", new Color(0.85f, 0.55f, 0.15f), false, true);
+            var min = HouseDims.CabinMin;
+            var max = HouseDims.CabinMax;
+            var go = AddShape(parent, "Cabin", min, max, "Items", "kabin", new Color(0.85f, 0.55f, 0.15f), false, true);
             go.isStatic = true;
+
+            // Kurtarma fazında ön yüz parlar (CabinBeacon emisyonu nabızla açar)
+            var renderer = go.GetComponent<MeshRenderer>();
+            var front = renderer.sharedMaterials[0];
+            front.EnableKeyword("_EMISSION");
+            front.SetColor("_EmissionColor", Color.black);
+            front.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            EditorUtility.SetDirty(front);
+
+            // Tabela: kapının üstündeki levhanın önünde (FurnitureShapes "kabin": levha y 1,56-1,84)
+            var signGo = new GameObject("Sign");
+            signGo.transform.SetParent(go.transform, false);
+            signGo.transform.position = new Vector3((min.x + max.x) * 0.5f, min.y + 1.7f, min.z - 0.005f);
+            var sign = signGo.AddComponent<TextMesh>();
+            sign.font = Deprem.UI.UiBuilder.DefaultFont;
+            signGo.GetComponent<MeshRenderer>().sharedMaterial = sign.font.material;
+            sign.text = "DEPREM KABİNİ";
+            sign.fontSize = 64;
+            sign.characterSize = 0.02f;
+            sign.anchor = TextAnchor.MiddleCenter;
+            sign.alignment = TextAlignment.Center;
+            sign.color = new Color(0.1f, 0.1f, 0.1f);
+
+            var beaconGo = new GameObject("Beacon");
+            beaconGo.transform.SetParent(go.transform, false);
+            beaconGo.transform.position = new Vector3((min.x + max.x) * 0.5f, min.y + 1.2f, min.z - 0.6f);
+            var beacon = beaconGo.AddComponent<Light>();
+            beacon.type = LightType.Point;
+            beacon.color = new Color(0.35f, 1f, 0.5f);
+            beacon.range = 3f;
+            beacon.shadows = LightShadows.None;
+            beacon.enabled = false;
+
+            go.AddComponent<Deprem.Family.CabinBeacon>().Configure(sign, beacon, renderer, 0);
         }
 
         private static void BuildWindow(Transform parent)
@@ -505,21 +662,22 @@ namespace Deprem.HouseBuilder
 
             foreach (var room in HouseLayout.Rooms)
             {
-                // Elektrik kesilince yanan kırmızı acil durum ışığı (deprem sistemi açar).
-                // Kardeşin odasında yok: oda karanlık kalır, kardeş ancak el feneriyle görünür (GDD).
+                // Elektrik kesilince odayı loş tutan soğuk ışık (sokak / ay ışığı; deprem sistemi açar).
+                // Kırmızı değil: karanlık soğuk ve loş olsun (Play testi 2). Kardeşin odasında yok:
+                // oda karanlık kalır, kardeş ancak el feneriyle görünür (GDD).
                 if (room.Key != "kardes")
                 {
-                    var red = new GameObject("Emergency_" + room.Key);
-                    red.transform.SetParent(parent, false);
-                    red.transform.position = new Vector3(room.X0 + 0.6f, room.CeilingY - 0.3f, room.Depth * 0.5f);
-                    var redLight = red.AddComponent<Light>();
-                    redLight.type = LightType.Point;
-                    redLight.color = new Color(1f, 0.12f, 0.08f);
-                    redLight.intensity = 1.6f;
-                    redLight.range = room.Width * 0.9f;
-                    redLight.shadows = LightShadows.Soft;
-                    redLight.enabled = false;
-                    emergency.Add(redLight);
+                    var dim = new GameObject("Emergency_" + room.Key);
+                    dim.transform.SetParent(parent, false);
+                    dim.transform.position = new Vector3((room.X0 + room.X1) * 0.5f, room.CeilingY - 0.4f, room.Depth * 0.6f);
+                    var dimLight = dim.AddComponent<Light>();
+                    dimLight.type = LightType.Point;
+                    dimLight.color = new Color(0.55f, 0.65f, 0.9f);
+                    dimLight.intensity = 0.9f;
+                    dimLight.range = Mathf.Max(room.Width, room.Height) * 1.1f;
+                    dimLight.shadows = LightShadows.Soft;
+                    dimLight.enabled = false;
+                    emergency.Add(dimLight);
                 }
 
                 // Uzun odalara (koridor, sahanlık) iki lamba

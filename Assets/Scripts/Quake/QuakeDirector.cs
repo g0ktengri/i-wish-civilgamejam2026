@@ -37,6 +37,8 @@ namespace Deprem.Quake
         [SerializeField] private float standUpWindow = 8f;
         [Tooltip("Kalktıktan sonra ana depreme kadar bekleme (sn)")]
         [SerializeField] private float waitAfterStandUp = 3f;
+        [Tooltip("Döngü 2: ana deprem başladıktan kaç sn sonra tavan oyuncunun üstüne çöker")]
+        [SerializeField] private float scriptedHitDelay = 2.5f;
 
         [Header("Ana deprem")]
         [SerializeField] private float mainQuakeDuration = 12f;
@@ -72,6 +74,8 @@ namespace Deprem.Quake
         [Header("Tavandan düşen parça")]
         [Tooltip("Sıva parçası materyali (QuakeSetup atar)")]
         [SerializeField] private Material debrisMaterial;
+        [Tooltip("Parça karakter düzleminin bu kadar önünde düşer (m)")]
+        [SerializeField] private float debrisFrontOffset = 0.15f;
 
         [Header("Geliştirme")]
         [Tooltip("Sahnede döngü yöneticisi yoksa bu döngüyle başlat (0 = kapalı)")]
@@ -171,10 +175,12 @@ namespace Deprem.Quake
             }
             else if (!GameState.StandUpUnlocked)
             {
-                // Döngü 2 (senaryolu): bu sefer ciddiye alır ama çök-kapan-tutun yerine kaçmaya çalışır
+                // Döngü 2 (senaryolu ama kontrol oyuncuda): ciddiye alıp kalkar, kaçmak ister;
+                // çök-kapan-tutun henüz bilinmiyor, ana depremde nereye giderse gitsin tavan çöker
                 Say("bubble.panic_run", 2.5f);
                 yield return new WaitForSeconds(1f);
                 yield return GetUp();
+                player.InputEnabled = true;
                 yield return new WaitForSeconds(scriptedWaitBeforeMainQuake * 0.5f);
             }
             else
@@ -234,10 +240,10 @@ namespace Deprem.Quake
             }
             else if (!GameState.StandUpUnlocked)
             {
-                // Döngü 2 (senaryolu): kapıya koşar, üstüne eşya düşer
+                // Döngü 2 (senaryolu): oyuncu serbest ama ç-k-t ipucu ve güvenli noktalar yok; tavan çöker
+                yield return new WaitForSeconds(scriptedHitDelay);
                 player.InputEnabled = false;
-                player.SetScriptedInput(1f);
-                yield return new WaitForSeconds(1.2f);
+                player.SetScriptedInput(0f);
                 yield return HitByDebris();
                 Fail(LoseReason.NoDuckCoverHold);
                 yield break;
@@ -365,13 +371,15 @@ namespace Deprem.Quake
                 ceilingY = Mathf.Min(ceilingY, hit.point.y);
             }
 
-            var center = new Vector3(player.transform.position.x, ceilingY - 0.1f, playerPlaneZ);
-            SpawnDebris("Plaster", center, new Vector3(0.9f, 0.1f, 0.6f), 25f);
+            // Karakterin düz görselinin (z = playerPlaneZ) hemen önünde, kapsülün ön yarısında: başa çarpar
+            // ve önde kalır. Z ekseni kilitli, arkaya kayıp görselin arkasında kaybolmaz.
+            var center = new Vector3(player.transform.position.x, ceilingY - 0.1f, playerPlaneZ - debrisFrontOffset);
+            SpawnDebris("Plaster", center, new Vector3(0.9f, 0.1f, 0.25f), 25f);
             for (int i = 0; i < 4; i++)
             {
-                var offset = new Vector3(UnityEngine.Random.Range(-0.5f, 0.5f), UnityEngine.Random.Range(-0.1f, 0f), UnityEngine.Random.Range(-0.25f, 0.25f));
+                var offset = new Vector3(UnityEngine.Random.Range(-0.5f, 0.5f), UnityEngine.Random.Range(-0.1f, 0f), 0f);
                 float size = UnityEngine.Random.Range(0.1f, 0.22f);
-                SpawnDebris("Chunk", center + offset, Vector3.one * size, 2f);
+                SpawnDebris("Chunk", center + offset, new Vector3(size, size, Mathf.Min(size, 0.2f)), 2f);
             }
             QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, 0.6f);
             yield return new WaitForSeconds(0.9f);
@@ -382,11 +390,12 @@ namespace Deprem.Quake
             var piece = GameObject.CreatePrimitive(PrimitiveType.Cube);
             piece.name = name;
             piece.transform.position = position;
-            piece.transform.rotation = Quaternion.Euler(UnityEngine.Random.Range(-15f, 15f), 0f, UnityEngine.Random.Range(-15f, 15f));
+            piece.transform.rotation = Quaternion.Euler(0f, 0f, UnityEngine.Random.Range(-15f, 15f));
             piece.transform.localScale = size;
             if (debrisMaterial != null) piece.GetComponent<MeshRenderer>().sharedMaterial = debrisMaterial;
             var body = piece.AddComponent<Rigidbody>();
             body.mass = mass;
+            body.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
             body.linearVelocity = Vector3.down * 1.5f;
         }
 

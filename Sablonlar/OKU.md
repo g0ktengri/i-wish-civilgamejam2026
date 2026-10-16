@@ -30,6 +30,8 @@ Dosyayı koyduktan sonra Unity'de **Tools > Deprem > Evi Yeniden Kur** (ya da Me
 - **Eşyalar ve mobilyalar:** `_on` ön yüz (asıl detay burada), `_yan` yanlar ve arka (sol kenar = ön), `_ust` üst ve alt (alt kenar = ön). Ayna ve çerçevede sadece `_on`.
   Şekil kodda parçalardan kurulur; bütün parçaların ön yüzü aynı `_on` resmini görür. Yani kitaplığı tek resim olarak çiz: rafları, kitapları, kapakları yeşil çerçevelerin yerine çizersen geometriye birebir oturur.
   Mobilyalar (`Decor/`): tek kişilik yatak (oyuncu ve kardeş aynı), ebeveyn yatağı, komodin, kanepe, masa, sandalye, tezgah, buzdolabı.
+  **Kapı** (`Decor/kapi`): asıl yüz `kapi_yan.png` (64 x 126 px), kapı açılınca kameraya bu yüz döner; sol kenar kulp tarafı.
+  **Kabin** (`Items/kabin`): kapının üstündeki levhaya yazı çizme, "DEPREM KABİNİ" yazısını oyun koyar (dile göre değişir).
 - **Karakterler:** 128 x 128 kareler yatay şerit; ilk gece sadece `durma` ve `yurume`.
 - Dokulara ışık ve gölge çizilmez; ışığı Unity verir. Ortak Lospec paleti kullanılır.
 - Hiçbir görsel Unity'de ölçeklenmez; boyut çizimde belirlenir.

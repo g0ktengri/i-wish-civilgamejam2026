@@ -51,6 +51,7 @@ MonoBehaviour:
   scriptedWaitBeforeMainQuake: 5
   standUpWindow: 8
   waitAfterStandUp: 3
+  scriptedHitDelay: 2.5
   mainQuakeDuration: 12
   mainQuakeIntensity: 1
   toppleWindow: {x: 1.5, y: 5}
@@ -77,6 +78,7 @@ MonoBehaviour:
   walkRightKey: 18
   duckCoverKey: 17
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
+  debrisFrontOffset: 0.15
   devStartLoop: 0
   showDebugPrompt: 0
 --- !u!114 &5854064733218507754

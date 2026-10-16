@@ -101,6 +101,8 @@ namespace Deprem.HouseBuilder
             // Mobilyalar: aynı anahtar birden çok odada olabilir (tek kişilik yatak), şablon bir kez
             foreach (var decor in HouseLayout.Decor.GroupBy(d => d.Key).Select(g => g.First()))
                 Shape("Decor", decor.Key, decor.Size, true);
+            // Kapı: asıl yüz _yan (açılınca kameraya döner; sol kenar = kulp tarafı)
+            Shape("Decor", "kapi", HouseLayout.DoorLeafSize, true);
         }
 
         /// <summary>

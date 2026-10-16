@@ -58,10 +58,29 @@ namespace Deprem.Player
                 Check(player.IsGrounded && Mathf.Abs(p.y) < 0.05f, $"Başlangıçta yerde (y={p.y:F2})");
 
                 float startX = p.x;
+                foreach (var d in Object.FindObjectsByType<HouseDoor>(FindObjectsSortMode.None)) d.EnsureRegistered();
                 player.SetScriptedInput(1f);
                 Step(2f);
                 p = player.transform.position;
-                Check(p.x > 8.5f, $"Sağa yürüyüp koridor kapısından geçti (x {startX:F2} -> {p.x:F2})");
+                Check(p.x < 6f, $"Kapalı koridor kapısı yolu kesti (x {startX:F2} -> {p.x:F2})");
+
+                var visibility = Object.FindFirstObjectByType<Deprem.Visual.RoomVisibility>();
+                Check(visibility != null, "Sahnede oda örtüsü (RoomVisibility) var");
+                visibility?.Initialize();
+                visibility?.Tick(p, 1f);
+                Check(visibility != null && visibility.IsRevealed("oyuncu") && !visibility.IsRevealed("koridor"),
+                    "Kapı kapalıyken sadece oyuncunun odası açık");
+
+                var door = Interactables.FindNearest(player) as HouseDoor;
+                Check(door != null, "Kapının önünde F ile kapı açılabilir");
+                door?.Interact(player);
+                visibility?.Tick(player.transform.position, 1f);
+                Check(visibility != null && visibility.IsRevealed("koridor") && !visibility.IsRevealed("salon") && !visibility.IsRevealed("kardes"),
+                    "Açık kapıdan koridor göründü; salon ve üst kat kapalı");
+                Physics.SyncTransforms();
+                Step(2f);
+                p = player.transform.position;
+                Check(p.x > 8.5f, $"Kapıyı açıp sağa yürüdü, koridora geçti (x={p.x:F2})");
                 Check(Mathf.Abs(p.z - 1f) < 0.01f, $"Karakter düzleminde kaldı (z={p.z:F2})");
                 Check(player.Facing == 1, "Sağa bakıyor");
 

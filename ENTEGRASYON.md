@@ -206,3 +206,12 @@ Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin
 5. **Kabin (dünya kısmı).** Kabin kutudan şekle dönecek (çerçeve, kapı, tabela), kurtarma fazında girişi parlayacak; yanına "Deprem kabini" tabelası. Tabela metni `texts.csv`'de `# Mehmet` başlığına eklenir.
 6. **Aile üyesine eşya düştüğünü görünce oyuncu tepki vermiyor.** Oyuncu durur, balon çıkar ("Baba!" vb.), kısa bir bekleme, sonra keşke ekranı (`FailLoop` aynı). Bekleme ~1,5 sn uzar, `WishScreen`'i etkilemez.
 7. **Karanlıkta kırmızı ışık olmasın.** Elektrik kesilince acil durum lambaları, `ElektrikKesik` Volume'undaki kırmızı vinyet ve kurtarma süresinin son 15 sn'sindeki kırmızı nabız kalkıyor; karanlık soğuk ve loş olacak. İş yok.
+
+**Mehmet tarafı: 1–7 yapıldı** (Play'de son kontrol bekliyor). Senin bilmen gerekenler:
+
+- **Oda örtüsü:** `House` kökünde `Deprem.Visual.RoomVisibility`. Görülmemiş odalar siyah; çanta malzemeleri ve aile o odalar açılana kadar görünmez. Ruh fazında `Spirit` girdiği odayı açar. Editörde örtüler gizli, sadece oyunda kapanır. Sorgu: `RoomVisibility.IsRevealed("salon")`.
+- **Kapılar:** `Deprem.Player.HouseDoor`, 5 kapı (`Doors/Door_oyuncu_koridor` vb.). Bedenin yolunu keser, F ile açılır. Ruh collider'sız olduğu için etkilenmez.
+- **F ipuçları:** `PlayerInteractor` artık en yakın etkileşim için `GameEvents.RaisePromptChanged` gönderiyor: `prompt.open_door`, `prompt.stairs_up/down`, `prompt.treat`, `prompt.take_along`, `prompt.cabin_family`, `prompt.cabin_enter` (texts.csv `# Mehmet`). Deprem ipuçları (F: Kalk, C: Çök-Kapan-Tutun) ekrandayken göndermiyor. Beden girdisi kapalıyken (ruh fazı, keşke ekranı) bir kez boş anahtar gidebilir; ruh ipuçların `PromptChanged` ile gidiyorsa ve silinirse haber ver.
+- **Aile tepkisi:** keşke ekranı fark ettikten 3 sn sonra (önce 1,5 sn). Bu sürede oyuncu durur ve konuşur (`bubble.family_hit.*`, `bubble.family_missing.*`).
+- **Kabin:** `Scripts/Family/CabinBeacon.cs`. Tabela `cabin.sign`; kurtarma fazında yeşil ışık ve parlama. M11'deki hedef yazısı sende.
+- **Döngü 2:** senaryolu koşu kalktı, oyuncu serbest. Ana depremden 2,5 sn sonra tavan yine çöker (`FailLoop(NoDuckCoverHold)`); ders sırası aynı.

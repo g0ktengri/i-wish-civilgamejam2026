@@ -23,7 +23,7 @@ namespace Deprem.Family
     ///   - Yaralıysa F basılı tutularak tedavi edilir, değilse F ile toplanır; sonra takip eder.
     /// Takip ve kabin FamilyDirector'da.
     /// </summary>
-    public sealed class FamilyMember : MonoBehaviour, IInteractable
+    public sealed class FamilyMember : MonoBehaviour, IInteractable, IPromptSource
     {
         private static readonly List<FamilyMember> AllMembers = new List<FamilyMember>();
         public static IReadOnlyList<FamilyMember> All => AllMembers;
@@ -41,8 +41,8 @@ namespace Deprem.Family
         [Tooltip("Oyuncu bu kadar yaklaşınca durumu fark eder (aynı kat, X ekseninde)")]
         [SerializeField] private float discoverRange = 3.5f;
         [SerializeField] private float interactRange = 1.2f;
-        [Tooltip("Fark ettikten sonra keşke ekranına kadar süre")]
-        [SerializeField] private float failDelay = 1.5f;
+        [Tooltip("Fark ettikten sonra keşke ekranına kadar süre: oyuncu durur, döner, balonla tepki verir")]
+        [SerializeField] private float failDelay = 3f;
         [SerializeField] private Key interactKey = Key.F;
 
         [Header("Görünüş")]
@@ -54,6 +54,8 @@ namespace Deprem.Family
         public bool IsTreating { get; private set; }
         public float TreatProgress => treatHoldTime > 0f ? Mathf.Clamp01(treatTimer / treatHoldTime) : 1f;
         public int Facing { get; private set; } = -1;
+        /// <summary>Oyuncu durumu fark edip tepki verdi mi (keşke ekranı failDelay sonra)</summary>
+        public bool PlayerReacted { get; private set; }
 
         private float discoverTimer;
         private float treatTimer;
@@ -148,6 +150,7 @@ namespace Deprem.Family
             bool lost = State == FamilyState.Hit || (missingBagItem && (State == FamilyState.Waiting || State == FamilyState.Injured));
             if (lost && IsNear(player.transform.position, discoverRange))
             {
+                if (!PlayerReacted) ReactToLoss(State == FamilyState.Hit);
                 discoverTimer += dt;
                 if (discoverTimer >= failDelay)
                 {
@@ -172,10 +175,28 @@ namespace Deprem.Family
             }
         }
 
+        /// <summary>
+        /// Oyuncu ezilmiş / kurtarılamayan aile üyesini görünce durur, ona döner ve konuşur
+        /// (bubble.family_hit.father, bubble.family_missing.flashlight ...). Keşke ekranı failDelay sonra.
+        /// </summary>
+        private void ReactToLoss(bool hit)
+        {
+            PlayerReacted = true;
+            player.InputEnabled = false;
+            player.SetScriptedInput(0f);
+            player.Face(transform.position.x >= player.transform.position.x ? 1 : -1);
+            string key = hit
+                ? "bubble.family_hit." + id.ToString().ToLowerInvariant()
+                : "bubble.family_missing." + requiredBagItem.ToString().ToLowerInvariant();
+            var bubble = player.GetComponent<SpeechBubble>();
+            if (bubble != null) bubble.Say(key, failDelay);
+        }
+
         // ------------------------------------------------------------------ F etkileşimi
 
         public Vector3 InteractionPoint => transform.position;
         public float InteractionRange => interactRange;
+        public string PromptKey => State == FamilyState.Injured ? "prompt.treat" : "prompt.take_along";
 
         public bool CanInteract(PlayerController who)
         {

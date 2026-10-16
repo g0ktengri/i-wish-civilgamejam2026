@@ -124,6 +124,25 @@ namespace Deprem.HouseBuilder
                     s.Add(w * 0.5f + 0.04f, 0.85f, 0f, w * 0.5f + 0.07f, 1.15f, 0.02f);
                     break;
 
+                case "kabin": // çelik dikmeler, çatı, gövde, kapı ve penceresi, kulp, tabela levhası
+                    s.Add(0f, 0f, 0f, w, 0.06f, d);
+                    s.Add(0f, h - 0.12f, 0f, w, h, d);
+                    foreach (float x in new[] { 0f, w - 0.08f })
+                    foreach (float z in new[] { 0f, d - 0.08f })
+                        s.Add(x, 0f, z, x + 0.08f, h, z + 0.08f);
+                    s.Add(0.04f, 0.06f, 0.04f, w - 0.04f, h - 0.12f, d);
+                    s.Add(0.3f, 0.1f, 0.02f, w - 0.3f, 1.5f, 0.04f);
+                    s.Add(0.45f, 1f, 0.01f, w - 0.45f, 1.4f, 0.02f);
+                    s.Add(w - 0.42f, 0.75f, 0f, w - 0.37f, 0.95f, 0.02f);
+                    s.Add(0.1f, 1.56f, 0.01f, w - 0.1f, h - 0.16f, 0.04f);
+                    break;
+
+                case "kapi": // kapalıyken kameraya yan döner; açılınca X yüzü (_yan) görünür. Kulplar serbest kenarda (Z = 0)
+                    s.Add(0.03f, 0f, 0f, w - 0.03f, h, d);
+                    s.Add(0f, h * 0.48f, 0.06f, 0.03f, h * 0.53f, 0.14f);
+                    s.Add(w - 0.03f, h * 0.48f, 0.06f, w, h * 0.53f, 0.14f);
+                    break;
+
                 // ---------------------------------------------------------- Mobilyalar (Decor)
                 case "tek_kisilik_yatak":
                 case "ebeveyn_yatagi": // yan görünüş: başlık solda; yastıklar karakterin arkasında kalır

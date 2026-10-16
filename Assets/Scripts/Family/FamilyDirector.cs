@@ -130,9 +130,11 @@ namespace Deprem.Family
             GameState.WinLoop();
         }
 
-        private sealed class CabinEntrance : IInteractable
+        private sealed class CabinEntrance : IInteractable, IPromptSource
         {
             private readonly FamilyDirector director;
+
+            public string PromptKey => director.followers.Count > 0 ? "prompt.cabin_family" : "prompt.cabin_enter";
 
             public CabinEntrance(FamilyDirector director, Vector3 point)
             {
