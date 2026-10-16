@@ -58,28 +58,28 @@ namespace Deprem.HouseBuilder
             BerkeSystemsSetup.SetupInScene(scene);
             EditorSceneManager.SaveScene(scene);
             var whole = new Vector3(16.25f, 3.6f, -39f);
-            HousePreview.Render("Logs/house_preview.png", 0.08f, whole, 2048, 1024);
+            HousePreview.Render("Logs/house_preview.png", null, whole, 2048, 1024);
             HousePreview.Render("Logs/house_preview_flat.png", 0.7f, whole, 2048, 1024);
             var gameCamera = Camera.main;
             if (gameCamera != null)
-                HousePreview.Render("Logs/house_preview_game.png", 0.08f, gameCamera.transform.position, 1920, 1080);
+                HousePreview.Render("Logs/house_preview_game.png", null, gameCamera.transform.position, 1920, 1080);
             var salon = HouseLayout.Room("salon");
             var salonCamera = new Vector3((salon.X0 + salon.X1) * 0.5f, 1.9f, -12f);
-            HousePreview.Render("Logs/house_preview_salon.png", 0.08f, salonCamera, 1920, 1080);
+            HousePreview.Render("Logs/house_preview_salon.png", null, salonCamera, 1920, 1080);
 
             // Elektrik kesik hali (ana depremden sonra)
             var houseLights = Object.FindFirstObjectByType<Deprem.Quake.HouseLights>();
             if (houseLights != null)
             {
                 houseLights.SetPower(false);
-                HousePreview.Render("Logs/house_preview_salon_dark.png", 0.08f, salonCamera, 1920, 1080);
+                HousePreview.Render("Logs/house_preview_salon_dark.png", null, salonCamera, 1920, 1080);
                 houseLights.SetPower(true);
             }
 
             // Kontur kontrolü: ruh fazındaki gibi bütün konturlar açık
             var outlines = Object.FindObjectsByType<Deprem.Visual.ItemOutline>(FindObjectsSortMode.None);
             foreach (var outline in outlines) outline.SetVisible(true);
-            HousePreview.Render("Logs/house_preview_outline.png", 0.08f, salonCamera, 1920, 1080);
+            HousePreview.Render("Logs/house_preview_outline.png", null, salonCamera, 1920, 1080);
             foreach (var outline in outlines) outline.SetVisible(false);
 
             ArtTemplates.Generate();
@@ -547,19 +547,20 @@ namespace Deprem.HouseBuilder
                     fixtures.Add(fixtureRenderer);
                 }
             }
-            parent.gameObject.AddComponent<Deprem.Quake.HouseLights>()
-                .Configure(lamps.ToArray(), emergency.ToArray(), fixtures.ToArray(), fixtureOn, fixtureOff);
-
-            // Önden zayıf ay ışığı dolgusu: lambalar tavanın ortasındayken karakterlerin ve eşyaların
-            // kameraya bakan yüzleri kararmasın. Gölgesiz; elektrik kesilince de kalır.
-            var fill = new GameObject("Fill_Moonlight");
+            // Önden zayıf dolgu ışığı: lambalar tavanın ortasındayken karakterlerin ve eşyaların kameraya bakan
+            // yüzleri kararmasın. Gölgesiz. Rengini HouseLights yönetir: elektrik varken lambayla aynı sıcak ton
+            // (yoksa kameraya bakan arka duvar yan duvarlardan soluk görünür), kesilince soğuk ay ışığı.
+            var fill = new GameObject("Fill");
             fill.transform.SetParent(parent, false);
             fill.transform.rotation = Quaternion.Euler(12f, 8f, 0f);
             var fillLight = fill.AddComponent<Light>();
             fillLight.type = LightType.Directional;
-            fillLight.color = new Color(0.62f, 0.7f, 0.95f);
-            fillLight.intensity = 0.35f;
+            fillLight.color = new Color(1f, 0.88f, 0.74f);
+            fillLight.intensity = 0.3f;
             fillLight.shadows = LightShadows.None;
+
+            parent.gameObject.AddComponent<Deprem.Quake.HouseLights>()
+                .Configure(lamps.ToArray(), emergency.ToArray(), fixtures.ToArray(), fixtureOn, fixtureOff, fillLight);
         }
 
         private static void BuildMarkers(Transform parent)
@@ -622,7 +623,8 @@ namespace Deprem.HouseBuilder
         {
             RenderSettings.skybox = null;
             RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.08f, 0.09f, 0.13f);
+            // Gece; yan duvarlar (önden dolgu ışığını almayanlar) arka duvardan çok koyu kalmasın
+            RenderSettings.ambientLight = new Color(0.12f, 0.12f, 0.15f);
         }
 
         private static void AddToBuildSettings(string path)

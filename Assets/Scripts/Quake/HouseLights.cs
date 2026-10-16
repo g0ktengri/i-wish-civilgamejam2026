@@ -15,6 +15,10 @@ namespace Deprem.Quake
         [SerializeField] private Renderer[] lampFixtures;
         [SerializeField] private Material fixtureOn;
         [SerializeField] private Material fixtureOff;
+        [Tooltip("Önden gelen dolgu ışığı: elektrik varken lambayla aynı sıcak ton, kesilince soğuk ay ışığı")]
+        [SerializeField] private Light fill;
+        [SerializeField] private Color fillPowerOn = new Color(1f, 0.88f, 0.74f);
+        [SerializeField] private Color fillPowerOff = new Color(0.62f, 0.7f, 0.95f);
         [Tooltip("Sarsıntı en güçlüyken lambanın kısılabileceği oran")]
         [SerializeField] private float flickerAmount = 0.6f;
 
@@ -23,13 +27,14 @@ namespace Deprem.Quake
         private float[] baseIntensities;
         private float[] emergencyBaseIntensities;
 
-        public void Configure(Light[] lampLights, Light[] emergency, Renderer[] fixtures, Material on, Material off)
+        public void Configure(Light[] lampLights, Light[] emergency, Renderer[] fixtures, Material on, Material off, Light fillLight)
         {
             lamps = lampLights;
             emergencyLights = emergency;
             lampFixtures = fixtures;
             fixtureOn = on;
             fixtureOff = off;
+            fill = fillLight;
         }
 
         private void Awake()
@@ -58,6 +63,7 @@ namespace Deprem.Quake
             if (lampFixtures != null)
                 foreach (var fixture in lampFixtures)
                     if (fixture != null) fixture.sharedMaterial = on ? fixtureOn : fixtureOff;
+            if (fill != null) fill.color = on ? fillPowerOn : fillPowerOff;
             if (on) Flicker(0f);
         }
 

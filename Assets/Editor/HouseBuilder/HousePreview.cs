@@ -7,10 +7,11 @@ namespace Deprem.HouseBuilder
     /// <summary>Evi önden gören geçici bir kamerayla PNG önizleme çizer (kontrol amaçlı).</summary>
     internal static class HousePreview
     {
-        public static void Render(string path, float ambient, Vector3 cameraPosition, int width, int height)
+        /// <param name="ambient">Ortam ışığı; null = sahnenin kendi değeri (oyundaki görünüm)</param>
+        public static void Render(string path, float? ambient, Vector3 cameraPosition, int width, int height)
         {
             var previousAmbient = RenderSettings.ambientLight;
-            RenderSettings.ambientLight = new Color(ambient, ambient, ambient * 1.1f);
+            if (ambient.HasValue) RenderSettings.ambientLight = new Color(ambient.Value, ambient.Value, ambient.Value * 1.1f);
 
             var go = new GameObject("PreviewCamera");
             var cam = go.AddComponent<Camera>();
