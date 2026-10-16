@@ -67,6 +67,15 @@ namespace Deprem.HouseBuilder
             var salonCamera = new Vector3((salon.X0 + salon.X1) * 0.5f, 1.9f, -12f);
             HousePreview.Render("Logs/house_preview_salon.png", 0.08f, salonCamera, 1920, 1080);
 
+            // Elektrik kesik hali (ana depremden sonra)
+            var houseLights = Object.FindFirstObjectByType<Deprem.Quake.HouseLights>();
+            if (houseLights != null)
+            {
+                houseLights.SetPower(false);
+                HousePreview.Render("Logs/house_preview_salon_dark.png", 0.08f, salonCamera, 1920, 1080);
+                houseLights.SetPower(true);
+            }
+
             // Kontur kontrolü: ruh fazındaki gibi bütün konturlar açık
             var outlines = Object.FindObjectsByType<Deprem.Visual.ItemOutline>(FindObjectsSortMode.None);
             foreach (var outline in outlines) outline.SetVisible(true);
@@ -510,10 +519,25 @@ namespace Deprem.HouseBuilder
                     var light = go.AddComponent<Light>();
                     light.type = LightType.Point;
                     light.color = new Color(1f, 0.85f, 0.65f);
-                    light.intensity = 3f;
-                    light.range = Mathf.Max(span, room.Depth) * 1.2f;
+                    light.intensity = 4f;
+                    light.range = Mathf.Max(span, room.Depth) * 1.3f;
                     light.shadows = LightShadows.Soft;
                     lamps.Add(light);
+
+                    // Yansıma ışığı: tavan lambası arka duvara zayıf ulaşır (mesafenin karesiyle söner). Gerçekte duvarı
+                    // tavandan ve zeminden seken ışık aydınlatır; bunu arka duvarın önünde gölgesiz, zayıf bir ışıkla
+                    // taklit ediyoruz. Lambanın parçası: elektrik kesilince söner, sarsıntıda titrer.
+                    var bounce = new GameObject("Bounce");
+                    bounce.transform.SetParent(go.transform, false);
+                    // Duvardan uzakta ve geniş menzilli: duvarda belirgin bir ışık havuzu değil, yumuşak bir aydınlık
+                    bounce.transform.position = new Vector3(center.x, room.FloorY + room.Height * 0.55f, Mathf.Max(room.Depth * 0.5f, room.Depth - 1.8f));
+                    var bounceLight = bounce.AddComponent<Light>();
+                    bounceLight.type = LightType.Point;
+                    bounceLight.color = new Color(1f, 0.82f, 0.6f);
+                    bounceLight.intensity = 2.2f;
+                    bounceLight.range = Mathf.Max(span, room.Height) * 1.5f;
+                    bounceLight.shadows = LightShadows.None;
+                    lamps.Add(bounceLight);
 
                     // Tavandaki lamba gövdesi (ışığın kendi gölgesine girmesin diye gölge vermez)
                     var fixtureMin = center + new Vector3(-0.2f, -0.12f, -0.2f);
