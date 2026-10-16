@@ -30,13 +30,20 @@ namespace Deprem.HouseBuilder
 
         public static Mesh Build(string name, Vector3 min, Vector3 max, UvFunc uv, SubmeshFunc submesh, int submeshCount)
         {
-            var center = (min + max) * 0.5f;
-            var vertices = new List<Vector3>(24);
-            var normals = new List<Vector3>(24);
-            var uvs = new List<Vector2>(24);
+            return BuildParts(name, (min + max) * 0.5f, new[] { (min, max) }, uv, submesh, submeshCount);
+        }
+
+        /// <summary>Birden çok kutudan tek mesh (parçalı eşya şekilleri). Köşeler origin'e göre yazılır.</summary>
+        public static Mesh BuildParts(string name, Vector3 origin, IReadOnlyList<(Vector3 min, Vector3 max)> boxes,
+            UvFunc uv, SubmeshFunc submesh, int submeshCount)
+        {
+            var vertices = new List<Vector3>(24 * boxes.Count);
+            var normals = new List<Vector3>(24 * boxes.Count);
+            var uvs = new List<Vector2>(24 * boxes.Count);
             var triangles = new List<int>[submeshCount];
             for (int i = 0; i < submeshCount; i++) triangles[i] = new List<int>();
 
+            foreach (var (min, max) in boxes)
             for (int f = 0; f < 6; f++)
             {
                 var face = (BoxFace)f;
@@ -59,7 +66,7 @@ namespace Deprem.HouseBuilder
                 int start = vertices.Count;
                 foreach (var corner in corners)
                 {
-                    vertices.Add(corner - center);
+                    vertices.Add(corner - origin);
                     normals.Add(normal);
                     uvs.Add(uv(corner, face));
                 }

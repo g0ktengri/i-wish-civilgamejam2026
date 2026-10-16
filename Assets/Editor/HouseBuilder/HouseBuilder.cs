@@ -16,6 +16,7 @@ namespace Deprem.HouseBuilder
     ///   Odalar : Assets/Art/Rooms/{oda}_arka.png, _yan.png, _zemin.png, _tavan.png
     ///            oda = oyuncu, koridor, salon, mutfak, kardes, sahanlik, ebeveyn
     ///   Eşyalar: Assets/Art/Items/{esya}_on.png, _yan.png, _ust.png (kabin dahil: kabin_on ...)
+    ///   Mobilya: Assets/Art/Decor/{mobilya}_on.png, _yan.png, _ust.png (şekiller: FurnitureShapes)
     ///   Ortak  : Assets/Art/Tiles/kesit.png, Assets/Art/Tiles/merdiven_basamak.png
     ///   Pencere: Assets/Art/Decor/pencere.png, pencere_emission.png
     /// Doku ekledikten sonra Tools > Deprem > Evi Yeniden Kur yeterli.
@@ -139,6 +140,9 @@ namespace Deprem.HouseBuilder
             var items = Child(root.transform, "Items");
             foreach (var item in HouseLayout.Items)
                 BuildItem(item, items);
+            var decor = Child(root.transform, "Decor");
+            foreach (var piece in HouseLayout.Decor)
+                BuildDecor(piece, decor);
 
             BuildLights(Child(root.transform, "Lights"));
             BuildMarkers(Child(root.transform, "Markers"));
@@ -286,7 +290,7 @@ namespace Deprem.HouseBuilder
 
         private static void BuildCabin(Transform parent)
         {
-            var go = AddBox(parent, "Cabin", HouseDims.CabinMin, HouseDims.CabinMax, "kabin", new Color(0.85f, 0.55f, 0.15f), false);
+            var go = AddShape(parent, "Cabin", HouseDims.CabinMin, HouseDims.CabinMax, "Items", "kabin", new Color(0.85f, 0.55f, 0.15f), false, true);
             go.isStatic = true;
         }
 
@@ -321,7 +325,7 @@ namespace Deprem.HouseBuilder
             var min = new Vector3(item.CenterX - item.Size.x * 0.5f, room.FloorY + item.BaseY, frontZ);
             var max = min + item.Size;
 
-            var go = AddBox(parent, $"Item_{item.Number}_{item.Key}", min, max, item.Key, ItemColor(item.Number), item.PlainSides);
+            var go = AddShape(parent, $"Item_{item.Number}_{item.Key}", min, max, "Items", item.Key, ItemColor(item.Number), item.PlainSides, true);
             var body = go.AddComponent<Rigidbody>();
             body.mass = Mathf.Max(5f, item.Size.x * item.Size.y * item.Size.z * 300f);
             body.isKinematic = true; // deprem sistemi sabitlenmemiş eşyayı serbest bırakır
@@ -338,20 +342,23 @@ namespace Deprem.HouseBuilder
 
             if (item.Key == "tv_unitesi")
             {
-                var tvMin = new Vector3(item.CenterX - 0.5f, max.y, frontZ + 0.15f);
-                AddBox(go.transform, "TV", tvMin, tvMin + new Vector3(1f, 0.625f, 0.125f), "tv", new Color(0.1f, 0.1f, 0.12f), false);
-            }
-            else if (item.Key == "mutfak_dolabi")
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    var doorMin = new Vector3(min.x + i * 0.75f, min.y, frontZ - 0.03f);
-                    AddBox(go.transform, "Door_" + i, doorMin, doorMin + new Vector3(0.75f, 0.75f, 0.03f),
-                        "mutfak_kapagi", new Color(0.75f, 0.7f, 0.6f), true);
-                }
+                var tvMin = new Vector3(item.CenterX - HouseLayout.TvSize.x * 0.5f, max.y, frontZ + 0.15f);
+                AddShape(go.transform, "TV", tvMin, tvMin + HouseLayout.TvSize, "Items", "tv", new Color(0.1f, 0.1f, 0.12f), false, true);
             }
 
             BuildOutline(go, securedVisual);
+        }
+
+        /// <summary>Mobilyalar: çarpışmasız ve sabit; devrilen eşyalar içlerinden geçebilir</summary>
+        private static void BuildDecor(DecorDef decor, Transform parent)
+        {
+            var room = HouseLayout.Room(decor.Room);
+            var min = new Vector3(decor.X0, room.FloorY, decor.Z0);
+            // Doku yokken mobilyalar birbirinden ayrılsın: anahtara göre hafif farklı ahşap tonu
+            int hash = decor.Key.Sum(c => c);
+            var color = Color.HSVToRGB(0.05f + hash % 7 * 0.012f, 0.3f, 0.5f + hash % 5 * 0.05f);
+            var go = AddShape(parent, $"Decor_{decor.Key}_{decor.Room}", min, min + decor.Size, "Decor", decor.Key, color, false, false);
+            go.isStatic = true;
         }
 
         /// <summary>
@@ -445,11 +452,15 @@ namespace Deprem.HouseBuilder
             return Color.HSVToRGB(number / 9f, 0.45f, 0.75f);
         }
 
-        /// <summary>3 materyalli kutu: ön, yan (arka ve yanlar), üst (üst ve alt)</summary>
-        private static GameObject AddBox(Transform parent, string name, Vector3 min, Vector3 max, string textureKey,
-            Color fallback, bool plainSides)
+        /// <summary>
+        /// FurnitureShapes'teki parçalardan tek mesh, 3 materyal: ön, yan (arka ve yanlar), üst (üst ve alt).
+        /// Dokular dış kutuya yansıtılır (Assets/Art/{artFolder}/{textureKey}_on.png ...); çarpışma dış kutu.
+        /// </summary>
+        private static GameObject AddShape(Transform parent, string name, Vector3 min, Vector3 max, string artFolder,
+            string textureKey, Color fallback, bool plainSides, bool collider)
         {
-            var mesh = BoxMeshBuilder.Build(name, min, max, BoxMeshBuilder.FitUv(min, max), FaceToItemSubmesh, 3);
+            var boxes = FurnitureShapes.For(textureKey, max - min).Select(p => (min + p.Min, min + p.Max)).ToList();
+            var mesh = BoxMeshBuilder.BuildParts(name, (min + max) * 0.5f, boxes, BoxMeshBuilder.FitUv(min, max), FaceToItemSubmesh, 3);
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.transform.position = (min + max) * 0.5f;
@@ -459,12 +470,12 @@ namespace Deprem.HouseBuilder
             side.a = 1f;
             var mats = new[]
             {
-                GetMaterial(textureKey + "_on", $"Assets/Art/Items/{textureKey}_on.png", fallback),
-                plainSides ? GetMaterial(textureKey + "_yan", null, side) : GetMaterial(textureKey + "_yan", $"Assets/Art/Items/{textureKey}_yan.png", side),
-                plainSides ? GetMaterial(textureKey + "_ust", null, side) : GetMaterial(textureKey + "_ust", $"Assets/Art/Items/{textureKey}_ust.png", side),
+                GetMaterial(textureKey + "_on", $"Assets/Art/{artFolder}/{textureKey}_on.png", fallback),
+                plainSides ? GetMaterial(textureKey + "_yan", null, side) : GetMaterial(textureKey + "_yan", $"Assets/Art/{artFolder}/{textureKey}_yan.png", side),
+                plainSides ? GetMaterial(textureKey + "_ust", null, side) : GetMaterial(textureKey + "_ust", $"Assets/Art/{artFolder}/{textureKey}_ust.png", side),
             };
             go.AddComponent<MeshRenderer>().sharedMaterials = mats;
-            go.AddComponent<BoxCollider>().size = max - min;
+            if (collider) go.AddComponent<BoxCollider>().size = max - min;
             return go;
         }
 

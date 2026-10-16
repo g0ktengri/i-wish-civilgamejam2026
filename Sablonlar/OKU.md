@@ -17,6 +17,9 @@ Dosyayı koyduktan sonra Unity'de **Tools > Deprem > Evi Yeniden Kur** (ya da Me
 | Kırmızı taralı alan | Buraya detay çizme: kapı boşluğu ya da merdiven boşluğu kodla oyulur |
 | Mavi taralı alan | Ayrı görsel gelecek (salon penceresi, `Decor/pencere.png`) |
 | Yeşil | Karakterlerde: dikey = pivot (alt orta), yatay = karakterin boyu, en alt satır = ayak hizası |
+| Yeşil çerçeve (eşya, mobilya) | Eşyanın bir parçası (raf, kapak, ayak, yastık...). Çizimi bu çerçevelere oturt |
+| Koyu gölgeli parça | Geride kalan parça (kitaplığın arkalığı, raftaki kitaplar); ön parçaların arasından görünür |
+| Kırmızı tarama (eşya, mobilya) | Boşluk: oyunda orada parça yok (ayak araları, raf üstü), çizme ya da şeffaf bırak |
 
 Şablonu alt katman olarak kullan; dışa aktarırken kılavuz katmanını gizle.
 
@@ -24,7 +27,9 @@ Dosyayı koyduktan sonra Unity'de **Tools > Deprem > Evi Yeniden Kur** (ya da Me
 
 - **Odalar:** `arka` = arka duvar, `yan` = sol ve sağ duvar (aynı çizim iki duvara gider; sol kenar odanın ön tarafı), `zemin` / `tavan` (üst kenar = arka duvar, alt kenar = ön).
   Arka ve yan duvar aynı desense tek bir `duvar.png` da olur; yine de boyutu yüzeye uymazsa gerilir.
-- **Eşyalar:** `_on` ön yüz (asıl detay burada), `_yan` yanlar ve arka, `_ust` üst ve alt. Ayna ve çerçevede sadece `_on`.
+- **Eşyalar ve mobilyalar:** `_on` ön yüz (asıl detay burada), `_yan` yanlar ve arka (sol kenar = ön), `_ust` üst ve alt (alt kenar = ön). Ayna ve çerçevede sadece `_on`.
+  Şekil kodda parçalardan kurulur; bütün parçaların ön yüzü aynı `_on` resmini görür. Yani kitaplığı tek resim olarak çiz: rafları, kitapları, kapakları yeşil çerçevelerin yerine çizersen geometriye birebir oturur.
+  Mobilyalar (`Decor/`): tek kişilik yatak (oyuncu ve kardeş aynı), ebeveyn yatağı, komodin, kanepe, masa, sandalye, tezgah, buzdolabı.
 - **Karakterler:** 128 x 128 kareler yatay şerit; ilk gece sadece `durma` ve `yurume`.
 - Dokulara ışık ve gölge çizilmez; ışığı Unity verir. Ortak Lospec paleti kullanılır.
 - Hiçbir görsel Unity'de ölçeklenmez; boyut çizimde belirlenir.

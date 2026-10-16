@@ -94,6 +94,18 @@ namespace Deprem.HouseBuilder
         public bool PlainSides;
     }
 
+    /// <summary>Sabitlenemeyen mobilya: çarpışmasız, yerinden oynamaz. Şekli FurnitureShapes'te.</summary>
+    internal sealed class DecorDef
+    {
+        /// <summary>Doku dosya adı ön eki: Assets/Art/Decor/{Key}_on.png, _yan.png, _ust.png</summary>
+        public string Key;
+        public string Room;
+        /// <summary>Sol kenar X ve ön kenar Z (dünya, m)</summary>
+        public float X0;
+        public float Z0;
+        public Vector3 Size;
+    }
+
     internal sealed class MarkerDef
     {
         public readonly string Name;
@@ -151,6 +163,27 @@ namespace Deprem.HouseBuilder
             new ItemDef { Number = 9, Key = "cerceve", Name = "Ebeveyn yatağının üstündeki çerçeve", Room = "ebeveyn",
                 Size = new Vector3(0.75f, 0.5f, 0.0625f), CenterX = 20.5f, BaseY = 1.4f, Mount = ItemMount.BackWall, PlainSides = true,
                 Minigame = Deprem.Core.MinigameType.CarryAndPlace },
+        };
+
+        /// <summary>TV ünitesinin üstündeki televizyon (Assets/Art/Items/tv_on.png ...)</summary>
+        public static readonly Vector3 TvSize = new Vector3(1f, 0.625f, 0.125f);
+
+        /// <summary>
+        /// Mobilyalar: karakter düzleminin arkasında, çarpışmasız. Yataklar yan görünüşte (başlık solda);
+        /// oyuncunun yatağı Marker_PlayerBed'in altında (QuakeDirector.bedHeight = şilte üstü 0,5 m),
+        /// ilk yardım çantası komodinin, el feneri mutfak masasının üstünde.
+        /// </summary>
+        public static readonly DecorDef[] Decor =
+        {
+            new DecorDef { Key = "tek_kisilik_yatak", Room = "oyuncu", X0 = 1f, Z0 = 3.2f, Size = new Vector3(2f, 0.8f, 1f) },
+            new DecorDef { Key = "tek_kisilik_yatak", Room = "kardes", X0 = 4.6f, Z0 = 3.2f, Size = new Vector3(2f, 0.8f, 1f) },
+            new DecorDef { Key = "ebeveyn_yatagi", Room = "ebeveyn", X0 = 19.85f, Z0 = 3.3f, Size = new Vector3(2.2f, 0.9f, 1.7f) },
+            new DecorDef { Key = "komodin", Room = "ebeveyn", X0 = 19.2f, Z0 = 4.3f, Size = new Vector3(0.55f, 0.55f, 0.5f) },
+            new DecorDef { Key = "kanepe", Room = "salon", X0 = 23.4f, Z0 = 4.55f, Size = new Vector3(2.2f, 0.85f, 0.9f) },
+            new DecorDef { Key = "masa", Room = "mutfak", X0 = 27.8f, Z0 = 2.55f, Size = new Vector3(1.2f, 0.85f, 0.9f) },
+            new DecorDef { Key = "sandalye", Room = "mutfak", X0 = 29.1f, Z0 = 2.78f, Size = new Vector3(0.45f, 0.9f, 0.45f) },
+            new DecorDef { Key = "tezgah", Room = "mutfak", X0 = 28.85f, Z0 = 3.9f, Size = new Vector3(2.7f, 0.9f, 0.6f) },
+            new DecorDef { Key = "buzdolabi", Room = "mutfak", X0 = 31.6f, Z0 = 3.85f, Size = new Vector3(0.75f, 1.8f, 0.65f) },
         };
 
         // Yerde duran eşyaların ön yüzü en az bu Z'de: devrilince karakter düzlemine düşerler.

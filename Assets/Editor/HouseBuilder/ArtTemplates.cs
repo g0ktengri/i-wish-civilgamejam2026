@@ -32,6 +32,10 @@ namespace Deprem.HouseBuilder
         {
             root = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Sablonlar"));
             Written.Clear();
+            // Klasör tamamen otomatik: artık üretilmeyen eski şablonlar kalmasın (OKU.md elle yazılır, kalır)
+            if (Directory.Exists(root))
+                foreach (var old in Directory.GetFiles(root, "*.png", SearchOption.AllDirectories))
+                    File.Delete(old);
 
             Rooms();
             Items();
@@ -88,21 +92,59 @@ namespace Deprem.HouseBuilder
         {
             foreach (var item in HouseLayout.Items)
             {
-                Box($"Items/{item.Key}", item.Size, !item.PlainSides);
-                if (item.Key == "tv_unitesi") Box("Items/tv", new Vector3(1f, 0.625f, 0.125f), true);
-                if (item.Key == "mutfak_dolabi") Save("Items/mutfak_kapagi_on.png", Px(0.75f), Px(0.75f));
+                Shape("Items", item.Key, item.Size, !item.PlainSides);
+                if (item.Key == "tv_unitesi") Shape("Items", "tv", HouseLayout.TvSize, true);
             }
-            Box("Items/kabin", HouseDims.CabinMax - HouseDims.CabinMin, true);
+            Shape("Items", "kabin", HouseDims.CabinMax - HouseDims.CabinMin, true);
             Save("Items/l_demiri.png", 16, 16);
+
+            // Mobilyalar: aynı anahtar birden çok odada olabilir (tek kişilik yatak), şablon bir kez
+            foreach (var decor in HouseLayout.Decor.GroupBy(d => d.Key).Select(g => g.First()))
+                Shape("Decor", decor.Key, decor.Size, true);
         }
 
-        /// <summary>Kutu: ön, yan (arka ve yanlar), üst (üst ve alt)</summary>
-        private static void Box(string prefix, Vector3 size, bool sides)
+        /// <summary>
+        /// Parçalı şekil: ön, yan (arka ve yanlar), üst (üst ve alt). Her görünüşte parçalar yeşil çerçeveyle,
+        /// geride kalan parçalar daha koyu çizilir; hiçbir parçanın görünmediği yer kırmızı taralıdır (oyunda boşluk).
+        /// Yan: sol kenar = ön. Üst: alt kenar = ön.
+        /// </summary>
+        private static void Shape(string folder, string key, Vector3 size, bool sides)
         {
-            Save($"{prefix}_on.png", Px(size.x), Px(size.y));
+            var parts = FurnitureShapes.For(key, size);
+            string prefix = $"{folder}/{key}";
+            // Ön: bakış +Z, yakın olan küçük Z
+            Save($"{prefix}_on.png", Px(size.x), Px(size.y), tex => Project(tex, parts, 0, 1, p => p.Min.z, size.z));
             if (!sides) return;
-            Save($"{prefix}_yan.png", Px(size.z), Px(size.y));
-            Save($"{prefix}_ust.png", Px(size.x), Px(size.z));
+            // Yan: soldan bakış, yakın olan küçük X; doku U = Z
+            Save($"{prefix}_yan.png", Px(size.z), Px(size.y), tex => Project(tex, parts, 2, 1, p => p.Min.x, size.x));
+            // Üst: yukarıdan bakış, yakın olan büyük Y; doku V = Z
+            Save($"{prefix}_ust.png", Px(size.x), Px(size.z), tex => Project(tex, parts, 0, 2, p => size.y - p.Max.y, size.y));
+        }
+
+        /// <summary>Parçaları uzaktan yakına boyar (ressam algoritması): u, v doku eksenleri; depth = bakana uzaklık</summary>
+        private static void Project(Texture2D tex, List<ShapePart> parts, int u, int v, Func<ShapePart, float> depth, float maxDepth)
+        {
+            var covered = new bool[tex.width, tex.height];
+            foreach (var part in parts.OrderByDescending(depth))
+            {
+                int x0 = Px(part.Min[u]), x1 = Px(part.Max[u]) - 1;
+                int y0 = Px(part.Min[v]), y1 = Px(part.Max[v]) - 1;
+                float shade = 1f - 0.35f * Mathf.Clamp01(depth(part) / Mathf.Max(0.01f, maxDepth));
+                for (int x = Mathf.Max(0, x0); x <= Mathf.Min(tex.width - 1, x1); x++)
+                for (int y = Mathf.Max(0, y0); y <= Mathf.Min(tex.height - 1, y1); y++)
+                {
+                    covered[x, y] = true;
+                    bool edge = x == x0 || x == x1 || y == y0 || y == y1;
+                    bool meter = x % Ppu == 0 || y % Ppu == 0;
+                    bool minor = x % 16 == 0 || y % 16 == 0;
+                    var color = edge ? Guide : meter ? MeterLine : minor ? MinorLine : Background;
+                    if (!edge) color = new Color(color.r * shade, color.g * shade, color.b * shade, 1f);
+                    tex.SetPixel(x, y, color);
+                }
+            }
+            for (int x = 0; x < tex.width; x++)
+            for (int y = 0; y < tex.height; y++)
+                if (!covered[x, y] && (x + y) % 6 == 0) tex.SetPixel(x, y, NoDetail);
         }
 
         // ------------------------------------------------------------------ Karakterler (GDD "Karakterler")
@@ -140,9 +182,8 @@ namespace Deprem.HouseBuilder
         {
             var sizes = new (string path, int w, int h)[]
             {
-                ("Decor/tek_kisilik_yatak.png", 128, 64), ("Decor/ebeveyn_yatagi.png", 128, 64), ("Decor/kanepe.png", 128, 64),
-                ("Decor/tezgah.png", 128, 64), ("Decor/masa.png", 80, 48), ("Decor/buzdolabi.png", 48, 128),
-                ("Decor/sandalye.png", 32, 64), ("Decor/kapi_cercevesi.png", 80, 144), ("Decor/pencere.png", 96, 64),
+                // Yatak, kanepe, masa vb. parçalı mobilyalar Items() içinde (FurnitureShapes)
+                ("Decor/kapi_cercevesi.png", 80, 144), ("Decor/pencere.png", 96, 64),
                 ("Decor/pencere_emission.png", 96, 64), ("Decor/tavan_lambasi.png", 32, 32),
                 ("Decor/poster.png", 32, 48), ("Decor/tablo.png", 64, 48),
                 ("Decals/catlak_1.png", 64, 64), ("Decals/catlak_2.png", 128, 64), ("Decals/catlak_3.png", 128, 128),
