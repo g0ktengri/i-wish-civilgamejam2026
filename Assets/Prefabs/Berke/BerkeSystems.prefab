@@ -98,7 +98,7 @@ MonoBehaviour:
   infoDelay: 1.2
   minShowTime: 2.5
   fadeFromBlack: 0.8
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   wishFontSize: 32
   infoFontSize: 14
   wishColor: {r: 1, g: 1, b: 1, a: 1}
@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72080e1c0eca97348bf3491e16cac61d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.SpiritHud
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   timerFontSize: 28
   promptFontSize: 14
   timerColor: {r: 0.8, g: 0.92, b: 1, a: 1}
@@ -175,7 +175,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0ab2ed9f201ff144819ff8189a6f265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Minigames.MinigameHost
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   sortingOrder: 80
   panelSize: {x: 256, y: 256}
   overlayColor: {r: 0.02, g: 0.04, b: 0.1, a: 0.6}
@@ -264,7 +264,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dee6cf7af979f1d40881fd8259b1eba5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PromptHud
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   fontSize: 20
   color: {r: 1, g: 1, b: 1, a: 1}
   sortingOrder: 60
@@ -280,7 +280,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dffdcbe24cb03fa46bb4b8f4416abcc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.ObjectiveHud
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   fontSize: 14
   infoFontSize: 12
   color: {r: 1, g: 1, b: 1, a: 1}
@@ -304,7 +304,7 @@ MonoBehaviour:
   fadeTime: 1
   rowDelay: 0.7
   checkDelay: 0.6
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   titleFontSize: 26
   rowFontSize: 16
   rowHeight: 30
@@ -325,7 +325,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0335018a73c2c24581ab42f869573bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PauseMenu
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   titleFontSize: 26
   itemFontSize: 18
   rowHeight: 30
@@ -345,7 +345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3feddf75af91414bb4275f5fcd2e6db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.MainMenu
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   titleFontSize: 40
   itemFontSize: 18
   bodyFontSize: 14

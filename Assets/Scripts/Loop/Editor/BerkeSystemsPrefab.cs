@@ -147,9 +147,20 @@ namespace Deprem.Loop.EditorTools
         static Font FindFont()
         {
             if (!AssetDatabase.IsValidFolder(FontFolder)) return null;
-            return AssetDatabase.FindAssets("t:Font", new[] { FontFolder })
-                .Select(guid => AssetDatabase.LoadAssetAtPath<Font>(AssetDatabase.GUIDToAssetPath(guid)))
-                .FirstOrDefault(f => f);
+            var path = AssetDatabase.FindAssets("t:Font", new[] { FontFolder })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .OrderBy(p => p)
+                .FirstOrDefault();
+            if (path == null) return null;
+
+            // Pixel font keskin çizilsin: yumuşatmasız raster
+            if (AssetImporter.GetAtPath(path) is TrueTypeFontImporter importer &&
+                importer.fontRenderingMode != FontRenderingMode.HintedRaster)
+            {
+                importer.fontRenderingMode = FontRenderingMode.HintedRaster;
+                importer.SaveAndReimport();
+            }
+            return AssetDatabase.LoadAssetAtPath<Font>(path);
         }
 
         static void SetReference(Component component, string field, Object value)

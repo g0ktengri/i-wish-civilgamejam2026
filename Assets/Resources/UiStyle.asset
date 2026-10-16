@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 146213edf17bdf54db9f08cce9c22c7c, type: 3}
   m_Name: UiStyle
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.UiStyle
-  font: {fileID: 0}
+  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   bubble: {fileID: 0}
   bubbleTail: {fileID: 0}
   panel: {fileID: 0}

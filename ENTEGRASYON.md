@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (Play testi 2: M9–M11 bittikten sonra)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (M12 font eklendikten sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -61,6 +61,8 @@
   - Kilitle: 3 isabet gerekir. Her isabette yeşil alan %30 daralır ve ibre hızlanır; ıskalayınca bir isabet geri gider.
 - **M7. Ruh sınırı:** `SpiritController` artık `HouseBounds.Instance.ClampToHouse(pozisyon, 0.3)` kullanıyor; `HouseBounds` yoksa eski renderer sınırlarına düşüyor.
 - **M8. Kontur shader'ı:** Bağlandı. `SpiritHighlighter`, `ItemOutline` olan eşyalara artık point light koymuyor; ruhun yanındaki eşyada `SetEmphasis(true)`, uzaklaşınca `false` çağırıyor. Konturu olmayan eşyaya yedek ışık konuyor.
+- **M12. Font: eklendi.** `Assets/Art/Fonts/PixelifySans.ttf` + `OFL.txt`. Kaynak: Google Fonts (github.com/google/fonts, `ofl/pixelifysans`), lisans SIL Open Font License 1.1. Dosyanın cmap tablosu denetlendi: ğ Ğ ş Ş ı İ ç Ç ö Ö ü Ü ve · × … — ’ dahil hepsi var (574 glif), Tiny5/Silkscreen'e gerek kalmadı. Prefab kurucusu fontu `UiStyle.font` ve Berke'nin bütün UI bileşenlerine bağlıyor; import ayarı keskin piksel (`HintedRaster`). `UiBuilder.DefaultFont` kullanan her şey (balon, kabin tabelası, tutma çubuğu) fontu kendiliğinden alır. Teslim formunda Diğer > Hazır kaynak olarak beyan edilecek.
+- **F ipuçları ve boş anahtar:** Ruh fazındaki ipuçlarım `PromptChanged` ile değil, kendi `SpiritHud`'umda çiziliyor; boş anahtar gelmesi sorun değil.
 - **M9. Ruhun F'de takılması: düzeldi.** Ruh event saymıyor; sadece `MinigameHost.AnyOpen` iken (panel ekrandayken, 0,4 sn başarı beklemesi dahil) duruyor. Panel açılmazsa hiç durmuyor. Sebep büyük ihtimalle event sırasıydı: minigame hemen kapanınca `Closed`, ruhun `Opened` sayacından önce geliyor ve sayaç 1'de takılıyordu.
 - **M10. Balon ve ipucu stili: hazır.** Kullanım (SpeechBubble'da `EnsureUi` yerine):
   ```csharp
@@ -116,7 +118,7 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 | `konusma_balonu_kuyruk` | 16 × 12 | Balonun altındaki kuyruk, ucu aşağıda (UiStyle.bubbleTail) | **yok** (M10) |
 | `menu_arka_plan` | 960 × 540 | Ana menü arka planı (kapak görseli olabilir) | **yok** |
 | `logo` | serbest (öneri 320 × 96) | Oyunun adı; varsa menüde yazı yerine | **yok** |
-| Font (`Assets/Art/Fonts/`) | 16 px | Türkçe karakterli pixel font (ğ, ş, ı, İ, ç, ö, ü) | — |
+| Font (`Assets/Art/Fonts/`) | 16 px | **Pixelify Sans** (SIL OFL 1.1), `OFL.txt` yanında | eklendi (M12) |
 
 ### Açık sorular (Mehmet cevaplasın)
 
