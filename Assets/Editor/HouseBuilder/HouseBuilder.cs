@@ -64,8 +64,16 @@ namespace Deprem.HouseBuilder
             if (gameCamera != null)
                 HousePreview.Render("Logs/house_preview_game.png", 0.08f, gameCamera.transform.position, 1920, 1080);
             var salon = HouseLayout.Room("salon");
-            HousePreview.Render("Logs/house_preview_salon.png", 0.08f,
-                new Vector3((salon.X0 + salon.X1) * 0.5f, 1.9f, -12f), 1920, 1080);
+            var salonCamera = new Vector3((salon.X0 + salon.X1) * 0.5f, 1.9f, -12f);
+            HousePreview.Render("Logs/house_preview_salon.png", 0.08f, salonCamera, 1920, 1080);
+
+            // Kontur kontrolü: ruh fazındaki gibi bütün konturlar açık
+            var outlines = Object.FindObjectsByType<Deprem.Visual.ItemOutline>(FindObjectsSortMode.None);
+            foreach (var outline in outlines) outline.SetVisible(true);
+            HousePreview.Render("Logs/house_preview_outline.png", 0.08f, salonCamera, 1920, 1080);
+            foreach (var outline in outlines) outline.SetVisible(false);
+
+            ArtTemplates.Generate();
             Debug.Log("[HouseBuilder] Batch tamam");
         }
 
@@ -285,7 +293,7 @@ namespace Deprem.HouseBuilder
             window.name = "Window_Salon";
             Object.DestroyImmediate(window.GetComponent<Collider>());
             window.transform.SetParent(parent, false);
-            window.transform.position = new Vector3(24.5f, 1.5f, salon.Depth - 0.01f);
+            window.transform.position = new Vector3(HouseDims.SalonWindowX, 1.5f, salon.Depth - 0.01f);
             window.transform.localScale = new Vector3(1.5f, 1f, 1f);
             window.GetComponent<MeshRenderer>().sharedMaterial = mat;
         }
@@ -328,6 +336,50 @@ namespace Deprem.HouseBuilder
                         "mutfak_kapagi", new Color(0.75f, 0.7f, 0.6f), true);
                 }
             }
+
+            BuildOutline(go, securedVisual);
+        }
+
+        /// <summary>
+        /// Ruh fazı konturu: eşyanın her gövde mesh'inin (TV, kapaklar dahil; L demiri hariç) aynı mesh'li bir kopyası,
+        /// tüm submesh'lerde Deprem/Outline materyaliyle. Başta kapalı; ItemOutline açar.
+        /// </summary>
+        private static void BuildOutline(GameObject item, GameObject securedVisual)
+        {
+            var mat = OutlineMaterial();
+            var renderers = new List<Renderer>();
+            foreach (var filter in item.GetComponentsInChildren<MeshFilter>(true).ToList())
+            {
+                if (securedVisual != null && filter.transform.IsChildOf(securedVisual.transform)) continue;
+                var outline = new GameObject("Outline");
+                outline.transform.SetParent(filter.transform, false);
+                outline.AddComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
+                var renderer = outline.AddComponent<MeshRenderer>();
+                renderer.sharedMaterials = Enumerable.Repeat(mat, filter.sharedMesh.subMeshCount).ToArray();
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+                renderer.enabled = false;
+                renderers.Add(renderer);
+            }
+            item.AddComponent<Deprem.Visual.ItemOutline>().Configure(renderers.ToArray());
+        }
+
+        private static Material OutlineMaterial()
+        {
+            if (MaterialCache.TryGetValue("kontur", out var cached)) return cached;
+            string path = $"{MaterialFolder}/kontur.mat";
+            var shader = Shader.Find("Deprem/Outline");
+            if (shader == null) throw new System.InvalidOperationException("Deprem/Outline shader bulunamadı (Assets/Shaders/Outline.shader)");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            EditorUtility.SetDirty(mat);
+            MaterialCache["kontur"] = mat;
+            return mat;
         }
 
         /// <summary>
@@ -519,7 +571,7 @@ namespace Deprem.HouseBuilder
                 glow.transform.SetParent(go.transform, false);
                 glow.transform.localPosition = new Vector3(0f, 0.01f, 0f);
                 glow.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-                glow.transform.localScale = new Vector3(HouseLayout.SafeSpotWidth, 0.8f, 1f);
+                glow.transform.localScale = new Vector3(HouseLayout.SafeSpotWidth, HouseLayout.SafeSpotDepth, 1f);
                 var renderer = glow.GetComponent<MeshRenderer>();
                 renderer.sharedMaterial = mat;
                 renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

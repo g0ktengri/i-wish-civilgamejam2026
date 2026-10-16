@@ -22,6 +22,9 @@ namespace Deprem.HouseBuilder
         // Karakterlerin yürüdüğü düzlem: kapı boşluğunun ortası
         public const float PlayerPlaneZ = 1f;
 
+        // Salon penceresi (arka duvarda ayrı görsel, 1,5 x 1 m, yerden 1 m yukarıda): merkez X
+        public const float SalonWindowX = 24.5f;
+
         // Merdiven koridorun arka şeridinde (karakter düzleminin arkasında), sağa doğru yükselir.
         // Karakter düzleminde olsaydı zemin kattaki koridor yolunu keserdi.
         // 15 basamak: her basamak 0,3125 x 0,25 m = 20 x 16 px
@@ -190,7 +193,9 @@ namespace Deprem.HouseBuilder
             ("ebeveyn", 20f),   // gardıroptan uzak
         };
 
-        public const float SafeSpotWidth = 1.4f;
+        // Şerit dokusu 96 x 48 px = 1,5 x 0,75 m (Decals/guvenli_nokta.png)
+        public const float SafeSpotWidth = 1.5f;
+        public const float SafeSpotDepth = 0.75f;
 
         public static RoomDef Room(string key)
         {
