@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (minigame'ler pushlandıktan sonra; Mehmet'in `e5b4e47` commit'i okundu)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (deprem çantası pushlandıktan sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -37,6 +37,7 @@
 | Eşya vurgusu | `Scripts/Spirit/SpiritHighlighter.cs` | Ruh fazında sabitlenmemiş her eşyanın önüne nabız gibi atan bir point light koyar. Geçici çözüm; kontur shader'ı gelince değişecek. |
 | Ruh HUD'u | `Scripts/UI/SpiritHud.cs` | Sayaç, "F: Sabitle" ve "W/A/S/D: Uç" yazıları. |
 | Minigame'ler | `Scripts/Minigames/MinigameHost.cs` + `ScrewMinigame`, `CarryMinigame`, `LockMinigame` | `MinigameOpened` gelince eşyanın tipine göre ekranın ortasında yakın çekim panelini açar. Başarılıysa `SecurableItem.Secure()`, sonra `RaiseMinigameClosed(id, başarı)`. Esc ile vazgeçilir, faz `Spirit`'ten çıkarsa başarısız kapanır. Çanta için `MinigameHost.Instance.Open(tip, sonuç)` (event'ler `ItemId.None` ile). |
+| Deprem çantası | `Scripts/Bag/BagSystem.cs`, `BagSupply.cs`, `BagDropPoint.cs` | İlk yardım `Marker_FirstAid`'de, el feneri `Marker_Flashlight`'ta, çanta `Marker_Bag`'de (geçici renkli küpler). Ruh fazında F → taşı-yerleştir → ruh taşır → çantada F → `GameState.AddBagItem(id)`. Tek seferde tek malzeme taşınır; ruh fazı biterken taşınan malzeme yerine döner. Su ve düdük kapalı (ekstra). |
 
 ### Mehmet'in yaptıkları (Berke tarafı okudu)
 
@@ -66,7 +67,8 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 
 ### Açık sorular (Mehmet cevaplasın)
 
-- Şu an yok. M1'deki Core önerisine "tamam" ya da "hayır" demen yeterli.
+- M1'deki Core önerisine "tamam" ya da "hayır" demen yeterli.
+- **B6. Çanta kontrolü:** Kurtarma fazında `GameState.HasBagItem(BagItemId.FirstAidKit)` (baba) ve `HasBagItem(BagItemId.Flashlight)` (kardeşin karanlık odası) okunacak. Çanta kabinin yanında duruyor; oyuncunun beden olarak çantayı alması gerekiyor mu, yoksa çantada olması yeterli mi? Berke'nin önerisi: yeterli olsun (ek etkileşim yok).
 
 ---
 

@@ -1,3 +1,4 @@
+using Deprem.Bag;
 using Deprem.Core;
 using Deprem.Localization;
 using Deprem.Spirit;
@@ -6,7 +7,8 @@ using UnityEngine.UI;
 
 namespace Deprem.UI
 {
-    // Ruh fazı HUD'u: üstte kalan süre, altta "F: Sabitle" ve uçma ipucu.
+    // Ruh fazı HUD'u: üstte kalan süre, altta etkileşim ipucu (F: Sabitle / Al / Çantaya koy),
+    // taşınan çanta malzemesi ve uçma ipucu.
     // Canvas'ı kendisi kurar; sadece ruh fazında görünür.
     public class SpiritHud : MonoBehaviour
     {
@@ -23,7 +25,10 @@ namespace Deprem.UI
         Text timerText;
         Text promptText;
         Text hintText;
+        Text carryText;
         int shownSeconds = -1;
+        string shownPrompt;
+        BagItemId shownCarry = (BagItemId)(-1);
 
         void Awake()
         {
@@ -40,6 +45,10 @@ namespace Deprem.UI
                 TextAnchor.LowerLeft);
             UiBuilder.Stretch(hintText.rectTransform, new Vector2(0.02f, 0.02f), new Vector2(0.4f, 0.08f));
 
+            carryText = UiBuilder.CreateText(canvas.transform, "Carrying", font, promptFontSize, Color.white,
+                TextAnchor.UpperRight);
+            UiBuilder.Stretch(carryText.rectTransform, new Vector2(0.6f, 0.88f), new Vector2(0.98f, 0.97f));
+
             group.alpha = 0f;
         }
 
@@ -53,6 +62,8 @@ namespace Deprem.UI
             if (!visible)
             {
                 shownSeconds = -1;
+                shownPrompt = null;
+                shownCarry = (BagItemId)(-1);
                 return;
             }
 
@@ -62,16 +73,23 @@ namespace Deprem.UI
                 shownSeconds = seconds;
                 timerText.text = $"{seconds / 60}:{seconds % 60:00}";
                 timerText.color = SpiritPhase.TimeLeft <= warningSeconds ? warningColor : timerColor;
-                RefreshStaticTexts();
             }
 
-            promptText.enabled = SpiritInteractor.Nearest;
+            if (SpiritInteractor.PromptKey != shownPrompt || BagSystem.Carrying != shownCarry)
+            {
+                shownPrompt = SpiritInteractor.PromptKey;
+                shownCarry = BagSystem.Carrying;
+                RefreshStaticTexts();
+            }
         }
 
         void RefreshStaticTexts()
         {
-            promptText.text = Texts.Get("prompt.secure");
+            promptText.text = string.IsNullOrEmpty(shownPrompt) ? string.Empty : Texts.Get(shownPrompt);
             hintText.text = Texts.Get("prompt.fly");
+            carryText.text = shownCarry > BagItemId.None
+                ? Texts.Format("hud.carrying", Texts.Get($"bag.{shownCarry}"))
+                : string.Empty;
         }
     }
 }

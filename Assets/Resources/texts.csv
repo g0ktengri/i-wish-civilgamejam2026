@@ -11,6 +11,9 @@ prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
 prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
 prompt.cancel,Esc: Vazgeç,Esc: Cancel
+prompt.pick_up,F: Al,F: Pick up
+prompt.put_in_bag,F: Çantaya koy,F: Put in bag
+hud.carrying,Taşınan: {0},Carrying: {0}
 
 # Minigame'ler
 minigame.screw.hint,Fareyle saat yönünde daire çizerek vidayı sık,Draw clockwise circles with the mouse to tighten the screw
