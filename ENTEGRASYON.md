@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (Mehmet'in `a1bc0ba` play testi notları M6–M8 işlendikten sonra)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (Berke'nin sistemlerine sprite yuvaları eklendikten sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -77,7 +77,34 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 - Kurtarma süresine gizli bonus için kaç kez kaybedildiği `GameState.FailedAttempts` içinde tutuluyor (GDD: her başarısızlıkta +10 sn, en fazla +30 sn).
 - Döngü ilerlemesini `LoopManager` yapar. Döngünün dersiyle kaybedilirse sonraki döngüye geçilir (1: öncüyü önemsememek, 2: çök-kapan-tutun yapmamak, 3: eşya devrilmesi, 4: çanta eksikliği). Başka bir sebeple kaybedilirse aynı döngü tekrarlanır.
 
+### Görseller: Berke'nin sistemleri hangi dosyaları okur
+
+Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` dosyalarından gelir. Font, `Assets/Art/Fonts/` altındaki ilk `.ttf` ya da `.otf` dosyasıdır. Dosya konunca **Tools > Deprem > Berke: Sistem Prefab'ını Kur** çalıştırılır; dosya yoksa o parça düz renkle çizilir. Main'deki kopya prefab'dan güncellenir, Main'i yeniden kurmak gerekmez. Boyutlar UI referans pikseli (960 × 540) cinsinden; dünyadaki çanta ve ikonlar 64 PPU.
+
+| Dosya | Boyut | Ne | Şablon |
+|---|---|---|---|
+| `minigame_vida` | 256 × 256 | Vida sıkma arka planı (dolap yüzü, vida yuvası) | var |
+| `minigame_l_demiri` | 256 × 256 | Vida bitince üstte beliren L demiri; **arka planı saydam** (`minigame_vida`'nın üstüne biner) | var |
+| `minigame_dolap_kapagi` | 256 × 256 | Kilitle arka planı (dolap kapağı ve mandal) | var |
+| `ikon_ilk_yardim`, `ikon_el_feneri`, `ikon_su`, `ikon_duduk` | 32 × 32 | Çanta malzemeleri; dünyada, HUD'da ve taşı-yerleştir minigame'inde aynı | var |
+| `deprem_cantasi` | 48 × 48 | Kabinin yanındaki çanta (dünyada; tabanı yere basar) | var |
+| `minigame_panel` | 256 × 256 | Bütün minigame'lerin çerçevesi (isteğe bağlı) | **yok** |
+| `minigame_vida_basi` | 48 × 48 | Dönen vida başı (ortası dönme merkezi) | **yok** |
+| `minigame_tasi` | 256 × 256 | Taşı-yerleştir arka planı | **yok** |
+| `minigame_duvar` | 16 × 256 | Ortadaki duvar; dikey döşenir, boşluğu kod açar | **yok** |
+| `minigame_guvenli_alan` | 64 × 64 | Güvenli bırakma alanı | **yok** |
+| `minigame_yatak_rafi`, `minigame_ayna`, `minigame_cerceve` | 48 × 48 | Taşınan eşyanın kendisi | **yok** |
+| `minigame_esya` | 48 × 48 | Görseli olmayan taşınan şey için yedek | **yok** |
+| `minigame_ibre` | 8 × 32 | Kilitle'deki gidip gelen ibre | **yok** |
+| `hud_ipucu` | 192 × 32 | Tuş ipucunun ("F: Kalk") arka planı | **yok** |
+| `hud_sayac` | 64 × 32 | Ruh fazı sayacının arka planı | **yok** |
+| `menu_arka_plan` | 960 × 540 | Ana menü arka planı (kapak görseli olabilir) | **yok** |
+| `logo` | serbest (öneri 320 × 96) | Oyunun adı; varsa menüde yazı yerine | **yok** |
+| Font (`Assets/Art/Fonts/`) | 16 px | Türkçe karakterli pixel font (ğ, ş, ı, İ, ç, ö, ü) | — |
+
 ### Açık sorular (Mehmet cevaplasın)
+
+- **B9. Eksik şablonlar:** Yukarıdaki tabloda "yok" yazanlar için `Sablonlar/UI/` altına aynı adla ve boyutla şablon üretebilir misin (ArtTemplates)? Sanatçılar şu an çalışıyor.
 
 - **B7. Menü ve oyun başlangıcı:** Main açılınca artık ana menü görünüyor ve oyun `Time.timeScale = 0` ile duruyor. Deneme, menüden seçilince başlıyor: sahne yeniden yükleniyor, ardından `LoopStarted` ve `PhaseChanged` geliyor. Mehmet'in sistemleri `GamePhase.None` iken bir şey başlatmıyorsa sorun yok; `devStartLoop` 0 olmalı. Doğru mu?
 - **B8. Duraklatma:** Mehmet'in sistemleri `Time.deltaTime` / fizik kullanıyorsa `timeScale 0` ile kendiliğinden duruyor. Gerçek zamanlı çalışan bir şey (ses, `unscaledDeltaTime`) varsa `GameEvents.PauseChanged` dinlenebilir.

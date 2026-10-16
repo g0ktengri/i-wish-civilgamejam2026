@@ -11,7 +11,7 @@ namespace Deprem.Minigames
 {
     // Minigame'leri açar ve kapatır. Eşya için: GameEvents.MinigameOpened gelince açılır,
     // başarılıysa SecurableItem.Secure() çağırır, sonunda RaiseMinigameClosed.
-    // Çanta gibi Berke'nin diğer sistemleri Open(type, onDone) ile doğrudan açar.
+    // Çanta gibi Berke'nin diğer sistemleri Open(type, onDone, görsel) ile doğrudan açar.
     // Esc ile vazgeçilir; ruh fazı biterse minigame başarısız kapanır. Canvas'ı kendisi kurar.
     public class MinigameHost : MonoBehaviour
     {
@@ -39,6 +39,9 @@ namespace Deprem.Minigames
         [SerializeField] float carrySnapRadius = 14f;
         [Tooltip("Duvardaki boşluğun yüksekliği (eşya 44)")]
         [SerializeField] float carryGapHeight = 70f;
+
+        [Header("Görseller (Assets/Art/UI, prefab kurulurken bağlanır)")]
+        [SerializeField] MinigameArt art = new MinigameArt();
 
         [Header("Kilitle")]
         [SerializeField] float lockCyclesPerSecond = 0.9f;
@@ -86,9 +89,9 @@ namespace Deprem.Minigames
 
         // Çanta malzemesi gibi eşya olmayan şeyler için. Ruhun durması için
         // MinigameOpened/Closed event'leri ItemId.None ile tetiklenir.
-        public bool Open(MinigameType type, Action<bool> done)
+        public bool Open(MinigameType type, Action<bool> done, Sprite itemSprite = null)
         {
-            if (!OpenPanel(type, success =>
+            if (!OpenPanel(type, itemSprite, success =>
                 {
                     GameEvents.RaiseMinigameClosed(ItemId.None, success);
                     done?.Invoke(success);
@@ -98,10 +101,10 @@ namespace Deprem.Minigames
             return true;
         }
 
-        bool OpenPanel(MinigameType type, Action<bool> done)
+        bool OpenPanel(MinigameType type, Sprite itemSprite, Action<bool> done)
         {
             if (IsOpen) return false;
-            current = Create(type);
+            current = Create(type, itemSprite);
             onDone = done;
             finishing = false;
 
@@ -110,8 +113,9 @@ namespace Deprem.Minigames
                 child.gameObject.SetActive(false);
                 Destroy(child.gameObject);
             }
-            panel.color = panelColor;
-            current.Build(content);
+            panel.sprite = art.panel;
+            panel.color = art.panel ? Color.white : panelColor;
+            current.Build(content, art);
 
             hintText.text = type == MinigameType.Lock
                 ? Texts.Format(HintKey(type), lockRequiredHits)
@@ -129,7 +133,7 @@ namespace Deprem.Minigames
 
             // Eşya yoksa, zaten sabitse ya da başka minigame açıksa hemen kapat ki ruh takılı kalmasın
             var item = SecurableItem.Find(id);
-            if (!item || item.IsSecured || !OpenPanel(type, success => FinishItem(id, success)))
+            if (!item || item.IsSecured || !OpenPanel(type, CarrySpriteFor(id), success => FinishItem(id, success)))
                 GameEvents.RaiseMinigameClosed(id, false);
         }
 
@@ -195,11 +199,23 @@ namespace Deprem.Minigames
             return input;
         }
 
-        Minigame Create(MinigameType type)
+        // Taşı-yerleştir eşyalarının kendi görseli (GDD: raf, ayna, çerçeve)
+        Sprite CarrySpriteFor(ItemId id)
+        {
+            switch (id)
+            {
+                case ItemId.BedShelf: return art.carryBedShelf;
+                case ItemId.StairMirror: return art.carryMirror;
+                case ItemId.BedFrame: return art.carryFrame;
+                default: return null;
+            }
+        }
+
+        Minigame Create(MinigameType type, Sprite itemSprite)
         {
             switch (type)
             {
-                case MinigameType.CarryAndPlace: return new CarryMinigame(carrySnapRadius, carryGapHeight);
+                case MinigameType.CarryAndPlace: return new CarryMinigame(carrySnapRadius, carryGapHeight, itemSprite);
                 case MinigameType.Lock:
                     return new LockMinigame(lockCyclesPerSecond, lockZoneWidth, lockRequiredHits, lockShrinkPerHit,
                         lockSpeedUpPerHit);

@@ -6,14 +6,16 @@ namespace Deprem.Minigames
     // Arada bir duvar var; eşya duvardaki boşluktan geçmeli. Duvara çarparsa eşya düşer ve başa döner.
     public class CarryMinigame : Minigame
     {
-        static readonly Vector2 ItemSize = new Vector2(44f, 44f);
+        static readonly Vector2 ItemSize = new Vector2(48f, 48f);
+        static readonly Vector2 TargetSize = new Vector2(64f, 64f);
         static readonly Color WallColor = new Color(0.35f, 0.37f, 0.42f);
         static readonly Color HitColor = new Color(0.7f, 0.2f, 0.2f);
-        const float WallWidth = 14f;
+        const float WallWidth = 16f;
         const float HitFlashTime = 0.25f;
 
         readonly float snapRadius;
         readonly float gapHeight;
+        readonly Sprite itemSprite;
 
         RectTransform item;
         RectTransform target;
@@ -25,15 +27,20 @@ namespace Deprem.Minigames
         Vector2 grabOffset;
         bool dragging;
         float hitFlash;
+        Color baseWallColor;
 
-        public CarryMinigame(float snapRadius, float gapHeight)
+        // itemSprite: taşınan şeyin görseli (eşya ya da çanta malzemesi); boşsa Art.carryItem
+        public CarryMinigame(float snapRadius, float gapHeight, Sprite itemSprite)
         {
             this.snapRadius = snapRadius;
             this.gapHeight = gapHeight;
+            this.itemSprite = itemSprite;
         }
 
         protected override void OnBuild()
         {
+            CreateBackground(Art.carryBackground);
+
             // Eşya bir yanda, güvenli alan diğer yanda; taraf ve boşluğun yeri her açılışta rastgele
             float side = Random.value < 0.5f ? -1f : 1f;
             float x = PanelSize.x * 0.34f;
@@ -41,19 +48,30 @@ namespace Deprem.Minigames
 
             start = new Vector2(-side * x, Random.Range(-halfHeight * 0.5f, halfHeight * 0.5f));
             var targetPosition = new Vector2(side * x, Random.Range(-halfHeight * 0.5f, halfHeight * 0.5f));
-            float targetSize = snapRadius * 2f + ItemSize.x * 0.5f;
-            target = CreateRect("SafeSpot", targetPosition, Vector2.one * targetSize, new Color(0.45f, 0.85f, 0.5f, 0.35f)).rectTransform;
+            target = CreateRect("SafeSpot", targetPosition, TargetSize, new Color(0.45f, 0.85f, 0.5f, 0.35f),
+                null, Art.carryTarget).rectTransform;
 
             gapY = Random.Range(-halfHeight + gapHeight, halfHeight - gapHeight);
             float topHeight = halfHeight - (gapY + gapHeight * 0.5f);
             float bottomHeight = (gapY - gapHeight * 0.5f) + halfHeight;
-            var top = CreateRect("WallTop", new Vector2(0f, halfHeight - topHeight * 0.5f), new Vector2(WallWidth, topHeight), WallColor);
-            var bottom = CreateRect("WallBottom", new Vector2(0f, -halfHeight + bottomHeight * 0.5f), new Vector2(WallWidth, bottomHeight), WallColor);
+            var top = CreateRect("WallTop", new Vector2(0f, halfHeight - topHeight * 0.5f), new Vector2(WallWidth, topHeight), WallColor, null, Art.carryWall);
+            var bottom = CreateRect("WallBottom", new Vector2(0f, -halfHeight + bottomHeight * 0.5f), new Vector2(WallWidth, bottomHeight), WallColor, null, Art.carryWall);
+            if (Art.carryWall)
+            {
+                // Duvar dikey döşenir, boşluk kodla açılır
+                foreach (var wall in new[] { top, bottom })
+                {
+                    wall.type = UnityEngine.UI.Image.Type.Tiled;
+                    wall.preserveAspect = false;
+                }
+            }
             wallTop = top.rectTransform;
             wallBottom = bottom.rectTransform;
             wallImages = new[] { top, bottom };
+            baseWallColor = top.color;
 
-            item = CreateRect("Item", start, ItemSize, new Color(0.85f, 0.65f, 0.4f)).rectTransform;
+            var sprite = itemSprite ? itemSprite : Art.carryItem;
+            item = CreateRect("Item", start, ItemSize, new Color(0.85f, 0.65f, 0.4f), null, sprite).rectTransform;
         }
 
         public override bool Tick(MinigameInput input)
@@ -61,7 +79,7 @@ namespace Deprem.Minigames
             if (hitFlash > 0f)
             {
                 hitFlash -= input.DeltaTime;
-                foreach (var image in wallImages) image.color = hitFlash > 0f ? HitColor : WallColor;
+                foreach (var image in wallImages) image.color = hitFlash > 0f ? HitColor : baseWallColor;
             }
 
             if (input.Pressed && Contains(item.anchoredPosition, item.sizeDelta, input.Pointer))

@@ -50,7 +50,8 @@ namespace Deprem.Minigames
             speed = startSpeed;
             zoneWidth = startZoneWidth;
 
-            CreateRect("Latch", new Vector2(0f, 50f), new Vector2(70f, 40f), new Color(0.6f, 0.62f, 0.66f));
+            if (!CreateBackground(Art.lockBackground))
+                CreateRect("Latch", new Vector2(0f, 50f), new Vector2(70f, 40f), new Color(0.6f, 0.62f, 0.66f));
 
             pips = new Image[requiredHits];
             float spacing = 22f;
@@ -63,8 +64,8 @@ namespace Deprem.Minigames
             bar = CreateRect("Bar", new Vector2(0f, -40f), new Vector2(barWidth, BarHeight), BarColor);
             zone = CreateRect("Zone", Vector2.zero, new Vector2(barWidth * zoneWidth, BarHeight),
                 new Color(0.45f, 0.85f, 0.5f), bar.transform).rectTransform;
-            needle = CreateRect("Needle", Vector2.zero, new Vector2(4f, BarHeight + 14f), Color.white,
-                bar.transform).rectTransform;
+            needle = CreateRect("Needle", Vector2.zero, new Vector2(Art.lockNeedle ? 8f : 4f, 32f), Color.white,
+                bar.transform, Art.lockNeedle).rectTransform;
             MoveZone();
         }
 

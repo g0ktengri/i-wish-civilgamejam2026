@@ -162,6 +162,7 @@ MonoBehaviour:
   warningColor: {r: 1, g: 0.45, b: 0.4, a: 1}
   warningSeconds: 10
   sortingOrder: 50
+  timerSprite: {fileID: 0}
 --- !u!114 &5672897155684826516
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,6 +189,20 @@ MonoBehaviour:
   screwIdleLoosen: 0.3
   carrySnapRadius: 14
   carryGapHeight: 70
+  art:
+    panel: {fileID: 0}
+    screwBackground: {fileID: 0}
+    screwHead: {fileID: 0}
+    screwDone: {fileID: 0}
+    carryBackground: {fileID: 0}
+    carryWall: {fileID: 0}
+    carryTarget: {fileID: 0}
+    carryItem: {fileID: 0}
+    carryBedShelf: {fileID: 0}
+    carryMirror: {fileID: 0}
+    carryFrame: {fileID: 0}
+    lockBackground: {fileID: 0}
+    lockNeedle: {fileID: 0}
   lockCyclesPerSecond: 0.9
   lockZoneWidth: 0.22
   lockRequiredHits: 3
@@ -232,6 +247,11 @@ MonoBehaviour:
   bagColor: {r: 0.9, g: 0.45, b: 0.15, a: 1}
   interactRange: 1.2
   carryOffset: {x: 0.35, y: -0.25, z: 0}
+  firstAidIcon: {fileID: 0}
+  flashlightIcon: {fileID: 0}
+  waterIcon: {fileID: 0}
+  whistleIcon: {fileID: 0}
+  bagSprite: {fileID: 0}
 --- !u!114 &7179508923403737285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,6 +269,7 @@ MonoBehaviour:
   color: {r: 1, g: 1, b: 1, a: 1}
   backColor: {r: 0, g: 0, b: 0, a: 0.5}
   sortingOrder: 60
+  backSprite: {fileID: 0}
 --- !u!114 &6846049828846937271
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -315,3 +336,5 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 1, b: 1, a: 1}
   backgroundColor: {r: 0.02, g: 0.03, b: 0.06, a: 1}
   sortingOrder: 120
+  backgroundSprite: {fileID: 0}
+  logoSprite: {fileID: 0}

@@ -17,6 +17,7 @@ namespace Deprem.Minigames
 
         RectTransform head;
         RectTransform fill;
+        UnityEngine.UI.Image done;
         float barWidth;
         float progress;
         float lastAngle;
@@ -33,11 +34,21 @@ namespace Deprem.Minigames
 
         protected override void OnBuild()
         {
+            if (!CreateBackground(Art.screwBackground))
+                CreateRect("Bracket", ScrewCenter, new Vector2(96f, 96f), new Color(0.45f, 0.47f, 0.5f));
             // Halka: farenin dönmesi gereken alan
             CreateRect("Ring", ScrewCenter, Vector2.one * maxRadius * 2f, new Color(1f, 1f, 1f, 0.06f));
-            CreateRect("Bracket", ScrewCenter, new Vector2(96f, 96f), new Color(0.45f, 0.47f, 0.5f));
-            head = CreateRect("ScrewHead", ScrewCenter, new Vector2(48f, 48f), new Color(0.75f, 0.77f, 0.8f)).rectTransform;
-            CreateRect("Slot", Vector2.zero, new Vector2(38f, 7f), new Color(0.25f, 0.26f, 0.28f), head);
+            head = CreateRect("ScrewHead", ScrewCenter, new Vector2(48f, 48f), new Color(0.75f, 0.77f, 0.8f),
+                null, Art.screwHead).rectTransform;
+            if (!Art.screwHead)
+                CreateRect("Slot", Vector2.zero, new Vector2(38f, 7f), new Color(0.25f, 0.26f, 0.28f), head);
+
+            // Sabitlenince L demiri (görseli varsa)
+            if (Art.screwDone)
+            {
+                done = CreateRect("Done", Vector2.zero, PanelSize, Color.white, null, Art.screwDone);
+                done.enabled = false;
+            }
 
             barWidth = PanelSize.x * 0.75f;
             float barY = -PanelSize.y * 0.42f;
@@ -75,7 +86,9 @@ namespace Deprem.Minigames
 
             head.localRotation = Quaternion.Euler(0f, 0f, -progress * requiredTurns * 360f);
             fill.sizeDelta = new Vector2(barWidth * progress, fill.sizeDelta.y);
-            return progress >= 1f;
+            if (progress < 1f) return false;
+            if (done) done.enabled = true;
+            return true;
         }
     }
 }

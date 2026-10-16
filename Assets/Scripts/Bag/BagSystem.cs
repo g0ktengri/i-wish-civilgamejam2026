@@ -37,11 +37,43 @@ namespace Deprem.Bag
         [SerializeField] float interactRange = 1.2f;
         [SerializeField] Vector3 carryOffset = new Vector3(0.35f, -0.25f, 0f);
 
+        [Header("Görseller (Assets/Art/UI, prefab kurulurken bağlanır)")]
+        [Tooltip("ikon_ilk_yardim.png, 32 x 32: dünyada ve UI'da aynı")]
+        [SerializeField] Sprite firstAidIcon;
+        [Tooltip("ikon_el_feneri.png, 32 x 32")]
+        [SerializeField] Sprite flashlightIcon;
+        [Tooltip("ikon_su.png, 32 x 32")]
+        [SerializeField] Sprite waterIcon;
+        [Tooltip("ikon_duduk.png, 32 x 32")]
+        [SerializeField] Sprite whistleIcon;
+        [Tooltip("deprem_cantasi.png, 48 x 48: kabinin yanındaki çanta")]
+        [SerializeField] Sprite bagSprite;
+
+        public static BagSystem Instance { get; private set; }
         public static BagItemId Carrying { get; private set; }
         public static event Action<BagItemId> CarryingChanged;
 
         public float InteractRange => interactRange;
         public Vector3 CarryOffset => carryOffset;
+
+        void Awake() => Instance = this;
+
+        void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
+
+        public Sprite IconFor(BagItemId id)
+        {
+            switch (id)
+            {
+                case BagItemId.FirstAidKit: return firstAidIcon;
+                case BagItemId.Flashlight: return flashlightIcon;
+                case BagItemId.Water: return waterIcon;
+                case BagItemId.Whistle: return whistleIcon;
+                default: return null;
+            }
+        }
 
         void Start()
         {
@@ -56,11 +88,12 @@ namespace Deprem.Bag
                     Debug.LogWarning($"[Bag] İşaret noktası yok: {def.markerName} ({def.id})");
                     continue;
                 }
-                BagSupply.Create(this, def.id, marker.transform.position + def.offset, supplySize, def.color);
+                BagSupply.Create(this, def.id, marker.transform.position + def.offset, supplySize, def.color,
+                    IconFor(def.id));
             }
 
             var bagMarker = GameObject.Find(bagMarkerName);
-            if (bagMarker) BagDropPoint.Create(this, bagMarker.transform.position, bagSize, bagColor);
+            if (bagMarker) BagDropPoint.Create(this, bagMarker.transform.position, bagSize, bagColor, bagSprite);
             else Debug.LogWarning($"[Bag] İşaret noktası yok: {bagMarkerName}");
         }
 
@@ -83,6 +116,7 @@ namespace Deprem.Bag
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetOnPlay()
         {
+            Instance = null;
             Carrying = BagItemId.None;
             CarryingChanged = null;
         }

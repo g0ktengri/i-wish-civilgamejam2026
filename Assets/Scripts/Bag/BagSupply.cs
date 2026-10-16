@@ -15,6 +15,8 @@ namespace Deprem.Bag
         BagItemId id;
         Vector3 home;
         Light glow;
+        Renderer visual;
+        Sprite icon;
         Transform spirit;
         bool opening;
 
@@ -27,15 +29,26 @@ namespace Deprem.Bag
             !opening && GameState.Phase == GamePhase.Spirit && BagSystem.Carrying == BagItemId.None &&
             !GameState.HasBagItem(id);
 
-        public static BagSupply Create(BagSystem system, BagItemId id, Vector3 position, float size, Color color)
+        // icon varsa dünyada sprite (64 PPU, ölçeklenmez), yoksa renkli küp
+        public static BagSupply Create(BagSystem system, BagItemId id, Vector3 position, float size, Color color,
+            Sprite icon)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            GameObject go;
+            if (icon)
+            {
+                go = new GameObject();
+                go.AddComponent<SpriteRenderer>().sprite = icon;
+            }
+            else
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Destroy(go.GetComponent<Collider>());
+                go.transform.localScale = Vector3.one * size;
+                go.GetComponent<Renderer>().material.color = color;
+            }
             go.name = $"BagSupply_{id}";
-            Destroy(go.GetComponent<Collider>());
             go.transform.SetParent(system.transform, false);
             go.transform.position = position;
-            go.transform.localScale = Vector3.one * size;
-            go.GetComponent<Renderer>().material.color = color;
 
             var glow = new GameObject("Glow").AddComponent<Light>();
             glow.transform.SetParent(go.transform, false);
@@ -50,6 +63,8 @@ namespace Deprem.Bag
             supply.id = id;
             supply.home = position;
             supply.glow = glow;
+            supply.visual = go.GetComponent<Renderer>();
+            supply.icon = icon;
             return supply;
         }
 
@@ -69,7 +84,7 @@ namespace Deprem.Bag
             {
                 opening = false;
                 if (success && GameState.Phase == GamePhase.Spirit) PickUp();
-            });
+            }, icon);
         }
 
         void PickUp() => BagSystem.SetCarrying(id);
@@ -95,8 +110,7 @@ namespace Deprem.Bag
 
             // Çantaya konan malzeme dünyada görünmez (çantanın içinde)
             var visible = !inBag;
-            var meshRenderer = GetComponent<Renderer>();
-            if (meshRenderer.enabled != visible) meshRenderer.enabled = visible;
+            if (visual.enabled != visible) visual.enabled = visible;
             glow.enabled = visible && GameState.Phase == GamePhase.Spirit;
         }
     }

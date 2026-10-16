@@ -21,11 +21,16 @@ namespace Deprem.UI
         [SerializeField] float warningSeconds = 10f;
         [SerializeField] int sortingOrder = 50;
 
+        [Header("Görseller (Assets/Art/UI, prefab kurulurken bağlanır)")]
+        [Tooltip("hud_sayac.png, 64 x 32: sayacın arka planı")]
+        [SerializeField] Sprite timerSprite;
+
         CanvasGroup group;
         Text timerText;
         Text promptText;
         Text hintText;
         Text carryText;
+        Image carryIcon;
         int shownSeconds = -1;
         string shownPrompt;
         BagItemId shownCarry = (BagItemId)(-1);
@@ -35,6 +40,14 @@ namespace Deprem.UI
             var canvas = UiBuilder.CreateCanvas(transform, "SpiritHudCanvas", sortingOrder);
             group = canvas.GetComponent<CanvasGroup>();
 
+            if (timerSprite)
+            {
+                var timerBack = UiBuilder.CreateImage(canvas.transform, "TimerBack", Color.white);
+                timerBack.sprite = timerSprite;
+                var rect = timerBack.rectTransform;
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.915f);
+                rect.sizeDelta = new Vector2(64f, 32f);
+            }
             timerText = UiBuilder.CreateText(canvas.transform, "Timer", font, timerFontSize, timerColor);
             UiBuilder.Stretch(timerText.rectTransform, new Vector2(0.4f, 0.86f), new Vector2(0.6f, 0.97f));
 
@@ -47,7 +60,14 @@ namespace Deprem.UI
 
             carryText = UiBuilder.CreateText(canvas.transform, "Carrying", font, promptFontSize, Color.white,
                 TextAnchor.UpperRight);
-            UiBuilder.Stretch(carryText.rectTransform, new Vector2(0.6f, 0.88f), new Vector2(0.98f, 0.97f));
+            UiBuilder.Stretch(carryText.rectTransform, new Vector2(0.6f, 0.88f), new Vector2(0.94f, 0.97f));
+
+            // Taşınan malzemenin ikonu (32 x 32, BagSystem'deki ikon)
+            carryIcon = UiBuilder.CreateImage(canvas.transform, "CarryIcon", Color.white);
+            var iconRect = carryIcon.rectTransform;
+            iconRect.anchorMin = iconRect.anchorMax = new Vector2(0.97f, 0.925f);
+            iconRect.sizeDelta = new Vector2(32f, 32f);
+            carryIcon.enabled = false;
 
             group.alpha = 0f;
         }
@@ -90,6 +110,10 @@ namespace Deprem.UI
             carryText.text = shownCarry > BagItemId.None
                 ? Texts.Format("hud.carrying", Texts.Get($"bag.{shownCarry}"))
                 : string.Empty;
+
+            var icon = shownCarry > BagItemId.None && BagSystem.Instance ? BagSystem.Instance.IconFor(shownCarry) : null;
+            carryIcon.sprite = icon;
+            carryIcon.enabled = icon;
         }
     }
 }

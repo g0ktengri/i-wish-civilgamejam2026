@@ -14,6 +14,8 @@ namespace Deprem.UI
         [SerializeField] Color color = Color.white;
         [SerializeField] Color backColor = new Color(0f, 0f, 0f, 0.5f);
         [SerializeField] int sortingOrder = 60;
+        [Tooltip("hud_ipucu.png, 192 x 32: ipucunun arka planı (Assets/Art/UI, prefab kurulurken bağlanır)")]
+        [SerializeField] Sprite backSprite;
 
         Image back;
         Text label;
@@ -23,11 +25,15 @@ namespace Deprem.UI
         {
             var canvas = UiBuilder.CreateCanvas(transform, "PromptCanvas", sortingOrder);
 
-            back = UiBuilder.CreateImage(canvas.transform, "Back", backColor);
-            UiBuilder.Stretch(back.rectTransform, new Vector2(0.35f, 0.14f), new Vector2(0.65f, 0.22f));
+            back = UiBuilder.CreateImage(canvas.transform, "Back", backSprite ? Color.white : backColor);
+            back.sprite = backSprite;
+            var backRect = back.rectTransform;
+            backRect.anchorMin = backRect.anchorMax = new Vector2(0.5f, 0.18f);
+            backRect.sizeDelta = new Vector2(192f, 32f);
 
             label = UiBuilder.CreateText(back.transform, "Label", font, fontSize, color);
             UiBuilder.Stretch(label.rectTransform, Vector2.zero, Vector2.one);
+            label.horizontalOverflow = HorizontalWrapMode.Overflow; // uzun ipucu tek satırda taşsın
 
             Apply();
         }

@@ -25,8 +25,15 @@ namespace Deprem.UI
         [SerializeField] Color backgroundColor = new Color(0.02f, 0.03f, 0.06f, 1f);
         [SerializeField] int sortingOrder = 120;
 
+        [Header("Görseller (Assets/Art/UI, prefab kurulurken bağlanır)")]
+        [Tooltip("menu_arka_plan.png, 960 x 540: menü arka planı")]
+        [SerializeField] Sprite backgroundSprite;
+        [Tooltip("logo.png: oyunun adı; varsa yazı yerine gösterilir (kendi boyutunda)")]
+        [SerializeField] Sprite logoSprite;
+
         CanvasGroup group;
         Text titleText;
+        Image logo;
         Text bodyText;
         Text footerText;
         RectTransform items;
@@ -127,7 +134,9 @@ namespace Deprem.UI
 
         void Refresh()
         {
-            titleText.text = screen == Screen.Warning ? string.Empty : Texts.Get("game.title");
+            bool showTitle = screen != Screen.Warning;
+            titleText.text = showTitle && !logoSprite ? Texts.Get("game.title") : string.Empty;
+            if (logo) logo.enabled = showTitle;
             switch (screen)
             {
                 case Screen.Warning:
@@ -169,8 +178,19 @@ namespace Deprem.UI
             var canvas = UiBuilder.CreateCanvas(transform, "MainMenuCanvas", sortingOrder);
             group = canvas.GetComponent<CanvasGroup>();
 
-            var background = UiBuilder.CreateImage(canvas.transform, "Background", backgroundColor);
+            var background = UiBuilder.CreateImage(canvas.transform, "Background",
+                backgroundSprite ? Color.white : backgroundColor);
+            background.sprite = backgroundSprite;
             UiBuilder.Stretch(background.rectTransform, Vector2.zero, Vector2.one);
+
+            if (logoSprite)
+            {
+                logo = UiBuilder.CreateImage(canvas.transform, "Logo", Color.white);
+                logo.sprite = logoSprite;
+                logo.rectTransform.anchorMin = logo.rectTransform.anchorMax = new Vector2(0.5f, 0.83f);
+                // Referans pikselinde kendi boyutu (ölçeklenmez)
+                logo.rectTransform.sizeDelta = logoSprite.rect.size;
+            }
 
             titleText = UiBuilder.CreateText(canvas.transform, "Title", font, titleFontSize, highlightColor);
             UiBuilder.Stretch(titleText.rectTransform, new Vector2(0.1f, 0.74f), new Vector2(0.9f, 0.92f));
