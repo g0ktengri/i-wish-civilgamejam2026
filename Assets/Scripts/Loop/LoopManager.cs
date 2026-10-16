@@ -44,6 +44,12 @@ namespace Deprem.Loop
 
         // Sahnede keşke ekranı varsa otomatik devam edilmez; ekran ContinueAfterWish() çağırır
         public static bool WishScreenPresent { get; set; }
+
+        // Sahnede ana menü varsa oyun kendiliğinden başlamaz; menü StartFromLoop() çağırır
+        public static bool MenuPresent { get; set; }
+
+        // Sahne bir deneme başlatmak için yeniden yüklendiyse true (ana menü gizli kalır)
+        public static bool HasPendingLoop => pendingLoop > 0;
         public bool WaitingToContinue => waitingToContinue;
 
         void Awake()
@@ -75,7 +81,7 @@ namespace Deprem.Loop
                 pendingLoop = 0;
                 GameState.BeginAttempt(loop);
             }
-            else if (startOnPlay)
+            else if (startOnPlay && !MenuPresent)
             {
                 GameState.ResetAll();
                 GameState.BeginAttempt(firstLoop);
@@ -87,6 +93,20 @@ namespace Deprem.Loop
         {
             GameState.ResetAll();
             Restart(loop);
+        }
+
+        // Final ekranı ya da duraklatma menüsünden ana menüye dönüş
+        public void ReturnToMenu()
+        {
+            StopAllCoroutines();
+            waitingToContinue = false;
+            pendingLoop = 0;
+            Time.timeScale = 1f;
+            GameState.ResetAll();
+
+            int sceneIndex = SceneManager.GetActiveScene().buildIndex;
+            if (sceneIndex >= 0) SceneManager.LoadScene(sceneIndex);
+            else Debug.LogWarning("[Loop] Sahne build listesinde değil, ana menüye dönülemiyor (test sahnesi).");
         }
 
         // Keşke ekranı bitince UI çağırır
@@ -119,6 +139,7 @@ namespace Deprem.Loop
 
         void Restart(int loop)
         {
+            Time.timeScale = 1f; // duraklatma menüsünden gelinmiş olabilir
             int sceneIndex = SceneManager.GetActiveScene().buildIndex;
             if (reloadSceneOnRestart && sceneIndex >= 0)
             {
@@ -138,6 +159,7 @@ namespace Deprem.Loop
             pendingLoop = 0;
             Instance = null;
             WishScreenPresent = false;
+            MenuPresent = false;
         }
     }
 }

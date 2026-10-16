@@ -11,6 +11,7 @@ prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
 prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
 prompt.cancel,Esc: Vazgeç,Esc: Cancel
+prompt.main_menu,F: Ana menü,F: Main menu
 prompt.pick_up,F: Al,F: Pick up
 prompt.put_in_bag,F: Çantaya koy,F: Put in bag
 hud.carrying,Taşınan: {0},Carrying: {0}
@@ -42,6 +43,9 @@ wish.aftershock,Keşke artçıda da çök-kapan yapsaydım,I wish I had taken co
 info.aftershock,Artçı sarsıntılar da tehlikelidir; her sarsıntıda aynı şeyi yap.,Aftershocks are dangerous too; do the same thing every time it shakes.
 final.aftershock,Artçılarda da korundum,I stayed safe in the aftershocks too
 
+final.title,Deprem hazırlık listen,Your earthquake checklist
+final.bonus_water,Yanıma su aldım,I packed water
+final.bonus_whistle,Yanıma düdük aldım,I packed a whistle
 final.call,Bu listeden birini bugün sen yap.,Do one thing from this list today.
 final.afad,Daha fazlası için: www.afad.gov.tr,Learn more: www.afad.gov.tr
 
@@ -63,6 +67,38 @@ bag.Water,Su,Water
 bag.Whistle,Düdük,Whistle
 
 # Menü
+game.title,Keşke,I Wish
+menu.back,Geri,Back
+menu.paused,Duraklatıldı,Paused
+controls.short,"A/D: Yürü · Space: Zıpla · S: Eğil · F: Etkileşim · C: Çök-Kapan-Tutun · Esc: Duraklat","A/D: Walk · Space: Jump · S: Crouch · F: Interact · C: Drop-Cover-Hold On · Esc: Pause"
+controls.body,"A / D: Yürü
+Space: Zıpla
+S: Eğil
+F: Etkileşim, kalk, aileyi topla, kabine gir
+C (basılı tut): Çök-Kapan-Tutun
+W / A / S / D: Ruh olarak uç
+Fare: Minigame'ler
+Esc: Duraklat","A / D: Walk
+Space: Jump
+S: Crouch
+F: Interact, get up, gather family, enter the shelter
+C (hold): Drop-Cover-Hold On
+W / A / S / D: Fly as a spirit
+Mouse: Minigames
+Esc: Pause"
+credits.body,"Civil Game Jam 2026
+
+Yazılım: Mehmet, Berke
+Sanat: (eklenecek)
+
+Kod Claude Code ile yazıldı; bütün görseller el çizimi.
+Unity 6.3 LTS · URP · Cinemachine","Civil Game Jam 2026
+
+Programming: Mehmet, Berke
+Art: (to be added)
+
+Code written with Claude Code; all art is hand-drawn.
+Unity 6.3 LTS · URP · Cinemachine"
 menu.new_game,Yeni oyun,New game
 menu.chapter_select,Bölüm seç,Chapter select
 menu.chapter,Bölüm {0},Chapter {0}

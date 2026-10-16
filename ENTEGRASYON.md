@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (BerkeSystems prefab'ı hazırlandıktan sonra)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (final ekranı, menüler ve ipucu HUD'u pushlandıktan sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -38,6 +38,11 @@
 | Ruh HUD'u | `Scripts/UI/SpiritHud.cs` | Sayaç, "F: Sabitle" ve "W/A/S/D: Uç" yazıları. |
 | Minigame'ler | `Scripts/Minigames/MinigameHost.cs` + `ScrewMinigame`, `CarryMinigame`, `LockMinigame` | `MinigameOpened` gelince eşyanın tipine göre ekranın ortasında yakın çekim panelini açar. Başarılıysa `SecurableItem.Secure()`, sonra `RaiseMinigameClosed(id, başarı)`. Esc ile vazgeçilir, faz `Spirit`'ten çıkarsa başarısız kapanır. Çanta için `MinigameHost.Instance.Open(tip, sonuç)` (event'ler `ItemId.None` ile). |
 | Deprem çantası | `Scripts/Bag/BagSystem.cs`, `BagSupply.cs`, `BagDropPoint.cs` | İlk yardım `Marker_FirstAid`'de, el feneri `Marker_Flashlight`'ta, çanta `Marker_Bag`'de (geçici renkli küpler). Ruh fazında F → taşı-yerleştir → ruh taşır → çantada F → `GameState.AddBagItem(id)`. Tek seferde tek malzeme taşınır; ruh fazı biterken taşınan malzeme yerine döner. Su ve düdük kapalı (ekstra). |
+| Tuş ipucu HUD'u | `Scripts/UI/PromptHud.cs` | `GameEvents.PromptChanged(key)` gelince `Texts.Get(key)` ile ekranın altında gösterir; boş anahtar gizler, kayıpta da gizlenir (M1). |
+| Final ekranı | `Scripts/UI/FinalScreen.cs` | `GameWon` gelince 2 sn bekler (kabin anı), kararır, 5 keşke cümlesi tek tek "yaptım"a döner; çantada su/düdük varsa bonus satırı. F ile ana menü. |
+| Ana menü | `Scripts/UI/MainMenu.cs` | İlk açılışta içerik uyarısı, sonra Yeni oyun / Bölüm seç (1–5) / Kontroller / Emeği geçenler / Dil / Çıkış. Menü açıkken `Time.timeScale = 0`. Oyun menüden başlar: `LoopManager.StartFromLoop(n)` sahneyi yeniden yükler ve deneme başlar. |
+| Duraklatma | `Scripts/UI/PauseMenu.cs` | Esc: Devam et / Dil / Ana menü. `Time.timeScale = 0` ve `GameEvents.RaisePauseChanged(true/false)`. Minigame açıkken Esc minigame'i kapatır; keşke/final ekranında duraklatma yok. |
+| Ana menüye dönüş | `LoopManager.ReturnToMenu()` | `GameState.ResetAll()` + sahneyi yeniden yükler; menü tekrar açılır. |
 
 ### Mehmet'in yaptıkları (Berke tarafı okudu)
 
@@ -46,7 +51,7 @@
 
 ### Cevaplar (M1–M3)
 
-- **M1. Tuş ipuçları:** Berke'nin HUD'u Mehmet'in sınıfına (`QuakePrompts`) doğrudan bağlanmasın. Core'a küçük bir ekleme öneriyorum: `GameEvents.PromptChanged(string key)` + `RaisePromptChanged(string key)`. Boş anahtar ipucunu gizler. Event'i Mehmet tetiklediği için Core commit'ini Mehmet atsın (CLAUDE.md'ye göre tek başına küçük bir commit). Berke'nin HUD'u bu event'i dinleyip `Texts.Get(key)` ile ekranın altında gösterecek. O zamana kadar `showDebugPrompt` açık kalsın.
+- **M1. Tuş ipuçları:** Tamam, `PromptChanged` için teşekkürler. `PromptHud` bunu dinliyor ve `BerkeSystems` prefab'ında. Main yeniden kurulunca `showDebugPrompt` kapatılabilir. Eski not: Berke'nin HUD'u Mehmet'in sınıfına (`QuakePrompts`) doğrudan bağlanmasın. Core'a küçük bir ekleme öneriyorum: `GameEvents.PromptChanged(string key)` + `RaisePromptChanged(string key)`. Boş anahtar ipucunu gizler. Event'i Mehmet tetiklediği için Core commit'ini Mehmet atsın (CLAUDE.md'ye göre tek başına küçük bir commit). Berke'nin HUD'u bu event'i dinleyip `Texts.Get(key)` ile ekranın altında gösterecek. O zamana kadar `showDebugPrompt` açık kalsın.
 - **M2. Sistem prefab'ı:** Hazır: `Prefabs/Berke/BerkeSystems.prefab`. İçinde `LoopManager`, `LoopDebugPanel` (sadece Editor ve Development Build'de görünür), `WishScreen`, `SpiritPhase`, `SpiritHighlighter`, `SpiritHud`, `MinigameHost` ve `BagSystem` var. Prefab'ı Berke tarafı `Tools > Deprem > Berke: Sistem Prefab'ını Kur` ile yeniden üretir; elle düzenlenmez. Mehmet Main'i yeniden kurup `QuakeSystem.devStartLoop` değerini 0 yapabilir; artık döngüyü `LoopManager` başlatıyor.
 - **M4. Çanta malzemeleri:** Tamam, öyle çalışıyor. Malzeme ruh fazında alınıp çantaya konunca `GameState.AddBagItem(id)` çağrılıyor (`BagDropPoint`). Sadece alınan ama çantaya konmayan malzeme sayılmıyor; ruh fazı biterken yerine dönüyor.
 - **M3. Kurtarma süresi:** Sürenin de göstergenin de tamamen Mehmet'te olmasını öneriyorum. GDD'deki gösterge sayı değil; ekran kenarında titreşen sarsıntı çubuğu, sallanan lamba, kalp atışı ve uğultu. Bunlar deprem hissinin parçası ve ses de Mehmet'te. Böylece Core'a yeni event gerekmiyor. Süre bitince `FailLoop(LoseReason.RescueTimeout, enÇokYavaşlatanEşya)`; gizli bonus için `GameState.FailedAttempts`. Mehmet çubuğu UI ile yapmak isterse `Deprem.UI.UiBuilder` kullanılabilir.
@@ -68,7 +73,8 @@ Fazı değiştirmek için `GameState.SetPhase(...)` çağrılır; değişiklik h
 
 ### Açık sorular (Mehmet cevaplasın)
 
-- M1'deki Core önerisine "tamam" ya da "hayır" demen yeterli.
+- **B7. Menü ve oyun başlangıcı:** Main açılınca artık ana menü görünüyor ve oyun `Time.timeScale = 0` ile duruyor. Deneme, menüden seçilince başlıyor: sahne yeniden yükleniyor, ardından `LoopStarted` ve `PhaseChanged` geliyor. Mehmet'in sistemleri `GamePhase.None` iken bir şey başlatmıyorsa sorun yok; `devStartLoop` 0 olmalı. Doğru mu?
+- **B8. Duraklatma:** Mehmet'in sistemleri `Time.deltaTime` / fizik kullanıyorsa `timeScale 0` ile kendiliğinden duruyor. Gerçek zamanlı çalışan bir şey (ses, `unscaledDeltaTime`) varsa `GameEvents.PauseChanged` dinlenebilir.
 - ~~B6. Çanta kontrolü~~: M4 ile cevaplandı; çantada olması yeterli, ek etkileşim yok.
 
 ---

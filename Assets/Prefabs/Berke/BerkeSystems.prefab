@@ -17,6 +17,10 @@ GameObject:
   - component: {fileID: 6448518412914014748}
   - component: {fileID: 5672897155684826516}
   - component: {fileID: 1714028265692669343}
+  - component: {fileID: 7179508923403737285}
+  - component: {fileID: 6846049828846937271}
+  - component: {fileID: 6176068554381073379}
+  - component: {fileID: 857125433868889309}
   m_Layer: 0
   m_Name: BerkeSystems
   m_TagString: Untagged
@@ -222,3 +226,86 @@ MonoBehaviour:
   bagColor: {r: 0.9, g: 0.45, b: 0.15, a: 1}
   interactRange: 1.2
   carryOffset: {x: 0.35, y: -0.25, z: 0}
+--- !u!114 &7179508923403737285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dee6cf7af979f1d40881fd8259b1eba5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PromptHud
+  font: {fileID: 0}
+  fontSize: 20
+  color: {r: 1, g: 1, b: 1, a: 1}
+  backColor: {r: 0, g: 0, b: 0, a: 0.5}
+  sortingOrder: 60
+--- !u!114 &6846049828846937271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 249a3148870f8154fa2dd703f4a2e414, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.FinalScreen
+  startDelay: 2
+  fadeTime: 1
+  rowDelay: 0.7
+  checkDelay: 0.6
+  font: {fileID: 0}
+  titleFontSize: 26
+  rowFontSize: 16
+  rowHeight: 30
+  wishColor: {r: 0.55, g: 0.55, b: 0.6, a: 1}
+  doneColor: {r: 1, g: 1, b: 1, a: 1}
+  boxColor: {r: 0.3, g: 0.3, b: 0.35, a: 1}
+  checkColor: {r: 0.45, g: 0.85, b: 0.5, a: 1}
+  sortingOrder: 110
+--- !u!114 &6176068554381073379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0335018a73c2c24581ab42f869573bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PauseMenu
+  font: {fileID: 0}
+  titleFontSize: 26
+  itemFontSize: 18
+  rowHeight: 30
+  normalColor: {r: 0.7, g: 0.72, b: 0.78, a: 1}
+  highlightColor: {r: 1, g: 1, b: 1, a: 1}
+  overlayColor: {r: 0, g: 0, b: 0, a: 0.7}
+  sortingOrder: 115
+--- !u!114 &857125433868889309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3feddf75af91414bb4275f5fcd2e6db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.MainMenu
+  font: {fileID: 0}
+  titleFontSize: 40
+  itemFontSize: 18
+  bodyFontSize: 14
+  rowHeight: 30
+  normalColor: {r: 0.7, g: 0.72, b: 0.78, a: 1}
+  highlightColor: {r: 1, g: 1, b: 1, a: 1}
+  backgroundColor: {r: 0.02, g: 0.03, b: 0.06, a: 1}
+  sortingOrder: 120

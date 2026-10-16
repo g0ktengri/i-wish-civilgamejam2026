@@ -32,6 +32,10 @@ namespace Deprem.Loop.EditorTools
                 root.AddComponent<SpiritHud>();
                 root.AddComponent<MinigameHost>();
                 root.AddComponent<BagSystem>();
+                root.AddComponent<PromptHud>();
+                root.AddComponent<FinalScreen>();
+                root.AddComponent<PauseMenu>();
+                root.AddComponent<MainMenu>();
 
                 PrefabUtility.SaveAsPrefabAsset(root, PrefabPath, out bool success);
                 if (!success) throw new IOException($"Prefab kaydedilemedi: {PrefabPath}");
