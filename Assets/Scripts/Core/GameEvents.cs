@@ -36,6 +36,7 @@ namespace Deprem.Core
 
         // Genel
         public static event Action<bool> PauseChanged;
+        public static event Action<string> PromptChanged; // texts.csv anahtarı; boş = ipucu yok (Mehmet tetikler, HUD gösterir)
 
         public static void RaiseLoopStarted(int loop) => LoopStarted?.Invoke(loop);
         public static void RaisePhaseChanged(GamePhase phase) => PhaseChanged?.Invoke(phase);
@@ -60,6 +61,7 @@ namespace Deprem.Core
         public static void RaisePlayerEnteredCabin() => PlayerEnteredCabin?.Invoke();
 
         public static void RaisePauseChanged(bool paused) => PauseChanged?.Invoke(paused);
+        public static void RaisePromptChanged(string key) => PromptChanged?.Invoke(key ?? "");
 
         // Domain reload kapalıyken eski sahneden kalan abonelikler temizlensin
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -84,6 +86,7 @@ namespace Deprem.Core
             FamilyMemberEnteredCabin = null;
             PlayerEnteredCabin = null;
             PauseChanged = null;
+            PromptChanged = null;
         }
     }
 }
