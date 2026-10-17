@@ -805,6 +805,21 @@ Mehmet'in yorumu (özet):
 5. Ebeveyn odasının yeni dokuları.
 6. Donma: kendi tarafımı arıyorum.
 
+**Mehmet tarafı: 1–5 yapıldı, 6 bulunamadı** (Play'de denenmedi).
+- **Çök-kapan:** yalnızca S (`QuakeDirector.duckCoverKey`; C ve ikinci tuş kalktı).
+- **Süre çubuğu:** sağ üst köşede, sağdan 16 px.
+- **El feneri spotu:** menzil 5,5 m (eskiden 11), açı 40°, şiddet 10.
+- **Adımlar:** Kenney RPG Audio'daki 10 bot adımı, ekrana bağlı (2D), tam ses.
+- **`music.tension`:** orta frekanslarda yeniden yazıldı: minör akorlar, 100 vuruşta tekrar notaları, kalp atışı, ince tremolo. Müzik düzeyi 0,55 → 0,7.
+- **Ebeveyn odası:** yeni dokular bağlandı.
+- **Donma:** benim tarafımda (deprem, artçı, kabin) süreyi ve girdiyi birlikte durduran bir yol bulamadım; Editor.log'da hata yok. Süre çubuğu yarı doluydu, yani süre bitmemiş. İkisini birden durduran en olası şey `Time.timeScale` 0'da kalması: `PauseMenu` / `MainMenu` / `SettingsMenu` geçişlerinde, örneğin duraklatma → ayarlar → Esc sonrası menü gizlenip `timeScale` 0 kalırsa. Oraya bakabilir misin?
+
+**Güncelleme: M34, M36, M37'yi Mehmet üstlendi.** Sen arayüz ve ayarlar üzerinde çalışırken çakışmasın diye Mehmet'in isteğiyle bu üçünü biz yapıyoruz; lütfen bunlara başlama:
+- `texts.csv`'de yalnızca `prompt.duck_cover` ve `prompt.duck_cover_find` satırları değişecek;
+- `Scripts/Minigames/` altında `CarryMinigame`, `MinigamePixels`, `MinigameHost` (ve gerekirse `MinigameArt`) değişecek.
+
+M35 (oklar) ve M38 (donma) sende kalıyor. Pushlayınca burada haber veririm.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
