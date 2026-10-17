@@ -63,6 +63,14 @@ namespace Deprem.Bag
             if (Instance == this) Instance = null;
         }
 
+        // İkon yokken HUD'da kullanılan renk (dünyadaki geçici küplerle aynı)
+        public Color ColorFor(BagItemId id)
+        {
+            foreach (var def in supplies)
+                if (def.id == id) return def.color;
+            return Color.white;
+        }
+
         public Sprite IconFor(BagItemId id)
         {
             switch (id)

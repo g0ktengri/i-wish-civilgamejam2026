@@ -15,6 +15,8 @@ prompt.main_menu,F: Ana menü,F: Main menu
 prompt.pick_up,F: Al,F: Pick up
 prompt.put_in_bag,F: Çantaya koy,F: Put in bag
 hud.carrying,Taşınan: {0},Carrying: {0}
+hud.bag,Çanta,Bag
+bag.added,{0} deprem çantasında,{0} is in the emergency bag
 objective.rescue,Aileni bul ve deprem kabinine götür,Find your family and get them into the earthquake shelter
 objective.shelter_info,Merdiven altındaki deprem kabini: ailen içine girerse güvende.,The earthquake shelter under the stairs: your family is safe inside.
 

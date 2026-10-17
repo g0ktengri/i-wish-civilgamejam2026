@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (M12 font eklendikten sonra)*
+*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (M13 çanta geri bildirimi bittikten sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -43,6 +43,7 @@
 | Ana menü | `Scripts/UI/MainMenu.cs` | İlk açılışta içerik uyarısı, sonra Yeni oyun / Bölüm seç (1–5) / Kontroller / Emeği geçenler / Dil / Çıkış. Menü açıkken `Time.timeScale = 0`. Oyun menüden başlar: `LoopManager.StartFromLoop(n)` sahneyi yeniden yükler ve deneme başlar. |
 | Duraklatma | `Scripts/UI/PauseMenu.cs` | Esc: Devam et / Dil / Ana menü. `Time.timeScale = 0` ve `GameEvents.RaisePauseChanged(true/false)`. Minigame açıkken Esc minigame'i kapatır; keşke/final ekranında duraklatma yok. |
 | Ortak UI stili | `Scripts/UI/UiStyle.cs`, `Resources/UiStyle.asset`, `UiBuilder` | Font, balon ve panel bütün oyunda tek yerden. `UiBuilder.CreatePanel(parent, ad)` HUD paneli, `UiBuilder.CreateSpeechBubble(parent, font)` konuşma balonu (`UiBubble`). Görsel yoksa düz renkli kenarlıklı kutu. `UiBuilder.DefaultFont` artık Assets/Art/Fonts'taki fontu döndürür. |
+| Çanta HUD'u | `Scripts/UI/BagHud.cs` | Ruh fazı, ana deprem ve kurtarmada sol altta "Çanta" + çantadaki malzemelerin ikonları (ikon yoksa renkli kare). Sadece konanlar görünür, eksikler gösterilmez. Malzeme konunca ortada 2 sn "El feneri deprem çantasında", ikon büyüyüp yerine oturur, çantada kısa sarı parlama (M13). |
 | Kurtarma hedefi | `Scripts/UI/ObjectiveHud.cs` | `Rescue` fazında sol üstte "Aileni bul ve deprem kabinine götür"; altında 7 sn "Merdiven altındaki deprem kabini: ailen içine girerse güvende." (M11) |
 | Ana menüye dönüş | `LoopManager.ReturnToMenu()` | `GameState.ResetAll()` + sahneyi yeniden yükler; menü tekrar açılır. |
 
@@ -61,6 +62,7 @@
   - Kilitle: 3 isabet gerekir. Her isabette yeşil alan %30 daralır ve ibre hızlanır; ıskalayınca bir isabet geri gider.
 - **M7. Ruh sınırı:** `SpiritController` artık `HouseBounds.Instance.ClampToHouse(pozisyon, 0.3)` kullanıyor; `HouseBounds` yoksa eski renderer sınırlarına düşüyor.
 - **M8. Kontur shader'ı:** Bağlandı. `SpiritHighlighter`, `ItemOutline` olan eşyalara artık point light koymuyor; ruhun yanındaki eşyada `SetEmphasis(true)`, uzaklaşınca `false` çağırıyor. Konturu olmayan eşyaya yedek ışık konuyor.
+- **M13. Çanta geri bildirimi: hazır.** `BagHud` (tablo). Geri bildirim `GameEvents.BagItemCollected` ile tetikleniyor, yani çantaya her konuşta çalışıyor. Çanta kabinin önüne taşınınca kodda iş yok; görsel ve parlama `Marker_Bag`'in olduğu yerde çıkar. Metinler `hud.bag`, `bag.added`. Eksik malzemeleri bilerek göstermiyorum: oyuncu neyin gerektiğini keşke ekranından öğrensin (farkındalık hedefi).
 - **M12. Font: eklendi.** `Assets/Art/Fonts/PixelifySans.ttf` + `OFL.txt`. Kaynak: Google Fonts (github.com/google/fonts, `ofl/pixelifysans`), lisans SIL Open Font License 1.1. Dosyanın cmap tablosu denetlendi: ğ Ğ ş Ş ı İ ç Ç ö Ö ü Ü ve · × … — ’ dahil hepsi var (574 glif), Tiny5/Silkscreen'e gerek kalmadı. Prefab kurucusu fontu `UiStyle.font` ve Berke'nin bütün UI bileşenlerine bağlıyor; import ayarı keskin piksel (`HintedRaster`). `UiBuilder.DefaultFont` kullanan her şey (balon, kabin tabelası, tutma çubuğu) fontu kendiliğinden alır. Teslim formunda Diğer > Hazır kaynak olarak beyan edilecek.
 - **F ipuçları ve boş anahtar:** Ruh fazındaki ipuçlarım `PromptChanged` ile değil, kendi `SpiritHud`'umda çiziliyor; boş anahtar gelmesi sorun değil.
 - **M9. Ruhun F'de takılması: düzeldi.** Ruh event saymıyor; sadece `MinigameHost.AnyOpen` iken (panel ekrandayken, 0,4 sn başarı beklemesi dahil) duruyor. Panel açılmazsa hiç durmuyor. Sebep büyük ihtimalle event sırasıydı: minigame hemen kapanınca `Closed`, ruhun `Opened` sayacından önce geliyor ve sayaç 1'de takılıyordu.

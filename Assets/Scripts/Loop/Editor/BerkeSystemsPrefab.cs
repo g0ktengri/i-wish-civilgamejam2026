@@ -53,7 +53,7 @@ namespace Deprem.Loop.EditorTools
         static readonly Type[] FontUsers =
         {
             typeof(WishScreen), typeof(SpiritHud), typeof(MinigameHost), typeof(PromptHud),
-            typeof(FinalScreen), typeof(PauseMenu), typeof(MainMenu), typeof(ObjectiveHud),
+            typeof(FinalScreen), typeof(PauseMenu), typeof(MainMenu), typeof(ObjectiveHud), typeof(BagHud),
         };
 
         // Ortak UI stili (Assets/Resources/UiStyle.asset): alan → Assets/Art/UI dosyası
@@ -83,6 +83,7 @@ namespace Deprem.Loop.EditorTools
                 root.AddComponent<BagSystem>();
                 root.AddComponent<PromptHud>();
                 root.AddComponent<ObjectiveHud>();
+                root.AddComponent<BagHud>();
                 root.AddComponent<FinalScreen>();
                 root.AddComponent<PauseMenu>();
                 root.AddComponent<MainMenu>();
