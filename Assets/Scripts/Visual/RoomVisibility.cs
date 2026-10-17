@@ -86,6 +86,14 @@ namespace Deprem.Visual
 
         private bool Visible(int i) => revealed[i] || (spiritMode && spiritSeen[i]);
 
+        /// <summary>İki nokta aynı odada mı (Play testi 26: oyuncu kardeşin odasına girdi mi); oda bulunamazsa false</summary>
+        public bool SameRoom(Vector3 a, Vector3 b)
+        {
+            if (areas == null) return false;
+            int i = AreaAt(a);
+            return i >= 0 && i == AreaAt(b);
+        }
+
         /// <summary>Ruh fazı açık mı: ruhun açtığı odalar ayrı tutulur, faz bitince yeniden örtülür</summary>
         public void SetSpiritMode(bool on)
         {

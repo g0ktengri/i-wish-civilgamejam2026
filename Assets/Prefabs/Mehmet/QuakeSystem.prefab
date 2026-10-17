@@ -84,7 +84,7 @@ MonoBehaviour:
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
   rubbleInterval: {x: 0.35, y: 0.7}
   debrisFrontOffset: 0.15
-  debrisImpactDelay: 0.3
+  debrisImpactDelay: 1.5
   deathLinger: 2.4
   fatalAftershockLead: 1.2
   shelfLandOffset: {x: -0.15, y: 0.24, z: -0.05}
@@ -186,20 +186,6 @@ MonoBehaviour:
   deathShake: 1.4
   deathShakeTime: 0.45
   drainTime: 0.5
-  ghostFrames:
-  - {fileID: 2800000, guid: fbf575e1a6a1f474097d6822b87decd5, type: 3}
-  - {fileID: 2800000, guid: 9eb89544a4976d14e956bac84a5dd33d, type: 3}
-  - {fileID: 2800000, guid: 7b27f5504f807814c9132dca8397b8bd, type: 3}
-  - {fileID: 2800000, guid: e7e77fa7522a2634b8d3a4e5d529548c, type: 3}
-  - {fileID: 2800000, guid: 84e05fa2570ec3a42bbf2745886697c1, type: 3}
-  - {fileID: 2800000, guid: c10c6b05646974e43a64499f5b05e001, type: 3}
-  - {fileID: 2800000, guid: 3937ced22e9f31840b8e7246a380bedb, type: 3}
-  - {fileID: 2800000, guid: 4390051fc89631242a846623c0667804, type: 3}
-  ghostFps: 8
-  ghostDelay: 0.3
-  ghostTime: 1.8
-  ghostRise: 1.3
-  ghostColor: {r: 0.8, g: 0.92, b: 1, a: 0.9}
   blackoutStart: 1.7
   blackoutTime: 0.6
   maxHold: 6

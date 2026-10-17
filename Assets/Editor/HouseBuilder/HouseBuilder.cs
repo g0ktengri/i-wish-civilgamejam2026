@@ -1034,15 +1034,18 @@ namespace Deprem.HouseBuilder
                     bool siblingRoom = room.Key == "kardes";
                     var dim = new GameObject("Emergency_" + room.Key);
                     dim.transform.SetParent(parent, false);
-                    dim.transform.position = new Vector3((room.X0 + room.X1) * 0.5f, room.CeilingY - 0.4f, room.Depth * 0.6f);
+                    // Play testi 26: tavanın ortasındayken tavanda parlak bir nokta ve yerde ışık havuzu bırakıyordu
+                    // ("rastgele mavi ışıklar"). Artık odanın önünde (kamera tarafında), yarı yükseklikte, gölgesiz:
+                    // oda kaynağı belli olmayan, düzgün ve loş bir gece aydınlığı alır
+                    dim.transform.position = new Vector3((room.X0 + room.X1) * 0.5f, room.FloorY + room.Height * 0.5f, -1.4f);
                     var dimLight = dim.AddComponent<Light>();
                     dimLight.type = LightType.Point;
-                    dimLight.color = new Color(0.55f, 0.65f, 0.9f);
+                    dimLight.color = new Color(0.62f, 0.67f, 0.8f);
                     // Play testi 3: elektrik gidince her yer rahat görünüyordu (0,9 -> 0,35); ENTEGRASYON B10: bu kez
                     // açılan oda kapalıyla aynı karanlıkta kalıyor, açıldığı anlaşılmıyordu. Arası.
-                    dimLight.intensity = siblingRoom ? 0.15f : 0.6f;
-                    dimLight.range = Mathf.Max(room.Width, room.Height) * 1.1f;
-                    dimLight.shadows = LightShadows.Soft;
+                    dimLight.intensity = siblingRoom ? 0.12f : 0.55f;
+                    dimLight.range = Mathf.Max(room.Width * 0.75f, room.Depth) + 3.5f;
+                    dimLight.shadows = LightShadows.None;
                     dimLight.enabled = false;
                     // Play testi 22-23: oyuncunun odasında tavan ortasındaki soğuk ışık arka duvarda kaynaksız bir
                     // "rastgele mavi ışık" gibi duruyordu. Bu odada ay ışığı sol duvardaki pencereden girer

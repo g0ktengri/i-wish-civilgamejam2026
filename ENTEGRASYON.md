@@ -1099,6 +1099,12 @@ Mehmet'in yorumu (özet):
 3. Tavandan düşen parça kafaya gerçekten değince ölüm başlıyor.
 4. Ölüm efektinden ruh kalkıyor; darbe, solma ve kararma kalıyor.
 
+**Mehmet tarafı (Play testi 26): 1–4 yapıldı.** Dört test geçiyor; Play'de denenmedi.
+
+- **Acil durum ışıkları:** tavan ortasından odanın önüne (kamera tarafı, yarı yükseklik) taşındı, gölgesiz, daha az mavi.
+- **Kardeş ipucu:** artık odaya girişte tetikleniyor (`RoomVisibility.SameRoom`). Fenersiz arama süresi odaya girişten itibaren 6 sn. `texts.csv`'de yalnız `bubble.family_missing.flashlight` metni değişti.
+- **Ölüm zamanlaması:** tavandan düşen sıvanın alt kenarı başın tepesine inince ölüm başlıyor (en fazla 1,5 sn).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

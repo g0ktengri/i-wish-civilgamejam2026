@@ -50,7 +50,7 @@ namespace Deprem.Family
         [SerializeField] private bool hidesInDark;
         [SerializeField] private float findRange = 2.2f;
         [Tooltip("Fenersiz oyuncu odada bu kadar arayınca artçı gelir, tavan üstüne çöker")]
-        [SerializeField] private float searchTime = 4.5f;
+        [SerializeField] private float searchTime = 6f; // Play testi 26: odaya girişten itibaren sayılıyor
 
         [SerializeField] private float treatHoldTime = 3f;
         [Tooltip("Yaralıyken ayağının üstündeki kayanın materyali (siva.mat kopyası, doku PixelRubble); boşsa kaya yok")]
@@ -283,7 +283,12 @@ namespace Deprem.Family
                 if (bubble != null) bubble.Say("bubble.family_call." + id.ToString().ToLowerInvariant(), callDuration);
                 return;
             }
-            if (!IsNear(player.transform.position, discoverRange)) return;
+            // Play testi 26: odaya girer girmez ("Kardeşim, neredesin?... Bir el fenerim olsaydı!"), yanına gelmeden
+            var visibility = Deprem.Visual.RoomVisibility.Instance;
+            bool inRoom = visibility != null
+                ? visibility.SameRoom(player.transform.position, transform.position)
+                : IsNear(player.transform.position, discoverRange);
+            if (!inRoom) return;
             if (!searchWarned)
             {
                 searchWarned = true;

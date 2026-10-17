@@ -96,8 +96,8 @@ namespace Deprem.Quake
         [SerializeField] private Vector2 rubbleInterval = new Vector2(0.35f, 0.7f);
         [Tooltip("Parça karakter düzleminin bu kadar önünde düşer (m)")]
         [SerializeField] private float debrisFrontOffset = 0.15f;
-        [Tooltip("Tavandan kopan parçanın başa değmesi (sn): ölme animasyonu o an başlar")]
-        [SerializeField] private float debrisImpactDelay = 0.3f;
+        [Tooltip("Tavandan kopan parçanın başa değmesi için en fazla bekleme (sn): değdiği an ölme animasyonu başlar")]
+        [SerializeField] private float debrisImpactDelay = 1.5f;
         [Tooltip("Öldükten sonra kayıp ekranından önce sahnede kalma (sn): ölme kareleri biter, ruh yükselir, ekran kararır (Play testi 25)")]
         [SerializeField] private float deathLinger = 2.4f;
         [Tooltip("Play testi 24: kardeş bulunamayınca gelen artçıda tavanın çökmesinden önceki sarsıntı (sn)")]
@@ -560,7 +560,7 @@ namespace Deprem.Quake
             // Karakterin düz görselinin (z = playerPlaneZ) hemen önünde, kapsülün ön yarısında: başa çarpar
             // ve önde kalır. Z ekseni kilitli, arkaya kayıp görselin arkasında kaybolmaz.
             var center = new Vector3(player.transform.position.x, ceilingY - 0.1f, playerPlaneZ - debrisFrontOffset);
-            SpawnDebris("Plaster", center, new Vector3(0.9f, 0.1f, 0.25f), 25f);
+            var plaster = SpawnDebris("Plaster", center, new Vector3(0.9f, 0.1f, 0.25f), 25f);
             for (int i = 0; i < 6; i++)
             {
                 var offset = new Vector3(UnityEngine.Random.Range(-0.6f, 0.6f), UnityEngine.Random.Range(-0.1f, 0.3f), 0f);
@@ -571,7 +571,14 @@ namespace Deprem.Quake
 
             // Play testi 17: ölme animasyonu kayıp ekranını beklemesin; parça başa değdiği an başlar. Beden artık
             // çarpışmaz: parçalar başta sekmez, yere yığılan bedenin üstüne düşer ve orada kalır (DebrisSettle)
-            yield return new WaitForSeconds(debrisImpactDelay);
+            // Play testi 26: sabit 0,3 sn beklerken parça daha havadaydı ("kafaya değmeden ölüyoruz"). Parçanın alt
+            // kenarı başın tepesine inince ölüm başlar (en fazla debrisImpactDelay sn)
+            float headTop = player.transform.position.y + player.StandingHeight;
+            for (float t = 0f; t < debrisImpactDelay && plaster != null; t += Time.deltaTime)
+            {
+                if (plaster.transform.position.y - 0.05f <= headTop) break;
+                yield return null;
+            }
             player.Die();
             Feedback.Play(1f); // Play testi 25: sert darbe, dünya solar, bedenden ruh yükselir, ekran kararır
             yield return new WaitForSeconds(deathLinger);
@@ -610,7 +617,7 @@ namespace Deprem.Quake
             yield return new WaitForSeconds(Mathf.Max(0f, deathLinger - 1.4f)); // ruh yükselip ekran kararsın
         }
 
-        private void SpawnDebris(string name, Vector3 position, Vector3 size, float mass)
+        private GameObject SpawnDebris(string name, Vector3 position, Vector3 size, float mass)
         {
             var piece = GameObject.CreatePrimitive(PrimitiveType.Cube);
             piece.name = name;
@@ -629,6 +636,7 @@ namespace Deprem.Quake
             // Play testi 20: düşme sesi; büyük parça (tavan, sıva) daha gür
             piece.AddComponent<DebrisSettle>().SetImpactSound(mass >= 20f ? "item.crash" : "quake.debris",
                 Mathf.Clamp(0.35f + mass / 20f, 0.35f, 1f));
+            return piece;
         }
 
         private readonly Dictionary<Texture2D, Material> rubbleMaterials = new Dictionary<Texture2D, Material>();

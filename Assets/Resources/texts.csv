@@ -178,7 +178,7 @@ bubble.family_hit.father,"Baba! Hayır, hayır...","Dad! No, no..."
 bubble.family_hit.mother,"Anne! Hayır... Anne!","Mom! No... Mom!"
 bubble.family_hit.sibling,"Hayır! Kardeşim... Bunu ben önleyebilirdim.","No! My little sibling... I could have prevented this."
 bubble.family_missing.firstaidkit,"Kanaması durmuyor... Elimde sarabileceğim hiçbir şey yok!","He's bleeding... I have nothing to bandage him with!"
-bubble.family_missing.flashlight,"Hiçbir şey göremiyorum... Neredesin? Ses ver!","I can't see anything... Where are you? Say something!"
+bubble.family_missing.flashlight,"Kardeşim, neredesin? Zifiri karanlık, hiçbir şey göremiyorum... Bir el fenerim olsaydı!","Where are you? It's pitch dark, I can't see a thing... If only I had a flashlight!"
 cabin.sign,DEPREM KABİNİ,EARTHQUAKE SHELTER
 hud.rescue_time,ZAMAN,TIME
 bubble.injured,"Ah, bacağım! Zor yürüyorum...","Ow, my leg! I can barely walk..."
