@@ -423,6 +423,9 @@ namespace Deprem.Family
             else
             {
                 State = FamilyState.Following;
+                // Play testi 30: konuşmalar yavandı; kurtarılınca rahatlayıp konuşur ("Oğlum! İyi ki geldin...")
+                if (bubble == null) bubble = GetComponent<SpeechBubble>();
+                if (bubble != null) bubble.Say("bubble.family_rescued." + id.ToString().ToLowerInvariant(), 3f);
             }
             GameState.MarkRescued(id); // FamilyDirector FamilyMemberRescued'i dinleyip takibe alır (yürüyen hariç)
         }

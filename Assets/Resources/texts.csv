@@ -13,9 +13,9 @@ prompt.duck_cover_find,Burada olmaz! Parlayan masaya geç,Not here! Go to the gl
 prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
 prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
-spirit.intro_1,Ne oluyor?! Kendi bedenimi görüyorum...,What's happening?! I can see my own body...
-spirit.intro_2,Deprem gelmeden evi hazırlamalıyım!,I have to prepare the house before the quake hits!
-spirit.again,Yine buradayım... Hızlı olmalıyım.,Here again... I have to be quick.
+spirit.intro_1,"Bu ne?! Ben... yatakta yatıyorum. O benim bedenim!","What?! That's me... lying in bed. That's my body!"
+spirit.intro_2,"Deprem gelmeden evi hazırlamalıyım. Çabuk ol!","I have to get the house ready before the quake hits. Hurry!"
+spirit.again,"Yine mi... Tamam. Bu sefer hata yok.","Again... Okay. No mistakes this time."
 prompt.cancel,Esc: Vazgeç,Esc: Cancel
 prompt.main_menu,F: Ana menü,F: Main menu
 prompt.pick_up,F: Al,F: Pick up
@@ -167,29 +167,34 @@ settings.on,Açık,On
 settings.off,Kapalı,Off
 
 # Mehmet: konuşma balonları (deprem akışı)
-bubble.ignore_foreshock,"Amaan, ne olacak ki... Uyumaya devam.","Oh, it's nothing... Back to sleep."
-bubble.panic_run,Deprem! Hemen buradan çıkmalıyım!,Earthquake! I have to get out of here!
-bubble.deja_vu,"Aman! Ne oluyor? Az önce bunu yaşamadım mı?","Wait! What's happening? Didn't I just live through this?"
-bubble.deja_vu_again,Yine mi? Bu sefer hazırlıklı olmalıyım.,Again? This time I have to be ready.
-bubble.door_jammed,"Eyvah, kapı açılmıyor! Önüne bir şey düşmüş.","Oh no, the door won't open! Something fell in front of it."
-bubble.not_safe_here,"Burası güvenli değil, sağlam bir masanın altına girmeliyim!","It's not safe here, I need to get under a sturdy table!"
-bubble.wake,Ne oluyor?,What's happening?
-bubble.family_hit.father,"Baba! Hayır, hayır...","Dad! No, no..."
-bubble.family_hit.mother,"Anne! Hayır... Anne!","Mom! No... Mom!"
-bubble.family_hit.sibling,"Hayır! Kardeşim... Bunu ben önleyebilirdim.","No! My little sibling... I could have prevented this."
-bubble.family_missing.firstaidkit,"Kanaması durmuyor... Elimde sarabileceğim hiçbir şey yok!","He's bleeding... I have nothing to bandage him with!"
-bubble.family_missing.flashlight,"Kardeşim, neredesin? Zifiri karanlık, hiçbir şey göremiyorum... Bir el fenerim olsaydı!","Where are you? It's pitch dark, I can't see a thing... If only I had a flashlight!"
+bubble.ignore_foreshock,"Hıh, biraz sallandı... Geçer. Uyuyayım ben.","Huh, just a little shake... It'll pass. Back to sleep."
+bubble.panic_run,"Deprem! Ne oluyor lan?! Hemen çıkmam lazım!","Earthquake! What the hell?! I have to get out!"
+bubble.deja_vu,"Dur... Bu sesi biliyorum. Bunu az önce yaşamadım mı?","Wait... I know this sound. Didn't I just live through this?"
+bubble.deja_vu_again,"Yine mi?! Tamam, sakin ol. Bu sefer hazırım.","Again?! Okay, stay calm. This time I'm ready."
+bubble.door_jammed,"Hadi, hadi... Açılmıyor! Önüne bir şey devrilmiş!","Come on, come on... It won't open! Something fell against it!"
+bubble.not_safe_here,"Burada olmaz! Sağlam bir masanın altına girmem lazım!","Not here! I need to get under a sturdy table!"
+bubble.wake,"Hı? Ne oluyor...","Huh? What's going on..."
+bubble.family_hit.father,"Baba?! Baba, hadi kalk... Lütfen...","Dad?! Dad, come on, get up... Please..."
+bubble.family_hit.mother,"Anne?! Anne, beni duyuyor musun?! Hayır...","Mom?! Mom, can you hear me?! No..."
+bubble.family_hit.sibling,"Hayır, hayır, hayır... Seni korumam gerekiyordu...","No, no, no... I was supposed to protect you..."
+bubble.family_missing.firstaidkit,"Kan durmuyor... Sarabileceğim hiçbir şey yok! Ne yapacağım?!","The bleeding won't stop... I have nothing to bandage it with! What do I do?!"
+bubble.family_missing.flashlight,"Kardeşim? Neredesin?! Zifiri karanlık, elimi bile göremiyorum... Bir fenerim olsaydı!","Where are you?! It's pitch black, I can't even see my hand... If only I had a flashlight!"
 cabin.sign,DEPREM KABİNİ,EARTHQUAKE SHELTER
 hud.rescue_time,ZAMAN,TIME
-bubble.injured,"Ah, bacağım! Zor yürüyorum...","Ow, my leg! I can barely walk..."
-bubble.rescue_start,"Annem, babam, kardeşim... Onları bulup kabine götürmeliyim!","Mom, Dad, my sibling... I have to find them and get them to the shelter!"
-bubble.family_call.father,"İmdat! Ayağım kayanın altında, kalkamıyorum!","Help! My leg is stuck under a rock!"
-bubble.father_freed,"Sağ ol! Ben kabine gidiyorum, sen diğerlerine bak!","Thank you! I'll get to the shelter, go help the others!"
-bubble.family_bleeding.father,"Bacağım çok kanıyor... Kanama durmuyor!","My leg is bleeding badly... it won't stop!"
-bubble.family_treated.father,"Çantada ilk yardım varmış, yaramı sardım. Oh be...","There's a first aid kit in the bag. I've bandaged my leg."
-bubble.family_farewell.father,"Kanama durmuyor... Sarabileceğimiz bir şey yok. Elveda oğlum...","The bleeding won't stop... We have nothing to bandage it. Goodbye, son..."
-bubble.family_call.mother,Kimse yok mu? Yardım edin!,Is anyone there? Help!
-bubble.family_call.sibling,"Abi! Neredesin, çok korkuyorum!","Where are you? I'm so scared!"
+bubble.injured,"Ah! Bacağım... Dayan, devam et.","Argh! My leg... Hold on, keep going."
+bubble.rescue_start,"Nasıl böyle bir şey olabilir... Annem, babam, kardeşim! Onları kabine götürmeliyim!","How can this be happening... Mom, Dad, my sibling! I have to get them to the shelter!"
+bubble.family_call.father,"Oğlum! Ayağım taşın altında kaldı... Kımıldayamıyorum!","Son! My leg is pinned under the rock... I can't move!"
+bubble.father_freed,"Oğlum, ayağım fena yaralı... Ben kabine sürünürüm. Sen anneni, kardeşini kurtar, ne olur!","Son, my leg is badly hurt... I'll drag myself to the shelter. Save your mom and your sibling, please!"
+bubble.family_bleeding.father,"Bacağım... Kan durmuyor, oğlum...","My leg... It won't stop bleeding, son..."
+bubble.family_treated.father,"Çantada ilk yardım varmış... Sardım, iyiyim. Aferin sana oğlum.","There was a first aid kit in the bag... It's bandaged, I'm okay. Well done, son."
+bubble.family_farewell.father,"Kan durmuyor oğlum... Sarabileceğimiz bir şey yok. Annene, kardeşine iyi bak... Elveda.","It won't stop, son... There's nothing to bandage it with. Look after your mom and your sibling... Goodbye."
+bubble.family_call.mother,"Oğlum?! Neredesiniz? Kimse yok mu?!","Son?! Where are you all? Is anyone there?!"
+bubble.family_call.sibling,"Abi! Abi neredesin?! Çok korkuyorum!","Big bro! Where are you?! I'm so scared!"
+bubble.family_rescued.mother,"Oğlum! İyi ki geldin... Hadi, çıkalım buradan.","Son! Thank God you're here... Come on, let's get out of here."
+bubble.family_rescued.sibling,"Abi! Geldin! Ne olur beni bırakma...","Big bro! You came! Please don't leave me..."
+bubble.drop_first.mother,"Önce annemi kabine bırakmalıyım. Kardeşim, dayan, geliyorum!","I have to get Mom to the shelter first. Hang on, I'm coming!"
+bubble.drop_first.sibling,"Önce kardeşimi kabine götürmeliyim. Anne, biraz daha dayan!","I have to get my sibling to the shelter first. Mom, hold on a little longer!"
+bubble.drop_first.father,"Önce onu kabine bırakmalıyım!","I have to get him to the shelter first!"
 
 # Mehmet: F ipuçları (kapı, merdiven, aile, kabin)
 prompt.open_door,F: Kapıyı aç,F: Open the door

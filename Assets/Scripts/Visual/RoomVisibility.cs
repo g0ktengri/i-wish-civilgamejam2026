@@ -86,6 +86,14 @@ namespace Deprem.Visual
 
         private bool Visible(int i) => revealed[i] || (spiritMode && spiritSeen[i]);
 
+        /// <summary>Noktanın odasının anahtarı (HouseLayout: "kardes", "ebeveyn"...); oda bulunamazsa null</summary>
+        public string RoomKeyAt(Vector3 position)
+        {
+            if (areas == null) return null;
+            int i = AreaAt(position);
+            return i < 0 ? null : areas[i].key;
+        }
+
         /// <summary>İki nokta aynı odada mı (Play testi 26: oyuncu kardeşin odasına girdi mi); oda bulunamazsa false</summary>
         public bool SameRoom(Vector3 a, Vector3 b)
         {

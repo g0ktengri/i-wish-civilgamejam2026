@@ -33,6 +33,13 @@ namespace Deprem.Family
         [Tooltip("Veda balonu ne kadar ekranda kalır; sonra döngü kaybedilir (sn)")]
         [SerializeField] private float farewellDuration = 4.5f;
 
+        [Header("Önce onu bırak (Play testi 30)")]
+        [Tooltip("Biri takip ederken bekleyen başka bir üyenin odasına girilmez; oyuncu bu aralıkla söylenir (sn)")]
+        [SerializeField] private float dropFirstSayInterval = 3f;
+        private Vector3 lastAllowedPosition;
+        private bool hasAllowedPosition;
+        private float dropFirstSayTimer;
+
         private FamilyMember farewellMember;
         private float farewellTimer;
         private bool farewellSpoken;
@@ -110,6 +117,41 @@ namespace Deprem.Family
             }
 
             WalkToCabin(dt);
+            GuardRooms(dt);
+        }
+
+        /// <summary>
+        /// Play testi 30: anne yanımızdayken kardeşin, kardeş yanımızdayken annenin odasına girilmez; oyuncu eşikte
+        /// durur ve "önce onu kabine bırakmalıyım" der. Bekleyen (Waiting) üyelerin odaları kapalıdır; yaralı baba
+        /// takip etmediği için kapsam dışı.
+        /// </summary>
+        private void GuardRooms(float dt)
+        {
+            dropFirstSayTimer -= dt;
+            var p = player.transform.position;
+            var visibility = Deprem.Visual.RoomVisibility.Instance;
+            string room = visibility != null && followers.Count > 0 && GameState.Phase == GamePhase.Rescue
+                ? visibility.RoomKeyAt(p) : null;
+            FamilyMember waiting = null;
+            if (room != null)
+                foreach (var member in FamilyMember.All)
+                    if (member.State == FamilyState.Waiting && !followers.Contains(member)
+                        && visibility.RoomKeyAt(member.transform.position) == room)
+                    {
+                        waiting = member;
+                        break;
+                    }
+            if (waiting == null)
+            {
+                lastAllowedPosition = p;
+                hasAllowedPosition = true;
+                return;
+            }
+            if (hasAllowedPosition) player.Teleport(lastAllowedPosition);
+            if (dropFirstSayTimer > 0f) return;
+            dropFirstSayTimer = dropFirstSayInterval;
+            var bubble = player.GetComponent<SpeechBubble>();
+            if (bubble != null) bubble.Say("bubble.drop_first." + followers[0].Id.ToString().ToLowerInvariant(), dropFirstSayInterval);
         }
 
         // Kabine kendisi yürüyen üye: aynı katta giriş X'ine doğru yürür ve girer. İlk yardım çantada varsa yarasını

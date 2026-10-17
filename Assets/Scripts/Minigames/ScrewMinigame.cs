@@ -151,7 +151,7 @@ namespace Deprem.Minigames
         static readonly Vector2[] PanelHoles =
             { new Vector2(0.3024f, 0.3094f), new Vector2(0.7115f, 0.3094f), new Vector2(0.3024f, 0.616f), new Vector2(0.7115f, 0.616f) };
         const float PanelTapeCenter = 0.86f;
-        const float PanelScrewSize = 18f;
+        const float PanelScrewSize = 24f; // Play testi 30: 18 küçük kalıyordu, daha görünür
 
         void BuildTeamPanel(ref float barY)
         {

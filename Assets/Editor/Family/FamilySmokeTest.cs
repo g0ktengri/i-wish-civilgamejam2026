@@ -51,6 +51,7 @@ namespace Deprem.Family
                 Check(BagLessons.IsLearned(BagItemId.FirstAidKit) && BagLessons.IsLearned(BagItemId.Flashlight),
                     "Baba vedasından sonra ilk yardım ve el feneri birlikte öğrenildi (M54)");
                 FullRescueAndWin();
+                DropFirst();
                 BagLessons.Clear();
                 SiblingWithoutFlashlight();
                 Check(BagLessons.IsLearned(BagItemId.Flashlight) && BagLessons.IsLearned(BagItemId.FirstAidKit),
@@ -199,6 +200,34 @@ namespace Deprem.Family
         // ------------------------------------------------------------------ Yardımcılar
 
         /// <summary>Sahneyi taze açar, denemeyi başlatır ve ana depremden kurtarma fazına kadar ilerletir.</summary>
+        // Play testi 30: kardeş yanımızdayken annenin odasına girilmez; oyuncu eşikte (son izinli yerde) kalır
+        private static void DropFirst()
+        {
+            StartAttempt(5, new[] { BagItemId.FirstAidKit, BagItemId.Flashlight });
+            var visibility = Object.FindFirstObjectByType<Deprem.Visual.RoomVisibility>();
+            var instance = typeof(Deprem.Visual.RoomVisibility).GetProperty("Instance");
+            instance.SetValue(null, visibility); // edit mode'da Awake çalışmaz
+            visibility.Initialize();
+            try
+            {
+                player.Teleport(new Vector3(4.5f, Up, 1f));
+                StepWorld(0.2f);
+                TickMembers(2f);
+                Interactables.FindNearest(player)?.Interact(player);
+                director.OnMemberRescued(FamilyMemberId.Sibling);
+                Check(sibling.State == FamilyState.Following, "Oda engeli: kardeş takipte");
+                director.Tick(Dt);
+                player.Teleport(new Vector3(23.6f, Up, 1f)); // annenin odası
+                director.Tick(Dt);
+                Check(Mathf.Abs(player.transform.position.x - 23.6f) > 1f,
+                    $"Kardeş yanımızdayken annenin odasına girilemedi (x {player.transform.position.x:F1})");
+            }
+            finally
+            {
+                instance.SetValue(null, null);
+            }
+        }
+
         private static void StartAttempt(int loop, BagItemId[] bag, params ItemId[] toppled)
         {
             EditorSceneManager.OpenScene("Assets/Scenes/Main.unity", OpenSceneMode.Single);

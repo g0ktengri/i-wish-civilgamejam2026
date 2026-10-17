@@ -1255,6 +1255,14 @@ Dört test geçiyor; Play'de denenmedi.
   - Adım 1 → 0,35, müzikler 0,55–0,6, ortam 0,4–0,45, minigame ve ruh sesleri biraz kısık.
   - `bubble.blip` 0,6 → 0,4, `ui.*` aynı.
 - **Cam sesi seyreldi:** çatlayan çerçeve, saat ve aynalarda %30 olasılıkla çalıyor; bütün dekorlarda iki cam sesi arası en az 1,2 sn.
+### Play testi 30: Mehmet'in düzeltmeleri (bilgi için)
+
+- **Önce onu bırak:** biri takip ederken bekleyen başka bir üyenin odasına girilemiyor; oyuncu eşikte duruyor ve `bubble.drop_first.<takip eden>` diyor. Kontrol `FamilyDirector.GuardRooms`'ta. Oda bilgisini `RoomVisibility.RoomKeyAt(pos)` veriyor (yeni).
+- **Vida:** panodaki vida başı 18 → 24 px (`ScrewMinigame.PanelScrewSize`).
+- **Konuşmalar daha doğal (`texts.csv`, senin dosyan):**
+  - Benim balon satırlarım (`bubble.*`) baştan yazıldı. `spirit.intro_1`, `spirit.intro_2` ve `spirit.again` de değişti; beğenmezsen geri al.
+  - Yeni satırlar: `bubble.family_rescued.mother`, `bubble.family_rescued.sibling` (kurtarılınca konuşurlar), `bubble.drop_first.mother`, `bubble.drop_first.sibling`, `bubble.drop_first.father`.
+
 - **Yeni ses `quake.crumble`:** taş kırılma ve çökme. Sarsıntıda 4–7,5 sn'de bir uzaktan çalıyor ve artçı başlarken (susturulan `quake.creak`'in yerinde).
 
 ---
