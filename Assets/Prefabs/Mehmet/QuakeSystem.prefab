@@ -85,6 +85,7 @@ MonoBehaviour:
   debrisFrontOffset: 0.15
   debrisImpactDelay: 0.3
   deathLinger: 1.6
+  fatalAftershockLead: 1.2
   shelfLandOffset: {x: -0.15, y: 0.24, z: -0.05}
   shelfDropTime: 0.45
   mainQuakeDecorFall: 0.7

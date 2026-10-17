@@ -1025,6 +1025,30 @@ Mehmet'in yorumu (özet):
    - Fener yoksa odada bir süre arayınca artçı gelip oyuncuyu öldürüyor; keşke cümlesi el feneri ve çanta.
 6. **`PromptAnchor`** (M46 için).
 
+**Mehmet tarafı (Play testi 24): 1–6 yapıldı.** Dört test geçiyor; Play'de denenmedi.
+
+- **M46 için `PlayerInteractor.PromptAnchor`:** statik `Vector3?`, her karede güncellenir.
+  - Etkileşilen objenin görünen parçalarının tepesinin 0,18 m üstünde. Yüksek objelerde (merdiven, kapı) en fazla oyuncunun ayağından 2,3 m yukarıda.
+  - Deprem ipuçlarında oyuncunun başının üstünde. İpucu yoksa `null`.
+  - Kullanım: `Camera.main.WorldToScreenPoint(anchor.Value)`.
+- **Senin klasörlerinde küçük eklemeler (vida panosu):**
+  - `MinigameArt.screwPanel` alanı (`minigame_vida_panel.png`).
+  - `BerkeSystemsPrefab` bağlama listesine tek satır; prefab yeniden kuruldu.
+  - `ScrewMinigame.OnBuild`: pano levhanın arkasında, panel yüksekliğinde. Levha çizimi `preserveAspect = false`, düzene göre gerilir.
+  - Çizimler `Assets/Art/UI/`'da: `minigame_vida_panel.png`, `minigame_levha.png`, `minigame_vida_basi.png`.
+  - İlerleme çubuğu panodaki alt kâğıt bandın biraz altına denk geliyor; istersen `barY`'yi bant ortasına (≈ −82) al.
+  - `HudPreview` minigame'leri boş `MinigameArt` ile çizdiği için pano önizlemede görünmüyor.
+- **Uyarı (M38 donma ile ilgili olabilir):** batch'te `HudPreview.Render` (ya da başka bir önizleme) çalıştıktan sonra `ProjectSettings/TimeManager.asset` dosyası **`m_TimeScale: 0`** ile kaydedildi. Duraklatma ya da ana menü önizlemesi `Time.timeScale = 0` bırakıyor, Unity çıkarken bunu proje ayarına yazıyor.
+  - Ben geri aldım, commit'lemedim.
+  - Önizlemenin sonunda `Time.timeScale = 1f` yap.
+  - Kendi makinende `TimeManager.asset`'te `m_TimeScale: 0` var mı bak: varsa Editor'de oyun donuk başlar.
+- **Diğer değişiklikler:**
+  - **Kardeş:** kurtarma fazında görünmez, etkileşilemez, sadece seslenir. El feneri varsa 2,2 m'de bulunur.
+    - Yoksa 3,5 m içinde 4,5 sn arayınca `QuakeDirector.RequestFatalAftershock` çalışır: artçı gelir, tavan çöker, keşke `MissingBagItem`.
+    - Kardeşe giden ok onun yerini gösteriyor; sorun olursa saklanırken `FamilyMember.Hidden` true.
+  - **Kabin:** 1,3 × 1,9 m (ortası aynı). `Marker_Bag` 0,1 m kaydı.
+  - **Ölüm:** `HitFeedback` artık `Time.timeScale`'e dokunmuyor. Karanlık (iris, sıralama 45) keşke ekranının altında kalır, döngü başlayınca kalkar.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

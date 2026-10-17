@@ -230,6 +230,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aa2731d9e6e30c47a6b89df1b1adbd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.PlayerInteractor
+  anchorLift: 0.18
+  anchorMaxHeight: 2.3
 --- !u!114 &2938270592028414152
 MonoBehaviour:
   m_ObjectHideFlags: 0

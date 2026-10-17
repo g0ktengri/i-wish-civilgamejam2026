@@ -33,6 +33,7 @@ namespace Deprem.Loop.EditorTools
         {
             (typeof(MinigameHost), "art.panel", "minigame_panel"),
             (typeof(MinigameHost), "art.screwBackground", "minigame_vida"),
+            (typeof(MinigameHost), "art.screwPanel", "minigame_vida_panel"),
             (typeof(MinigameHost), "art.screwPlate", "minigame_levha"),
             (typeof(MinigameHost), "art.screwHead", "minigame_vida_basi"),
             (typeof(MinigameHost), "art.screwdriver", "minigame_tornavida"),

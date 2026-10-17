@@ -111,6 +111,13 @@ namespace Deprem.Minigames
         protected override void OnBuild()
         {
             CreateBackground(Art.screwBackground, MinigamePixels.Ground((int)PanelSize.x, (int)PanelSize.y, "wood"));
+            // Play testi 24: ekibin vidalı panosu (Mehmet). Panelin yüksekliğini doldurur; levha panodaki boş yere oturur
+            if (Art.screwPanel)
+            {
+                float h = PanelSize.y;
+                float w = h * Art.screwPanel.rect.width / Art.screwPanel.rect.height;
+                CreateRect("ScrewPanel", PlateCenter + new Vector2(-0.006f * w, -0.04f * h), new Vector2(w, h), Color.white, null, Art.screwPanel);
+            }
 
             var (plateSize, layout) = LayoutFor(Variant.Screws);
             bool mirror = Random.NextDouble() < 0.5;
@@ -130,8 +137,9 @@ namespace Deprem.Minigames
             if (!Art.screwPlate)
                 CreatePixel("PlateShadow", PlateCenter + new Vector2(4f, -5f), plateSize + Vector2.one * 6f, null,
                     MinigamePixels.Shadow(tex.x + 6, tex.y + 6));
-            CreatePixel("Plate", PlateCenter, plateSize, Art.screwPlate,
+            var plate = CreatePixel("Plate", PlateCenter, plateSize, Art.screwPlate,
                 MinigamePixels.Plate(tex.x, tex.y, holes, string.Join("_", holes)));
+            plate.preserveAspect = false; // Play testi 24: levha çizimi düzene göre gerilir, vidalar üstünde kalsın
 
             foreach (var local in positions)
             {

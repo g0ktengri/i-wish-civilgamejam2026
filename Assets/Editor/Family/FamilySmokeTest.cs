@@ -157,10 +157,13 @@ namespace Deprem.Family
         private static void SiblingWithoutFlashlight()
         {
             StartAttempt(5, new[] { BagItemId.FirstAidKit });
+            Check(sibling.Hidden, "Kurtarma fazında kardeş karanlıkta saklanıyor (Play testi 24)");
             player.Teleport(new Vector3(5.5f, Up, 1f));
-            TickMembers(6f);
+            TickMembers(1f);
+            Check(sibling.Hidden && !sibling.CanInteract(player), "Fener yok: yanındayken bile bulunamıyor");
+            TickMembers(5f);
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.MissingBagItem,
-                $"El feneri yok, kardeşin odasında 'Keşke deprem çantası hazırlasaydım' ({GameState.LastLoseReason})");
+                $"El feneri yok, aranırken artçı: 'Keşke deprem çantası hazırlasaydım' ({GameState.LastLoseReason})");
         }
 
         private static void MotherHitByWardrobe()

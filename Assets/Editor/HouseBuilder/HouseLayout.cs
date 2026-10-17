@@ -39,8 +39,9 @@ namespace Deprem.HouseBuilder
         public const float StairHoleX1 = StairX0 + StairLength;
 
         // Deprem kabini merdivenin yüksek ucunun altında (basamak altı 2 m'den yüksek olan kısım)
-        public static readonly Vector3 CabinMin = new Vector3(StairX0 + 2.6f, 0f, 2f);
-        public static readonly Vector3 CabinMax = new Vector3(StairX0 + 4.1f, 2f, 3.5f);
+        // Play testi 24: kabin iri duruyordu; 1,5 → 1,3 m en, 2 → 1,9 m boy (ortası ve giriş aynı yerde)
+        public static readonly Vector3 CabinMin = new Vector3(StairX0 + 2.7f, 0f, 2f);
+        public static readonly Vector3 CabinMax = new Vector3(StairX0 + 4.0f, 1.9f, 3.5f);
     }
 
     internal sealed class RoomDef

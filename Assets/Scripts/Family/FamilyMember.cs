@@ -45,11 +45,23 @@ namespace Deprem.Family
         [Tooltip("Ana depremden sonra yaralı mı (baba: pencere camı, GDD)")]
         [SerializeField] private bool injuredAfterQuake;
 
+        [Header("Saklanma (kardeş, Play testi 24)")]
+        [Tooltip("Kurtarma fazında karanlıkta saklanır, görünmez; requiredBagItem (el feneri) varsa yaklaşınca bulunur")]
+        [SerializeField] private bool hidesInDark;
+        [SerializeField] private float findRange = 2.2f;
+        [Tooltip("Fenersiz oyuncu odada bu kadar arayınca artçı gelir, tavan üstüne çöker")]
+        [SerializeField] private float searchTime = 4.5f;
+
         [SerializeField] private float treatHoldTime = 3f;
         [Tooltip("Yaralıyken ayağının üstündeki kayanın materyali (siva.mat kopyası, doku PixelRubble); boşsa kaya yok")]
         [SerializeField] private Material rockMaterial;
         [SerializeField] private Vector3 rockOffset = new Vector3(-0.22f, 0.2f, -0.25f);
-        [SerializeField] private Vector2 rockSize = new Vector2(0.7f, 0.55f);
+        [SerializeField] private Vector2 rockSize = new Vector2(0.85f, 0.65f);
+        [Tooltip("F basılı tutulurken taşın kalktığı yükseklik (ilerlemeyle)")]
+        [SerializeField] private float rockLiftHeight = 0.2f;
+        [SerializeField] private float rockRollDistance = 0.9f;
+        [SerializeField] private float rockRollTime = 0.55f;
+        [SerializeField] private int pebbleCount = 6;
         [Tooltip("Oyuncu bu kadar yaklaşınca durumu fark eder (aynı kat, X ekseninde)")]
         [SerializeField] private float discoverRange = 3.5f;
         [Tooltip("Durumu görülünce çalan müzik vurgusunun mesafesi (m)")]
@@ -87,6 +99,12 @@ namespace Deprem.Family
         public int Facing { get; private set; } = -1;
         /// <summary>Oyuncu durumu fark edip tepki verdi mi (keşke ekranı failDelay sonra)</summary>
         public bool PlayerReacted { get; private set; }
+        /// <summary>Karanlıkta saklanıyor, henüz bulunmadı (görünmez, etkileşilemez)</summary>
+        public bool Hidden { get; private set; }
+
+        private float searchTimer;
+        private bool searchWarned;
+        private bool aftershockRequested;
 
         private float discoverTimer;
         private bool stingerPlayed;
@@ -164,6 +182,7 @@ namespace Deprem.Family
                     {
                         State = injuredAfterQuake ? FamilyState.Injured : FamilyState.Waiting;
                         if (State == FamilyState.Injured) SpawnRock();
+                        Hidden = hidesInDark && State == FamilyState.Waiting;
                     }
                     break;
             }
@@ -204,6 +223,16 @@ namespace Deprem.Family
             if (player == null) player = FindFirstObjectByType<PlayerController>();
             if (player == null) return;
 
+            if (Hidden)
+            {
+                SearchInDark(dt);
+                if (Hidden)
+                {
+                    CallForHelp(dt);
+                    return;
+                }
+            }
+
             bool missingBagItem = requiredBagItem != BagItemId.None && !GameState.HasBagItem(requiredBagItem);
             bool lost = State == FamilyState.Hit || State == FamilyState.Bleeding ||
                         (missingBagItem && (State == FamilyState.Waiting || State == FamilyState.Injured));
@@ -235,6 +264,38 @@ namespace Deprem.Family
                     if (treatTimer >= treatHoldTime) Rescue();
                 }
             }
+        }
+
+        /// <summary>
+        /// Play testi 24: kardeş karanlıkta saklanır, sadece sesi gelir. El feneri varsa yaklaşınca ışık onu bulur.
+        /// Yoksa oyuncu odada el yordamıyla arar ("Hiçbir şey göremiyorum..."); searchTime sonra artçı gelir ve
+        /// tavan oyuncunun üstüne çöker (QuakeDirector). Keşke: deprem çantası (el feneri).
+        /// </summary>
+        private void SearchInDark(float dt)
+        {
+            bool hasLight = requiredBagItem == BagItemId.None || GameState.HasBagItem(requiredBagItem);
+            if (hasLight)
+            {
+                if (!IsNear(player.transform.position, findRange)) return;
+                Hidden = false;
+                callTimer = callDuration + 1f;
+                if (bubble == null) bubble = GetComponent<SpeechBubble>();
+                if (bubble != null) bubble.Say("bubble.family_call." + id.ToString().ToLowerInvariant(), callDuration);
+                return;
+            }
+            if (!IsNear(player.transform.position, discoverRange)) return;
+            if (!searchWarned)
+            {
+                searchWarned = true;
+                var playerBubble = player.GetComponent<SpeechBubble>();
+                if (playerBubble != null)
+                    playerBubble.Say("bubble.family_missing." + requiredBagItem.ToString().ToLowerInvariant(), searchTime);
+            }
+            searchTimer += dt;
+            if (searchTimer < searchTime || aftershockRequested) return;
+            aftershockRequested = true;
+            if (!Deprem.Quake.QuakeDirector.RequestFatalAftershock(LoseReason.MissingBagItem))
+                GameState.FailLoop(LoseReason.MissingBagItem); // sahnede deprem sistemi yoksa (editör testi)
         }
 
         /// <summary>
@@ -316,7 +377,7 @@ namespace Deprem.Family
 
         public bool CanInteract(PlayerController who)
         {
-            if (GameState.Phase != GamePhase.Rescue || IsTreating) return false;
+            if (GameState.Phase != GamePhase.Rescue || IsTreating || Hidden) return false;
             if (State != FamilyState.Waiting && State != FamilyState.Injured) return false;
             return requiredBagItem == BagItemId.None || GameState.HasBagItem(requiredBagItem);
         }
@@ -378,21 +439,87 @@ namespace Deprem.Family
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
         }
 
-        // Kaya yana devrilip düşer ve kaybolur
+        /// <summary>
+        /// Play testi 24: taş kalkarken hiçbir şey görünmüyordu. F basılı tutulurken taş titreyerek ilerlemeyle yükselir
+        /// (LateUpdate); bitince yana yuvarlanıp yere düşer ve orada kalır, çakıllar saçılır, ses çıkar.
+        /// </summary>
+        private void AnimateRockStrain()
+        {
+            if (rock == null) return;
+            float p = IsTreating ? TreatProgress : 0f;
+            float jitter = IsTreating ? 0.012f + 0.02f * p : 0f;
+            rock.transform.localPosition = rockOffset + new Vector3(Random.Range(-jitter, jitter), rockLiftHeight * p, 0f);
+            rock.transform.localRotation = Quaternion.Euler(0f, 0f, IsTreating ? Random.Range(-3f, 3f) * (0.4f + p) - 8f * p : 0f);
+        }
+
         private System.Collections.IEnumerator LiftRock()
         {
             var r = rock;
             rock = null;
             if (r == null) yield break;
             var start = r.transform.localPosition;
-            for (float t = 0f; t < 0.6f && r != null; t += Time.deltaTime)
+            var startRotation = r.transform.localRotation.eulerAngles.z;
+            // Kayanın kendi gölgesi yerde kalır; taş düşünce yeni yerine taşınır
+            float side = Facing >= 0 ? -1f : 1f; // babanın ayak ucunun tersine, odanın içine doğru
+            var end = new Vector3(start.x + side * rockRollDistance, rockSize.y * 0.5f - 0.03f, start.z);
+            Deprem.Audio.Sfx.PlayAt("player.land", transform.position, 0.7f);
+            for (float t = 0f; t < rockRollTime && r != null; t += Time.deltaTime)
             {
-                float k = t / 0.6f;
-                r.transform.localPosition = start + new Vector3(0.55f * k, 0.45f * Mathf.Sin(k * Mathf.PI), 0f);
-                r.transform.localRotation = Quaternion.Euler(0f, 0f, -120f * k);
+                float k = t / rockRollTime;
+                var p = Vector3.Lerp(start, end, k);
+                p.y += 0.35f * Mathf.Sin(k * Mathf.PI); // kaldırılıp yana atılır
+                r.transform.localPosition = p;
+                r.transform.localRotation = Quaternion.Euler(0f, 0f, startRotation + side * 200f * k);
                 yield return null;
             }
-            if (r != null) Destroy(r);
+            if (r == null) yield break;
+            r.transform.localPosition = end;
+            r.transform.localRotation = Quaternion.Euler(0f, 0f, side * 20f);
+            // Yere bırakılınca: tok vuruş, çakıllar, hafif sarsıntı
+            Deprem.Audio.Sfx.PlayAt("quake.debris", r.transform.position, 1f);
+            Deprem.Quake.QuakeCameraShake.Intensity = Mathf.Max(Deprem.Quake.QuakeCameraShake.Intensity, 0.35f);
+            for (int i = 0; i < pebbleCount; i++) StartCoroutine(Pebble(r.transform.position));
+            // Taş kurtarma boyunca orada kalır; üye kabine yürürken ona bağlı kalmasın
+            r.transform.SetParent(transform.parent, true);
+        }
+
+        private System.Collections.IEnumerator Pebble(Vector3 from)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "Pebble";
+            Destroy(go.GetComponent<Collider>());
+            go.transform.SetParent(transform.parent, true);
+            float size = Random.Range(0.06f, 0.13f);
+            go.transform.localScale = new Vector3(size, size, 1f);
+            var renderer = go.GetComponent<MeshRenderer>();
+            if (rockMaterial != null)
+            {
+                var material = new Material(rockMaterial) { name = "Pebble" };
+                material.SetTexture("_BaseMap", Deprem.Quake.PixelRubble.Chunk(Random.Range(0, Deprem.Quake.PixelRubble.AtlasTiles)));
+                material.SetColor("_BaseColor", new Color(0.78f, 0.74f, 0.7f));
+                material.SetFloat("_AlphaClip", 1f);
+                material.SetFloat("_Cutoff", 0.5f);
+                material.EnableKeyword("_ALPHATEST_ON");
+                renderer.sharedMaterial = material;
+            }
+            float floorY = transform.position.y + size * 0.5f;
+            var velocity = new Vector3(Random.Range(-1.6f, 1.6f), Random.Range(1.2f, 2.6f), 0f);
+            var p = from + new Vector3(0f, 0f, Random.Range(-0.15f, 0.05f));
+            float spin = Random.Range(-600f, 600f), angle = 0f;
+            for (float t = 0f; t < 1.5f; t += Time.deltaTime)
+            {
+                velocity.y -= 9.8f * Time.deltaTime;
+                p += velocity * Time.deltaTime;
+                angle += spin * Time.deltaTime;
+                if (p.y <= floorY)
+                {
+                    p.y = floorY;
+                    velocity = new Vector3(velocity.x * 0.4f, -velocity.y * 0.25f, 0f);
+                    spin *= 0.4f;
+                }
+                go.transform.SetPositionAndRotation(p, Quaternion.Euler(0f, 0f, angle));
+                yield return null;
+            }
         }
 
         /// <summary>Kabine yürürken FamilyDirector çağırır (aksayarak; Facing yöne göre)</summary>
@@ -444,8 +571,10 @@ namespace Deprem.Family
         private void LateUpdate()
         {
             if (glow != null)
-                glow.enabled = GameState.Phase == GamePhase.Rescue && State != FamilyState.InCabin;
+                glow.enabled = GameState.Phase == GamePhase.Rescue && State != FamilyState.InCabin && !Hidden;
             if (visual == null) return;
+            // Saklanan kardeş görünmez; bulununca ortaya çıkar (kabindeyken EnterCabin gizler)
+            if (State != FamilyState.InCabin && visual.gameObject.activeSelf == Hidden) visual.gameObject.SetActive(!Hidden);
             bool lying = State == FamilyState.Injured || State == FamilyState.Hit || State == FamilyState.Bleeding;
             bool ducking = State == FamilyState.Ducking;
             visual.localRotation = lying ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
@@ -458,6 +587,7 @@ namespace Deprem.Family
                 visual.localRotation = Quaternion.Euler(0f, 0f, 4f * step * Facing);
             }
             else visual.localPosition = Vector3.zero;
+            AnimateRockStrain();
             Animate(lying || ducking);
         }
 
@@ -472,12 +602,16 @@ namespace Deprem.Family
         [SerializeField] private float walkFps = 10f;
         [Tooltip("Kabine aksayarak yürürken")]
         [SerializeField] private float limpFps = 6f;
+        [Tooltip("Bekleme döngüsü (ör. baba_bekleme_1..5); boşsa idleFrame karesi")]
+        [SerializeField] private Texture2D[] idleFrames;
+        [SerializeField] private float idleFps = 5f;
 
         private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
         private MaterialPropertyBlock block;
         private Texture2D shownFrame;
         private Vector3 lastPosition;
         private float frameTime;
+        private float idleTime;
 
         private void Animate(bool still)
         {
@@ -490,6 +624,11 @@ namespace Deprem.Family
             {
                 frameTime += dt * (State == FamilyState.WalkingToCabin ? limpFps : walkFps);
                 frame = walkFrames[Mathf.FloorToInt(frameTime) % walkFrames.Length];
+            }
+            else if (idleFrames != null && idleFrames.Length > 0)
+            {
+                idleTime += dt * idleFps;
+                frame = idleFrames[Mathf.FloorToInt(idleTime) % idleFrames.Length];
             }
             else frame = walkFrames[Mathf.Clamp(idleFrame, 0, walkFrames.Length - 1)];
             if (frame == shownFrame) return;

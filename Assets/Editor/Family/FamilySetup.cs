@@ -18,6 +18,8 @@ namespace Deprem.Family
         public const string PrefabPath = "Assets/Prefabs/Mehmet/FamilySystem.prefab";
         private const string MaterialFolder = "Assets/Generated/Family";
         private const string SystemName = "FamilySystem";
+        /// <summary>Ekip çizimi karesinin dünya boyu (m); oyuncununki 2</summary>
+        private const float FrameSize = 1.8f;
 
         private struct MemberDef
         {
@@ -28,6 +30,7 @@ namespace Deprem.Family
             public BagItemId Bag;
             public BagItemId CabinBag;
             public bool Injured;
+            public bool Hides; // Play testi 24: karanlıkta saklanır, el feneriyle bulunur
             public float Height;
             public Color Color;
         }
@@ -37,11 +40,11 @@ namespace Deprem.Family
         {
             new MemberDef { Name = "Father", Id = FamilyMemberId.Father, Marker = "Marker_Father", Danger = ItemId.Bookcase,
                 // Berke'nin play testi: kayayı kaldırmak için çanta şart değil; kan kaybı kabinde ortaya çıkar (ilk yardım)
-                Bag = BagItemId.None, CabinBag = BagItemId.FirstAidKit, Injured = true, Height = 1.8f, Color = new Color(0.35f, 0.5f, 0.85f) },
+                Bag = BagItemId.None, CabinBag = BagItemId.FirstAidKit, Injured = true, Height = 1.65f, Color = new Color(0.35f, 0.5f, 0.85f) },
             new MemberDef { Name = "Mother", Id = FamilyMemberId.Mother, Marker = "Marker_Mother", Danger = ItemId.Wardrobe,
-                Bag = BagItemId.None, Injured = false, Height = 1.65f, Color = new Color(0.85f, 0.4f, 0.45f) },
+                Bag = BagItemId.None, Injured = false, Height = 1.5f, Color = new Color(0.85f, 0.4f, 0.45f) },
             new MemberDef { Name = "Sibling", Id = FamilyMemberId.Sibling, Marker = "Marker_Sibling", Danger = ItemId.ToyShelf,
-                Bag = BagItemId.Flashlight, Injured = false, Height = 1.1f, Color = new Color(0.45f, 0.8f, 0.45f) },
+                Bag = BagItemId.Flashlight, Injured = false, Hides = true, Height = 1.0f, Color = new Color(0.45f, 0.8f, 0.45f) },
         };
 
         [MenuItem("Tools/Deprem/Aile Sistemini Kur (açık sahne)")]
@@ -102,16 +105,18 @@ namespace Deprem.Family
             var renderer = quad.GetComponent<MeshRenderer>();
             if (frames.Length > 0)
             {
-                // Ekip çizimi (ör. baba_yurume_1..8): 128 x 128 px kare = 2 x 2 m, oyuncunun kareleriyle aynı kurulum.
-                // Ayak alt kenardan 2 px yukarıda, gövde ortası x ≈ 61,5 px
-                quad.transform.localPosition = new Vector3((64f - 61.5f) / 64f, 1f - 2f / 64f, 0f);
-                quad.transform.localScale = new Vector3(2f, 2f, 1f);
+                // Ekip çizimi (ör. baba_yurume_1..8): 128 x 128 px kare, oyuncunun kareleriyle aynı kurulum.
+                // Ayak alt kenardan 2 px yukarıda, gövde ortası x ≈ 61,5 px. Play testi 24: aile çok iri duruyordu,
+                // kare FrameSize m (oyuncu 2 m)
+                float s = FrameSize / 128f;
+                quad.transform.localPosition = new Vector3((64f - 61.5f) * s, 64f * s - 2f * s, 0f);
+                quad.transform.localScale = new Vector3(FrameSize, FrameSize, 1f);
                 renderer.sharedMaterial = FrameMaterial(def.Name.ToLowerInvariant(), frames[0]);
             }
             else
             {
                 quad.transform.localPosition = new Vector3(0f, def.Height * 0.5f, 0f);
-                quad.transform.localScale = new Vector3(0.55f * def.Height / 1.7f, def.Height, 1f);
+                quad.transform.localScale = new Vector3(0.42f * def.Height / 1.7f, def.Height, 1f); // Play testi 24: daha ince
                 renderer.sharedMaterial = Material(def.Name.ToLowerInvariant(), def.Color);
             }
             renderer.shadowCastingMode = ShadowCastingMode.TwoSided;
@@ -148,6 +153,7 @@ namespace Deprem.Family
             so.FindProperty("requiredBagItem").enumValueIndex = (int)def.Bag;
             so.FindProperty("cabinBagItem").enumValueIndex = (int)def.CabinBag;
             so.FindProperty("injuredAfterQuake").boolValue = def.Injured;
+            so.FindProperty("hidesInDark").boolValue = def.Hides;
             // Yaralıyken ayağındaki kaya: deprem molozunun materyali (QuakeSetup üretir), doku çalışma anında
             so.FindProperty("rockMaterial").objectReferenceValue =
                 def.Injured ? AssetDatabase.LoadAssetAtPath<Material>("Assets/Generated/Quake/siva.mat") : null;
@@ -156,8 +162,20 @@ namespace Deprem.Family
             var walk = so.FindProperty("walkFrames");
             walk.arraySize = frames.Length;
             for (int i = 0; i < frames.Length; i++) walk.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+            var idleFrames = frames.Length > 0 ? LoadFrames(IdlePrefix(def.Id)) : new Texture2D[0];
+            var idle = so.FindProperty("idleFrames");
+            idle.arraySize = idleFrames.Length;
+            for (int i = 0; i < idleFrames.Length; i++) idle.GetArrayElementAtIndex(i).objectReferenceValue = idleFrames[i];
             so.ApplyModifiedPropertiesWithoutUndo();
         }
+
+        private static string IdlePrefix(FamilyMemberId id) => id switch
+        {
+            FamilyMemberId.Father => "baba_bekleme",
+            FamilyMemberId.Mother => "anne_bekleme",
+            FamilyMemberId.Sibling => "kardes_bekleme",
+            _ => null,
+        };
 
         // Ekip çizimleri: Assets/Art/Characters/{önek}_N.png (anne ve kardeş gelince buraya eklenir)
         private static string FramePrefix(FamilyMemberId id) => id switch

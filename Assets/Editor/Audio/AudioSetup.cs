@@ -650,13 +650,14 @@ namespace Deprem.Audio
             return Fade(Normalize(LowPass(b, 2800f), 0.5f), 0.002f, 0.008f);
         }
 
-        /// <summary>Ölüm anı: derin vuruş, altında inen uyumsuz ton, uzun yankıyla sönen</summary>
+        /// <summary>Ölüm anı: derin vuruş, altında inen uyumsuz ton, kulak çınlaması (Play testi 24), uzun yankıyla sönen</summary>
         private static float[] DeathStinger(SoundSynth s)
         {
-            var b = Buffer(3f);
+            var b = Buffer(3.5f);
             Mix(b, Normalize(Impact(s, 2f, 1f), 1f), 0f, 0.8f);
             Mix(b, Envelope(Sine(2.5f, t => 196f * Mathf.Pow(0.5f, t / 2f)), 0.01f, 0.1f, 1.2f), 0.05f, 0.25f);
             Mix(b, Envelope(Sine(2.5f, t => 207.65f * Mathf.Pow(0.5f, t / 2f)), 0.01f, 0.1f, 1.2f), 0.05f, 0.2f);
+            Mix(b, Envelope(Sine(3.2f, t => 3520f + 25f * Mathf.Sin(t * 9f)), 0.3f, 0.7f, 1.1f), 0.12f, 0.07f);
             return Fade(Normalize(Reverb(b, 2f, 0.4f, 0.85f), 0.95f));
         }
 

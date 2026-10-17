@@ -100,6 +100,8 @@ namespace Deprem.Quake
         [SerializeField] private float debrisImpactDelay = 0.3f;
         [Tooltip("Öldükten sonra kayıp ekranından önce sahnede kalma (sn): ölme kareleri biter, yıkıntı üstüne yığılır")]
         [SerializeField] private float deathLinger = 1.6f;
+        [Tooltip("Play testi 24: kardeş bulunamayınca gelen artçıda tavanın çökmesinden önceki sarsıntı (sn)")]
+        [SerializeField] private float fatalAftershockLead = 1.2f;
         [Tooltip("Döngü 1: raf yatan oyuncunun üstüne düşer; kaplama kutusunun merkezi oyuncunun kökünden bu kadar uzakta")]
         [SerializeField] private Vector3 shelfLandOffset = new Vector3(-0.15f, 0.24f, -0.05f);
         [Tooltip("Rafın duvardan oyuncunun üstüne düşüşü (sn)")]
@@ -125,8 +127,40 @@ namespace Deprem.Quake
         private QuakeEffects effects;
         private float offPathTime;
 
+        private static QuakeDirector instance;
+        private bool fatalAftershockRunning;
+
+        /// <summary>
+        /// Play testi 24: kardeş fenersiz bulunamayınca artçı gelir, tavan oyuncunun üstüne çöker, döngü reason ile
+        /// biter. Kurtarma fazında değilse ya da deprem sistemi yoksa false (çağıran kendisi bitirir).
+        /// </summary>
+        public static bool RequestFatalAftershock(LoseReason reason, ItemId item = ItemId.None)
+        {
+            if (instance == null || instance.player == null || instance.fatalAftershockRunning || GameState.Phase != GamePhase.Rescue)
+                return false;
+            instance.StopAllCoroutines();
+            instance.StartCoroutine(instance.FatalAftershock(reason, item));
+            return true;
+        }
+
+        private IEnumerator FatalAftershock(LoseReason reason, ItemId item)
+        {
+            fatalAftershockRunning = true;
+            aftershockRunning = true;
+            player.InputEnabled = false;
+            player.SetScriptedInput(0f);
+            GameEvents.RaiseAftershockStarted();
+            StartCoroutine(Shake(Mathf.Min(1f, aftershockIntensity * 1.4f), fatalAftershockLead + 1.5f));
+            StartCoroutine(DropDecor(aftershockDecorFall, 0.1f, fatalAftershockLead));
+            if (effects != null) effects.Burst(0.6f);
+            yield return new WaitForSeconds(fatalAftershockLead);
+            yield return HitByDebris();
+            Fail(reason, item);
+        }
+
         private void Awake()
         {
+            instance = this;
             player = FindFirstObjectByType<PlayerController>();
             lights = FindFirstObjectByType<HouseLights>();
             var bedMarker = GameObject.Find("Marker_PlayerBed");
@@ -539,7 +573,7 @@ namespace Deprem.Quake
             // çarpışmaz: parçalar başta sekmez, yere yığılan bedenin üstüne düşer ve orada kalır (DebrisSettle)
             yield return new WaitForSeconds(debrisImpactDelay);
             player.Die();
-            Feedback.Play(1f); // Play testi 23: ses, sarsıntı, kırmızı flaş, ağır çekim
+            Feedback.Play(1f); // Play testi 24: sert darbe, sarsıntı, kulak çınlaması, kapanan karanlık
             yield return new WaitForSeconds(deathLinger);
         }
 

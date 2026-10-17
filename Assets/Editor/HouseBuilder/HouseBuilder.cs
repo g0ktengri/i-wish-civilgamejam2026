@@ -208,6 +208,7 @@ namespace Deprem.HouseBuilder
             // Play testi 17: duvarda tablo, saat, ayna; masada vazo, kupa (sallanır, yamulur, düşer)
             DecorProps.Build(root.transform, (name, color) => GetMaterial(name, null, color));
             DecorProps.BuildSideWindow(root.transform, (name, color) => GetMaterial(name, null, color)); // Play testi 18: odamızın sol duvarında pencere
+            DecorProps.BuildRug(root.transform, "oyuncu", "Assets/Art/Decor/hali_oyuncu.png", 2.9f, 2.1f, 2.6f); // Play testi 24: yatağın önünde halı
 
             var doors = BuildDoors(Child(root.transform, "Doors"));
             var covers = BuildRoomCovers(Child(root.transform, "RoomCovers"));
@@ -644,19 +645,21 @@ namespace Deprem.HouseBuilder
             front.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
             EditorUtility.SetDirty(front);
 
-            // Tabela: kapının üstündeki levhanın önünde (FurnitureShapes "kabin": levha y 1,56-1,84)
+            // Tabela: kapının üstündeki yeşil levhanın önünde (FurnitureShapes "kabin": levha y 1,5-1,72).
+            // Play testi 24: balon fontunun "e"si tabelada bozuk duruyordu; düz pixel font, beyaz yazı
             var signGo = new GameObject("Sign");
             signGo.transform.SetParent(go.transform, false);
-            signGo.transform.position = new Vector3((min.x + max.x) * 0.5f, min.y + 1.7f, min.z - 0.005f);
+            signGo.transform.position = new Vector3((min.x + max.x) * 0.5f, min.y + 1.61f, min.z - 0.005f);
             var sign = signGo.AddComponent<TextMesh>();
-            sign.font = Deprem.UI.UiBuilder.DefaultFont;
+            var signFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/Art/Fonts/PixelifySans.ttf");
+            sign.font = signFont != null ? signFont : Deprem.UI.UiBuilder.DefaultFont;
             signGo.GetComponent<MeshRenderer>().sharedMaterial = sign.font.material;
             sign.text = "DEPREM KABİNİ";
             sign.fontSize = 64;
-            sign.characterSize = 0.02f;
+            sign.characterSize = 0.018f;
             sign.anchor = TextAnchor.MiddleCenter;
             sign.alignment = TextAlignment.Center;
-            sign.color = new Color(0.1f, 0.1f, 0.1f);
+            sign.color = new Color(0.97f, 0.97f, 0.92f);
 
             var beaconGo = new GameObject("Beacon");
             beaconGo.transform.SetParent(go.transform, false);

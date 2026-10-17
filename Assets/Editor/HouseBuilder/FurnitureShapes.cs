@@ -180,18 +180,42 @@ namespace Deprem.HouseBuilder
                     s.Add(w * 0.5f + 0.04f, 0.85f, 0f, w * 0.5f + 0.07f, 1.15f, 0.02f, PartTone.Metal);
                     break;
 
-                case "kabin": // çelik dikmeler, çatı, gövde, kapı ve penceresi, kulp, tabela levhası
-                    s.Add(0f, 0f, 0f, w, 0.06f, d);
-                    s.Add(0f, h - 0.12f, 0f, w, h, d);
-                    foreach (float x in new[] { 0f, w - 0.08f })
-                    foreach (float z in new[] { 0f, d - 0.08f })
-                        s.Add(x, 0f, z, x + 0.08f, h, z + 0.08f);
-                    s.Add(0.04f, 0.06f, 0.04f, w - 0.04f, h - 0.12f, d);
-                    s.Add(0.3f, 0.1f, 0.02f, w - 0.3f, 1.5f, 0.04f);
-                    s.Add(0.45f, 1f, 0.01f, w - 0.45f, 1.4f, 0.02f, PartTone.Glass);
-                    s.Add(w - 0.42f, 0.75f, 0f, w - 0.37f, 0.95f, 0.02f, PartTone.Metal);
-                    s.Add(0.1f, 1.56f, 0.01f, w - 0.1f, h - 0.16f, 0.04f, PartTone.Soft);
+                case "kabin":
+                {
+                    // Play testi 24: kabin çirkindi. Koyu çelik çerçeve ve ince dikmeler, turuncu gövde, altta ve üstte
+                    // sarı-siyah uyarı şeridi, çerçeveli ve takviyeli kapı, ızgaralı küçük pencere, yeşil tabela levhası
+                    // (yazısı HouseBuilder.BuildCabin'de). Tabela y 1,5-1,72
+                    s.Add(0f, 0f, 0f, w, 0.05f, d, PartTone.Dark);
+                    s.Add(0f, h - 0.08f, 0f, w, h, d, PartTone.Dark);
+                    foreach (float x in new[] { 0f, w - 0.06f })
+                    foreach (float z in new[] { 0f, d - 0.06f })
+                        s.Add(x, 0f, z, x + 0.06f, h, z + 0.06f, PartTone.Dark);
+                    s.Add(0.03f, 0.05f, 0.03f, w - 0.03f, h - 0.08f, d);
+                    // Uyarı şeritleri
+                    int n = 0;
+                    for (float x = 0.06f; x < w - 0.07f; x += 0.1f, n++)
+                    {
+                        float x1 = Mathf.Min(x + 0.1f, w - 0.06f);
+                        var tone = n % 2 == 0 ? PartTone.ToyYellow : PartTone.Dark;
+                        s.Add(x, 0.05f, 0.015f, x1, 0.15f, 0.03f, tone);
+                        s.Add(x, h - 0.16f, 0.015f, x1, h - 0.08f, 0.03f, tone);
+                    }
+                    // Kapı: çelik kasa, gövde renginde kanat, iki takviye laması, yatay kulp
+                    s.Add(0.25f, 0.15f, 0.01f, 0.28f, 1.45f, 0.035f, PartTone.Metal);
+                    s.Add(w - 0.28f, 0.15f, 0.01f, w - 0.25f, 1.45f, 0.035f, PartTone.Metal);
+                    s.Add(0.25f, 1.42f, 0.01f, w - 0.25f, 1.45f, 0.035f, PartTone.Metal);
+                    s.Add(0.28f, 0.15f, 0.018f, w - 0.28f, 1.42f, 0.03f);
+                    s.Add(0.31f, 0.38f, 0.008f, w - 0.31f, 0.42f, 0.018f, PartTone.Metal);
+                    s.Add(0.31f, 0.66f, 0.008f, w - 0.31f, 0.7f, 0.018f, PartTone.Metal);
+                    s.Add(w - 0.44f, 0.8f, 0f, w - 0.34f, 0.84f, 0.018f, PartTone.Metal);
+                    // Pencere ve ızgarası
+                    s.Add(0.45f, 0.98f, 0.01f, w - 0.45f, 1.3f, 0.018f, PartTone.Glass);
+                    s.Add(w * 0.5f - 0.012f, 0.98f, 0.004f, w * 0.5f + 0.012f, 1.3f, 0.012f, PartTone.Metal);
+                    s.Add(0.45f, 1.13f, 0.004f, w - 0.45f, 1.155f, 0.012f, PartTone.Metal);
+                    // Tabela levhası
+                    s.Add(0.12f, 1.5f, 0.006f, w - 0.12f, 1.72f, 0.03f, PartTone.ToyGreen);
                     break;
+                }
 
                 case "kapi": // kapalıyken kameraya yan döner; açılınca X yüzü (_yan) görünür. Kulplar serbest kenarda (Z = 0)
                     s.Add(0.03f, 0f, 0f, w - 0.03f, h, d);

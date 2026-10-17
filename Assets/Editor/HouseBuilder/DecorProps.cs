@@ -229,6 +229,41 @@ namespace Deprem.HouseBuilder
         }
 
         /// <summary>
+        /// Oyuncunun odasında yere serili halı (Play testi 24, ekip çizimi Assets/Art/Decor/hali_oyuncu.png).
+        /// Zeminin hemen üstünde yatay bir quad; çarpışmasız, gölge alır.
+        /// </summary>
+        public static void BuildRug(Transform root, string roomKey, string artPath, float centerX, float centerZ, float width)
+        {
+            var art = AssetDatabase.LoadAssetAtPath<Texture2D>(artPath);
+            if (art == null) return;
+            var room = HouseLayout.Room(roomKey);
+            EnsureFolder();
+            string matPath = $"{Folder}/{Path.GetFileNameWithoutExtension(artPath)}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                AssetDatabase.CreateAsset(mat, matPath);
+            }
+            mat.SetTexture("_BaseMap", art);
+            mat.SetColor("_BaseColor", Color.white);
+            mat.SetFloat("_Smoothness", 0f);
+            EditorUtility.SetDirty(mat);
+
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "Rug_" + roomKey;
+            UnityEngine.Object.DestroyImmediate(quad.GetComponent<Collider>());
+            quad.transform.SetParent(root, false);
+            // Quad'ın üst kenarı (+Y) arka duvara (+Z) baksın: çizim kameradan bakınca düz durur
+            quad.transform.SetPositionAndRotation(new Vector3(centerX, room.FloorY + 0.006f, centerZ), Quaternion.Euler(90f, 0f, 0f));
+            quad.transform.localScale = new Vector3(width, width * art.height / art.width, 1f);
+            var renderer = quad.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = mat;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = true;
+        }
+
+        /// <summary>
         /// Oyuncunun odasının sol (dış) duvarında camlı pencere (Play testi 18). Yan duvarın iç yüzünde, odaya
         /// bakar; gece göğü hafifçe parlar. Assets/Art/Decor/pencere_yan.png gelirse o kullanılır.
         /// </summary>

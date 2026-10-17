@@ -15,6 +15,8 @@ namespace Deprem.Minigames
         [Header("Vida sıkma")]
         [Tooltip("minigame_vida.png, 256 x 256: arka plan (dolabın duvara bakan yüzü)")]
         public Sprite screwBackground;
+        [Tooltip("minigame_vida_panel.png, 600 x 512 (ekranda 300 x 256): oda görüntüsünün önünde vidalı pano (Play testi 24, ekip çizimi), arkası saydam")]
+        public Sprite screwPanel;
         [Tooltip("minigame_levha.png, 168 x 112: 4 köşesinden vidalanan L demiri levhası")]
         public Sprite screwPlate;
         [Tooltip("minigame_vida_basi.png, 32 x 32: yuvarlak, dönen vida başı (ortası dönme merkezi)")]
