@@ -262,4 +262,19 @@ Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin
 6. Merdiven çirkin: yan kiriş, basamak altı, korkuluk ve küpeşte.
 7. Mobilyalar: parçalara detay renkleri (kulp, yastık, kitap, ekran); yerleşim bir kez daha kontrol edilir.
 
-**Mehmet tarafı: 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
+### Play testi 5: görev dağılımı (18 Ekim)
+
+**Berke'ye düşen**
+
+- **M14. "Ailemi kurtarmalıyım" anlaşılmıyor.** Kurtarma fazı başlayınca ekranın ortasında 3 sn büyük yazı ("Ailen tehlikede! Onları bul ve kabine götür"); sonra köşedeki hedefin altında sayaç **Aile: 0/3** (`GameEvents.FamilyMemberRescued` / `FamilyMemberEnteredCabin` ile artar); ekran dışında kalan aile üyelerine ekran kenarında ok. Okun hedefi için `Marker_Father`, `Marker_Mother`, `Marker_Sibling` adla bulunabilir (ezilen üye işaretin ~1 m yakınında yatar). Mehmet tarafı ayrıca oyuncuya ve aileye balon ekliyor (aşağıda).
+
+**Mehmet'in yapacakları (bilgi için, senin tarafında iş yok)**
+
+1. Toz çirkin: kare taneler yerine yumuşak yuvarlak toz, daha doğal renk ve hareket.
+2. Ezilen / yaralı aile üyeleri karanlıkta görünmüyor: kurtarma fazında üyelerin çevresinde hafif ışık; üyeler belli aralıklarla "İmdat!" diye seslenir (balon), oyuncu kurtarma başında "Ailem! Onları bulmalıyım!" der.
+3. Merdiven tam olmadı: eğik tek parça kiriş ve küpeşte, basamakların altı kapalı (duvar).
+4. Döngü 1'de sadece raf düşüyor, ciddi değil: rafın üstüne tavan da çöker (yatağın üstüne sıva ve beton parçaları), raf daha ağır ve dolu.
+
+---
+
+**Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
