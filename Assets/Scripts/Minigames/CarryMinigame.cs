@@ -8,9 +8,11 @@ namespace Deprem.Minigames
     // duvara çarparsa eşya düşer ve başa döner. Kurulum eşyaya göre (MinigameVariant.Carry; Berke'nin play testi:
     // çok kolay ve hep aynıydı): tek duvar, yukarı aşağı kayan boşluk ya da iki duvarlı zikzak. Taraflar ve
     // boşlukların yeri her açılışta rastgele.
+    // M26 (Mehmet'in play testi 17: el fenerinin çarpışması kare gibiydi): eşyanın boyu ve çarpışma dikdörtgeni
+    // görünen biçimi (MinigamePixels.CarrySize: el feneri ince uzun, ayna dar uzun, raf geniş alçak).
     public class CarryMinigame : Minigame
     {
-        static readonly Vector2 ItemSize = new Vector2(48f, 48f);
+        Vector2 ItemSize;
         static readonly Vector2 TargetSize = new Vector2(64f, 64f);
         const float WallWidth = 16f;
         const float HitFlashTime = 0.25f;
@@ -35,7 +37,9 @@ namespace Deprem.Minigames
         readonly Sprite itemSprite;
 
         readonly List<Wall> walls = new List<Wall>();
+        static readonly Vector2 ShadowOffset = new Vector2(4f, -5f);
         RectTransform item;
+        RectTransform itemShadow;
         RectTransform target;
         Image targetImage;
         Vector2 start;
@@ -56,6 +60,7 @@ namespace Deprem.Minigames
         {
             var panelTex = TexSize(PanelSize);
             CreateBackground(Art.carryBackground, MinigamePixels.Room(panelTex.x, panelTex.y));
+            ItemSize = (Vector2)MinigamePixels.CarrySize(Variant.CarryKind) * MinigamePixels.Scale;
 
             // Eşya bir yanda, güvenli alan diğer yanda
             float side = Random.NextDouble() < 0.5 ? -1f : 1f;
@@ -67,9 +72,13 @@ namespace Deprem.Minigames
 
             BuildWalls(halfHeight);
 
-            targetImage = CreatePixel("SafeSpot", targetPosition, TargetSize, Art.carryTarget, MinigamePixels.SafeSpot(32));
+            targetImage = CreatePixel("SafeSpot", targetPosition, TargetSize, Art.carryTarget, MinigamePixels.SafeSpot(TexSize(TargetSize).x));
             target = targetImage.rectTransform;
 
+            // Gölge eşyayla birlikte gider (eşyanın çocuğu değil: önce o çizilsin)
+            var shadowTex = TexSize(ItemSize + Vector2.one * 6f);
+            itemShadow = CreatePixel("ItemShadow", start + ShadowOffset, ItemSize + Vector2.one * 6f, null,
+                MinigamePixels.Shadow(shadowTex.x, shadowTex.y)).rectTransform;
             var sprite = itemSprite ? itemSprite : Art.carryItem;
             item = CreatePixel("Item", start, ItemSize, sprite, MinigamePixels.CarryItem(Variant.CarryKind)).rectTransform;
         }
@@ -170,10 +179,13 @@ namespace Deprem.Minigames
                 foreach (var image in wall.Images)
                     image.color = hitFlash > 0f ? MinigamePixels.Danger : Color.white;
             }
+            // Gölge eşyayı izler; tutarken biraz daha uzakta (eşya kalkmış gibi)
+            itemShadow.anchoredPosition = item.anchoredPosition + ShadowOffset * (dragging ? 1.6f : 1f);
             // Güvenli alan hafifçe nabız gibi parlar
             targetImage.color = new Color(1f, 1f, 1f, 0.75f + 0.25f * Mathf.Sin(time * 4f));
 
-            if (input.Pressed && Contains(item.anchoredPosition, item.sizeDelta, input.Pointer))
+            // İnce eşyalar (el feneri) de rahat tutulsun: tutma alanı biraz büyük; çarpışma görünen dikdörtgen
+            if (input.Pressed && Contains(item.anchoredPosition, item.sizeDelta + Vector2.one * 12f, input.Pointer))
             {
                 dragging = true;
                 grabOffset = item.anchoredPosition - input.Pointer;

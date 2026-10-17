@@ -15,6 +15,7 @@ namespace Deprem.Minigames
     // Esc ile vazgeçilir; ruh fazı biterse minigame başarısız kapanır. Canvas'ı kendisi kurar.
     // Berke'nin play testi (son): minigame'ler çok kolay, hep aynı ve oyunun tarzına uymuyordu. Her eşya kendi kurulumunu
     // alır (VariantFor); çerçeve, başlık ve ipuçları HUD'un pixel stilinde, içerik kodla çizilen pixel art (MinigamePixels).
+    // M26: arkada düz karartma yerine açılış anındaki oda görüntüsü, bulanık ve ruh fazının soğuk mavisinde.
     public class MinigameHost : MonoBehaviour
     {
         [Header("Görünüm")]
@@ -23,8 +24,14 @@ namespace Deprem.Minigames
         [SerializeField] Vector2 panelSize = new Vector2(256f, 256f); // GDD yakın çekim boyutu
         [Tooltip("Çerçevenin içerikten payı (referans pikseli)")]
         [SerializeField] float framePadding = 8f;
-        [Tooltip("Arkadaki oyunun karartması (doğrusal renk uzayında 0,7 zayıf kalıyordu)")]
-        [SerializeField] Color overlayColor = new Color(0.02f, 0.03f, 0.06f, 0.88f);
+        [Tooltip("Bulanık oda görüntüsünün üstündeki karartma")]
+        [SerializeField] Color overlayColor = new Color(0.02f, 0.03f, 0.08f, 0.5f);
+        [Tooltip("Arkadaki bulanık oda görüntüsünün rengi (ruh fazının soğuk mavisi)")]
+        [SerializeField] Color snapshotTint = new Color(0.42f, 0.56f, 0.82f);
+        [Tooltip("Bulanıklık: oda görüntüsü bu çözünürlüğe küçültülür (küçük = daha bulanık)")]
+        [SerializeField] Vector2Int snapshotSize = new Vector2Int(96, 54);
+        [Tooltip("Minigame'in kendi arka planına hafif soğuk ton")]
+        [SerializeField] Color contentTint = new Color(0.9f, 0.94f, 1f);
         [SerializeField] Color successColor = new Color(0.5f, 0.86f, 0.52f, 0.35f);
         [SerializeField] float successHold = 0.5f;
 
@@ -60,6 +67,9 @@ namespace Deprem.Minigames
         [SerializeField] float lockDriftPerHit = 0.16f;
 
         CanvasGroup group;
+        RawImage snapshot;
+        RenderTexture snapshotBig;
+        RenderTexture snapshotSmall;
         Image panel;
         RectTransform content;
         Image successFlash;
@@ -88,6 +98,36 @@ namespace Deprem.Minigames
         void OnDestroy()
         {
             if (Instance == this) Instance = null;
+            if (snapshotBig) snapshotBig.Release();
+            if (snapshotSmall) snapshotSmall.Release();
+        }
+
+        // Ana kamerayı bir kez küçük bir dokuya çizer, daha da küçültür: çift doğrusal büyütmeyle bulanık oda görüntüsü
+        void TakeSnapshot()
+        {
+            var cam = Camera.main;
+            if (!cam)
+            {
+                snapshot.enabled = false;
+                return;
+            }
+            if (!snapshotBig)
+            {
+                snapshotBig = new RenderTexture(snapshotSize.x * 4, snapshotSize.y * 4, 24) { name = "MinigameSnapshot" };
+                snapshotSmall = new RenderTexture(snapshotSize.x, snapshotSize.y, 0)
+                {
+                    name = "MinigameSnapshotBlur",
+                    filterMode = FilterMode.Bilinear,
+                };
+            }
+            var previous = cam.targetTexture;
+            cam.targetTexture = snapshotBig;
+            cam.Render();
+            cam.targetTexture = previous; // PixelScreen kendi dokusuna geri döner
+            Graphics.Blit(snapshotBig, snapshotSmall);
+            snapshot.texture = snapshotSmall;
+            snapshot.color = snapshotTint;
+            snapshot.enabled = true;
         }
 
         void OnEnable()
@@ -141,6 +181,9 @@ namespace Deprem.Minigames
             if (art.panel) UiBuilder.ApplyHudSprite(panel, art.panel);
             successFlash.enabled = false;
             current.Build(content, art, variant);
+            var background = content.Find("Background");
+            if (background && background.TryGetComponent<Image>(out var backgroundImage)) backgroundImage.color = contentTint;
+            TakeSnapshot();
 
             titleText.text = Capitalize(title);
             titleText.color = UiBuilder.HudAccent;
@@ -306,6 +349,11 @@ namespace Deprem.Minigames
         {
             var canvas = UiBuilder.CreateCanvas(transform, "MinigameCanvas", sortingOrder);
             group = canvas.GetComponent<CanvasGroup>();
+
+            snapshot = UiBuilder.CreateChild<RawImage>(canvas.transform, "Snapshot");
+            snapshot.raycastTarget = false;
+            UiBuilder.Stretch(snapshot.rectTransform, Vector2.zero, Vector2.one);
+            snapshot.enabled = false;
 
             var overlay = UiBuilder.CreateImage(canvas.transform, "Overlay", overlayColor);
             UiBuilder.Stretch(overlay.rectTransform, Vector2.zero, Vector2.one);

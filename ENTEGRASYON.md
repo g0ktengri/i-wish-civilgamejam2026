@@ -41,6 +41,17 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Play testi 17: M26 minigame görünüşü (Berke)
+
+- **Daha ince çizim:** `MinigamePixels` çözünürlüğü iki katı (1 doku pikseli = 1 referans pikseli). Her parça konturlu ve en az üç tonlu (ışık / ana / gölge), sahneler kenarda ortam gölgeli.
+  - Tahtalarda dalgalı damar, budak, çivi. Levhada fırçalanmış metal, perçin, havşalı delikler. Vidalarda kubbe parlaması.
+  - Dolap kapağında kabartma panel, menteşe, topuz; silindir sürgü ve konturlu ibre.
+  - Odada çizgili duvar kağıdı, sıva çatlakları, panelli lambri, döşeme. Tuğlalarda üstte ışık, altta gölge.
+  - Levha ve taşınan eşyanın altında yumuşak gölge; eşya tutulunca gölge uzaklaşıyor.
+- **Eşyaya özel çizim ve çarpışma:** `MinigamePixels.CarrySize(kind)`: raf 50×28, ayna 30×46, çerçeve 46×36, ilk yardım 42×34, **el feneri 48×16**, su 20×44, düdük 34×22, kutu 40×40. Çarpışma, boşluk payı ve sınırlar bu dikdörtgenle hesaplanıyor; tutma alanı +12 px (ince fener rahat tutulsun). Çanta malzemeleri artık kendi çizimleriyle (`BagSystem.CarryKindFor`); sanatçı ikonu (`ikon_*.png`) varsa o kullanılıyor.
+- **Arka plan:** düz karartma yerine minigame açıldığı andaki oda görüntüsü. Ana kamera bir kez küçük dokuya çiziliyor, 96×54'e küçültülüp bulanık büyütülüyor, ruh mavisine boyanıyor (`MinigameHost.snapshotTint`), üstünde hafif karartma. Panelin kendi arka planına da hafif soğuk ton (`contentTint`). `PixelScreen`'in hedef dokusu bozulmuyor (kamera geri dönüyor).
+- Berke testi taşı-yerleştir'i sekiz eşya biçimiyle üç çeşitte deniyor; hepsi geçiyor. Önizleme: `Logs/hud_preview_minigame_*.png` (önizlemede ana kamera olmadığı için bulanık arka plan ev önizlemesinden taklit).
+
 ### Balon fontu (Berke, senin play testi 13 notuna)
 
 - `SpiritBubble` artık `DepremBalon` 18 kullanıyor (`SpiritPhase.bubbleFont` / `bubbleFontSize`, prefab kurulurken bağlanıyor). Ruh, oyuncu ve aile balonları aynı fontta.

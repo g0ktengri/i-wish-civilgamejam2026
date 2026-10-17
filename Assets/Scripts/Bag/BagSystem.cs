@@ -80,16 +80,34 @@ namespace Deprem.Bag
         // Sanatçı ikonu yoksa kodla çizilmiş pixel ikon (UI.UiBuilder.PixelBagIcon; M24)
         public Sprite IconFor(BagItemId id)
         {
-            Sprite icon;
+            var icon = ArtIconFor(id);
+            return icon ? icon : id == BagItemId.None ? null : UI.UiBuilder.PixelBagIcon(id);
+        }
+
+        // Sadece sanatçı ikonu (yoksa null): minigame'de yoksa kendi detaylı çizimi kullanılır (M26)
+        public Sprite ArtIconFor(BagItemId id)
+        {
             switch (id)
             {
-                case BagItemId.FirstAidKit: icon = firstAidIcon; break;
-                case BagItemId.Flashlight: icon = flashlightIcon; break;
-                case BagItemId.Water: icon = waterIcon; break;
-                case BagItemId.Whistle: icon = whistleIcon; break;
+                case BagItemId.FirstAidKit: return firstAidIcon;
+                case BagItemId.Flashlight: return flashlightIcon;
+                case BagItemId.Water: return waterIcon;
+                case BagItemId.Whistle: return whistleIcon;
                 default: return null;
             }
-            return icon ? icon : UI.UiBuilder.PixelBagIcon(id);
+        }
+
+        // Taşı-yerleştir'deki çizimi ve çarpışma biçimi (MinigamePixels.CarryItem / CarrySize)
+        public static string CarryKindFor(BagItemId id)
+        {
+            switch (id)
+            {
+                case BagItemId.FirstAidKit: return "firstaid";
+                case BagItemId.Flashlight: return "flashlight";
+                case BagItemId.Water: return "water";
+                case BagItemId.Whistle: return "whistle";
+                default: return "box";
+            }
         }
 
         void Start()

@@ -231,9 +231,11 @@ namespace Deprem.Loop.EditorTools
             {
                 int passed = 0, cheated = 0, blocked = 0;
                 float slowest = 0f;
+                var kinds = new[] { "box", "shelf", "mirror", "frame", "firstaid", "flashlight", "water", "whistle" };
                 for (int run = 0; run < Runs; run++)
                 {
-                    var variant = new MinigameVariant { Seed = 1000 + run, Carry = mode };
+                    // Her eşya çeşidi kendi boyu ve çarpışmasıyla (M26)
+                    var variant = new MinigameVariant { Seed = 1000 + run, Carry = mode, CarryKind = kinds[run % kinds.Length] };
                     if (PlayCarry(panelSize, snap, gap, variant, true, out _, out float seconds)) passed++;
                     slowest = Mathf.Max(slowest, seconds);
                     if (mode != CarryMode.Single) continue;
@@ -259,7 +261,9 @@ namespace Deprem.Loop.EditorTools
             {
                 var game = new CarryMinigame(snap, gap, null);
                 game.Build(panel, null, variant);
-                var item = ((RectTransform)panel.Find("Item")).anchoredPosition;
+                var itemRect = (RectTransform)panel.Find("Item");
+                var item = itemRect.anchoredPosition;
+                var itemSize = itemRect.sizeDelta;
                 var target = ((RectTransform)panel.Find("SafeSpot")).anchoredPosition;
                 var walls = new List<(RectTransform top, RectTransform bottom)>();
                 for (int i = 0; panel.Find($"Wall{i}Top"); i++)
@@ -267,12 +271,12 @@ namespace Deprem.Loop.EditorTools
                 float GapY(int i) => ((walls[i].top.anchoredPosition.y - walls[i].top.sizeDelta.y * 0.5f) +
                                       (walls[i].bottom.anchoredPosition.y + walls[i].bottom.sizeDelta.y * 0.5f)) * 0.5f;
                 float WallX(int i) => walls[i].top.anchoredPosition.x;
-                const float Clearance = 8f + 24f + 6f;
+                float Clearance = 8f + itemSize.x * 0.5f + 6f;
 
                 if (!throughGap)
                 {
                     float crossY = Mathf.Lerp(item.y, target.y, Mathf.InverseLerp(item.x, target.x, WallX(0)));
-                    straightBlocked = Mathf.Abs(crossY - GapY(0)) > (gap - 48f) * 0.5f;
+                    straightBlocked = Mathf.Abs(crossY - GapY(0)) > (gap - itemSize.y) * 0.5f;
                 }
 
                 Vector2 pointer = item;

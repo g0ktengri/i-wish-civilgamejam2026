@@ -60,9 +60,12 @@ namespace Deprem.Minigames
             // Mandal: sağda karşılık, solda kapanan sürgü (sanatçı arka planı varsa sadece ışıklar ve ray)
             if (!Art.lockBackground)
             {
-                var plate = CreatePixel("LatchPlate", new Vector2(36f, 48f), new Vector2(32f, 44f), null, MinigamePixels.LatchPlate());
+                var plateSize = new Vector2(32f, 44f);
+                var plate = CreatePixel("LatchPlate", new Vector2(36f, 48f), plateSize, null,
+                    MinigamePixels.LatchPlate(TexSize(plateSize).x, TexSize(plateSize).y));
                 boltOpen = new Vector2(-34f, 48f);
-                bolt = CreatePixel("Bolt", boltOpen, new Vector2(48f, 12f), null, MinigamePixels.Bolt()).rectTransform;
+                var boltSize = new Vector2(48f, 12f);
+                bolt = CreatePixel("Bolt", boltOpen, boltSize, null, MinigamePixels.Bolt(TexSize(boltSize).x, TexSize(boltSize).y)).rectTransform;
                 plate.transform.SetAsLastSibling();
             }
 
@@ -71,15 +74,16 @@ namespace Deprem.Minigames
             for (int i = 0; i < requiredHits; i++)
             {
                 float x = (i - (requiredHits - 1) * 0.5f) * spacing;
-                pips[i] = CreatePixel($"Pip{i}", new Vector2(x, 4f), new Vector2(12f, 12f), null, MinigamePixels.ScrewHead());
+                pips[i] = CreatePixel($"Pip{i}", new Vector2(x, 4f), new Vector2(12f, 12f), null, MinigamePixels.ScrewHead(TexSize(new Vector2(12f, 12f)).x));
                 pips[i].color = PipOff;
             }
 
             var trackSize = new Vector2(barWidth + 8f, BarHeight);
             bar = CreatePixel("Bar", new Vector2(0f, -56f), trackSize, null, MinigamePixels.Track(TexSize(trackSize).x, TexSize(trackSize).y));
             zone = CreateRect("Zone", Vector2.zero, new Vector2(barWidth * zoneWidth, BarHeight - 8f), Color.white, bar.transform).rectTransform;
-            needle = CreatePixel("Needle", Vector2.zero, Art.lockNeedle ? new Vector2(8f, 32f) : new Vector2(14f, 36f),
-                Art.lockNeedle, MinigamePixels.Needle(), bar.transform).rectTransform;
+            var needleSize = Art.lockNeedle ? new Vector2(8f, 32f) : new Vector2(14f, 36f);
+            needle = CreatePixel("Needle", Vector2.zero, needleSize, Art.lockNeedle,
+                MinigamePixels.Needle(TexSize(needleSize).x, TexSize(needleSize).y), bar.transform).rectTransform;
             MoveZone();
         }
 

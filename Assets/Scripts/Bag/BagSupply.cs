@@ -101,7 +101,7 @@ namespace Deprem.Bag
             {
                 opening = false;
                 if (success && GameState.Phase == GamePhase.Spirit) PickUp();
-            }, icon, Localization.Texts.Get($"bag.{id}"), id == BagItemId.Flashlight ? "flashlight" : "box");
+            }, system ? system.ArtIconFor(id) : null, Localization.Texts.Get($"bag.{id}"), BagSystem.CarryKindFor(id));
         }
 
         void PickUp() => BagSystem.SetCarrying(id);

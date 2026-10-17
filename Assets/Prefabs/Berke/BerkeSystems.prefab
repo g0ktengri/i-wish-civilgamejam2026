@@ -217,7 +217,10 @@ MonoBehaviour:
   sortingOrder: 80
   panelSize: {x: 256, y: 256}
   framePadding: 8
-  overlayColor: {r: 0.02, g: 0.03, b: 0.06, a: 0.88}
+  overlayColor: {r: 0.02, g: 0.03, b: 0.08, a: 0.5}
+  snapshotTint: {r: 0.42, g: 0.56, b: 0.82, a: 1}
+  snapshotSize: {x: 96, y: 54}
+  contentTint: {r: 0.9, g: 0.94, b: 1, a: 1}
   successColor: {r: 0.5, g: 0.86, b: 0.52, a: 0.35}
   successHold: 0.5
   screwTurnsPerScrew: 1.5

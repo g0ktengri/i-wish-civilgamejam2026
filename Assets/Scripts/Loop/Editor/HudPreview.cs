@@ -75,8 +75,30 @@ namespace Deprem.Loop.EditorTools
                     string title = Deprem.Localization.Texts.Format("minigame.title", Deprem.Localization.Texts.Get($"item.{id}"));
                     typeof(Deprem.Minigames.MinigameHost).GetMethod("OpenPanel", Flags).Invoke(host,
                         new object[] { type, null, variant, title, (System.Action<bool>)(_ => { }) });
+                    // Önizlemede ana kamera yok: bulanık oda görüntüsünü ev önizlemesinden taklit et
+                    const string house = "Logs/house_preview_game.png";
+                    if (File.Exists(house))
+                    {
+                        var texture = new Texture2D(2, 2);
+                        texture.LoadImage(File.ReadAllBytes(house));
+                        var blur = new RenderTexture(96, 54, 0) { filterMode = FilterMode.Bilinear };
+                        Graphics.Blit(texture, blur);
+                        var snapshot = Get<RawImage>(host, "snapshot");
+                        snapshot.texture = blur;
+                        snapshot.color = new Color(0.42f, 0.56f, 0.82f);
+                        snapshot.enabled = true;
+                    }
                 });
             }
+
+            // Çanta malzemesi: el feneri (ince uzun çizim ve çarpışma, kayan boşluk)
+            RenderScene("minigame_flashlight", root =>
+            {
+                var host = root.AddComponent<Deprem.Minigames.MinigameHost>();
+                Call(host, "Awake");
+                host.Open(Deprem.Core.MinigameType.CarryAndPlace, _ => { }, null,
+                    Deprem.Localization.Texts.Get("bag.Flashlight"), "flashlight");
+            });
 
             RenderScene("spirit", root =>
             {

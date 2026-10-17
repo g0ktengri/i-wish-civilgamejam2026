@@ -124,16 +124,21 @@ namespace Deprem.Minigames
                             + new Vector2(Range(-6f, 6f), Range(-5f, 5f));
                 local = new Vector2(Mathf.Round(local.x / 2f) * 2f, Mathf.Round(local.y / 2f) * 2f);
                 positions.Add(local);
-                holes.Add(new Vector2Int(Mathf.RoundToInt(local.x / 2f), Mathf.RoundToInt(local.y / 2f)));
+                holes.Add(new Vector2Int(Mathf.RoundToInt(local.x / MinigamePixels.Scale), Mathf.RoundToInt(local.y / MinigamePixels.Scale)));
             }
             var tex = TexSize(plateSize);
+            // Levhanın altında yumuşak gölge: tahtanın üstünde dursun
+            if (!Art.screwPlate)
+                CreatePixel("PlateShadow", PlateCenter + new Vector2(4f, -5f), plateSize + Vector2.one * 6f, null,
+                    MinigamePixels.Shadow(tex.x + 6, tex.y + 6));
             CreatePixel("Plate", PlateCenter, plateSize, Art.screwPlate,
                 MinigamePixels.Plate(tex.x, tex.y, holes, string.Join("_", holes)));
 
             foreach (var local in positions)
             {
                 var position = PlateCenter + local;
-                var image = CreatePixel("Screw", position, Vector2.one * ScrewSize, Art.screwHead, MinigamePixels.ScrewHead());
+                var image = CreatePixel("Screw", position, Vector2.one * ScrewSize, Art.screwHead,
+                    MinigamePixels.ScrewHead(TexSize(Vector2.one * ScrewSize).x));
                 image.color = ScrewLoose;
                 screws.Add(new Screw { Position = position, Head = image.rectTransform, Image = image });
             }
