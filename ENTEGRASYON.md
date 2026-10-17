@@ -720,6 +720,33 @@ Mehmet'in yorumu (özet):
 3. Müzik: kurtarma fazında arkada hafif gerilimli müzik (ruh fazında ve menüde değil). Bir aile üyesinin durumu ilk görüldüğünde (yaralı baba, sıkışmış anne, kardeş) kısa bir vurgu sesi; kurtarılınca rahatlatan kısa ezgi.
 4. Ruh fazından dönüşte beden yataktan kalkma animasyonuyla kalkar (odanın ortasında belirmez); senin M31 animasyonun bitince faz değişince.
 
+**Mehmet tarafı: 1–4 yapıldı** (Play'de dinlenmedi).
+- **Kardeşin odası:** yan duvar arka duvar dokusunun ortasından kesildi.
+- **Düşme sesi:** her düşen parça yere değince ses çıkarıyor (`DebrisSettle`; küçük taş `quake.debris`, büyük sıva ve tavan `item.crash`).
+- **Daha az çıtırtı:** ana depremdeki rastgele çıtırtı kalktı; gıcırtı 3–6 sn'de bir ve kısık. Öncü ve artçı tıkırtıları ile karanlık evdeki ufalanma hışırtısı kısıldı. Uğultudaki "boru" gibi ton azaldı.
+- **Adımlar:** daha güçlü ve merdivende de çalıyor.
+- **Müzik ve vurgular:**
+  - `music.tension`: kurtarma fazında arkada çalıyor; ruh fazında, kaybedince ve kazanınca susuyor, senin menü ve final müziğine dokunmuyor.
+  - `family.discover`: üyenin durumu ilk görüldüğünde; `family.loss`: kaybedilmiş üyede.
+- **Ruh dönüşü:** beden yataktan kalkma animasyonuyla kalkıyor, sonra girdi açılıyor.
+
+### Play testi 21: görev dağılımı
+
+Mehmet'in yorumu: "İpuçları ve mesajlar hiç oyuncu dostu değil, adam akıllı okunmuyor. Daha büyük ve daha net olsun: tuş, mesaj, her şey." (Ekran görüntüleri: alttaki "[F] Yukarı çık" ipucu ve minigame'deki "Duvara değdirmeden boşluktan geçir…" yazısı küçük, ince, gri zeminde kayboluyor.) Ayrıca ruh bekleme animasyonu ve bedene dönüş M30–M31'de geldi; Mehmet senin pushundan önceki sürümü denemişti.
+
+**Berke'ye düşen**
+
+- **M33. HUD okunabilirliği.**
+  - Bütün oyun içi yazılar (ipucu, hedef, çanta, ruh sayacı, minigame başlığı ve ipucu, "eklendi" bildirimi) yaklaşık 1,5 kat büyüsün: `hudFontSize` 15 → ~22–24 (960×540 referansta). Tuş kapakları da aynı oranda büyüsün, harf kapağın içinde ortalı ve kalın.
+  - Kontrast: krem yazı koyu panelde; gri ve soluk tonlar yerine tam krem, gerekirse 1 px koyu kontur ya da gölge.
+  - İpucu kutusu ekranın en altına yapışmasın: alttan ~60 px yukarıda, ortada, daha geniş iç boşluk. Yeni ipucu gelince kısa bir büyüme ve parlama animasyonu olsun ki fark edilsin.
+  - Minigame ipucu ve başlığı panelin içinde ve büyük olsun, ekranın altında küçük şerit gibi değil.
+  - Font: Pixelify'ın zor okunan harfleri için balonlarda kullandığımız `DepremBalon-Regular` (Pixelify'ın kendisi, yalnız e ve E düz) HUD'da da kullanılabilir.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. Bizim ekran yazıları da aynı oranda büyür: süre çubuğunun "ZAMAN" etiketi ve kareleri, çök-kapan çubuğu, konuşma balonları.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
