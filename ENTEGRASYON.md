@@ -365,6 +365,22 @@ Mehmet'in bu tur için token'ı bitti; **bu maddeler için Mehmet'in klasörleri
   - Fener yanarken duruşta ve havada da fenerle koşu karesi kullanılıyor (`PlayerVisual.flashlightIdleFrame`). Huzme her karede fenerin ucundan çıkıyor; uçlar `PlayerSetup` tarafından çizimden bulunuyor (`flashlightTips`).
 - **B11 (sarsıntıda zıplama):** Sarsıntıda (şiddet > 0,1) zıplama kapalı: `PlayerController.JumpEnabled`, `QuakeDirector.ApplyShake` ayarlar. Yavaşlamanın asıl sebebi artçıda çök-kapan yapılamayınca gelen yaralanma (`injuredSpeedMultiplier` 0,6). Artık yaralanınca oyuncu "Ah, bacağım! Zor yürüyorum..." diyor (`bubble.injured`); yavaşlamanın sebebi anlaşılıyor.
 
+### Play testi 10: çanta malzemesi modelleri (Berke'den istek: M20)
+
+Mehmet: "İlk yardım ve el fenerinin 3D'de ne olduğu anlaşılmıyor; pixel'e uygun güzel model ve sarı vurgu." Modeller Mehmet'te hazır, **BagSupply'a bağlamak sende** (senin dosyan).
+
+- **Prefab'lar:** `Assets/Prefabs/Mehmet/BagItems/BagItem_{BagItemId}.prefab`: `BagItem_FirstAidKit` (haçlı kırmızı çanta), `BagItem_Flashlight` (sarı el feneri), `BagItem_Water`, `BagItem_Whistle`. Hepsini `HouseBuilder.BuildMainSceneBatch` üretiyor (ya da Tools > Deprem > Çanta Malzemesi Modellerini Üret). Önizleme: `Logs/bag_items_preview.png`.
+- **Pivot taban ortası, ön yüz kameraya bakar.** `Marker_Flashlight` (y 0,78) ve `Marker_FirstAid` (y üst kat + 0,55) artık **masa ve komodin yüzeyinde**. Model işarete doğrudan konur; senin eski merkezli küpün yarısı yüzeye gömülür, model gelince sorun kalmaz.
+- **Sarı vurgu:** prefab'daki `Deprem.Visual.PickupHighlight` ruh fazında sarı nabızlı konturu kendisi açıyor. Gizlemek / göstermek için `SetShown(bool)` (model ve kontur birlikte; çantadayken false), konturu ayrıca kapatmak için `SetHighlight(bool)` (ör. taşınırken).
+- **Önerilen bağlama** (`BagSupply.Create`, ikon / küp yerine; `BerkeSystemsPrefab` prefab'ı `SupplyDef.model` alanına yükleyebilir):
+  ```csharp
+  var model = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Prefabs/Mehmet/BagItems/BagItem_{id}.prefab"); // editörde, SupplyDef'e
+  go = Object.Instantiate(def.model);                  // çalışma anında
+  var pickup = go.GetComponent<Deprem.Visual.PickupHighlight>();
+  // LateUpdate'te visual.enabled yerine: pickup.SetShown(!inBag);
+  ```
+  Collider yok (senin küpünde de silinmişti); `glow` ışığı kalabilir.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

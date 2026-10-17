@@ -340,6 +340,8 @@ MonoBehaviour:
   beam: {fileID: 6497101054209903149}
   height: 1.15
   forward: 0.5
+  crouchHeight: 0.7
+  crouchForward: 0.4
   downTilt: 12
 --- !u!1 &5056439655802367702
 GameObject:

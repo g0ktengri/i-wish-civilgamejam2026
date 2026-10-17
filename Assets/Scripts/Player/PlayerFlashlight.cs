@@ -19,6 +19,9 @@ namespace Deprem.Player
         [Tooltip("Fenerin ucu: ayaktan yükseklik ve gövdeden öne (m). Fenerle koşu çizimindeki elin ortalaması")]
         [SerializeField] private float height = 1.15f;
         [SerializeField] private float forward = 0.5f;
+        [Tooltip("Çömelirken fenerin yüksekliği ve öne uzaklığı (m): çömelme çiziminde eller baş hizasında, ~0,7 m")]
+        [SerializeField] private float crouchHeight = 0.7f;
+        [SerializeField] private float crouchForward = 0.4f;
         [Tooltip("Aşağı eğim (derece)")]
         [SerializeField] private float downTilt = 12f;
 
@@ -45,9 +48,14 @@ namespace Deprem.Player
             if (!on) return;
             // Huzme fenerin ucundan çıkar (karede el oynadıkça); uç yoksa ortalama el konumu
             if (visual == null) visual = GetComponent<PlayerVisual>();
-            spot.transform.localPosition = visual != null && visual.HasFlashlightTip
-                ? visual.FlashlightTipLocal + new Vector3(0f, 0f, -0.1f)
-                : new Vector3(forward * player.Facing, height, -0.1f);
+            // Eğilince fener de iner (Play testi 10: çömelince fener ayakta kalıyordu); çömelme çiziminde ayrı
+            // fener yok, eller baş hizasında
+            if (visual != null && visual.HasFlashlightTip)
+                spot.transform.localPosition = visual.FlashlightTipLocal + new Vector3(0f, 0f, -0.1f);
+            else if (player.IsCrouching)
+                spot.transform.localPosition = new Vector3(crouchForward * player.Facing, crouchHeight, -0.1f);
+            else
+                spot.transform.localPosition = new Vector3(forward * player.Facing, height, -0.1f);
             spot.transform.rotation = Quaternion.LookRotation(new Vector3(player.Facing, -Mathf.Tan(downTilt * Mathf.Deg2Rad), 0f));
         }
     }

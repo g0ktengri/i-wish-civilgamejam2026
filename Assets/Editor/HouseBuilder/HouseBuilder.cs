@@ -57,9 +57,11 @@ namespace Deprem.HouseBuilder
             Deprem.Quake.QuakeSetup.SetupInScene(scene, 0);
             Deprem.Family.FamilySetup.SetupInScene(scene);
             var volumes = Deprem.Visual.VolumeSetup.SetupInScene(scene);
+            BagItemModels.Generate(); // Berke'nin BagSupply'ı prefab'ları kullanır (ENTEGRASYON, Play testi 10)
             BerkeSystemsSetup.SetupInScene(scene);
             EditorSceneManager.SaveScene(scene);
             var whole = new Vector3(16.25f, 3.6f, -39f);
+            RenderBagItemsPreview();
             HousePreview.Render("Logs/house_preview.png", null, whole, 2048, 1024);
             HousePreview.Render("Logs/house_preview_flat.png", 0.7f, whole, 2048, 1024);
             var gameCamera = Camera.main;
@@ -125,6 +127,23 @@ namespace Deprem.HouseBuilder
 
             ArtTemplates.Generate();
             Debug.Log("[HouseBuilder] Batch tamam");
+        }
+
+        /// <summary>Çanta malzemesi modellerini salonun önünde yan yana, konturları açık çizer (sahne kaydedildikten sonra)</summary>
+        private static void RenderBagItemsPreview()
+        {
+            var placed = new List<GameObject>();
+            var ids = new[] { Deprem.Core.BagItemId.FirstAidKit, Deprem.Core.BagItemId.Flashlight, Deprem.Core.BagItemId.Water, Deprem.Core.BagItemId.Whistle };
+            for (int i = 0; i < ids.Length; i++)
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(BagItemModels.PrefabPath(ids[i]));
+                if (prefab == null) continue;
+                var go = (GameObject)Object.Instantiate(prefab, new Vector3(20.2f + i * 0.75f, 0f, 0.6f), Quaternion.identity);
+                foreach (var r in go.GetComponentsInChildren<Renderer>(true)) r.enabled = true;
+                placed.Add(go);
+            }
+            HousePreview.Render("Logs/bag_items_preview.png", null, new Vector3(21.3f, 0.6f, -3.2f), 1280, 720);
+            foreach (var go in placed) Object.DestroyImmediate(go);
         }
 
         private static Scene OpenOrCreateMainScene()
