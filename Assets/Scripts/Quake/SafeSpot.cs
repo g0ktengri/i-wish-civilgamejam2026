@@ -5,7 +5,7 @@ namespace Deprem.Quake
 {
     /// <summary>
     /// Çök-kapan-tutun için güvenli nokta: önde duran sağlam masanın altı (AFAD), devrilecek eşyalardan uzak.
-    /// Sarsıntıda masanın konturu sarı parlar (M16; eski yeşil zemin şeridi kalktı);
+    /// Sarsıntıda masanın üst tablası ince sarı konturla parlar, altında yumuşak ışık yanar (M16);
     /// C sadece bu noktalardan birindeyken sayılır. HouseBuilder kurar.
     /// </summary>
     public sealed class SafeSpot : MonoBehaviour
@@ -17,32 +17,26 @@ namespace Deprem.Quake
         [SerializeField] private float halfWidth = 0.7f;
         [Tooltip("Eski zemin şeridi (artık kurulmuyor, boş kalabilir)")]
         [SerializeField] private GameObject visual;
-        [Tooltip("Masanın kontur kopyaları (Deprem/Outline)")]
+        [Tooltip("Masanın üst tablasının ince konturu (Deprem/Outline, kontur_masa materyali)")]
         [SerializeField] private Renderer[] outlineRenderers;
-        [SerializeField] private Color outlineColor = new Color(1f, 0.92f, 0.55f);
+        [Tooltip("Masanın altındaki yumuşak ışık")]
+        [SerializeField] private Light underGlow;
 
-        private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
-        private MaterialPropertyBlock block;
-
-        public void Configure(float width, GameObject glow, Renderer[] tableOutline = null)
+        public void Configure(float width, GameObject glow, Renderer[] tableOutline = null, Light under = null)
         {
             halfWidth = width * 0.5f;
             visual = glow;
             outlineRenderers = tableOutline;
+            underGlow = under;
         }
 
         private void SetVisible(bool visible)
         {
             if (visual != null) visual.SetActive(visible);
+            if (underGlow != null) underGlow.enabled = visible;
             if (outlineRenderers == null) return;
-            block ??= new MaterialPropertyBlock();
-            block.SetColor(OutlineColorId, outlineColor);
             foreach (var r in outlineRenderers)
-            {
-                if (r == null) continue;
-                r.SetPropertyBlock(block);
-                r.enabled = visible;
-            }
+                if (r != null) r.enabled = visible;
         }
 
         private void OnEnable()

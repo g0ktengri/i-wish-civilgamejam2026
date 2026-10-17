@@ -607,17 +607,45 @@ namespace Deprem.HouseBuilder
             foreach (var filter in item.GetComponentsInChildren<MeshFilter>(true).ToList())
             {
                 if (skip != null && filter.transform.IsChildOf(skip.transform)) continue;
-                var outline = new GameObject("Outline");
-                outline.transform.SetParent(filter.transform, false);
-                outline.AddComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
-                var renderer = outline.AddComponent<MeshRenderer>();
-                renderer.sharedMaterials = Enumerable.Repeat(mat, filter.sharedMesh.subMeshCount).ToArray();
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                renderer.receiveShadows = false;
-                renderer.enabled = false;
-                renderers.Add(renderer);
+                renderers.Add(CreateOutlineRenderer(filter, mat));
             }
             return renderers.ToArray();
+        }
+
+        private static Renderer CreateOutlineRenderer(MeshFilter filter, Material mat)
+        {
+            var outline = new GameObject("Outline");
+            outline.transform.SetParent(filter.transform, false);
+            outline.AddComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
+            var renderer = outline.AddComponent<MeshRenderer>();
+            renderer.sharedMaterials = Enumerable.Repeat(mat, filter.sharedMesh.subMeshCount).ToArray();
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.enabled = false;
+            return renderer;
+        }
+
+        /// <summary>Güvenli masa konturu: eşya konturundan ince ve daha yumuşak nabızlı (Play testi 6 sonrası)</summary>
+        private static Material SafeTableOutlineMaterial()
+        {
+            if (MaterialCache.TryGetValue("kontur_masa", out var cached)) return cached;
+            string path = $"{MaterialFolder}/kontur_masa.mat";
+            var shader = Shader.Find("Deprem/Outline");
+            if (shader == null) throw new System.InvalidOperationException("Deprem/Outline shader bulunamadı (Assets/Shaders/Outline.shader)");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            mat.SetColor("_OutlineColor", new Color(1f, 0.85f, 0.45f));
+            mat.SetFloat("_OutlineWidth", 0.015f);
+            mat.SetFloat("_PulseSpeed", 4f);
+            mat.SetFloat("_PulseAmount", 0.6f);
+            EditorUtility.SetDirty(mat);
+            MaterialCache["kontur_masa"] = mat;
+            return mat;
         }
 
         private static Material OutlineMaterial()
@@ -872,12 +900,31 @@ namespace Deprem.HouseBuilder
                 go.transform.position = new Vector3(x, room.FloorY, HouseDims.PlayerPlaneZ);
 
                 Renderer[] outline = null;
+                Light glow = null;
                 var table = HouseLayout.Decor.FirstOrDefault(d => d.Room == roomKey && Mathf.Approximately(d.Z0, HouseLayout.SafeTableZ));
                 var tableObject = table != null ? decorRoot.Find($"Decor_{table.Key}_{table.Room}") : null;
-                if (tableObject != null) outline = BuildOutlineRenderers(tableObject.gameObject, null);
+                if (tableObject != null)
+                {
+                    // Sadece üst tabla ince konturlu (bütün parçalar konturlanınca çekmece ve ayaklar dolu görünüyordu)
+                    var top = tableObject.GetComponentsInChildren<MeshFilter>(true)
+                        .OrderByDescending(f => f.GetComponent<Renderer>() != null ? f.GetComponent<Renderer>().bounds.max.y : 0f)
+                        .FirstOrDefault();
+                    if (top != null) outline = new[] { CreateOutlineRenderer(top, SafeTableOutlineMaterial()) };
+
+                    // Masanın altında yumuşak sıcak ışık: "altına çök"
+                    glow = new GameObject("UnderTableGlow").AddComponent<Light>();
+                    glow.transform.SetParent(go.transform, false);
+                    glow.transform.position = new Vector3(x, room.FloorY + table.Size.y * 0.45f, table.Z0 + table.Size.z * 0.5f);
+                    glow.type = LightType.Point;
+                    glow.color = new Color(1f, 0.8f, 0.45f);
+                    glow.range = 1.4f;
+                    glow.intensity = 1.6f;
+                    glow.shadows = LightShadows.None;
+                    glow.enabled = false;
+                }
                 else Debug.LogWarning($"[HouseBuilder] Güvenli masa bulunamadı: {roomKey}");
 
-                go.AddComponent<Deprem.Quake.SafeSpot>().Configure(HouseLayout.SafeSpotWidth, null, outline);
+                go.AddComponent<Deprem.Quake.SafeSpot>().Configure(HouseLayout.SafeSpotWidth, null, outline, glow);
             }
         }
 
