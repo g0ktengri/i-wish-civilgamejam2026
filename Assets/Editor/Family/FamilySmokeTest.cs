@@ -48,10 +48,13 @@ namespace Deprem.Family
                 BagLessons.Clear();
                 FatherHitByBookcase();
                 FatherWithoutFirstAid();
-                Check(BagLessons.IsLearned(BagItemId.FirstAidKit), "Baba vedasından sonra ilk yardım öğrenildi (M54)");
+                Check(BagLessons.IsLearned(BagItemId.FirstAidKit) && BagLessons.IsLearned(BagItemId.Flashlight),
+                    "Baba vedasından sonra ilk yardım ve el feneri birlikte öğrenildi (M54)");
                 FullRescueAndWin();
+                BagLessons.Clear();
                 SiblingWithoutFlashlight();
-                Check(BagLessons.IsLearned(BagItemId.Flashlight), "Kardeş bulunamayınca el feneri öğrenildi (M54)");
+                Check(BagLessons.IsLearned(BagItemId.Flashlight) && BagLessons.IsLearned(BagItemId.FirstAidKit),
+                    "Kardeş bulunamayınca el feneri ve ilk yardım birlikte öğrenildi (M54)");
                 MotherHitByWardrobe();
             }
             catch (System.Exception e)

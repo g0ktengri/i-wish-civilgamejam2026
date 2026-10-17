@@ -19,12 +19,23 @@ namespace Deprem.Family
 
         public static bool IsLearned(BagItemId id) => id != BagItemId.None && PlayerPrefs.GetInt(Prefix + id, 0) == 1;
 
+        /// <summary>
+        /// Play testi 28: el feneri ve ilk yardımdan biri yüzünden ölününce ikisi birden açılır (oyuncu deprem
+        /// çantasının önemini bir kez öğrenince çantaya konacak her şeyi bulabilsin)
+        /// </summary>
+        private static readonly BagItemId[] LinkedLessons = { BagItemId.Flashlight, BagItemId.FirstAidKit };
+
         public static void Learn(BagItemId id)
         {
-            if (id == BagItemId.None || IsLearned(id)) return;
-            PlayerPrefs.SetInt(Prefix + id, 1);
-            PlayerPrefs.Save();
-            Learned?.Invoke(id);
+            if (id == BagItemId.None) return;
+            bool linked = Array.IndexOf(LinkedLessons, id) >= 0;
+            foreach (var item in linked ? LinkedLessons : new[] { id })
+            {
+                if (IsLearned(item)) continue;
+                PlayerPrefs.SetInt(Prefix + item, 1);
+                PlayerPrefs.Save();
+                Learned?.Invoke(item);
+            }
         }
 
         public static void Clear()
