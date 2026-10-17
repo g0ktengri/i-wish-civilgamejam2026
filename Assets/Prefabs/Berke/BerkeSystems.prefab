@@ -269,7 +269,7 @@ MonoBehaviour:
   supplySize: 0.3
   bagSize: {x: 0.6, y: 0.6, z: 0.35}
   bagColor: {r: 0.9, g: 0.45, b: 0.15, a: 1}
-  bagModel: {fileID: 0}
+  bagModel: {fileID: 1480318792088994759, guid: a65470575fa57234bacf2a41a7a6ecae, type: 3}
   interactRange: 1.2
   carryOffset: {x: 0.35, y: -0.25, z: 0}
   firstAidIcon: {fileID: 0}
