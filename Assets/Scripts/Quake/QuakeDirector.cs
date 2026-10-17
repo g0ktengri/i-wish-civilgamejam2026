@@ -266,19 +266,17 @@ namespace Deprem.Quake
         {
             GameEvents.RaiseMainQuakeStarted();
 
-            // Ruh fazından dönüş (döngü 4+): ruh bedene döner, oyuncu yatağın yanında ayakta
-            if (player.IsLying && GameState.SpiritPhaseUnlocked)
-            {
-                player.Teleport(StandPosition());
-                player.InputEnabled = true;
-            }
+            // Ruh fazından dönüş (döngü 4+): ruh bedene döndü (Berke, M31); beden yataktan kalkma animasyonuyla
+            // kalkar (Play testi 20: odanın ortasında beliriyordu), sonra girdi açılır
+            bool spiritReturn = player.IsLying && GameState.SpiritPhaseUnlocked;
+            if (spiritReturn) StartCoroutine(RiseAfterSpirit());
 
             StartCoroutine(Shake(mainQuakeIntensity, mainQuakeDuration));
             StartCoroutine(ToppleItems());
             StartCoroutine(DropDecor(mainQuakeDecorFall, toppleWindow.x * 0.5f, toppleWindow.y + 1.5f));
             if (effects != null) effects.Burst(1f);
 
-            if (player.IsLying)
+            if (player.IsLying && !spiritReturn)
             {
                 // Kalkmadı: yatağın üstündeki raf üstüne düşer.
                 // M19: yatan oyuncunun dik kapsülü rafı havada tutmasın; raf yatağın şiltesine, yatan görselin önüne düşer
@@ -365,7 +363,8 @@ namespace Deprem.Quake
         {
             var pending = new List<(float time, FallingDecor decor)>();
             foreach (var decor in FallingDecor.All)
-                if (!decor.HasFallen && UnityEngine.Random.value < fraction)
+                // Masadakiler ana depremde hep düşer (Play testi 19: vazo masada kalıyordu)
+                if (!decor.HasFallen && (UnityEngine.Random.value < fraction || decor.OnSurface && fraction >= mainQuakeDecorFall))
                     pending.Add((UnityEngine.Random.Range(from, to), decor));
             pending.Sort((a, b) => a.time.CompareTo(b.time));
             float elapsed = 0f;
@@ -588,7 +587,9 @@ namespace Deprem.Quake
             body.mass = mass;
             body.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
             body.linearVelocity = Vector3.down * 1.5f;
-            piece.AddComponent<DebrisSettle>();
+            // Play testi 20: düşme sesi; büyük parça (tavan, sıva) daha gür
+            piece.AddComponent<DebrisSettle>().SetImpactSound(mass >= 20f ? "item.crash" : "quake.debris",
+                Mathf.Clamp(0.35f + mass / 20f, 0.35f, 1f));
         }
 
         private readonly Dictionary<Texture2D, Material> rubbleMaterials = new Dictionary<Texture2D, Material>();
@@ -658,6 +659,12 @@ namespace Deprem.Quake
             if (player == null) return;
             var position = bed != null ? bed.position : player.transform.position;
             player.LieDown(position + Vector3.up * bedHeight + Vector3.back * bedEdgeOffsetZ);
+        }
+
+        private IEnumerator RiseAfterSpirit()
+        {
+            yield return GetUp();
+            player.InputEnabled = true;
         }
 
         private IEnumerator GetUp()

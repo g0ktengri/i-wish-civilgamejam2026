@@ -175,7 +175,7 @@ namespace Deprem.Audio
             yield return new Recipe { key = "ambience.dark", volume = 0.6f, make = DarkAmbience };
             yield return new Recipe { key = "rescue.heartbeat", make = Heartbeat };
             yield return new Recipe { key = "player.hit", make = Hit };
-            yield return new Recipe { key = "player.step", variants = 4, volume = 0.6f, pitch = new Vector2(0.9f, 1.1f), make = Step };
+            yield return new Recipe { key = "player.step", variants = 4, volume = 1f, pitch = new Vector2(0.9f, 1.1f), make = Step };
             yield return new Recipe { key = "player.land", pitch = new Vector2(0.95f, 1.05f), make = Land };
             yield return new Recipe { key = "cabin.door", make = CabinDoor };
 
@@ -204,6 +204,10 @@ namespace Deprem.Audio
             yield return new Recipe { key = "wish.rewind", volume = 0.8f, make = Rewind };
             yield return new Recipe { key = "final.check", volume = 0.6f, make = FinalCheck };
             yield return new Recipe { key = "music.final", make = s => Music(s, FinalChords, 0.5f, 0.3f) };
+            // Play testi 20: kurtarmada arkada gerilim, aile üyesinin durumu görülünce vurgu
+            yield return new Recipe { key = "music.tension", volume = 0.6f, make = TensionMusic };
+            yield return new Recipe { key = "family.discover", volume = 0.85f, make = DiscoverStinger };
+            yield return new Recipe { key = "family.loss", volume = 0.9f, make = LossStinger };
             yield return new Recipe { key = "music.menu", volume = 0.8f, make = s => Music(s, MenuChords, 1f, 0.2f) };
         }
 
@@ -214,9 +218,9 @@ namespace Deprem.Audio
         {
             var b = LowPass(LowPass(s.Brown(seconds), 160f), 220f);
             float seed = s.Range(0f, 100f);
-            Mix(b, Sine(seconds, t => 36f + 7f * Mathf.Sin(t * 0.8f)), 0f, 0.35f * sub);
+            Mix(b, Sine(seconds, t => 36f + 7f * Mathf.Sin(t * 0.8f)), 0f, 0.12f * sub); // Play testi 20: ton "boru" gibi geliyordu
             Shape(b, t => 0.6f + 0.4f * Mathf.PerlinNoise(t * 2.1f, seed));
-            return Saturate(Normalize(b, 1f), 1.6f);
+            return Saturate(Normalize(b, 1f), 1.2f);
         }
 
         /// <summary>Tıkırtılar: rafta titreşen eşyalar (kısa, tiz, bant geçirilmiş tıklar)</summary>
@@ -238,7 +242,7 @@ namespace Deprem.Audio
             const float len = 4.5f;
             var b = Envelope(Rumble(s, len, 0.8f), 0.7f, 1.4f, 1.1f);
             Func<float, float> env = t => t < 0.7f ? t / 0.7f : Mathf.Exp(-1.1f * Mathf.Max(0f, t - 2.1f));
-            Mix(b, Normalize(Rattles(s, len, 90, env), 1f), 0f, 0.3f);
+            Mix(b, Normalize(Rattles(s, len, 90, env), 1f), 0f, 0.1f); // Play testi 20: çıtırtı fazlaydı
             return Fade(Normalize(b, 0.9f));
         }
 
@@ -256,7 +260,7 @@ namespace Deprem.Audio
             const float len = 3.6f;
             var b = Envelope(Rumble(s, len, 1f), 0.25f, 0.8f, 1.4f);
             Mix(b, Normalize(Impact(s, 1.5f, 1f), 1f), 0f, 0.45f);
-            Mix(b, Normalize(Rattles(s, len, 50, t => Mathf.Exp(-t)), 1f), 0.1f, 0.25f);
+            Mix(b, Normalize(Rattles(s, len, 50, t => Mathf.Exp(-t)), 1f), 0.1f, 0.08f);
             return Fade(Normalize(b, 0.9f));
         }
 
@@ -381,7 +385,7 @@ namespace Deprem.Audio
             for (float t = s.Range(1f, 3f); t < len - 1f; t += s.Range(2.5f, 5f))
             {
                 var crumble = Envelope(HighPass(s.White(0.4f), 1800f), 0.05f, 0.1f, 10f);
-                Mix(b, crumble, t, 0.05f);
+                Mix(b, crumble, t, 0.012f);
             }
             return Normalize(MakeLoop(b, 2f), 0.45f);
         }
@@ -578,6 +582,62 @@ namespace Deprem.Audio
             var b = Bell(0.7f, 1046.5f, new[] { 1f, 2f, 3.01f }, new[] { 1f, 0.3f, 0.15f }, 5f);
             Mix(b, Note(0.7f, 1568f, 0.003f, 5f, 0.3f), 0.06f, 0.4f);
             return Fade(Normalize(Reverb(b, 0.6f, 0.25f, 0.6f), 0.7f));
+        }
+
+        // ------------------------------------------------------------------ Gerilim
+
+        /// <summary>
+        /// Kurtarma fazının arkasındaki gerilim: derin, yavaş kabaran uğultu tonu (La ve Mi), kalp atışı gibi alçak
+        /// nabız, ara ara yarım ses aralıklı ürkütücü yüksek notalar. Döngü 32 sn, dikişsiz.
+        /// </summary>
+        private static float[] TensionMusic(SoundSynth s)
+        {
+            const float length = 32f, tail = 4f;
+            var b = Buffer(length + tail);
+            foreach (var (hz, gain) in new[] { (55f, 0.5f), (55.3f, 0.35f), (82.41f, 0.3f), (110f, 0.12f) })
+            {
+                var drone = Sine(length + tail, t => hz * (1f + 0.003f * Mathf.Sin(t * 0.5f)));
+                Shape(drone, t => 0.65f + 0.35f * Mathf.Sin(t * Mathf.PI * 2f / 16f));
+                Mix(b, drone, 0f, gain);
+            }
+            Mix(b, Scale(LowPass(LowPass(s.White(length + tail), 260f), 260f), 1.5f), 0f, 0.5f);
+            for (float t = 0f; t < length; t += 1.25f)
+            {
+                Mix(b, Envelope(Sine(0.4f, u => 42f + 18f * Mathf.Exp(-u * 18f)), 0.01f, 0.02f, 16f), t, 0.45f);
+                Mix(b, Envelope(Sine(0.3f, u => 38f + 14f * Mathf.Exp(-u * 18f)), 0.01f, 0.01f, 20f), t + 0.3f, 0.28f);
+            }
+            float[] eerie = { 440f, 466.16f, 659.25f, 698.46f, 523.25f };
+            for (float t = 2f; t < length - 1f; t += s.Range(3.5f, 5.5f))
+                Mix(b, Note(3.5f, eerie[(int)(s.Rand() * eerie.Length)], 0.4f, 1.1f, 0.25f), t, 0.11f);
+            var wet = Reverb(b, 3f, 0.4f, 0.85f);
+            var loop = new float[Samples(length)];
+            for (int i = 0; i < wet.Length; i++) loop[i % loop.Length] += wet[i];
+            return Normalize(loop, 0.7f);
+        }
+
+        /// <summary>Aile üyesinin durumu görülünce: tok vuruş, uyumsuz akor, kabaran hava</summary>
+        private static float[] DiscoverStinger(SoundSynth s)
+        {
+            var b = Buffer(3.2f);
+            Mix(b, Normalize(Impact(s, 1.5f, 1f), 1f), 0f, 0.5f);
+            foreach (float hz in new[] { 110f, 116.54f, 164.81f, 233.08f })
+                Mix(b, Note(3f, hz, 0.01f, 0.9f, 0.5f), 0f, 0.3f);
+            var swell = BandPass(s.White(1.4f), t => 200f + 900f * t / 1.4f, 2f);
+            Shape(swell, t => Mathf.Pow(t / 1.4f, 2f) * (t < 1.3f ? 1f : (1.4f - t) / 0.1f));
+            Mix(b, Normalize(swell, 1f), 0f, 0.25f);
+            return Fade(Normalize(Reverb(b, 2.2f, 0.4f, 0.85f), 0.85f));
+        }
+
+        /// <summary>Kaybedilmiş üye: derin bum ve yavaş inen minör akor, uzun yankı</summary>
+        private static float[] LossStinger(SoundSynth s)
+        {
+            var b = Buffer(4.5f);
+            Mix(b, Normalize(Impact(s, 2.5f, 1f), 1f), 0f, 0.6f);
+            Mix(b, Note(4f, 146.83f, 0.02f, 0.5f, 0.4f), 0f, 0.35f);
+            Mix(b, Note(4f, 174.61f, 0.02f, 0.5f, 0.4f), 0.35f, 0.3f);
+            Mix(b, Note(4f, 110f, 0.02f, 0.45f, 0.35f), 0.7f, 0.35f);
+            Mix(b, Note(4f, 103.83f, 0.3f, 0.4f, 0.3f), 1.4f, 0.25f);
+            return Fade(Normalize(Reverb(b, 3f, 0.5f, 0.88f), 0.85f));
         }
 
         // ------------------------------------------------------------------ Müzik

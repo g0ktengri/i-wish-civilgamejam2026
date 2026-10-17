@@ -25,7 +25,7 @@ namespace Deprem.Player
         /// VT323 biçiminde yeniden çizilmiş hali; Tools/bubble_font.py üretir.
         /// </summary>
         public const string BubbleFontPath = "Assets/Art/Fonts/DepremBalon-Regular.ttf";
-        private const int BubbleFontSize = 18;
+        private const int BubbleFontSize = 24; // Play testi 21: okunmuyordu
 
         /// <summary>Oyuncu ve aile balonları aynı fontu ve boyu kullanır</summary>
         public static void ConfigureBubble(SpeechBubble bubble)

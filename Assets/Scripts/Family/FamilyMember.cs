@@ -52,6 +52,8 @@ namespace Deprem.Family
         [SerializeField] private Vector2 rockSize = new Vector2(0.7f, 0.55f);
         [Tooltip("Oyuncu bu kadar yaklaşınca durumu fark eder (aynı kat, X ekseninde)")]
         [SerializeField] private float discoverRange = 3.5f;
+        [Tooltip("Durumu görülünce çalan müzik vurgusunun mesafesi (m)")]
+        [SerializeField] private float stingerRange = 5f;
         [SerializeField] private float interactRange = 1.2f;
         [Tooltip("Fark ettikten sonra keşke ekranına kadar süre: oyuncu durur, döner, balonla tepki verir")]
         [SerializeField] private float failDelay = 4f; // 3 sn okunmuyordu, 5,5 sn fazla uzundu
@@ -87,6 +89,7 @@ namespace Deprem.Family
         public bool PlayerReacted { get; private set; }
 
         private float discoverTimer;
+        private bool stingerPlayed;
         private float treatTimer;
         private float callTimer = 2f;
         private SpeechBubble bubble;
@@ -204,6 +207,7 @@ namespace Deprem.Family
             bool missingBagItem = requiredBagItem != BagItemId.None && !GameState.HasBagItem(requiredBagItem);
             bool lost = State == FamilyState.Hit || State == FamilyState.Bleeding ||
                         (missingBagItem && (State == FamilyState.Waiting || State == FamilyState.Injured));
+            PlayDiscoverStinger(lost);
             if (lost && IsNear(player.transform.position, discoverRange))
             {
                 if (!PlayerReacted) ReactToLoss(State == FamilyState.Hit);
@@ -231,6 +235,20 @@ namespace Deprem.Family
                     if (treatTimer >= treatHoldTime) Rescue();
                 }
             }
+        }
+
+        /// <summary>
+        /// Play testi 20: üyenin durumu ilk görüldüğü an bir müzik vurgusu (yaralı / bekliyor: gerilim,
+        /// kaybedilmiş: ağır kayıp vurgusu). Odası açık ve oyuncu yakınsa, döngüde bir kez.
+        /// </summary>
+        private void PlayDiscoverStinger(bool lost)
+        {
+            if (stingerPlayed || State == FamilyState.Following || State == FamilyState.InCabin) return;
+            if (!IsNear(player.transform.position, stingerRange)) return;
+            var visibility = Deprem.Visual.RoomVisibility.Instance;
+            if (visibility != null && !visibility.IsVisibleAt(transform.position)) return;
+            stingerPlayed = true;
+            Deprem.Audio.Sfx.Play(lost ? "family.loss" : "family.discover");
         }
 
         /// <summary>

@@ -11,8 +11,8 @@ namespace Deprem.Quake
     public sealed class DuckCoverBar : MonoBehaviour
     {
         [SerializeField] private int segments = 10;
-        [SerializeField] private Vector2 segmentSize = new Vector2(8f, 8f);
-        [SerializeField] private float segmentGap = 2f;
+        [SerializeField] private Vector2 segmentSize = new Vector2(12f, 12f); // Play testi 21: küçüktü
+        [SerializeField] private float segmentGap = 3f;
         [Tooltip("Çubuğun karakterin ayağından yüksekliği (m); çömelince baş ~1 m'de")]
         [SerializeField] private float height = 1.55f;
         [SerializeField] private Color holdingColor = new Color(0.45f, 0.85f, 0.5f);

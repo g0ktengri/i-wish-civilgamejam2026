@@ -19,9 +19,8 @@ namespace Deprem.Audio
         [SerializeField] private int voices3D = 8;
 
         [Header("Ana deprem")]
-        [Tooltip("Gıcırtı ve düşen parça arası (sn)")]
-        [SerializeField] private Vector2 creakInterval = new Vector2(1.1f, 2.4f);
-        [SerializeField] private Vector2 debrisInterval = new Vector2(0.5f, 1.3f);
+        [Tooltip("İki gıcırtı arası (sn)")]
+        [SerializeField] private Vector2 creakInterval = new Vector2(2.8f, 5.5f);
 
         [Header("Kurtarma (RescueTimer gerilimi 0..1)")]
         [Tooltip("Uzak uğultunun sesi: sakin → son saniyeler")]
@@ -51,7 +50,7 @@ namespace Deprem.Audio
         private float musicFadeSpeed = 1f;
 
         private bool mainShaking;
-        private float nextCreak, nextDebris;
+        private float nextCreak;
         private float tension;
         private float nextHeartbeat;
         private int lastSpiritSecond = -1;
@@ -145,15 +144,12 @@ namespace Deprem.Audio
 
             if (mainShaking)
             {
+                // Play testi 20: rastgele çıtırtı tekrarı çok fazlaydı; düşen parçalar artık kendi sesini çıkarıyor
+                // (DebrisSettle). Burada sadece seyrek, kısık ahşap gıcırtısı kalır
                 if (Time.time >= nextCreak)
                 {
-                    Play2D("quake.creak", 0.8f, Random.Range(-0.7f, 0.7f));
+                    Play2D("quake.creak", 0.45f, Random.Range(-0.7f, 0.7f));
                     nextCreak = Time.time + Random.Range(creakInterval.x, creakInterval.y);
-                }
-                if (Time.time >= nextDebris)
-                {
-                    Play2D("quake.debris", Random.Range(0.45f, 0.9f), Random.Range(-0.8f, 0.8f));
-                    nextDebris = Time.time + Random.Range(debrisInterval.x, debrisInterval.y);
                 }
             }
 
@@ -206,6 +202,7 @@ namespace Deprem.Audio
                     StopLoop("ambience.night", 0.8f);
                     StopLoop("quake.rumble", 0.8f);
                     SetLoop("spirit.ambience", 0.8f, 1.5f);
+                    StopTension(1f);
                     lastSpiritSecond = -1;
                     break;
                 case GamePhase.MainQuake:
@@ -215,16 +212,19 @@ namespace Deprem.Audio
                 case GamePhase.Rescue:
                     SetLoop("ambience.dark", 0.6f, 2f);
                     SetLoop("quake.rumble", rescueRumbleVolume.x, 2f, 0.85f);
+                    PlayMusic("music.tension", 4f); // Play testi 20: arkada hafif gerilim
                     break;
                 case GamePhase.Failed:
                     mainShaking = false;
                     tension = 0f;
                     StopAllLoops(0.08f);
+                    StopTension(0.1f);
                     break;
                 case GamePhase.Won:
                     mainShaking = false;
                     tension = 0f;
                     StopAllLoops(2f);
+                    StopTension(1.5f);
                     break;
             }
         }
@@ -235,6 +235,12 @@ namespace Deprem.Audio
             mainShaking = false;
             tension = 0f;
             StopAllLoops(0.08f);
+        }
+
+        /// <summary>Gerilim müziği çalıyorsa susturur (menü ve final müziğine dokunmaz)</summary>
+        private void StopTension(float fadeSeconds)
+        {
+            if (musicKey == "music.tension") PlayMusic(null, fadeSeconds);
         }
 
         private void OnGameWon()
@@ -254,7 +260,6 @@ namespace Deprem.Audio
             SetLoop("quake.rumble", 1f, 0.5f, 1f);
             mainShaking = true;
             nextCreak = Time.time + 0.6f;
-            nextDebris = Time.time + 0.3f;
         }
 
         private void OnMainQuakeEnded()
@@ -269,7 +274,6 @@ namespace Deprem.Audio
         {
             Play2D("quake.aftershock", 1f, 0f);
             Play2D("quake.creak", 0.7f, Random.Range(-0.5f, 0.5f), 0.5f);
-            Play2D("quake.debris", 0.7f, Random.Range(-0.6f, 0.6f), 0.9f);
         }
 
         private void OnItemToppled(ItemId id)

@@ -19,7 +19,7 @@ namespace Deprem.Player
         [SerializeField] private Font font;
         [Tooltip("Play testi 11: 14 çok küçüktü, okunmuyordu")]
         [SerializeField] private int fontSize = 18;
-        [SerializeField] private float maxTextWidth = 260f;
+        [SerializeField] private float maxTextWidth = 340f;
 
         [Header("Giriş animasyonu (Play testi 11: yazı bir anda geliyordu)")]
         [Tooltip("Daktilo hızı (harf / sn)")]

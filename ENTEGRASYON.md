@@ -766,6 +766,8 @@ Mehmet'in yorumu: "İpuçları ve mesajlar hiç oyuncu dostu değil, adam akıll
 
 1. Bizim ekran yazıları da aynı oranda büyür: süre çubuğunun "ZAMAN" etiketi ve kareleri, çök-kapan çubuğu, konuşma balonları.
 
+**Mehmet tarafı: yapıldı.** Süre çubuğunda kareler 10×15, "ZAMAN" etiketi 20 boyunda; çök-kapan çubuğunda kareler 12×12. Oyuncu ve aile balonlarında yazı 24 boyunda, en fazla 340 genişlikte.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

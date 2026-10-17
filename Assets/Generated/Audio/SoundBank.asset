@@ -40,34 +40,39 @@ MonoBehaviour:
     pitch: {x: 1, y: 1}
   - key: quake.creak
     clips:
-    - {fileID: 8300000, guid: 69051ea59a1af0349bb4c124b04f562a, type: 3}
-    - {fileID: 8300000, guid: fa0521cd7d89724469ae72b5e9cb128a, type: 3}
-    - {fileID: 8300000, guid: dadb4f14921599f46affea5c8b83814b, type: 3}
+    - {fileID: 8300000, guid: a6621027a255b114f9f190433e325942, type: 3}
+    - {fileID: 8300000, guid: dac0301b5976cc0469de71950888b311, type: 3}
+    - {fileID: 8300000, guid: 6da528eafd1e0c54c92100e5d256c93c, type: 3}
     volume: 0.75
     pitch: {x: 0.9, y: 1.1}
   - key: quake.debris
     clips:
-    - {fileID: 8300000, guid: 6b436819d71e07840b0570cc69cf2466, type: 3}
-    - {fileID: 8300000, guid: d8d96626a35feff43b61007bd177fe10, type: 3}
-    - {fileID: 8300000, guid: 349566f8be9602940b727b4eaa96fd0f, type: 3}
-    - {fileID: 8300000, guid: 3649fbc5a8b98cd4694bff9f181f8687, type: 3}
+    - {fileID: 8300000, guid: 307fabcddc7b6f94498e58a4befe7a15, type: 3}
+    - {fileID: 8300000, guid: 6107290b94c63c8449cefe6990c30876, type: 3}
+    - {fileID: 8300000, guid: a660aa07133095647851318e5e940a59, type: 3}
+    - {fileID: 8300000, guid: c62f441b25ca74548be512bd67fbd4d1, type: 3}
+    - {fileID: 8300000, guid: b612020c2d28a6c4b9edc67365fb9cd0, type: 3}
     volume: 0.7
     pitch: {x: 0.85, y: 1.15}
   - key: item.crash
     clips:
-    - {fileID: 8300000, guid: 3d5123d6bc5497346a25f648551797bf, type: 3}
-    - {fileID: 8300000, guid: c73f091f49a765745b5244d795c08aa2, type: 3}
+    - {fileID: 8300000, guid: d3720bfd5831c7d48b2b72d25c7b80e9, type: 3}
+    - {fileID: 8300000, guid: e8ebcafe6ab8a5243b23aa37e4b8e100, type: 3}
+    - {fileID: 8300000, guid: d45ab1ae2b000d24ea504fbe4452dc49, type: 3}
+    - {fileID: 8300000, guid: 41243c9e9b9915d46851b999bb3932f6, type: 3}
     volume: 1
     pitch: {x: 0.9, y: 1.05}
   - key: glass.break
     clips:
-    - {fileID: 8300000, guid: 9880249360a70d64fab3b04e206d7671, type: 3}
-    - {fileID: 8300000, guid: 867951e8cc59aa5428b82ee1eb069d4d, type: 3}
+    - {fileID: 8300000, guid: bd5d8c8425e05354189a68bd7a5afb1c, type: 3}
+    - {fileID: 8300000, guid: 14d0508f344b66d41bd396b01621b657, type: 3}
+    - {fileID: 8300000, guid: 16893d963f935d241a66c4b541bb870e, type: 3}
+    - {fileID: 8300000, guid: ea99e306bb5b79d499dc7450e3d1c41b, type: 3}
     volume: 0.85
     pitch: {x: 0.95, y: 1.1}
   - key: power.off
     clips:
-    - {fileID: 8300000, guid: 93c21b124dab4af498e08dc0e23f0e41, type: 3}
+    - {fileID: 8300000, guid: 57607f49405810b4f8edb10e88433e12, type: 3}
     volume: 1
     pitch: {x: 1, y: 1}
   - key: ambience.night
@@ -87,25 +92,32 @@ MonoBehaviour:
     pitch: {x: 1, y: 1}
   - key: player.hit
     clips:
-    - {fileID: 8300000, guid: 995ababfe1edc3d48b9e19e6805a22f2, type: 3}
+    - {fileID: 8300000, guid: 2b2c0d246f18b4644b299b17a0cdac39, type: 3}
+    - {fileID: 8300000, guid: cc6b9ac718cdf3043861f24a09df42c1, type: 3}
+    - {fileID: 8300000, guid: 75c3917e7bf507748a00e42770a7155d, type: 3}
     volume: 1
     pitch: {x: 1, y: 1}
   - key: player.step
     clips:
-    - {fileID: 8300000, guid: 73c0e45d616b8184c9915833671d21d8, type: 3}
-    - {fileID: 8300000, guid: f45443f01e5038945b4d32398cb7bf12, type: 3}
-    - {fileID: 8300000, guid: e21a2e93ef88f7240a8c37f42a9e05bf, type: 3}
-    - {fileID: 8300000, guid: 6ab453c3d4e333a47951454c913b5606, type: 3}
-    volume: 0.6
+    - {fileID: 8300000, guid: db508f3cefd712a42b1754b9120fed0a, type: 3}
+    - {fileID: 8300000, guid: fca72800eef511b4c832c44fe5190f77, type: 3}
+    - {fileID: 8300000, guid: f9b976c463f4a944d8b5820f53a3afc9, type: 3}
+    - {fileID: 8300000, guid: e4f9df9d48b67f44ab60b29db9f3858e, type: 3}
+    - {fileID: 8300000, guid: ca8f8e5d0e615b14798745fa94194e44, type: 3}
+    volume: 1
     pitch: {x: 0.9, y: 1.1}
   - key: player.land
     clips:
-    - {fileID: 8300000, guid: 678d7341bd1376d48acb874145e6f256, type: 3}
+    - {fileID: 8300000, guid: af68373256252bc4081b2bbbb9b29d56, type: 3}
+    - {fileID: 8300000, guid: 10d7d80bfb9b70343be9e057e6b5f5e3, type: 3}
+    - {fileID: 8300000, guid: e3f5c9440c6fd154b928ca2cd3bab503, type: 3}
     volume: 1
     pitch: {x: 0.95, y: 1.05}
   - key: cabin.door
     clips:
-    - {fileID: 8300000, guid: 1f47860a8edfdb84baf0cbf7d9d63f16, type: 3}
+    - {fileID: 8300000, guid: d1fdd0da6df6c884b8f692b0e843a9e9, type: 3}
+    - {fileID: 8300000, guid: 74ca8f7ef919d724aa6704ef70cc0e52, type: 3}
+    - {fileID: 8300000, guid: a3c68dc536671de4db025b262e0f383a, type: 3}
     volume: 1
     pitch: {x: 1, y: 1}
   - key: spirit.ambience
@@ -130,7 +142,8 @@ MonoBehaviour:
     pitch: {x: 1, y: 1}
   - key: bag.collect
     clips:
-    - {fileID: 8300000, guid: 7f3c18540ce3cfb4d9c8e0ebe0674efa, type: 3}
+    - {fileID: 8300000, guid: 2735e3c3e142d0248a357a7062291c3d, type: 3}
+    - {fileID: 8300000, guid: c71ba4dec26c04d4788c08c485358886, type: 3}
     volume: 0.7
     pitch: {x: 1, y: 1}
   - key: family.rescued
@@ -140,49 +153,63 @@ MonoBehaviour:
     pitch: {x: 1, y: 1}
   - key: ui.move
     clips:
-    - {fileID: 8300000, guid: 2b8b92ec22ce9cc46a09ebb86f545cd8, type: 3}
+    - {fileID: 8300000, guid: 2032254898d37d148a61a407520d390b, type: 3}
+    - {fileID: 8300000, guid: 53a357ea55951bf4cbb78c208c3f9f64, type: 3}
+    - {fileID: 8300000, guid: 5c9f5a086075ca146b1482c94e1ce3d4, type: 3}
     volume: 0.35
     pitch: {x: 1, y: 1}
   - key: ui.click
     clips:
-    - {fileID: 8300000, guid: e5b029a4313ee874f93212690db5bb4e, type: 3}
+    - {fileID: 8300000, guid: 43cb4c86b40862c428e1217f1743f6a7, type: 3}
+    - {fileID: 8300000, guid: 207ce4ac667a72d4dbaf98902470baaf, type: 3}
+    - {fileID: 8300000, guid: 1544f4e4777f90341856507e6091431b, type: 3}
     volume: 0.45
     pitch: {x: 1, y: 1}
   - key: ui.back
     clips:
-    - {fileID: 8300000, guid: f26d612b6d14f4846b4822c79b10b350, type: 3}
+    - {fileID: 8300000, guid: 6bd41cb4f7697ad448b7058a3f57ade2, type: 3}
+    - {fileID: 8300000, guid: 5c0d10e66455f4f46aad2430135056d4, type: 3}
+    - {fileID: 8300000, guid: 5437b9cc718873d4e95ddf2d7777a0b7, type: 3}
     volume: 0.45
     pitch: {x: 1, y: 1}
   - key: minigame.screw
     clips:
-    - {fileID: 8300000, guid: 6f8bcb88fcab16d4ba0f4db2a8bc69b6, type: 3}
-    - {fileID: 8300000, guid: 895ba6deb966cd54db3cb988124f4a43, type: 3}
-    - {fileID: 8300000, guid: 9b40b51fcbe74a6489f18912c20e0aa3, type: 3}
+    - {fileID: 8300000, guid: 06cc8d7701210904598e0e67677d3233, type: 3}
+    - {fileID: 8300000, guid: 2e845574f4ae05c43902842722b7a849, type: 3}
+    - {fileID: 8300000, guid: 3f9aaf06cf654514b8236cd49ad442dd, type: 3}
     volume: 0.55
     pitch: {x: 0.92, y: 1.08}
   - key: minigame.bracket
     clips:
-    - {fileID: 8300000, guid: ef3b5aa7eea7bc347ab6b14604b07f4e, type: 3}
+    - {fileID: 8300000, guid: a500a0a1c0e26b34da6f337211c89b21, type: 3}
+    - {fileID: 8300000, guid: af95530bb3c664149ab839fd4d199730, type: 3}
+    - {fileID: 8300000, guid: 83d5c1add365a2a43b0138bb923c376f, type: 3}
     volume: 0.8
     pitch: {x: 1, y: 1}
   - key: minigame.latch
     clips:
-    - {fileID: 8300000, guid: 10357b2913136594a9500cc9f4b04b7f, type: 3}
+    - {fileID: 8300000, guid: 1912da758ee966e41b4bf65b9309d281, type: 3}
     volume: 0.7
     pitch: {x: 1, y: 1}
   - key: minigame.miss
     clips:
-    - {fileID: 8300000, guid: 61077165d1bee244794504348dd80b6b, type: 3}
+    - {fileID: 8300000, guid: 00ca8b200d8157f49838254d8986f141, type: 3}
+    - {fileID: 8300000, guid: af8480024156459459846883db543d3e, type: 3}
     volume: 0.5
     pitch: {x: 1, y: 1}
   - key: minigame.pickup
     clips:
-    - {fileID: 8300000, guid: 69fedf84c2fc8884e9ca85ff132e98d0, type: 3}
+    - {fileID: 8300000, guid: ecaf7da73ba371b4d8efb1b402f0c704, type: 3}
+    - {fileID: 8300000, guid: c130e744d6f8ea24284565d0bce4a080, type: 3}
+    - {fileID: 8300000, guid: ae1f91233b7c87940b078e0a1fa7c25c, type: 3}
     volume: 0.5
     pitch: {x: 1, y: 1}
   - key: minigame.drop
     clips:
-    - {fileID: 8300000, guid: b22b91c0f6c5fc944aeb626aabf84fc0, type: 3}
+    - {fileID: 8300000, guid: 279a154096a0c02458e0009e5f6825d0, type: 3}
+    - {fileID: 8300000, guid: 680ca9033f847f14f9b1724ea484d428, type: 3}
+    - {fileID: 8300000, guid: dd3632ce03a68fc46b785d7444a551db, type: 3}
+    - {fileID: 8300000, guid: 74664fad54fdfef48905b888085ef18c, type: 3}
     volume: 0.6
     pitch: {x: 1, y: 1}
   - key: minigame.fail
@@ -219,6 +246,21 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 262f465589e2b1f43a7200a0c2a7a6d3, type: 3}
     volume: 1
+    pitch: {x: 1, y: 1}
+  - key: music.tension
+    clips:
+    - {fileID: 8300000, guid: 9b86d1fa274263444b03c88a18fd5b6a, type: 3}
+    volume: 0.6
+    pitch: {x: 1, y: 1}
+  - key: family.discover
+    clips:
+    - {fileID: 8300000, guid: d80031c00d7964a4da2bb318e1f933bb, type: 3}
+    volume: 0.85
+    pitch: {x: 1, y: 1}
+  - key: family.loss
+    clips:
+    - {fileID: 8300000, guid: def2ffa67ef69234786c650c8007c307, type: 3}
+    volume: 0.9
     pitch: {x: 1, y: 1}
   - key: music.menu
     clips:

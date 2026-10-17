@@ -109,10 +109,17 @@ namespace Deprem.Quake
                 body.linearVelocity = new Vector3(Random.Range(-0.3f, 0.3f), 0f, -0.4f);
             else
             {
-                body.linearVelocity = new Vector3(Random.Range(-0.6f, 0.6f), 0.6f, -0.9f);
-                body.angularVelocity = new Vector3(0f, 0f, Random.Range(-6f, 6f));
+                // Play testi 19: masanın tablasında sürtünmeyle kalıyordu. Kaygan, öne ve yana fırlar, masadan düşer
+                var slippery = new PhysicsMaterial("DecorSlip") { dynamicFriction = 0f, staticFriction = 0f,
+                    frictionCombine = PhysicsMaterialCombine.Minimum };
+                foreach (var c in GetComponents<Collider>()) c.sharedMaterial = slippery;
+                body.linearVelocity = new Vector3(Random.Range(-0.8f, 0.8f), 1.1f, -1.9f);
+                body.angularVelocity = new Vector3(0f, 0f, Random.Range(-8f, 8f));
             }
         }
+
+        /// <summary>Masada duruyor mu (ana depremde hepsi düşer)</summary>
+        public bool OnSurface => mount == MountKind.Surface;
 
         private void OnCollisionEnter(Collision collision)
         {
@@ -128,10 +135,16 @@ namespace Deprem.Quake
         private void FixedUpdate()
         {
             if (!HasFallen || body.isKinematic) return;
+            // Masadan indikten sonra kaygan değil: yerde kayıp gitmesin
+            if (mount == MountKind.Surface && restPosition.y - transform.position.y > 0.3f)
+                foreach (var c in GetComponents<Collider>()) c.sharedMaterial = null;
             // Yere oturunca donar: oyuncunun yolunda itilip kaymasın
             bool still = body.linearVelocity.sqrMagnitude < 0.02f;
             settled = still ? settled + Time.fixedDeltaTime : 0f;
-            if (settled > 0.4f) body.isKinematic = true;
+            if (settled <= 0.4f) return;
+            body.isKinematic = true;
+            // Çarpma hızı kaçırılsa da (yavaş kayıp düştüyse) yüksekten düşen cam ve seramik kırılır
+            if (!IsBroken && breakKind != BreakKind.None && restPosition.y - transform.position.y > 0.4f) Break();
         }
 
         private void Break()

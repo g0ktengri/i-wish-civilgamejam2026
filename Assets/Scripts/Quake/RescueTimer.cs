@@ -49,8 +49,9 @@ namespace Deprem.Quake
 
         [Header("Süre çubuğu (Play testi 12: düz sarı şerit yerine parçalı pixel çubuk)")]
         [SerializeField] private int barSegments = 24;
-        [SerializeField] private Vector2 segmentSize = new Vector2(7f, 10f);
-        [SerializeField] private float segmentGap = 2f;
+        [SerializeField] private Vector2 segmentSize = new Vector2(10f, 15f); // Play testi 21: küçüktü
+        [SerializeField] private float segmentGap = 3f;
+        [SerializeField] private int labelFontSize = 20;
         [SerializeField] private float barTopMargin = 14f;
         [SerializeField] private Color calmColor = new Color(1f, 0.85f, 0.45f);
         [SerializeField] private Color urgentColor = new Color(1f, 0.15f, 0.1f);
@@ -228,7 +229,7 @@ namespace Deprem.Quake
             var canvas = Deprem.UI.UiBuilder.CreateCanvas(transform, "RescueBar", 40);
             barRoot = canvas.gameObject;
             meter = SegmentMeter.Create(canvas.transform, "TimeMeter", barSegments, segmentSize, segmentGap,
-                Deprem.Localization.Texts.Get("hud.rescue_time"));
+                Deprem.Localization.Texts.Get("hud.rescue_time"), labelFontSize);
             meter.Root.anchorMin = meter.Root.anchorMax = new Vector2(0.5f, 1f);
             meter.Root.pivot = new Vector2(0.5f, 1f);
             meter.Root.anchoredPosition = new Vector2(0f, -barTopMargin);
