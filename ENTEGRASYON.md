@@ -201,7 +201,7 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 
 ## Mehmet → Berke
 
-*Son güncelleme: Mehmet'in Claude'u, 17 Ekim akşam (Play testi 2 görev dağılımı, en altta)*
+*Son güncelleme: Mehmet'in Claude'u, 18 Ekim (Play testi 8: B10, B11 cevapları, en altta)*
 
 ### Mehmet'in pushladıkları
 
@@ -353,6 +353,12 @@ Mehmet'in bu tur için token'ı bitti; **bu maddeler için Mehmet'in klasörleri
 - **M17. Babanın odasına (salon) ilk girişte geçilemiyor; kapı açılıyor ama arkası kapalı.** TV ünitesi (`ItemId.TvUnit`, salon kapısının hemen arkasında) sabitlenmeden devrilince salon kapısı **açılmasın**: F'ye basınca oyuncu "Eyvah, kapı açılmıyor! Önüne bir şey düşmüş." desin (`SpeechBubble.Say`, yeni anahtar `bubble.door_jammed`). Kapı: `Scripts/Player/HouseDoor.cs` (`Door_koridor_salon`, `LeftRoom = "koridor"`, `RightRoom = "salon"`); TV'nin devrildiği `GameEvents.ItemToppled` ile ya da `SecurableItem.Find(ItemId.TvUnit).IsSecured` ile anlaşılır. Oyuncu babaya ulaşamaz; süre bitince keşke zaten "en çok yavaşlatan eşya" olarak TV'yi söylemeli (`RescueTimer.MostSlowingItem`, gerekirse kapıyı kilitleyen eşyaya öncelik ver).
 - **M18. Karakter yeniden doğduğunu fark etmeli.** Döngü 2'nin başında, öncü sarsıntıyla uyanınca önce "Aman! Ne oluyor? Az önce bunu yaşamadım mı?", sonra mevcut `bubble.panic_run`. Döngü 3+ için kısa bir satır ("Yine mi? Bu sefer hazırlıklı olmalıyım."). Yer: `QuakeDirector.ForeshockRoutine` (`Say(...)` çağrıları), yeni anahtarlar `bubble.deja_vu`, `bubble.deja_vu_again`.
 - **M19. Döngü 1'de raf karakterin içinden geçiyor, ezilme hissi yok.** Oyuncu yatakta yatarken (`player.IsLying`) dik kapsülü açık; düşen raf (`Item_1_yatak_rafi`, arka duvarda, öne devrilir) kapsüle ya da yatağa takılıp karakterin görselinin içinden geçiyor. Öneri: ana deprem başında yatan oyuncunun çarpışmasını kapat (`player.Body.detectCollisions = false`; `QuakeDirector.CollapseOnBed` bunu zaten çöküşte yapıyor), raf yatağın çarpışma kutusuna (`Decor_tek_kisilik_yatak_oyuncu`, şilte hizası) düşsün ve karakterin **önünde** dursun: yatan görsel `Marker_PlayerBed` z = 3,6'da, raf devrilince z'si bundan küçük kalmalı (ya da yatan görseli biraz arkaya al, z ≈ 3,9). Düşünce kısa kamera sarsıntısı. Yer: `QuakeDirector.MainQuakeRoutine` (IsLying dalı), `Scripts/Quake/ItemToppler.cs`, `HouseLayout.Markers`.
+
+### Play testi 8: Mehmet'in cevapları (B10, B11)
+
+- **M15–M19:** gördüm, teşekkürler; izin kapsamındaki değişiklikler tamam.
+- **B10 (üst kat örtüsü, elektrik kesik):** Mantıkta hata bulamadım. `HouseBuilder.BuildMainSceneBatch` artık bunu deneyen bir önizleme de çiziyor (`Logs/house_preview_rescue_upper.png`): elektrik kesik, merdivenden çıkış, üst kat kapıları açık → kardeş, sahanlık ve ebeveyn açılıyor; logda `B10 açık odalar: ...`. Büyük ihtimalle oda açılıyor ama karanlıkta kapalı örtüyle aynı göründüğü için açılmamış sanılıyor. Değişiklik: elektrik kesikken odaların loş ışığı 0,35 → 0,6; kardeşin odasında hiç ışık yoktu, artık çok sönük (0,15). Kardeş yine el feneriyle seçilir. Hâlâ açılmayan bir oda görürsen hangi döngü, hangi oda ve merdivenden mi kapıdan mı girdiğini yaz.
+- **B11 (sarsıntıda zıplama):** Sarsıntıda (şiddet > 0,1) zıplama kapalı: `PlayerController.JumpEnabled`, `QuakeDirector.ApplyShake` ayarlar. Yavaşlamanın asıl sebebi artçıda çök-kapan yapılamayınca gelen yaralanma (`injuredSpeedMultiplier` 0,6). Artık yaralanınca oyuncu "Ah, bacağım! Zor yürüyorum..." diyor (`bubble.injured`); yavaşlamanın sebebi anlaşılıyor.
 
 ---
 

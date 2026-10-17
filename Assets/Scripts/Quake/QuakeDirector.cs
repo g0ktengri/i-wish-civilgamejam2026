@@ -58,6 +58,8 @@ namespace Deprem.Quake
         [SerializeField, Range(0f, 1f)] private float aftershockIntensity = 0.5f;
         [SerializeField] private float aftershockGrace = 2.5f;
         [SerializeField] private float injuredSpeedMultiplier = 0.6f;
+        [Tooltip("Sarsıntı bu şiddetin üstündeyken zıplanamaz")]
+        [SerializeField] private float noJumpIntensity = 0.1f;
         [Tooltip("M15: merdiven/yol bittikten sonra artçı alanının sayılması için bekleme (sn)")]
         [SerializeField] private float aftershockAfterPathDelay = 0.75f;
         [Tooltip("Oyuncu bu alanlara girince artçı olur (her deneme bir kez). GDD: koridor, merdiven, üst kat")]
@@ -341,6 +343,7 @@ namespace Deprem.Quake
             if (!survived)
             {
                 player.SpeedMultiplier = injuredSpeedMultiplier;
+                Say("bubble.injured", 2.5f); // yavaşlamanın sebebi anlaşılsın
                 GameState.AddAftershockInjury(); // ikincisinde döngüyü GameState bitirir
             }
 
@@ -409,6 +412,8 @@ namespace Deprem.Quake
             if (lights != null) lights.Flicker(intensity);
             if (effects != null) effects.SetIntensity(intensity);
             foreach (var toppler in topplers) toppler.Rattle(intensity);
+            // ENTEGRASYON B11: sallanırken zıplayınca karakter takılıp yavaşlıyordu; depremde zıplanmaz
+            if (player != null) player.JumpEnabled = intensity < noJumpIntensity;
         }
 
         /// <summary>Oyuncunun tam üstündeki tavandan bir sıva parçası ve kırıntılar düşer.</summary>

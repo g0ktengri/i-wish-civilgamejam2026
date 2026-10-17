@@ -102,6 +102,25 @@ namespace Deprem.HouseBuilder
                 visibility.Initialize();
                 visibility.Tick(new Vector3(5.5f, 0f, 1f), 1f);
                 HousePreview.Render("Logs/house_preview_covers.png", null, whole, 2048, 1024);
+
+                // Kurtarma fazı, üst kat (ENTEGRASYON B10): elektrik kesik, merdivenden çıkılmış, üst kat kapıları açık
+                if (houseLights != null)
+                {
+                    houseLights.SetPower(false);
+                    volumes.SetImmediate(volumes.PowerOut);
+                    foreach (var door in Object.FindObjectsByType<Deprem.Player.HouseDoor>(FindObjectsSortMode.None))
+                        if (door.LeftRoom == "kardes" || door.RightRoom == "ebeveyn") door.Open(door.transform.position.x + 1f);
+                    visibility.Tick(new Vector3(12f, 1.5f, 2.6f), 1f);   // merdivende
+                    visibility.Tick(new Vector3(14.6f, HouseDims.UpperFloorY, 1f), 1f); // merdiven başı
+                    visibility.Tick(new Vector3(8f, HouseDims.UpperFloorY, 1f), 1f);    // kardeşin kapısında
+                    visibility.Tick(new Vector3(17.5f, HouseDims.UpperFloorY, 1f), 1f); // ebeveyn kapısında
+                    var upper = new Vector3(13.5f, HouseDims.UpperFloorY + 1.7f, -26f);
+                    HousePreview.Render("Logs/house_preview_rescue_upper.png", null, upper, 1920, 1080);
+                    Debug.Log("[HouseBuilder] B10 açık odalar: " + string.Join(", ",
+                        HouseLayout.Rooms.Where(r => visibility.IsRevealed(r.Key)).Select(r => r.Key)));
+                    volumes.SetImmediate(volumes.Night);
+                    houseLights.SetPower(true);
+                }
             }
 
             ArtTemplates.Generate();
@@ -852,17 +871,19 @@ namespace Deprem.HouseBuilder
             foreach (var room in HouseLayout.Rooms)
             {
                 // Elektrik kesilince odayı loş tutan soğuk ışık (sokak / ay ışığı; deprem sistemi açar).
-                // Kırmızı değil: karanlık soğuk ve loş olsun (Play testi 2). Kardeşin odasında yok:
-                // oda karanlık kalır, kardeş ancak el feneriyle görünür (GDD).
-                if (room.Key != "kardes")
+                // Kırmızı değil: karanlık soğuk ve loş olsun (Play testi 2). Kardeşin odasında çok sönük:
+                // oda açılınca fark edilir (B10) ama kardeş ancak el feneriyle seçilir (GDD).
                 {
+                    bool siblingRoom = room.Key == "kardes";
                     var dim = new GameObject("Emergency_" + room.Key);
                     dim.transform.SetParent(parent, false);
                     dim.transform.position = new Vector3((room.X0 + room.X1) * 0.5f, room.CeilingY - 0.4f, room.Depth * 0.6f);
                     var dimLight = dim.AddComponent<Light>();
                     dimLight.type = LightType.Point;
                     dimLight.color = new Color(0.55f, 0.65f, 0.9f);
-                    dimLight.intensity = 0.35f; // Play testi 3: elektrik gidince her yer rahat görünüyordu
+                    // Play testi 3: elektrik gidince her yer rahat görünüyordu (0,9 -> 0,35); ENTEGRASYON B10: bu kez
+                    // açılan oda kapalıyla aynı karanlıkta kalıyor, açıldığı anlaşılmıyordu. Arası.
+                    dimLight.intensity = siblingRoom ? 0.15f : 0.6f;
                     dimLight.range = Mathf.Max(room.Width, room.Height) * 1.1f;
                     dimLight.shadows = LightShadows.Soft;
                     dimLight.enabled = false;

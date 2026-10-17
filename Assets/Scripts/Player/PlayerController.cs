@@ -44,6 +44,8 @@ namespace Deprem.Player
 
         public bool InputEnabled { get; set; } = true;
         public float SpeedMultiplier { get; set; } = 1f;
+        /// <summary>Sarsıntıda kapalı (ENTEGRASYON B11: sallanırken zıplayınca karakter takılıyordu; depremde zıplanmaz)</summary>
+        public bool JumpEnabled { get; set; } = true;
         public bool IsGrounded { get; private set; }
         public bool IsCrouching { get; private set; }
         public bool IsOnPath => path != null;
@@ -160,7 +162,7 @@ namespace Deprem.Player
             float speed = walkSpeed * SpeedMultiplier * (IsCrouching ? crouchSpeedMultiplier : 1f);
             velocity.x = Mathf.MoveTowards(velocity.x, move * speed, acceleration * dt);
 
-            bool canJump = !IsCrouching && clock - lastGroundedTime <= coyoteTime;
+            bool canJump = JumpEnabled && !IsCrouching && clock - lastGroundedTime <= coyoteTime;
             if (canJump && clock - jumpRequestTime <= jumpBufferTime)
             {
                 velocity.y = Mathf.Sqrt(2f * -Physics.gravity.y * jumpHeight);
