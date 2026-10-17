@@ -184,6 +184,7 @@ namespace Deprem.Family
                 farewellMember.SayFarewell(farewellDuration);
             }
             if (farewellTimer < farewellDelay + farewellDuration) return;
+            BagLessons.Learn(farewellMember.CabinBagItem); // M54: bir dahaki döngüde ilk yardım evde bulunur
             farewellMember = null;
             GameState.FailLoop(LoseReason.MissingBagItem);
         }

@@ -1230,6 +1230,18 @@ Mehmet'in yorumu (özet):
    - Düşen taş ve sıva sesi için birkaç alternatif de sayfada olacak.
    - Ses değişikliklerini bu karara kadar yapmıyorum.
 
+**Mehmet tarafı (Play testi 28): yapıldı.** Dört test geçiyor; Play'de denenmedi.
+
+- **`BagLessons` ve `FamilyMember.BeingSearched`** hazır (M53, M54 için). Testler dersleri editörün kaydına bırakmıyor.
+- **Ses föyü kararları uygulandı:**
+  - **Susturuldu (bankada yok, çağrılar sessizce geçer):** `quake.creak`, `bag.collect`, `family.rescued`, `final.check`. Senin tarafında `bag.collect` ve `final.check` çağrıları kalabilir, ses çıkmaz.
+  - **Yenilendi:**
+    - `glass.break`, `player.hit`, `power.off` artık kodla; Kenney dosyaları silindi.
+    - `player.land` Kenney adım seslerinden türetildi.
+    - `wish.rewind` kaset geri sarma oldu.
+    - `music.tension`, `music.menu`, `music.final` yeniden yazıldı. Final müziği artık 48 sn'lik ağıt.
+  - **`quake.debris`:** ses aynı. `DebrisSettle` artık aynı anahtarı en az 0,45 sn arayla çalıyor, arada düşenler sessiz, ses rastgele kısık.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

@@ -39,13 +39,19 @@ namespace Deprem.Family
         {
             Failures.Clear();
             var previousMode = Physics.simulationMode;
+            // M54: test dersleri öğretir; editörün kayıtlı durumu (Play testi) bozulmasın diye sonda geri yüklenir
+            bool knewFlashlight = BagLessons.IsLearned(BagItemId.Flashlight);
+            bool knewFirstAid = BagLessons.IsLearned(BagItemId.FirstAidKit);
             try
             {
                 Physics.simulationMode = SimulationMode.Script;
+                BagLessons.Clear();
                 FatherHitByBookcase();
                 FatherWithoutFirstAid();
+                Check(BagLessons.IsLearned(BagItemId.FirstAidKit), "Baba vedasından sonra ilk yardım öğrenildi (M54)");
                 FullRescueAndWin();
                 SiblingWithoutFlashlight();
+                Check(BagLessons.IsLearned(BagItemId.Flashlight), "Kardeş bulunamayınca el feneri öğrenildi (M54)");
                 MotherHitByWardrobe();
             }
             catch (System.Exception e)
@@ -56,6 +62,9 @@ namespace Deprem.Family
             {
                 Physics.simulationMode = previousMode;
                 GameState.ResetAll();
+                BagLessons.Clear();
+                if (knewFlashlight) BagLessons.Learn(BagItemId.Flashlight);
+                if (knewFirstAid) BagLessons.Learn(BagItemId.FirstAidKit);
             }
             return Report();
         }

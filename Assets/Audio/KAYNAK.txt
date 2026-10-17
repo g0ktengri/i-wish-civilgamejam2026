@@ -6,6 +6,9 @@ Kaynak: Kenney (www.kenney.nl)
   - RPG Audio        https://kenney.nl/assets/rpg-audio
 Lisans: Creative Commons Zero (CC0) http://creativecommons.org/publicdomain/zero/1.0/
 
+player.land*.ogg: Kenney adım seslerinden (player.step*.ogg) türetildi: ikişer adım perdesi kalınlaştırılıp üst üste
+bindirildi, altına kodla tok bir vuruş eklendi (Play testi 28). Lisans aynı: CC0.
+
 Dosya adı = ses anahtarı (Scripts/Audio/Sfx, ENTEGRASYON ses tablosu); _2, _3... aynı anahtarın
 çeşitleri. AudioSetup bunları kodla üretilen seslerin yerine bağlar. Burada olmayan anahtarlar
 (deprem uğultusu, kalp atışı, ambiyanslar, müzik, keşke sesleri) Editor/Audio/AudioSetup.cs ile

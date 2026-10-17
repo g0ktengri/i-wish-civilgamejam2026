@@ -101,6 +101,10 @@ namespace Deprem.Family
         public bool PlayerReacted { get; private set; }
         /// <summary>Karanlıkta saklanıyor, henüz bulunmadı (görünmez, etkileşilemez)</summary>
         public bool Hidden { get; private set; }
+        /// <summary>M53: oyuncu fenersiz bu üyenin odasında onu arıyor (ok gösterilmez)</summary>
+        public bool BeingSearched { get; private set; }
+        /// <summary>Kabinde gereken malzeme (baba: ilk yardım)</summary>
+        public BagItemId CabinBagItem => cabinBagItem;
 
         private float searchTimer;
         private bool searchWarned;
@@ -274,6 +278,7 @@ namespace Deprem.Family
         private void SearchInDark(float dt)
         {
             bool hasLight = requiredBagItem == BagItemId.None || GameState.HasBagItem(requiredBagItem);
+            BeingSearched = false;
             if (hasLight)
             {
                 if (!IsNear(player.transform.position, findRange)) return;
@@ -289,6 +294,7 @@ namespace Deprem.Family
                 ? visibility.SameRoom(player.transform.position, transform.position)
                 : IsNear(player.transform.position, discoverRange);
             if (!inRoom) return;
+            BeingSearched = true;
             if (!searchWarned)
             {
                 searchWarned = true;
@@ -299,6 +305,7 @@ namespace Deprem.Family
             searchTimer += dt;
             if (searchTimer < searchTime || aftershockRequested) return;
             aftershockRequested = true;
+            BagLessons.Learn(requiredBagItem); // M54: bir dahaki döngüde el feneri evde bulunur
             if (!Deprem.Quake.QuakeDirector.RequestFatalAftershock(LoseReason.MissingBagItem))
                 GameState.FailLoop(LoseReason.MissingBagItem); // sahnede deprem sistemi yoksa (editör testi)
         }
@@ -347,6 +354,7 @@ namespace Deprem.Family
             player.SetScriptedInput(0f);
             player.Face(transform.position.x >= player.transform.position.x ? 1 : -1);
             var missing = State == FamilyState.Bleeding ? cabinBagItem : requiredBagItem;
+            if (!hit) BagLessons.Learn(missing); // M54
             string key = hit
                 ? "bubble.family_hit." + id.ToString().ToLowerInvariant()
                 : "bubble.family_missing." + missing.ToString().ToLowerInvariant();

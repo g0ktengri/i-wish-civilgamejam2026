@@ -38,13 +38,6 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 24d66821fa9f1cb478c1fca0e95ac317, type: 3}
     volume: 1
     pitch: {x: 1, y: 1}
-  - key: quake.creak
-    clips:
-    - {fileID: 8300000, guid: a6621027a255b114f9f190433e325942, type: 3}
-    - {fileID: 8300000, guid: dac0301b5976cc0469de71950888b311, type: 3}
-    - {fileID: 8300000, guid: 6da528eafd1e0c54c92100e5d256c93c, type: 3}
-    volume: 0.75
-    pitch: {x: 0.9, y: 1.1}
   - key: quake.debris
     clips:
     - {fileID: 8300000, guid: 6b436819d71e07840b0570cc69cf2466, type: 3}
@@ -63,15 +56,14 @@ MonoBehaviour:
     pitch: {x: 0.9, y: 1.05}
   - key: glass.break
     clips:
-    - {fileID: 8300000, guid: bd5d8c8425e05354189a68bd7a5afb1c, type: 3}
-    - {fileID: 8300000, guid: 14d0508f344b66d41bd396b01621b657, type: 3}
-    - {fileID: 8300000, guid: 16893d963f935d241a66c4b541bb870e, type: 3}
-    - {fileID: 8300000, guid: ea99e306bb5b79d499dc7450e3d1c41b, type: 3}
+    - {fileID: 8300000, guid: 9880249360a70d64fab3b04e206d7671, type: 3}
+    - {fileID: 8300000, guid: 867951e8cc59aa5428b82ee1eb069d4d, type: 3}
+    - {fileID: 8300000, guid: a5d0c24b57a45a5499250e815365d7e0, type: 3}
     volume: 0.85
-    pitch: {x: 0.95, y: 1.1}
+    pitch: {x: 0.94, y: 1.08}
   - key: power.off
     clips:
-    - {fileID: 8300000, guid: 57607f49405810b4f8edb10e88433e12, type: 3}
+    - {fileID: 8300000, guid: 93c21b124dab4af498e08dc0e23f0e41, type: 3}
     volume: 1
     pitch: {x: 1, y: 1}
   - key: ambience.night
@@ -91,11 +83,11 @@ MonoBehaviour:
     pitch: {x: 1, y: 1}
   - key: player.hit
     clips:
-    - {fileID: 8300000, guid: 2b2c0d246f18b4644b299b17a0cdac39, type: 3}
-    - {fileID: 8300000, guid: cc6b9ac718cdf3043861f24a09df42c1, type: 3}
-    - {fileID: 8300000, guid: 75c3917e7bf507748a00e42770a7155d, type: 3}
+    - {fileID: 8300000, guid: 995ababfe1edc3d48b9e19e6805a22f2, type: 3}
+    - {fileID: 8300000, guid: eeb91178d8f2e79438b6ca32d9c6b3b7, type: 3}
+    - {fileID: 8300000, guid: 19d5aae23827b93488740eb0e4a8e968, type: 3}
     volume: 1
-    pitch: {x: 1, y: 1}
+    pitch: {x: 0.92, y: 1.05}
   - key: player.step
     clips:
     - {fileID: 8300000, guid: db508f3cefd712a42b1754b9120fed0a, type: 3}
@@ -148,17 +140,6 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 35341d2023788434b82832a4beb36e3e, type: 3}
     volume: 0.8
-    pitch: {x: 1, y: 1}
-  - key: bag.collect
-    clips:
-    - {fileID: 8300000, guid: 2735e3c3e142d0248a357a7062291c3d, type: 3}
-    - {fileID: 8300000, guid: c71ba4dec26c04d4788c08c485358886, type: 3}
-    volume: 0.7
-    pitch: {x: 1, y: 1}
-  - key: family.rescued
-    clips:
-    - {fileID: 8300000, guid: 52025f0a7f6914d4387f0593418616a2, type: 3}
-    volume: 0.7
     pitch: {x: 1, y: 1}
   - key: ui.move
     clips:
@@ -245,11 +226,6 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 033c7cc003f072547929f857a905864f, type: 3}
     volume: 0.8
-    pitch: {x: 1, y: 1}
-  - key: final.check
-    clips:
-    - {fileID: 8300000, guid: 60babb5ba41c0554d890f954fff363e8, type: 3}
-    volume: 0.6
     pitch: {x: 1, y: 1}
   - key: music.final
     clips:
