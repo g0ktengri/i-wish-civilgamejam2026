@@ -129,6 +129,10 @@ bubble.family_hit.sibling,"Hayır! Kardeşim... Bunu ben önleyebilirdim.","No! 
 bubble.family_missing.firstaidkit,"Kanaması durmuyor... Elimde sarabileceğim hiçbir şey yok!","He's bleeding... I have nothing to bandage him with!"
 bubble.family_missing.flashlight,"Hiçbir şey göremiyorum... Neredesin? Ses ver!","I can't see anything... Where are you? Say something!"
 cabin.sign,DEPREM KABİNİ,EARTHQUAKE SHELTER
+bubble.rescue_start,"Annem, babam, kardeşim... Onları bulup kabine götürmeliyim!","Mom, Dad, my sibling... I have to find them and get them to the shelter!"
+bubble.family_call.father,"İmdat! Yaralandım, kalkamıyorum!","Help! I'm hurt, I can't get up!"
+bubble.family_call.mother,Kimse yok mu? Yardım edin!,Is anyone there? Help!
+bubble.family_call.sibling,"Abi! Neredesin, çok korkuyorum!","Where are you? I'm so scared!"
 
 # Mehmet: F ipuçları (kapı, merdiven, aile, kabin)
 prompt.open_door,F: Kapıyı aç,F: Open the door

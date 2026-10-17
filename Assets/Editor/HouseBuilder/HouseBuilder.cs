@@ -361,34 +361,53 @@ namespace Deprem.HouseBuilder
         }
 
         /// <summary>
-        /// Play testi 4: merdiven havada duran kutulara benziyordu. Kameraya bakan yan kiriş (basamakların altında
-        /// eğik bant), basamak burunları, korkuluk dikmeleri ve küpeşte; üst katta merdiven boşluğunun önünde
-        /// korkuluk. Çarpışmasız süs.
+        /// Merdivenin süsü (çarpışmasız). Play testi 4–5: havada duran kutular gibiydi, basamaklı küpeşte de
+        /// tırtıklıydı. Kameraya bakan tek parça eğik yan kiriş, eğik küpeşte ve dikmeler, basamak burunları;
+        /// kabine kadar basamakların altı kapalı (duvar), kabin yüksek ucun altında açık kalır.
+        /// Üst katta merdiven boşluğunun önünde korkuluk.
         /// </summary>
         private static void BuildStairTrim(Transform parent, float run, float rise)
         {
             var beam = GetMaterial("merdiven_kiris", "Assets/Art/Tiles/merdiven_kiris.png", new Color(0.32f, 0.24f, 0.18f));
             var rail = GetMaterial("korkuluk", "Assets/Art/Tiles/korkuluk.png", new Color(0.22f, 0.2f, 0.19f));
             var nose = GetMaterial("merdiven_burun", null, new Color(0.55f, 0.45f, 0.35f));
+            var under = GetMaterial("merdiven_alti", "Assets/Art/Tiles/merdiven_alti.png", new Color(0.78f, 0.72f, 0.62f));
             var trim = Child(parent, "Trim");
+            float x0 = HouseDims.StairX0;
             float z0 = HouseDims.StairZ0;
+            float slope = rise / run;
+            float angle = Mathf.Atan(slope) * Mathf.Rad2Deg;
             const float railHeight = 0.9f;
+            // Basamak burunlarından geçen çizgi: y = rise + (x - x0) * slope
+            float Nose(float x) => rise + (x - x0) * slope;
+
+            // Eğik yan kiriş: üst kenarı burun çizgisinin hemen üstünde, 0,3 m kalınlık; alt ucu zeminin içinde
+            float xs = x0 - 0.3f, xe = x0 + HouseDims.StairLength;
+            float length = (xe - xs) / Mathf.Cos(angle * Mathf.Deg2Rad);
+            AddSlopedBox(trim, "Stringer", new Vector3((xs + xe) * 0.5f, Nose((xs + xe) * 0.5f) - 0.12f, z0 - 0.03f),
+                new Vector3(length, 0.3f, 0.06f), angle, beam);
+            // Eğik küpeşte: burun çizgisinin railHeight üstünde
+            AddSlopedBox(trim, "Handrail", new Vector3((x0 + xe) * 0.5f, Nose((x0 + xe) * 0.5f) + railHeight, z0 + 0.05f),
+                new Vector3((xe - x0) / Mathf.Cos(angle * Mathf.Deg2Rad), 0.06f, 0.08f), angle, rail);
+
             for (int i = 0; i < HouseDims.StairSteps; i++)
             {
-                float xa = HouseDims.StairX0 + i * run;
+                float xa = x0 + i * run;
                 float top = (i + 1) * rise;
-                // Yan kiriş: basamağın altından 0,35 m aşağı inen bant, adım adım eğik bir kiriş oluşturur
-                AddDecorBox(trim, $"Stringer_{i:00}", new Vector3(xa, Mathf.Max(0f, top - rise - 0.35f), z0 - 0.06f),
-                    new Vector3(xa + run, top - 0.02f, z0), beam);
                 // Basamak burnu: önde ince, açık renkli kenar
                 AddDecorBox(trim, $"Nose_{i:00}", new Vector3(xa - 0.02f, top - 0.04f, z0 - 0.08f),
                     new Vector3(xa + run, top, HouseDims.StairZ1), nose);
-                // Dikme her iki basamakta bir; küpeşte her basamakta (basamaklı eğim)
+                // Dikme her iki basamakta bir: basamaktan küpeşteye
                 if (i % 2 == 0)
-                    AddDecorBox(trim, $"Baluster_{i:00}", new Vector3(xa + run * 0.4f, top, z0 + 0.03f),
-                        new Vector3(xa + run * 0.4f + 0.04f, top + railHeight, z0 + 0.07f), rail);
-                AddDecorBox(trim, $"Rail_{i:00}", new Vector3(xa - 0.01f, top + railHeight - 0.03f, z0 + 0.01f),
-                    new Vector3(xa + run + 0.01f, top + railHeight + 0.03f, z0 + 0.09f), rail);
+                {
+                    float bx = xa + run * 0.4f;
+                    AddDecorBox(trim, $"Baluster_{i:00}", new Vector3(bx, top, z0 + 0.03f),
+                        new Vector3(bx + 0.04f, Nose(bx + 0.02f) + railHeight, z0 + 0.07f), rail);
+                }
+                // Basamağın altı kabine kadar kapalı (kabin yüksek ucun altında)
+                if (xa + run <= HouseDims.CabinMin.x + 0.01f && top - rise > 0.01f)
+                    AddDecorBox(trim, $"Under_{i:00}", new Vector3(xa, 0f, z0 + 0.02f),
+                        new Vector3(xa + run, top - rise, HouseDims.StairZ1), under);
             }
 
             // Üst kat: merdiven boşluğunun önünde (karakterin arkasında) korkuluk
@@ -559,6 +578,14 @@ namespace Deprem.HouseBuilder
             var color = Color.HSVToRGB(0.05f + hash % 7 * 0.012f, 0.3f, 0.5f + hash % 5 * 0.05f);
             var go = AddShape(parent, $"Decor_{decor.Key}_{decor.Room}", min, min + decor.Size, "Decor", decor.Key, color, false, false);
             go.isStatic = true;
+            // Yataklar şilte hizasında çarpışır: döngü 1'de çöken tavan parçaları ve raf yatağın üstünde kalır
+            // (karakter düzleminin arkasında, oyuncunun yolunu kesmez)
+            if (decor.Key.EndsWith("yatak") || decor.Key.EndsWith("yatagi"))
+            {
+                var bed = go.AddComponent<BoxCollider>();
+                bed.size = new Vector3(decor.Size.x, 0.5f, decor.Size.z);
+                bed.center = new Vector3(0f, 0.25f - decor.Size.y * 0.5f, 0f);
+            }
         }
 
         /// <summary>
@@ -633,6 +660,14 @@ namespace Deprem.HouseBuilder
             }
             visual.SetActive(false);
             return visual;
+        }
+
+        /// <summary>Çarpışmasız, Z ekseninde açılı kutu (eğik kiriş, küpeşte): merkez, boyut (yerel), açı (derece)</summary>
+        private static GameObject AddSlopedBox(Transform parent, string name, Vector3 center, Vector3 size, float angle, Material mat)
+        {
+            var go = AddDecorBox(parent, name, center - size * 0.5f, center + size * 0.5f, mat);
+            go.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            return go;
         }
 
         /// <summary>Çarpışmasız, tek materyalli küçük kutu</summary>

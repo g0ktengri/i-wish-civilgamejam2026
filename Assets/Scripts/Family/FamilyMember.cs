@@ -49,6 +49,15 @@ namespace Deprem.Family
         [SerializeField] private Transform visual;
         [Tooltip("Yatarken gövdenin yarı uzunluğu (m): ezilince gövde eşyanın ortasına gelsin")]
         [SerializeField] private float lyingHalfLength = 0.8f;
+        [Tooltip("Kurtarma fazında (karanlık) üyenin çevresindeki hafif ışık: ezilen / yaralı üye görünsün")]
+        [SerializeField] private Light glow;
+
+        [Header("Seslenme (kurtarma fazı)")]
+        [Tooltip("Ayakta / yaralı üye oyuncu uzaktayken bu aralıklarla seslenir: bubble.family_call.{üye}")]
+        [SerializeField] private Vector2 callInterval = new Vector2(5f, 8f);
+        [SerializeField] private float callDuration = 2.5f;
+        [Tooltip("Oyuncu bu kadar yakındaysa seslenmez (m)")]
+        [SerializeField] private float callQuietRange = 2.5f;
 
         public FamilyMemberId Id => id;
         public FamilyState State { get; private set; } = FamilyState.Waiting;
@@ -61,6 +70,8 @@ namespace Deprem.Family
 
         private float discoverTimer;
         private float treatTimer;
+        private float callTimer = 2f;
+        private SpeechBubble bubble;
         private PlayerController player;
         private bool registered;
 
@@ -180,6 +191,8 @@ namespace Deprem.Family
                 return;
             }
 
+            CallForHelp(dt);
+
             if (IsTreating)
             {
                 if (!interactHeld || !IsNear(player.transform.position, interactRange * 1.5f))
@@ -193,6 +206,21 @@ namespace Deprem.Family
                     if (treatTimer >= treatHoldTime) Rescue();
                 }
             }
+        }
+
+        /// <summary>
+        /// Play testi 5: "ailemi kurtarmalıyım" anlaşılmıyordu. Bekleyen ya da yaralı üye, oyuncu uzaktayken
+        /// ara ara seslenir (balon; ekranda görünür, oda karanlık olsa da).
+        /// </summary>
+        private void CallForHelp(float dt)
+        {
+            if (State != FamilyState.Waiting && State != FamilyState.Injured) return;
+            if (IsNear(player.transform.position, callQuietRange)) return;
+            callTimer -= dt;
+            if (callTimer > 0f) return;
+            callTimer = Random.Range(callInterval.x, callInterval.y);
+            if (bubble == null) bubble = GetComponent<SpeechBubble>();
+            if (bubble != null) bubble.Say("bubble.family_call." + id.ToString().ToLowerInvariant(), callDuration);
         }
 
         /// <summary>
@@ -273,6 +301,8 @@ namespace Deprem.Family
 
         private void LateUpdate()
         {
+            if (glow != null)
+                glow.enabled = GameState.Phase == GamePhase.Rescue && State != FamilyState.InCabin;
             if (visual == null) return;
             bool lying = State == FamilyState.Injured || State == FamilyState.Hit;
             bool ducking = State == FamilyState.Ducking;

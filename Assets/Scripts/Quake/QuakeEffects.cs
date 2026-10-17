@@ -27,11 +27,11 @@ namespace Deprem.Quake
 
         [Header("Tavandan toz")]
         [Tooltip("Tam şiddette oda başına saniyede toz tanesi")]
-        [SerializeField] private float dustRate = 160f;
-        [SerializeField] private Color dustColor = new Color(0.78f, 0.74f, 0.66f, 0.85f);
-        [Tooltip("Tam şiddette oda başına saniyede iri, yavaş düşen toz topağı")]
-        [SerializeField] private float clumpRate = 14f;
-        [SerializeField] private Color clumpColor = new Color(0.75f, 0.71f, 0.64f, 0.35f);
+        [SerializeField] private float dustRate = 140f;
+        [SerializeField] private Color dustColor = new Color(0.8f, 0.77f, 0.7f, 0.55f);
+        [Tooltip("Tam şiddette oda başına saniyede iri, yavaş düşen toz bulutu")]
+        [SerializeField] private float clumpRate = 10f;
+        [SerializeField] private Color clumpColor = new Color(0.78f, 0.75f, 0.68f, 0.18f);
         [Tooltip("Tam şiddette oda başına saniyede sıva parçası (şiddet 0,4'ün üstünde başlar); yere çarpıp seker")]
         [SerializeField] private float chunkRate = 10f;
         [Tooltip("Ana depremin ilk vuruşunda oda başına toz patlaması (tane)")]
@@ -65,11 +65,13 @@ namespace Deprem.Quake
             {
                 var c = ceilings[i];
                 var box = new Vector3(c.size.x, 0.05f, c.size.y);
-                dust[i] = CreateSystem("Dust_" + i, dustMaterial, c.center, box, 0.02f, 0.07f, 1.8f, 0.35f, dustColor, 900);
-                clumps[i] = CreateSystem("Clumps_" + i, dustMaterial, c.center, box, 0.18f, 0.4f, 3f, 0.08f, clumpColor, 120);
+                dust[i] = CreateSystem("Dust_" + i, dustMaterial, c.center, box, 0.04f, 0.1f, 2f, 0.25f, dustColor, 900);
+                Drift(dust[i], 0.25f);
+                clumps[i] = CreateSystem("Clumps_" + i, dustMaterial, c.center, box, 0.4f, 0.9f, 3.5f, 0.05f, clumpColor, 120);
                 var grow = clumps[i].sizeOverLifetime;
                 grow.enabled = true;
-                grow.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.5f, 1f, 1.5f));
+                grow.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.4f, 1f, 1.6f));
+                Drift(clumps[i], 0.15f);
                 chunks[i] = CreateSystem("Chunks_" + i, chunkMaterial != null ? chunkMaterial : dustMaterial,
                     c.center, box, 0.05f, 0.14f, 2.2f, 1f, Color.white, 120);
                 // Sıva parçaları zemine (ve eşyalara) çarpıp seker, sonra yerde kalıp solar
@@ -144,6 +146,17 @@ namespace Deprem.Quake
                 };
                 puff.Emit(emit, 1);
             }
+        }
+
+        /// <summary>Toz düz düşmesin: havada hafifçe salınsın</summary>
+        private static void Drift(ParticleSystem ps, float strength)
+        {
+            var noise = ps.noise;
+            noise.enabled = true;
+            noise.strength = strength;
+            noise.frequency = 0.6f;
+            noise.scrollSpeed = 0.3f;
+            noise.quality = ParticleSystemNoiseQuality.Low;
         }
 
         private ParticleSystem CreateSystem(string name, Material material, Vector3 position, Vector3 box,

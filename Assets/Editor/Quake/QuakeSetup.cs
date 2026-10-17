@@ -95,10 +95,41 @@ namespace Deprem.Quake
             mat.SetOverrideTag("RenderType", "Transparent");
             mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-            mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Particles/toz_kucuk.png"));
+            var art = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Particles/toz_kucuk.png");
+            mat.SetTexture("_BaseMap", art != null ? art : SoftDustTexture());
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>
+        /// Play testi 5: kare toz taneleri çirkindi. Sanatçı dokusu yokken 16 x 16 yumuşak kenarlı yuvarlak toz
+        /// (merkezi dolu, kenara doğru saydamlaşır). Kodla üretilir, Assets/Generated/Quake/toz_yumusak.png.
+        /// </summary>
+        private static Texture2D SoftDustTexture()
+        {
+            const string path = "Assets/Generated/Quake/toz_yumusak.png";
+            const int size = 16;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float dx = (x + 0.5f) / size * 2f - 1f, dy = (y + 0.5f) / size * 2f - 1f;
+                float d = Mathf.Sqrt(dx * dx + dy * dy);
+                float alpha = Mathf.Clamp01(1f - d);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha * alpha * (3f - 2f * alpha)));
+            }
+            tex.Apply();
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(path);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            importer.alphaIsTransparency = true;
+            importer.mipmapEnabled = false;
+            importer.wrapMode = TextureWrapMode.Clamp;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         /// <summary>Tavandan düşen sıva: sanatçı dokusu (Assets/Art/Particles/siva.png) varsa onu kullanır</summary>

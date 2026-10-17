@@ -277,6 +277,8 @@ Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin
 3. Merdiven tam olmadı: eğik tek parça kiriş ve küpeşte, basamakların altı kapalı (duvar).
 4. Döngü 1'de sadece raf düşüyor, ciddi değil: rafın üstüne tavan da çöker (yatağın üstüne sıva ve beton parçaları), raf daha ağır ve dolu.
 
+**Mehmet tarafı: 1–4 yapıldı** (Play'de son kontrol bekliyor). Yatağın üstündeki raf (`ItemId.BedShelf`) artık 1,6 × 0,7 m, iki katlı; taşı-yerleştir görselin (`minigame_yatak_rafi`) buna göre çizilebilir. Seslenme metinleri `bubble.family_call.*`, kurtarma başı `bubble.rescue_start` (texts.csv `# Mehmet`).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

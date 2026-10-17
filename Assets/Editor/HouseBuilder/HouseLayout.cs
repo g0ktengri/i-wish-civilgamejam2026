@@ -140,7 +140,8 @@ namespace Deprem.HouseBuilder
         public static readonly ItemDef[] Items =
         {
             new ItemDef { Number = 1, Key = "yatak_rafi", Name = "Yatağın üstündeki raf", Room = "oyuncu",
-                Size = new Vector3(1f, 0.5f, 0.25f), CenterX = 1.5f, BaseY = 1.6f, Mount = ItemMount.BackWall,
+                // Play testi 5: tek tahta raf "düşse ne olur" hissi veriyordu; iki katlı, kitap dolu ağır duvar rafı
+                Size = new Vector3(1.6f, 0.7f, 0.35f), CenterX = 1.5f, BaseY = 1.5f, Mount = ItemMount.BackWall,
                 Minigame = Deprem.Core.MinigameType.CarryAndPlace },
             new ItemDef { Number = 2, Key = "kitaplik", Name = "Kitaplık", Room = "salon",
                 Size = new Vector3(1f, 2f, 0.375f), CenterX = 22f, Mount = ItemMount.Floor },

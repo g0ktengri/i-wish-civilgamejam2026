@@ -137,6 +137,7 @@ namespace Deprem.Quake
                     break;
                 case GamePhase.Rescue:
                     if (player != null) player.InputEnabled = true;
+                    Say("bubble.rescue_start", 4f); // Play testi 5: kurtarma hedefi anlaşılsın
                     break;
                 case GamePhase.Failed:
                 case GamePhase.Won:
@@ -241,6 +242,8 @@ namespace Deprem.Quake
                 var shelf = SecurableItem.Find(ItemId.BedShelf);
                 if (shelf == null || !shelf.IsSecured)
                 {
+                    // Play testi 5: sadece raf düşmesi ciddi durmuyordu; ağır raftan sonra tavan da yatağa çöker
+                    yield return CollapseOnBed();
                     Fail(LoseReason.IgnoredForeshock, ItemId.BedShelf);
                     yield break;
                 }
@@ -395,6 +398,37 @@ namespace Deprem.Quake
             }
             QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, 0.6f);
             yield return new WaitForSeconds(0.9f);
+        }
+
+        /// <summary>
+        /// Yatakta kalan oyuncunun üstüne tavan çöker: geniş beton parçası, sıva ve kırıntılar yatağın üstüne,
+        /// sert sarsıntı ve toz patlaması. Sonra döngü biter.
+        /// </summary>
+        private IEnumerator CollapseOnBed()
+        {
+            QuakePrompts.Clear();
+            var center = player.transform.position;
+            float ceilingY = center.y + 2.8f;
+            foreach (var hit in Physics.RaycastAll(center + Vector3.up * 0.3f, Vector3.up, 4f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.rigidbody == player.Body || (hit.rigidbody != null && !hit.rigidbody.isKinematic)) continue;
+                ceilingY = Mathf.Min(ceilingY, hit.point.y);
+            }
+
+            var top = new Vector3(center.x, ceilingY - 0.15f, center.z - debrisFrontOffset);
+            SpawnDebris("CeilingSlab", top, new Vector3(1.6f, 0.18f, 0.6f), 120f);
+            for (int i = 0; i < 9; i++)
+            {
+                var offset = new Vector3(UnityEngine.Random.Range(-0.9f, 0.9f), UnityEngine.Random.Range(-0.3f, 0.1f), 0f);
+                float size = UnityEngine.Random.Range(0.12f, 0.3f);
+                SpawnDebris("Chunk", top + offset, new Vector3(size, size, Mathf.Min(size, 0.25f)), 6f);
+            }
+            if (effects != null) effects.Burst(1.2f);
+            QuakeCameraShake.Intensity = 1f;
+            // Yatan oyuncunun dik kapsülü parçaları havada tutmasın: parçalar yatağın şiltesine düşer
+            player.Body.detectCollisions = false;
+            yield return new WaitForSeconds(1.4f);
+            player.Body.detectCollisions = true;
         }
 
         private void SpawnDebris(string name, Vector3 position, Vector3 size, float mass)

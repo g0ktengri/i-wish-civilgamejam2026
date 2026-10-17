@@ -102,8 +102,27 @@ namespace Deprem.Family
             renderer.shadowCastingMode = ShadowCastingMode.TwoSided;
             renderer.receiveShadows = false; // kendi gölgesi yüzüne düşmesin (lamba arkada)
 
+            // Kurtarma fazında (karanlık) üyeyi seçtiren hafif sıcak ışık, önde ve göğüs hizasında
+            var glowGo = new GameObject("Glow");
+            glowGo.transform.SetParent(go.transform, false);
+            glowGo.transform.localPosition = new Vector3(0f, def.Height * 0.55f, -0.5f);
+            var glow = glowGo.AddComponent<Light>();
+            glow.type = LightType.Point;
+            glow.color = new Color(1f, 0.85f, 0.65f);
+            glow.intensity = 0.8f;
+            glow.range = 1.8f;
+            glow.shadows = LightShadows.None;
+            glow.enabled = false;
+
+            // Seslenme balonu: başının biraz üstünde
+            var bubble = go.AddComponent<Deprem.Player.SpeechBubble>();
+            var bubbleSo = new SerializedObject(bubble);
+            bubbleSo.FindProperty("headHeight").floatValue = def.Height + 0.35f;
+            bubbleSo.ApplyModifiedPropertiesWithoutUndo();
+
             var member = go.AddComponent<FamilyMember>();
             var so = new SerializedObject(member);
+            so.FindProperty("glow").objectReferenceValue = glow;
             so.FindProperty("id").enumValueIndex = (int)def.Id;
             so.FindProperty("homeMarker").stringValue = def.Marker;
             so.FindProperty("dangerItem").enumValueIndex = (int)def.Danger;

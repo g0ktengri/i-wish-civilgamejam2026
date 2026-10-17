@@ -51,18 +51,15 @@ namespace Deprem.HouseBuilder
             switch (key)
             {
                 // ---------------------------------------------------------- Sabitlenebilir eşyalar
-                case "yatak_rafi": // duvar rafı, iki konsol, üstünde devrilecek eşyalar
-                    s.Add(0f, 0.3f, 0f, w, 0.36f, d);
-                    foreach (float x in new[] { 0.12f, w - 0.17f })
-                    {
-                        s.Add(x, 0.05f, d - 0.05f, x + 0.05f, 0.3f, d);
-                        s.Add(x, 0.26f, 0.02f, x + 0.05f, 0.3f, d - 0.05f);
-                    }
-                    s.Add(0.08f, 0.36f, 0.04f, 0.34f, 0.5f, 0.22f, PartTone.AccentB);  // kutu
-                    s.Add(0.46f, 0.36f, 0.06f, 0.52f, 0.5f, 0.22f, s.NextAccent());   // kitaplar
-                    s.Add(0.53f, 0.36f, 0.06f, 0.58f, 0.48f, 0.22f, s.NextAccent());
-                    s.Add(0.59f, 0.36f, 0.06f, 0.66f, 0.46f, 0.22f, s.NextAccent());
-                    s.Add(0.76f, 0.36f, 0.08f, 0.9f, 0.47f, 0.2f, PartTone.Glass);    // kavanoz
+                case "yatak_rafi": // yatağın üstünde iki katlı, kitap ve kutularla dolu ağır duvar rafı
+                    s.Add(0f, 0f, 0f, 0.04f, h, d);
+                    s.Add(w - 0.04f, 0f, 0f, w, h, d);
+                    s.Add(0.04f, 0f, 0f, w - 0.04f, 0.04f, d);
+                    s.Add(0.04f, 0.34f, 0f, w - 0.04f, 0.38f, d);
+                    s.Add(0f, h - 0.04f, 0f, w, h, d);
+                    s.Add(0.04f, 0.04f, d - 0.02f, w - 0.04f, h - 0.04f, d);
+                    Books(s, 0.04f, d, new[] { (0.08f, 0.5f, 0.27f), (0.55f, 0.7f, 0.22f), (0.78f, 1.3f, 0.28f), (1.35f, 1.52f, 0.2f) });
+                    Books(s, 0.38f, d, new[] { (0.1f, 0.42f, 0.24f), (0.5f, 0.95f, 0.26f), (1.05f, 1.5f, 0.23f) });
                     break;
 
                 case "kitaplik":
