@@ -52,6 +52,15 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Kız kardeş çizimleri bağlandı (Berke, senin klasöründe izinle)
+
+- **Ekip çizimi:** `Kızkardeş koşma.zip` (8 kare). Anne gibi 1920 px'ten 15 px'lik ekip pikseliyle 128 px'e indirildi; zip repoya konmadı.
+  - `Assets/Art/Characters/kardes_yurume_1..8.png`, Point.
+- **Bağlama:** `FamilySetup` kendiliğinden bağladı. Kardeş artık yeşil yer tutucu değil, kareli quad (`Generated/Family/sibling_kareler.mat`).
+  - Bekleme çizimi yok; dururken yürüme karelerinden biri gösteriliyor (`idleFrame`).
+  - Kare boyu annenin 1,8 m'si; çocuk çizimde zaten küçük çizilmiş.
+- `FamilySystem.prefab` yeniden kuruldu ve commit'te. Dört test geçiyor; Play'de denenmedi. Kardeşin saklanma ve fenerle bulunma görünümüne bakman iyi olur.
+
 ### Play testi 31: M59–M66 (Berke)
 
 Play'de denenmedi; dört test geçiyor.
