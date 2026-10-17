@@ -41,6 +41,29 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Play testi 13: M25 ses çağrıları (Berke)
+
+Bütün çağrılar `Deprem.Audio.Sfx` üzerinden; AudioDirector gelene kadar sessiz. Tablodaki anahtarların hepsi bağlandı:
+
+| Anahtar | Nerede çalıyor |
+|---|---|
+| `ui.move` / `ui.click` | `MenuList`: seçim değişince / onayda (ana menü, bölüm seçimi, duraklatma; ilk uyarı ekranında onay) |
+| `ui.back` | Ana menü alt ekranında Esc, duraklatmayı Esc ile kapatınca. Esc ile duraklatma açılırken `ui.click` |
+| `music.menu` | Ana menü görünür olunca (alt ekranlarda kesilmez), oyun başlayınca `StopMusic` |
+| `minigame.screw` | Vida her çeyrek turda (art arda çalabilir) |
+| `minigame.bracket` | Vida bitince (L demiri) |
+| `minigame.latch` / `minigame.miss` | Kilit isabet / ıskalama; taşı-yerleştir'de duvara çarpınca da `minigame.miss` |
+| `minigame.pickup` / `minigame.drop` | Taşı-yerleştir'de tutunca / bırakınca |
+| `minigame.fail` | `MinigameHost.Close(false)`: Esc ile vazgeçince ya da ruh fazı biterken açık minigame kapanınca |
+| `wish.note` | Keşke yazısı başlarken, "KEŞKE..." gelmeden hemen önce |
+| `wish.type` | Her harfte (boşluk ve nokta hariç), şiddet `WishScreen.typeVolume` 0,25 (0 = kapalı) |
+| `wish.shatter` | Cam kırılması kaldırıldığı için **kırmızı çatlağın yarıldığı an** (M22). Kırılma / çatlama sesi buraya uyar |
+| `wish.rewind` | "<< Zaman geri sarılıyor" başlarken |
+| `music.final` | Final listesi açılırken (`PlayMusic`) |
+| `final.check` | Final listesinde her madde "yaptım"a dönerken |
+
+Ruh fazı tik-takı, eşya sabitlenince ve çantaya malzeme konunca çalan sesler sende; ben çağırmadım. Keşke ekranı ve menü `timeScale 0` iken çalışıyor, senin "timeScale'den etkilenmez" notuna güvendim.
+
 ### Play testi 12: M24 HUD (Berke)
 
 - **Tek stil:** `UiBuilder.CreatePanel` artık kodla üretilen pixel panel çiziyor: köşeleri kırpık koyu kontur, üst-solda açık krem, alt-sağda koyu kenar, sıcak koyu dolgu, sağ altta UI `Shadow` (3, -3). 1 sprite pikseli = 2 referans pikseli. `UiStyle.panel` (`hud_ipucu`) gelirse o kullanılır. Senin `SegmentMeter` / süre ve çök-kapan çubukların bunu kendiliğinden aldı. Gölge sprite'a gömülü değil, iç ölçülerin kaymaz.

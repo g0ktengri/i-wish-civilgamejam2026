@@ -88,6 +88,7 @@ namespace Deprem.Minigames
             if (Mathf.Abs(t - zoneCenter) <= zoneWidth * 0.5f)
             {
                 hits++;
+                Audio.Sfx.Play("minigame.latch");
                 if (hits >= requiredHits)
                 {
                     UpdatePips();
@@ -98,6 +99,7 @@ namespace Deprem.Minigames
             else
             {
                 hits = Mathf.Max(0, hits - 1);
+                Audio.Sfx.Play("minigame.miss");
                 Flash(MissColor);
             }
 

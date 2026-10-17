@@ -156,6 +156,7 @@ namespace Deprem.Minigames
             fill.sizeDelta = new Vector2(barWidth * total / screws.Count, fill.sizeDelta.y);
 
             if (total < screws.Count) return false;
+            Audio.Sfx.Play("minigame.bracket"); // L demiri takıldı
             driver.Root.gameObject.SetActive(false);
             shadow.Root.gameObject.SetActive(false);
             if (done) done.enabled = true;
@@ -182,7 +183,10 @@ namespace Deprem.Minigames
                 // Saat yönü = açının azalması (y yukarı)
                 float delta = -Mathf.DeltaAngle(lastAngle, angle) / 360f;
                 float turned = delta >= 0f ? delta : delta * reversePenalty;
+                int quarters = Mathf.FloorToInt(screw.Progress * turnsPerScrew * 4f);
                 screw.Progress = Mathf.Clamp01(screw.Progress + turned / turnsPerScrew);
+                // M25: her çeyrek turda tıkırtı
+                if (Mathf.FloorToInt(screw.Progress * turnsPerScrew * 4f) > quarters) Audio.Sfx.Play("minigame.screw");
                 screw.Head.localRotation = Quaternion.Euler(0f, 0f, -screw.Progress * turnsPerScrew * 360f);
                 if (!Art.screwHead || screw.Done)
                     screw.Image.color = screw.Done ? ScrewTight : Color.Lerp(ScrewLoose, Color.white, screw.Progress * 0.3f);

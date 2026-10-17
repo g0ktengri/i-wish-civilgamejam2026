@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Deprem.Audio;
 using Deprem.Core;
 using Deprem.Localization;
 using Deprem.Loop;
@@ -18,6 +19,8 @@ namespace Deprem.UI
     //   4. Kısa bir sessizlik, sonra bilgi satırı yazılır.
     //   5. F (ya da Space/Enter/tık): yazılar geri sarılarak silinir, çatlak kapanır ("zaman geri sarılıyor"),
     //      döngü yöneticisi zamanı geri sarar. Yeni denemede siyahtan açılır. Canvas'ı kendisi kurar.
+    // M25 sesleri: wish.note (KEŞKE gelirken), wish.type (her harf, çok kısık), wish.shatter (çatlağın yarıldığı an),
+    // wish.rewind (geri sarma).
     public class WishScreen : MonoBehaviour
     {
         [Header("Kayıp anı")]
@@ -72,6 +75,10 @@ namespace Deprem.UI
         [SerializeField] Color lineColor = new Color(0.9f, 0.22f, 0.16f);
         [SerializeField] Color flashColor = new Color(0.28f, 0.02f, 0.02f);
         [SerializeField] int sortingOrder = 100;
+
+        [Header("Ses (M25)")]
+        [Tooltip("Harf başına daktilo sesinin şiddeti (0: kapalı)")]
+        [SerializeField] float typeVolume = 0.25f;
 
         CanvasGroup group;
         Image background;
@@ -149,6 +156,7 @@ namespace Deprem.UI
 
             SplitWish(wish, out string head, out string rest);
             yield return new WaitForSecondsRealtime(wishDelay);
+            Sfx.Play("wish.note");
             if (!string.IsNullOrEmpty(head))
             {
                 yield return TypeHead(head);
@@ -187,6 +195,7 @@ namespace Deprem.UI
             for (int i = 1; i <= text.Length; i++)
             {
                 headText.text = text.Substring(0, i);
+                TypeSound(text[i - 1]);
                 float wait = text[i - 1] == '.' ? interval * 1.6f : interval;
                 for (float t = 0f; t < wait; t += Time.unscaledDeltaTime)
                 {
@@ -243,6 +252,7 @@ namespace Deprem.UI
             {
                 wishText.text = text.Substring(0, i);
                 char c = text[i - 1];
+                TypeSound(c);
                 bool openingDots = c == '.' && i <= 3;
                 float wait = openingDots ? interval * 2f
                     : c == ',' || c == ';' ? interval * 5f : c == '.' || c == '!' || c == '?' ? interval * 8f : interval;
@@ -269,6 +279,7 @@ namespace Deprem.UI
             float canvasWidth = ((RectTransform)wishText.canvas.transform).rect.width;
             float width = Mathf.Clamp(wishText.preferredWidth, 220f, canvasWidth * 0.75f);
             BuildCrack(width);
+            Sfx.Play("wish.shatter");
             var shakeHead = headRect.anchoredPosition;
             for (float t = 0f; t < crackSeconds; t += Time.unscaledDeltaTime)
             {
@@ -332,6 +343,11 @@ namespace Deprem.UI
             // Işıma çekirdeğin arkasında kalsın
             foreach (var glow in crackGlow) glow.transform.SetAsFirstSibling();
             ShowCrack(0);
+        }
+
+        void TypeSound(char c)
+        {
+            if (typeVolume > 0f && !char.IsWhiteSpace(c) && c != '.') Sfx.Play("wish.type", typeVolume);
         }
 
         static Vector2 Round(Vector2 v) => new Vector2(Mathf.Round(v.x), Mathf.Round(v.y));
@@ -422,6 +438,7 @@ namespace Deprem.UI
         {
             rewinding = true;
             heartbeat = false;
+            Sfx.Play("wish.rewind");
             crackRoot.localScale = Vector3.one;
             hintText.text = Texts.Get("wish.rewind");
             hintText.enabled = true;

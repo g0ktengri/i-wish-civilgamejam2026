@@ -86,6 +86,7 @@ namespace Deprem.Minigames
             {
                 dragging = true;
                 grabOffset = item.anchoredPosition - input.Pointer;
+                Audio.Sfx.Play("minigame.pickup");
             }
 
             if (dragging && input.Held)
@@ -102,6 +103,7 @@ namespace Deprem.Minigames
                     dragging = false;
                     item.anchoredPosition = start;
                     hitFlash = HitFlashTime;
+                    Audio.Sfx.Play("minigame.miss");
                     return false;
                 }
             }
@@ -109,6 +111,7 @@ namespace Deprem.Minigames
             if (dragging && (input.Released || !input.Held))
             {
                 dragging = false;
+                Audio.Sfx.Play("minigame.drop");
                 if (Vector2.Distance(item.anchoredPosition, target.anchoredPosition) <= snapRadius)
                 {
                     item.anchoredPosition = target.anchoredPosition;

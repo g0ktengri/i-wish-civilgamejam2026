@@ -181,6 +181,7 @@ namespace Deprem.Minigames
         void Close(bool success)
         {
             StopAllCoroutines();
+            if (!success && current != null) Audio.Sfx.Play("minigame.fail"); // vazgeçildi ya da süre bitti
             var callback = onDone;
             current = null;
             onDone = null;

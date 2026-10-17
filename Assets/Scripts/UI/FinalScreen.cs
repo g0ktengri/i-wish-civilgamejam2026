@@ -75,6 +75,7 @@ namespace Deprem.UI
             afadText.text = string.Empty;
             hintText.text = string.Empty;
 
+            Audio.Sfx.PlayMusic("music.final"); // M25
             yield return new WaitForSecondsRealtime(startDelay);
             for (float t = 0f; t < fadeTime; t += Time.unscaledDeltaTime)
             {
@@ -93,6 +94,7 @@ namespace Deprem.UI
                 label.text = Texts.Get($"final.{lesson}");
                 label.color = doneColor;
                 check.enabled = true;
+                Audio.Sfx.Play("final.check");
                 yield return new WaitForSecondsRealtime(rowDelay);
             }
 

@@ -1,3 +1,4 @@
+using Deprem.Audio;
 using Deprem.Core;
 using Deprem.Localization;
 using Deprem.Loop;
@@ -39,6 +40,7 @@ namespace Deprem.UI
         RectTransform items;
         MenuList menu;
         Screen screen = Screen.Hidden;
+        bool musicPlaying;
 
         void Awake() => BuildCanvas();
 
@@ -74,6 +76,7 @@ namespace Deprem.UI
                 case Screen.Warning:
                     if (UiInput.ConfirmOrClick())
                     {
+                        Sfx.Play("ui.click");
                         warningShown = true;
                         Show(Screen.Main);
                     }
@@ -82,7 +85,11 @@ namespace Deprem.UI
                     menu.Tick();
                     return;
                 default:
-                    if (UiInput.Back()) Show(Screen.Main);
+                    if (UiInput.Back())
+                    {
+                        Sfx.Play("ui.back");
+                        Show(Screen.Main);
+                    }
                     else menu.Tick();
                     return;
             }
@@ -98,6 +105,13 @@ namespace Deprem.UI
             {
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
+            }
+            // M25: ana menü müziği alt ekranlarda kesilmez; oyun başlayınca susar
+            if (visible != musicPlaying)
+            {
+                musicPlaying = visible;
+                if (visible) Sfx.PlayMusic("music.menu");
+                else Sfx.StopMusic();
             }
 
             // Alt ekranlarda metin ortada, "Geri" altta

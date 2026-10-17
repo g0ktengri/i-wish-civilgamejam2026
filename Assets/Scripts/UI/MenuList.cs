@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Deprem.Audio;
 using Deprem.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,6 +10,7 @@ namespace Deprem.UI
 {
     // EventSystem'siz basit dikey menü: W/S ya da oklar ile seç, F/Enter/Space ile onayla,
     // fareyle üzerine gel ve tıkla. Satır metinleri texts.csv anahtarlarından gelir.
+    // M25: seçim değişince ui.move, onayda ui.click (Deprem.Audio.Sfx).
     public class MenuList
     {
         class Entry
@@ -93,11 +95,19 @@ namespace Deprem.UI
                 lastMouse = position;
             }
 
-            if (selected != previous) Refresh();
+            if (selected != previous)
+            {
+                Refresh();
+                Sfx.Play("ui.move");
+            }
 
             bool clicked = mouse != null && mouse.leftButton.wasPressedThisFrame && hovered >= 0;
             if (clicked) selected = hovered;
-            if (clicked || UiInput.Confirm()) entries[selected].Action?.Invoke();
+            if (clicked || UiInput.Confirm())
+            {
+                Sfx.Play("ui.click");
+                entries[selected].Action?.Invoke();
+            }
         }
     }
 }

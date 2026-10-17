@@ -123,6 +123,7 @@ MonoBehaviour:
   lineColor: {r: 0.9, g: 0.22, b: 0.16, a: 1}
   flashColor: {r: 0.28, g: 0.02, b: 0.02, a: 1}
   sortingOrder: 100
+  typeVolume: 0.25
 --- !u!114 &4963408217483958064
 MonoBehaviour:
   m_ObjectHideFlags: 0

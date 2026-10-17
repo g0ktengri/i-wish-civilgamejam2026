@@ -1,3 +1,4 @@
+using Deprem.Audio;
 using Deprem.Core;
 using Deprem.Localization;
 using Deprem.Loop;
@@ -48,12 +49,20 @@ namespace Deprem.UI
         {
             if (paused)
             {
-                if (UiInput.Back()) SetPaused(false);
+                if (UiInput.Back())
+                {
+                    Sfx.Play("ui.back");
+                    SetPaused(false);
+                }
                 else menu.Tick();
                 return;
             }
 
-            if (UiInput.Back() && CanPause()) SetPaused(true);
+            if (UiInput.Back() && CanPause())
+            {
+                Sfx.Play("ui.click");
+                SetPaused(true);
+            }
         }
 
         bool CanPause()
