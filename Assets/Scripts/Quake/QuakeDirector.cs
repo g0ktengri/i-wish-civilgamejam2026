@@ -73,7 +73,8 @@ namespace Deprem.Quake
 
         [Header("Oyuncu")]
         [SerializeField] private float playerPlaneZ = 1f;
-        [SerializeField] private float bedHeight = 0.5f;
+        [Tooltip("Şilte üstü (HouseLayout yatak, Play testi 9'da büyüdü)")]
+        [SerializeField] private float bedHeight = 0.66f;
         [Tooltip("Kalkınca yatağın ortasından bu kadar sağda durur (odanın güvenli masasının önü)")]
         [SerializeField] private float standUpOffsetX = 1.2f;
         [SerializeField] private Key standUpKey = Key.F;

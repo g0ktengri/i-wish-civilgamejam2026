@@ -49,7 +49,11 @@ namespace Deprem.Visual
         [SerializeField] private float verticalMargin = 0.3f;
 
         private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+        // Bedenin gördüğü odalar kalıcı; ruhun gördükleri sadece ruh fazında açık (Play testi 9: ruh fazında
+        // gezilen oda kurtarmada kapısı kapalıyken de görünüyordu, kapalı kapının arkası siyah kalmalı)
         private bool[] revealed;
+        private bool[] spiritSeen;
+        private bool spiritMode;
         private float[] alpha;
         private MaterialPropertyBlock block;
         private PlayerController player;
@@ -62,10 +66,21 @@ namespace Deprem.Visual
             doors = houseDoors;
         }
 
+        /// <summary>Oda şu an açık mı (beden gördüyse; ruh fazında ruh gördüyse de)</summary>
         public bool IsRevealed(string key)
         {
             int i = IndexOf(key);
-            return i >= 0 && revealed != null && revealed[i];
+            return i >= 0 && revealed != null && Visible(i);
+        }
+
+        private bool Visible(int i) => revealed[i] || (spiritMode && spiritSeen[i]);
+
+        /// <summary>Ruh fazı açık mı: ruhun açtığı odalar ayrı tutulur, faz bitince yeniden örtülür</summary>
+        public void SetSpiritMode(bool on)
+        {
+            if (spiritMode == on) return;
+            spiritMode = on;
+            if (!on) System.Array.Clear(spiritSeen, 0, spiritSeen.Length);
         }
 
         private void Awake() => Initialize();
@@ -74,6 +89,8 @@ namespace Deprem.Visual
         public void Initialize()
         {
             revealed = new bool[areas.Length];
+            spiritSeen = new bool[areas.Length];
+            spiritMode = false;
             alpha = new float[areas.Length];
             for (int i = 0; i < areas.Length; i++)
             {
@@ -87,7 +104,8 @@ namespace Deprem.Visual
         {
             if (player == null) player = FindFirstObjectByType<PlayerController>();
             Transform viewer = player != null ? player.transform : null;
-            if (GameState.Phase == GamePhase.Spirit)
+            SetSpiritMode(GameState.Phase == GamePhase.Spirit);
+            if (spiritMode)
             {
                 if (spirit == null)
                 {
@@ -125,17 +143,21 @@ namespace Deprem.Visual
                 }
             }
 
+            // Açık odanın örtüsü solar, ruh fazı bitince ruhun açtığı oda yeniden kararır
             for (int i = 0; i < areas.Length; i++)
             {
-                if (!revealed[i] || alpha[i] <= 0f) continue;
-                alpha[i] = fadeTime > 0f ? Mathf.Max(0f, alpha[i] - dt / fadeTime) : 0f;
+                float target = Visible(i) ? 0f : 1f;
+                if (Mathf.Approximately(alpha[i], target)) continue;
+                alpha[i] = fadeTime > 0f ? Mathf.MoveTowards(alpha[i], target, dt / fadeTime) : target;
                 ApplyAlpha(i);
             }
         }
 
         private void Reveal(int index)
         {
-            if (index >= 0) revealed[index] = true;
+            if (index < 0) return;
+            if (spiritMode) spiritSeen[index] = true;
+            else revealed[index] = true;
         }
 
         private int AreaAt(Vector3 p)
@@ -168,6 +190,7 @@ namespace Deprem.Visual
                 cover.enabled = false;
                 return;
             }
+            cover.enabled = true; // yeniden kararan oda (ruh fazı bitti)
             block ??= new MaterialPropertyBlock();
             cover.GetPropertyBlock(block);
             block.SetColor(BaseColor, new Color(0f, 0f, 0f, alpha[i]));

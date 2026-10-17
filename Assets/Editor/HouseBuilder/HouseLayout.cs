@@ -195,14 +195,15 @@ namespace Deprem.HouseBuilder
         /// Mobilyalar, çarpışmasız. Arkadakiler (yatak, kanepe, tezgah...) karakter düzleminin arkasında;
         /// yataklar yan görünüşte (başlık solda), duvardaki raf / tablo yatağın ortasında.
         /// Öndekiler her odanın güvenli noktasındaki sağlam masa (SafeSpots ile aynı X).
-        /// Oyuncunun yatağı Marker_PlayerBed'in altında (QuakeDirector.bedHeight = şilte üstü 0,5 m),
+        /// Oyuncunun yatağı Marker_PlayerBed'in altında (QuakeDirector.bedHeight = şilte üstü 0,66 m),
         /// ilk yardım çantası komodinin, el feneri mutfak masasının üstünde.
         /// </summary>
         public static readonly DecorDef[] Decor =
         {
-            new DecorDef { Key = "tek_kisilik_yatak", Room = "oyuncu", X0 = 0.5f, Z0 = 3.2f, Size = new Vector3(2f, 0.8f, 1f) },
-            new DecorDef { Key = "tek_kisilik_yatak", Room = "kardes", X0 = 0.4f, Z0 = 3.2f, Size = new Vector3(2f, 0.8f, 1f) },
-            new DecorDef { Key = "ebeveyn_yatagi", Room = "ebeveyn", X0 = 19.4f, Z0 = 3.3f, Size = new Vector3(2.2f, 0.9f, 1.7f) },
+            // Play testi 9: yataklar karaktere göre küçüktü (2 x 0,8 m); şilte üstü 0,66 m
+            new DecorDef { Key = "tek_kisilik_yatak", Room = "oyuncu", X0 = 0.4f, Z0 = 3.2f, Size = new Vector3(2.3f, 1.15f, 1.15f) },
+            new DecorDef { Key = "tek_kisilik_yatak", Room = "kardes", X0 = 0.3f, Z0 = 3.2f, Size = new Vector3(2.3f, 1.15f, 1.15f) },
+            new DecorDef { Key = "ebeveyn_yatagi", Room = "ebeveyn", X0 = 19.35f, Z0 = 3.15f, Size = new Vector3(2.5f, 1.25f, 1.85f) },
             new DecorDef { Key = "komodin", Room = "ebeveyn", X0 = 18.75f, Z0 = 4.3f, Size = new Vector3(0.55f, 0.55f, 0.5f) },
             new DecorDef { Key = "kanepe", Room = "salon", X0 = 23.4f, Z0 = 4.55f, Size = new Vector3(2.2f, 0.85f, 0.9f) },
             new DecorDef { Key = "tezgah", Room = "mutfak", X0 = 28.85f, Z0 = 3.9f, Size = new Vector3(2.7f, 0.9f, 0.6f) },
@@ -235,7 +236,7 @@ namespace Deprem.HouseBuilder
         {
             // Yatağın ortası (yatak X 0,5–2,5); kalkınca QuakeDirector.standUpOffsetX kadar sağda, masanın önünde
             // M19: z 3,9 (şiltenin arka yarısı): devrilen raf yatan görselin önünde kalır
-            new MarkerDef("Marker_PlayerBed", new Vector3(1.5f, 0f, 3.9f)),
+            new MarkerDef("Marker_PlayerBed", new Vector3(1.55f, 0f, 3.9f)),
             new MarkerDef("Marker_PlayerStart", new Vector3(3f, 0f, Z)),
             // Aile, devrilecek eşyasının hemen yanında (önünde değil): yer tutucu eşyanın parçası gibi görünmesin
             new MarkerDef("Marker_Father", new Vector3(22.75f, 0f, Z)),

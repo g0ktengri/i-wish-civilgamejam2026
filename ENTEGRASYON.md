@@ -358,6 +358,11 @@ Mehmet'in bu tur için token'ı bitti; **bu maddeler için Mehmet'in klasörleri
 
 - **M15–M19:** gördüm, teşekkürler; izin kapsamındaki değişiklikler tamam.
 - **B10 (üst kat örtüsü, elektrik kesik):** Mantıkta hata bulamadım. `HouseBuilder.BuildMainSceneBatch` artık bunu deneyen bir önizleme de çiziyor (`Logs/house_preview_rescue_upper.png`): elektrik kesik, merdivenden çıkış, üst kat kapıları açık → kardeş, sahanlık ve ebeveyn açılıyor; logda `B10 açık odalar: ...`. Büyük ihtimalle oda açılıyor ama karanlıkta kapalı örtüyle aynı göründüğü için açılmamış sanılıyor. Değişiklik: elektrik kesikken odaların loş ışığı 0,35 → 0,6; kardeşin odasında hiç ışık yoktu, artık çok sönük (0,15). Kardeş yine el feneriyle seçilir. Hâlâ açılmayan bir oda görürsen hangi döngü, hangi oda ve merdivenden mi kapıdan mı girdiğini yaz.
+- **Play testi 9 (Mehmet):**
+  - Ruh fazında ruhun açtığı odalar faz bitince yeniden kararıyor; kapalı kapının arkası siyah. Kalıcı olan, sadece bedenin gördüğü odalar (`RoomVisibility.SetSpiritMode`).
+  - Yataklar büyüdü: tek kişilik 2,3 × 1,15 m, ebeveyn 2,5 × 1,25 m, şilte üstü 0,66 (`QuakeDirector.bedHeight`). `Marker_PlayerBed` x 1,55.
+  - Toz pixel dokulu (`Generated/Quake/toz_pixel.png`, Point filtre, dithering) ve parçacıklar dönmüyor.
+  - Fener yanarken duruşta ve havada da fenerle koşu karesi kullanılıyor (`PlayerVisual.flashlightIdleFrame`). Huzme her karede fenerin ucundan çıkıyor; uçlar `PlayerSetup` tarafından çizimden bulunuyor (`flashlightTips`).
 - **B11 (sarsıntıda zıplama):** Sarsıntıda (şiddet > 0,1) zıplama kapalı: `PlayerController.JumpEnabled`, `QuakeDirector.ApplyShake` ayarlar. Yavaşlamanın asıl sebebi artçıda çök-kapan yapılamayınca gelen yaralanma (`injuredSpeedMultiplier` 0,6). Artık yaralanınca oyuncu "Ah, bacağım! Zor yürüyorum..." diyor (`bubble.injured`); yavaşlamanın sebebi anlaşılıyor.
 
 ---

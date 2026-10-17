@@ -282,6 +282,16 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 32752e738b31d0941a254761169fd36c, type: 3}
   - {fileID: 2800000, guid: e6dd9c4670755db45b732ac8f90492c7, type: 3}
   - {fileID: 2800000, guid: a0dfd36eac56147498e5b45c2d786f04, type: 3}
+  flashlightIdleFrame: 2
+  flashlightTips:
+  - {x: 87, y: 56.5}
+  - {x: 81, y: 55.5}
+  - {x: 87, y: 56.5}
+  - {x: 87, y: 52.5}
+  - {x: 101, y: 46.5}
+  - {x: 102, y: 44.5}
+  - {x: 85, y: 56.5}
+  - {x: 79, y: 64.5}
   idleFrames:
   - {fileID: 2800000, guid: 3152c56d0fddbc549815a82c4b7cc582, type: 3}
   - {fileID: 2800000, guid: 24e39b706b526a34bbfd0fb4f1751577, type: 3}

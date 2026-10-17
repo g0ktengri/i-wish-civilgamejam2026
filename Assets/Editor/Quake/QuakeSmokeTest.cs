@@ -86,7 +86,7 @@ namespace Deprem.Quake
 
         private static void TestLieDownAndGetUp(PlayerController player)
         {
-            var bed = GameObject.Find("Marker_PlayerBed").transform.position + Vector3.up * 0.5f;
+            var bed = GameObject.Find("Marker_PlayerBed").transform.position + Vector3.up * 0.66f;
             player.LieDown(bed);
             Step(player, null, 1f);
             Check(player.IsLying && (player.transform.position - bed).sqrMagnitude < 0.0001f, "Yatakta yatıyor ve yerinden oynamadı");

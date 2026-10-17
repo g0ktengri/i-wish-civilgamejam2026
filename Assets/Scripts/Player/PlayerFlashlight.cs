@@ -23,6 +23,7 @@ namespace Deprem.Player
         [SerializeField] private float downTilt = 12f;
 
         private PlayerController player;
+        private PlayerVisual visual;
 
         /// <summary>Fener yanıyor mu (PlayerVisual fenerle koşu karelerine geçer)</summary>
         public bool IsOn { get; private set; }
@@ -42,7 +43,11 @@ namespace Deprem.Player
             spot.enabled = on;
             if (beam != null) beam.enabled = on;
             if (!on) return;
-            spot.transform.localPosition = new Vector3(forward * player.Facing, height, -0.1f);
+            // Huzme fenerin ucundan çıkar (karede el oynadıkça); uç yoksa ortalama el konumu
+            if (visual == null) visual = GetComponent<PlayerVisual>();
+            spot.transform.localPosition = visual != null && visual.HasFlashlightTip
+                ? visual.FlashlightTipLocal + new Vector3(0f, 0f, -0.1f)
+                : new Vector3(forward * player.Facing, height, -0.1f);
             spot.transform.rotation = Quaternion.LookRotation(new Vector3(player.Facing, -Mathf.Tan(downTilt * Mathf.Deg2Rad), 0f));
         }
     }

@@ -97,7 +97,13 @@ namespace Deprem.Player
             // Ekip çizimleri: bekleme (2 kare) ve çömelme (5 kare; eğilme ve çök-kapan-tutun)
             SetFrames(so, "idleFrames", LoadFrames("oyuncu_bekleme"));
             SetFrames(so, "crouchFrames", LoadFrames("oyuncu_egilme"));
-            SetFrames(so, "flashlightRunFrames", LoadFrames("oyuncu_fenerle_kosma")); // kurtarma fazında fener yanarken
+            var flashlightFrames = LoadFrames("oyuncu_fenerle_kosma");
+            SetFrames(so, "flashlightRunFrames", flashlightFrames); // kurtarma fazında fener yanarken
+            // Huzme her karede fenerin ucundan çıksın: uç çizimden bulunur
+            var tips = so.FindProperty("flashlightTips");
+            tips.arraySize = flashlightFrames.Length;
+            for (int i = 0; i < flashlightFrames.Length; i++)
+                tips.GetArrayElementAtIndex(i).vector2Value = FindFlashlightTip(flashlightFrames[i]);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             // 2.5D kenar ışığı: ışığa bakan kenarda 2 piksellik parlak şerit (Deprem/RimLight)
@@ -222,6 +228,40 @@ namespace Deprem.Player
             framesProperty.arraySize = frames.Length;
             for (int i = 0; i < frames.Length; i++)
                 framesProperty.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+        }
+
+        /// <summary>
+        /// Fenerle koşu karesinde fenerin ucu (piksel, sol üstten): elin önündeki nötr gri fener gövdesinin en sağ
+        /// pikseli (gözlük de gri ama başta: üst 30 satır atlanır); y = o sütundaki fener piksellerinin ortası
+        /// (lensin ortası). Bulamazsa (-1, -1).
+        /// </summary>
+        private static Vector2 FindFlashlightTip(Texture2D frame)
+        {
+            var file = AssetDatabase.GetAssetPath(frame);
+            var tex = new Texture2D(2, 2);
+            if (!tex.LoadImage(File.ReadAllBytes(file))) return new Vector2(-1f, -1f);
+            int tipX = -1, minRow = int.MaxValue, maxRow = -1;
+            for (int y = 0; y < tex.height; y++)
+            for (int x = 0; x < tex.width; x++)
+            {
+                int row = tex.height - 1 - y; // sol üstten satır
+                if (row < 30) continue;
+                var c = (Color32)tex.GetPixel(x, y);
+                bool grey = c.a > 0 && Mathf.Abs(c.r - c.g) <= 3 && Mathf.Abs(c.g - c.b) <= 3 && c.r >= 90 && c.r <= 230;
+                if (!grey || x < tipX) continue;
+                if (x > tipX)
+                {
+                    tipX = x;
+                    minRow = maxRow = row;
+                }
+                else
+                {
+                    minRow = Mathf.Min(minRow, row);
+                    maxRow = Mathf.Max(maxRow, row);
+                }
+            }
+            Object.DestroyImmediate(tex);
+            return tipX < 0 ? new Vector2(-1f, -1f) : new Vector2(tipX, (minRow + maxRow) * 0.5f);
         }
 
         private static Texture2D[] LoadFrames(string prefix)

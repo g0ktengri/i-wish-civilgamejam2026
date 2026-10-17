@@ -227,7 +227,8 @@ namespace Deprem.Quake
             main.startLifetime = new ParticleSystem.MinMaxCurve(lifetime * 0.7f, lifetime);
             main.startSpeed = 0f;
             main.startSize = new ParticleSystem.MinMaxCurve(minSize, maxSize);
-            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI);
+            // Pixel stil: dönmüş kare pikseller ızgaraya uymuyordu (Play testi 9); toz ve moloz dik durur
+            main.startRotation = 0f;
             main.gravityModifier = gravity;
             main.startColor = color;
             main.maxParticles = maxParticles;

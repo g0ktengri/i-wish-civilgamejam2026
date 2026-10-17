@@ -77,6 +77,16 @@ namespace Deprem.Player
                 visibility?.Tick(player.transform.position, 1f);
                 Check(visibility != null && visibility.IsRevealed("koridor") && !visibility.IsRevealed("salon") && !visibility.IsRevealed("kardes"),
                     "Açık kapıdan koridor göründü; salon ve üst kat kapalı");
+                if (visibility != null)
+                {
+                    visibility.SetSpiritMode(true);
+                    visibility.Tick(new Vector3(22f, 1f, 1f), 1f);
+                    bool spiritSees = visibility.IsRevealed("salon");
+                    visibility.SetSpiritMode(false);
+                    visibility.Tick(player.transform.position, 1f);
+                    Check(spiritSees && !visibility.IsRevealed("salon"),
+                        "Ruhun açtığı salon ruh fazı bitince yeniden kararıyor (kapısı kapalı)");
+                }
                 Physics.SyncTransforms();
                 Step(2f);
                 p = player.transform.position;

@@ -25,6 +25,10 @@ namespace Deprem.Player
         [SerializeField] private float runFps = 12f;
         [Tooltip("El feneri yanarken koşu (oyuncu_fenerle_kosma_N); yoksa normal koşu")]
         [SerializeField] private Texture2D[] flashlightRunFrames;
+        [Tooltip("Fener yanarken dururken ve havadayken gösterilen fenerle koşu karesi (en dar adımlı)")]
+        [SerializeField] private int flashlightIdleFrame = 2;
+        [Tooltip("Fenerle koşu karelerinde fenerin ucu (px, sol üstten); PlayerSetup çizimden bulur")]
+        [SerializeField] private Vector2[] flashlightTips;
         [SerializeField] private Texture2D[] idleFrames;
         [SerializeField] private float idleFps = 2f;
         [Tooltip("Ayaktan çömelmeye; bir kez oynar, son karede kalır")]
@@ -44,6 +48,11 @@ namespace Deprem.Player
         private float idleTime;
         private float crouchTime;
         private Texture2D shownTexture;
+
+        /// <summary>Gösterilen fenerli karede fenerin ucu var mı (PlayerFlashlight huzmeyi oradan çıkarır)</summary>
+        public bool HasFlashlightTip { get; private set; }
+        /// <summary>Fenerin ucu, oyuncu kökünün yerel uzayında (yön ve ölçek dahil)</summary>
+        public Vector3 FlashlightTipLocal { get; private set; }
 
         private void Awake()
         {
@@ -84,6 +93,12 @@ namespace Deprem.Player
             bool moving = (speed > moveThreshold || player.IsOnPath) && !player.IsLying && !player.IsCrouching;
             crouchTime = player.IsCrouching ? crouchTime + dt : 0f;
 
+            // Fener yanarken ayaktaki her duruşta fenerli kareler (dururken / havadayken de): normal koşuya geçip
+            // fener elden kaybolmasın
+            bool flashlightPose = flashlight != null && flashlight.IsOn && flashlightRunFrames != null &&
+                                  flashlightRunFrames.Length > 0 && !player.IsLying && !player.IsCrouching;
+            int flashlightIndex = -1;
+
             Texture2D texture;
             if (player.IsCrouching && crouchFrames != null && crouchFrames.Length > 0)
             {
@@ -94,6 +109,19 @@ namespace Deprem.Player
             {
                 texture = IdleTexture(dt);
             }
+            else if (flashlightPose)
+            {
+                if (moving && (player.IsGrounded || player.IsOnPath))
+                {
+                    frameTime += dt * runFps;
+                    flashlightIndex = Mathf.FloorToInt(frameTime) % flashlightRunFrames.Length;
+                }
+                else
+                {
+                    flashlightIndex = Mathf.Clamp(flashlightIdleFrame, 0, flashlightRunFrames.Length - 1);
+                }
+                texture = flashlightRunFrames[flashlightIndex];
+            }
             else if (!player.IsGrounded && !player.IsOnPath)
             {
                 texture = runFrames[Mathf.Clamp(airFrame, 0, runFrames.Length - 1)];
@@ -101,15 +129,14 @@ namespace Deprem.Player
             else if (moving)
             {
                 frameTime += dt * runFps;
-                var frames = flashlight != null && flashlight.IsOn && flashlightRunFrames != null && flashlightRunFrames.Length > 0
-                    ? flashlightRunFrames : runFrames;
-                texture = frames[Mathf.FloorToInt(frameTime) % frames.Length];
+                texture = runFrames[Mathf.FloorToInt(frameTime) % runFrames.Length];
             }
             else
             {
                 frameTime = 0f;
                 texture = IdleTexture(dt);
             }
+            UpdateFlashlightTip(flashlightIndex, texture);
 
             if (texture == null || texture == shownTexture) return;
             shownTexture = texture;
@@ -117,6 +144,23 @@ namespace Deprem.Player
             body.GetPropertyBlock(block);
             block.SetTexture(BaseMap, texture);
             body.SetPropertyBlock(block);
+        }
+
+        /// <summary>Gösterilen fenerli karedeki fener ucunu oyuncu kökünün yerel uzayına çevirir</summary>
+        private void UpdateFlashlightTip(int index, Texture2D texture)
+        {
+            HasFlashlightTip = false;
+            if (index < 0 || flashlightTips == null || index >= flashlightTips.Length || texture == null) return;
+            var px = flashlightTips[index];
+            if (px.x < 0f) return;
+            var quad = body.transform;
+            // Quad: 1 x 1 mesh, localScale metre; piksel (sol üstten) -> quad'ın yerel ofseti
+            var offset = new Vector3(
+                ((px.x + 0.5f) / texture.width - 0.5f) * quad.localScale.x,
+                (0.5f - (px.y + 0.5f) / texture.height) * quad.localScale.y,
+                0f);
+            FlashlightTipLocal = visual.localPosition + Vector3.Scale(visual.localScale, quad.localPosition + offset);
+            HasFlashlightTip = true;
         }
 
         // Bekleme çizimi varsa yavaş döngü, yoksa koşma karelerinden en dar adımlısı

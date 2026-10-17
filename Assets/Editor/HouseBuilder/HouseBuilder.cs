@@ -616,8 +616,8 @@ namespace Deprem.HouseBuilder
             if (decor.Key.EndsWith("yatak") || decor.Key.EndsWith("yatagi"))
             {
                 var bed = go.AddComponent<BoxCollider>();
-                bed.size = new Vector3(decor.Size.x, 0.5f, decor.Size.z);
-                bed.center = new Vector3(0f, 0.25f - decor.Size.y * 0.5f, 0f);
+                bed.size = new Vector3(decor.Size.x, 0.66f, decor.Size.z); // şilte üstü (FurnitureShapes)
+                bed.center = new Vector3(0f, 0.33f - decor.Size.y * 0.5f, 0f);
             }
         }
 
@@ -767,6 +767,7 @@ namespace Deprem.HouseBuilder
             ("detay_renk_b", new Color(0.72f, 0.67f, 0.57f)),
             ("detay_renk_c", new Color(0.46f, 0.34f, 0.24f)),
             ("detay_kitap", new Color(0.55f, 0.45f, 0.36f)), // eşyaya özel kitap sırtı dokusu (BooksMaterial)
+            ("detay_yastik", new Color(0.86f, 0.84f, 0.79f)), // yastık kılıfı (PartTone.Linen)
         };
 
         /// <summary>

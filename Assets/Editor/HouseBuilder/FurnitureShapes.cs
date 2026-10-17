@@ -19,6 +19,8 @@ namespace Deprem.HouseBuilder
         AccentC,
         /// <summary>Kitap sırtları: eşyanın boyutunda üretilen pixel doku (PixelFurnitureTextures.Books)</summary>
         Books,
+        /// <summary>Yastık kılıfı: kırık beyaz (şilte bejinden ayrılsın)</summary>
+        Linen,
     }
 
     /// <summary>Şeklin bir kutu parçası: eşyanın sol-alt-ön köşesine göre metre</summary>
@@ -163,22 +165,27 @@ namespace Deprem.HouseBuilder
 
                 // ---------------------------------------------------------- Mobilyalar (Decor)
                 case "tek_kisilik_yatak":
-                case "ebeveyn_yatagi": // yan görünüş: başlık solda; yastıklar karakterin arkasında kalır
+                case "ebeveyn_yatagi": // yan görünüş: başlık solda; yastıklar yatan karakterin arkasında kalır
                 {
+                    // Play testi 9: yataklar karaktere göre küçük ve oyuncak gibiydi; şilte üstü 0,66 m
+                    // (QuakeDirector.bedHeight), kalın başlık, beyaz şilte üstünde örtü, kalın yastık
                     bool dbl = key == "ebeveyn_yatagi";
-                    Legs(s, size, 0.1f, 0.08f, 0.05f, 0.05f);
-                    s.Add(0f, 0.1f, 0f, w, 0.3f, d);
-                    s.Add(0.08f, 0.3f, 0.03f, w - 0.08f, 0.5f, d - 0.03f, PartTone.AccentB); // şilte ve örtü
-                    s.Add(0f, 0.1f, 0f, dbl ? 0.1f : 0.08f, h, d);
-                    s.Add(w - 0.08f, 0.1f, 0f, w, 0.58f, d);
+                    const float frameTop = 0.4f, mattressTop = 0.66f;
+                    Legs(s, size, 0.14f, 0.1f, 0.06f, 0.06f);
+                    s.Add(0f, 0.14f, 0f, w, frameTop, d);
+                    s.Add(0.12f, frameTop, 0.04f, w - 0.1f, mattressTop - 0.02f, d - 0.04f, PartTone.Soft); // şilte
+                    s.Add(w * 0.4f, frameTop, 0.02f, w - 0.1f, mattressTop + 0.02f, d - 0.02f, PartTone.AccentA); // örtü
+                    s.Add(0f, 0.14f, 0f, 0.12f, h - 0.06f, d);                // başlık
+                    s.Add(-0.02f, h - 0.06f, -0.02f, 0.14f, h, d + 0.02f);    // başlık kapağı
+                    s.Add(w - 0.1f, 0.14f, 0f, w, 0.8f, d);                   // ayak ucu
                     if (dbl)
                     {
-                        s.Add(0.14f, 0.5f, 0.1f, 0.55f, 0.62f, 0.8f, PartTone.Soft);
-                        s.Add(0.14f, 0.5f, d - 0.8f, 0.55f, 0.62f, d - 0.1f, PartTone.Soft);
+                        Pillow(s, mattressTop, 0.1f, 0.85f);
+                        Pillow(s, mattressTop, d - 0.85f, d - 0.1f);
                     }
                     else
                     {
-                        s.Add(0.12f, 0.5f, 0.5f, 0.55f, 0.62f, d - 0.08f, PartTone.Soft);
+                        Pillow(s, mattressTop, 0.75f, d - 0.06f);
                     }
                     break;
                 }
@@ -279,6 +286,17 @@ namespace Deprem.HouseBuilder
         {
             foreach (var (x0, x1, height) in blocks)
                 s.Add(x0, baseY, 0.05f, x1, baseY + height, depth - 0.06f, spines ? PartTone.Books : s.NextAccent());
+        }
+
+        /// <summary>
+        /// Yastık (Play testi 9: kutu gibi duruyordu): yandan yuvarlak görünsün diye üç katman, ortası en geniş;
+        /// başlığa yaslı, şiltenin üstünde, kırık beyaz kılıf
+        /// </summary>
+        private static void Pillow(Shape s, float top, float z0, float z1)
+        {
+            s.Add(0.17f, top - 0.02f, z0, 0.66f, top + 0.02f, z1, PartTone.Linen);
+            s.Add(0.14f, top + 0.02f, z0, 0.7f, top + 0.09f, z1, PartTone.Linen);
+            s.Add(0.19f, top + 0.09f, z0, 0.64f, top + 0.12f, z1, PartTone.Linen);
         }
 
         /// <summary>Dört köşede kare ayak: kenardan (inX, inZ) içeride</summary>

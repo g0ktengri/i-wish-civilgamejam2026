@@ -96,28 +96,35 @@ namespace Deprem.Quake
             mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             var art = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Particles/toz_kucuk.png");
-            mat.SetTexture("_BaseMap", art != null ? art : SoftDustTexture());
+            mat.SetTexture("_BaseMap", art != null ? art : PixelDustTexture());
             mat.SetColor("_BaseColor", Color.white);
             EditorUtility.SetDirty(mat);
             return mat;
         }
 
         /// <summary>
-        /// Play testi 5: kare toz taneleri çirkindi. Sanatçı dokusu yokken 16 x 16 yumuşak kenarlı yuvarlak toz
-        /// (merkezi dolu, kenara doğru saydamlaşır). Kodla üretilir, Assets/Generated/Quake/toz_yumusak.png.
+        /// Sanatçı dokusu yokken toz: 16 x 16 pixel toz bulutu. Play testi 5: kare taneler çirkindi;
+        /// play testi 9: yumuşak yuvarlak toz pixel stile uymuyordu. Keskin pikseller: merkez dolu, kenara doğru
+        /// 4 x 4 Bayer düzeniyle seyrelir (yumuşak geçiş yok), biraz düzensiz kenar. Point filtre.
+        /// Kodla üretilir: Assets/Generated/Quake/toz_pixel.png.
         /// </summary>
-        private static Texture2D SoftDustTexture()
+        private static Texture2D PixelDustTexture()
         {
-            const string path = "Assets/Generated/Quake/toz_yumusak.png";
+            const string path = "Assets/Generated/Quake/toz_pixel.png";
             const int size = 16;
+            int[,] bayer = { { 0, 8, 2, 10 }, { 12, 4, 14, 6 }, { 3, 11, 1, 9 }, { 15, 7, 13, 5 } };
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
             for (int y = 0; y < size; y++)
             for (int x = 0; x < size; x++)
             {
                 float dx = (x + 0.5f) / size * 2f - 1f, dy = (y + 0.5f) / size * 2f - 1f;
-                float d = Mathf.Sqrt(dx * dx + dy * dy);
-                float alpha = Mathf.Clamp01(1f - d);
-                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha * alpha * (3f - 2f * alpha)));
+                // Hafif düzensiz bulut: köşelere doğru biraz şişkin
+                float d = Mathf.Sqrt(dx * dx + dy * dy) * (1f - 0.12f * Mathf.Sin(3f * Mathf.Atan2(dy, dx)));
+                float density = Mathf.Clamp01((1f - d) * 1.6f);
+                bool on = density * 16f > bayer[y % 4, x % 4];
+                // İki ton: merkez daha opak, kenar pikselleri yarı saydam (pixel art'ta iki kademe)
+                float alpha = on ? (density > 0.6f ? 1f : 0.55f) : 0f;
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
             }
             tex.Apply();
             File.WriteAllBytes(path, tex.EncodeToPNG());
@@ -127,8 +134,11 @@ namespace Deprem.Quake
             importer.alphaIsTransparency = true;
             importer.mipmapEnabled = false;
             importer.wrapMode = TextureWrapMode.Clamp;
-            importer.filterMode = FilterMode.Bilinear;
+            importer.filterMode = FilterMode.Point;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.SaveAndReimport();
+            const string oldPath = "Assets/Generated/Quake/toz_yumusak.png";
+            if (AssetDatabase.LoadAssetAtPath<Texture2D>(oldPath) != null) AssetDatabase.DeleteAsset(oldPath);
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 

@@ -76,7 +76,7 @@ MonoBehaviour:
     min: {x: 5.5, y: 3.5}
     max: {x: 6.8, y: 5}
   playerPlaneZ: 1
-  bedHeight: 0.5
+  bedHeight: 0.66
   standUpOffsetX: 1.2
   standUpKey: 20
   walkLeftKey: 15
