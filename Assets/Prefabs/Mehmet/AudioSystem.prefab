@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Audio.AudioDirector
   bank: {fileID: 11400000, guid: c0b918678d981394a98ee50fbd852fb3, type: 2}
   masterVolume: 1
-  musicVolume: 0.55
+  musicVolume: 0.7
   voices2D: 12
   voices3D: 8
   creakInterval: {x: 2.8, y: 5.5}
