@@ -847,6 +847,51 @@ M35 (oklar) ve M38 (donma) sende kalıyor. Pushlayınca burada haber veririm.
   - Dört test geçiyor.
 - **Baba çizimi (ekip):** `Art/Characters/baba_yurume_1..8` (1920 → 128 px en yakın komşu). Mavi yer tutucunun yerine oyuncu gibi 2×2 m'lik kareli quad. Yürürken ve takip ederken 10 fps, kabine aksayarak yürürken 6 fps; dururken 3. kare. Yatma ve çömelme eskisi gibi döndürme ve ölçekleme. Anne ve kardeş gelince `anne_yurume_N` / `kardes_yurume_N` adıyla konursa `FamilySetup` kendiliğinden bağlıyor.
 
+### Play testi 23: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- Ayarlardaki azaltma ve artırma okları ya da karelere tıklamak bir şey değiştirmiyor, sadece ileri alıyor.
+- Kontroller değiştirilebilsin.
+- Emeği geçenlerde "Claude Code" satırına gerek yok.
+- Bölüm seçme olmasın; oyun kaydedilsin, "Devam et" kaldığımız yerden başlatsın.
+- Konuşma balonu yazılırken Undertale gibi yazı sesi olsun.
+- Toz ve düşen taş sesleri çok kötü.
+- Oyuncu hit yiyip ölünce geri bildirim çok zayıf: ses yok, efekt yok.
+- Ayak sesleri güzel ama çok yüksek.
+- Oklar hâlâ arayüzün önüne düşüyor.
+- İlk yardım çantası minigame'inde duvar sabit kalıyor.
+- Odamızdaki rastgele mavi ışık hâlâ duruyor.
+- Yukarıdan düşen taşlar üst üste yığılıp bizi buga sokabiliyor.
+
+**Berke'ye düşen**
+
+- **M39. Ayar kaydırıcıları:** Sol ok / A ve sağ ok / D değeri %10 azaltıp artırsın (şu an hep ileri). Çubuktaki bir kareye tıklamak değeri o kareye ayarlasın. Ekrandaki ◂ ▸ oklarına tıklamak da azaltıp artırsın. Sondan başa sarma olmasın (%0'da ve %100'de dursun).
+- **M40. Tuş değiştirme (Ayarlar > Kontroller):**
+  - Her eylem için "tuşa bas" ile değiştirme: yürü sol/sağ, zıpla, eğil + çök-kapan, etkileşim; ruh: yukarı/aşağı/sol/sağ.
+  - Kayıt ve okuma için ortak sınıfı ben kuruyorum: `Deprem.Player.KeyBindings` (statik, `Key` alanları, `Load()` / `Save()` PlayerPrefs, `Changed` event'i). Oyuncu ve deprem kodu oradan okuyor.
+  - Ruh hareketi (`SpiritController`) de oradan okusun: `KeyBindings.SpiritUp/Down/Left/Right`.
+  - İpucu metinlerindeki tuş harfleri (`F:` / `S:`) `UiPrompt` gösterirken güncel tuşla değişsin (ör. "F" → `KeyBindings.Interact`'in adı).
+  - "Varsayılana dön" düğmesi.
+- **M41. Emeği geçenler:** "Kod Claude Code ile yazıldı…" satırı kalksın. Sanat satırına sanatçıların adı gelsin; Mehmet adları verecek.
+- **M42. Kayıt ve devam et:** Ana menüde "Bölüm seç" yerine "Devam et".
+  - Her döngü başında ilerleme PlayerPrefs'e yazılsın: döngü numarası, açılan yetenekler (`StandUpUnlocked`, `SpiritPhaseUnlocked`, çanta...), `FailedAttempts`, sabitlenmiş eşya listesi gerekiyorsa.
+  - "Devam et" kayıtlı döngüden başlatsın; kayıt yoksa gri ve seçilemez.
+  - "Yeni oyun" kaydı silsin (onay sorsun). Final ekranından sonra kayıt silinsin.
+- **M35 (yeniden):** oklar hâlâ arayüzün önüne düşüyor (ekran görüntüsü: sağ kenarda A ve B okları ile rozetleri, üstte K rozeti hedef paneline yakın). Güvenli alan: üst ~80 referans px, alt ~110 referans px ve sol alttaki çanta paneli dışında kalsınlar. Sağ üstteki süre çubuğunu da hesaba kat.
+- **M38 (açık):** donma.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. **Mavi ışık:** kaynağı elektrik kesilince odanın tavan ortasında yanan soğuk acil durum ışığı; arka duvarda kaynaksız bir ışık havuzu bırakıyordu. Bizim odada pencereye taşınıyor (ay ışığı pencereden).
+2. **Taş yığılması:** düşen taşlar ve sıva oyuncuyla çarpışmıyor; yerde kalıyorlar ama yolu kesmiyorlar.
+3. **Hit ve ölüm geri bildirimi:** ağır darbe sesi, sert kamera sarsıntısı, kısa kırmızı flaş ve kenar kararması, kısa ağır çekim.
+4. **Sesler:**
+   - balon yazısı için Undertale tarzı kısa "blip" (harf başına, kişiye göre perde);
+   - taş ve toz sesleri yeniden: daha yumuşak, kum ve çakıl;
+   - ayak sesi daha kısık.
+5. **İlk yardım minigame'i:** duvarı hareketli (kayan boşluk).
+6. **`KeyBindings`:** M40 için ortak sınıf; oyuncu ve çök-kapan oradan okuyor.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
