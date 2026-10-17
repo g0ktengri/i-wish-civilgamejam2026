@@ -170,6 +170,9 @@ MonoBehaviour:
   - {fileID: 2800000, guid: c10c6b05646974e43a64499f5b05e001, type: 3}
   - {fileID: 2800000, guid: 3937ced22e9f31840b8e7246a380bedb, type: 3}
   - {fileID: 2800000, guid: 4390051fc89631242a846623c0667804, type: 3}
+  emergeSeconds: 1.1
+  emergeSway: 0.08
+  emergeGlow: 4
   returnFlySeconds: 0.8
   returnFadeSeconds: 0.35
   bodyCenterOffset: {x: 0.6, y: 0.35, z: 0}

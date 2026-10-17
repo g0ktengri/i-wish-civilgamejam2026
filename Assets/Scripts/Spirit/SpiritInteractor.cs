@@ -5,11 +5,17 @@ using UnityEngine.InputSystem;
 namespace Deprem.Spirit
 {
     // Ruhun yanındaki en yakın etkileşimi bulur: sabitlenmemiş eşya ya da ISpiritTarget (çanta vb.).
+    // M48 (M45'te ruh yukarı alınınca yerdeki çantaya ve eşyalara yetişemiyordu): uzaklık ruhun merkezinden değil,
+    // merkezden ayak hizasına uzanan dikey "erişim çizgisinden" ölçülür; ruh süzülürken yerdekilere de uzanır.
     // Eşyada F minigame'i açar (MinigameHost MinigameOpened'ı dinler, bitince Secure() ve
     // RaiseMinigameClosed çağırır). Diğer hedeflerde hedefin Interact() metodunu çağırır.
     public class SpiritInteractor : MonoBehaviour
     {
         [SerializeField] float range = 1.2f;
+        [Tooltip("M48: erişim çizgisi ruhun merkezinden bu kadar aşağı uzanır (m; SpiritController.floorClearance'tan biraz fazla)")]
+        [SerializeField] float reachDown = 1.3f;
+        [Tooltip("Erişim çizgisinin merkezden yukarı uzanması (m)")]
+        [SerializeField] float reachUp = 0.2f;
 
         // Ruha en yakın, menzildeki sabitlenmemiş eşya (yoksa null). Vurgu okur.
         public static SecurableItem Nearest { get; private set; }
@@ -67,7 +73,7 @@ namespace Deprem.Spirit
             foreach (var item in SecurableItem.All)
             {
                 if (item.IsSecured) continue;
-                float distance = PlanarDistance(position, item);
+                float distance = ReachDistance(position, item);
                 if (distance > range || distance >= bestDistance) continue;
                 best = item;
                 bestDistance = distance;
@@ -75,15 +81,14 @@ namespace Deprem.Spirit
             return bestDistance;
         }
 
-        static float FindNearestTarget(Vector3 position, out ISpiritTarget best)
+        float FindNearestTarget(Vector3 position, out ISpiritTarget best)
         {
             best = null;
             float bestDistance = float.MaxValue;
             foreach (var target in SpiritTargets.All)
             {
                 if (!target.CanInteract) continue;
-                var point = target.Point;
-                float distance = Vector2.Distance(new Vector2(position.x, position.y), new Vector2(point.x, point.y));
+                float distance = ReachDistance(position, target.Point);
                 if (distance > target.Range || distance >= bestDistance) continue;
                 best = target;
                 bestDistance = distance;
@@ -91,22 +96,25 @@ namespace Deprem.Spirit
             return bestDistance;
         }
 
-        // X-Y düzleminde eşyanın kutusuna olan uzaklık (Z, 2.5D'de önemsiz)
-        static float PlanarDistance(Vector3 position, SecurableItem item)
+        // X-Y düzleminde noktanın erişim çizgisine (ruhun x'inde, merkezin reachDown altından reachUp üstüne) uzaklığı
+        float ReachDistance(Vector3 position, Vector3 point)
+        {
+            float y = Mathf.Clamp(point.y, position.y - reachDown, position.y + reachUp);
+            return Vector2.Distance(new Vector2(position.x, y), new Vector2(point.x, point.y));
+        }
+
+        // Eşyanın kutusunun erişim çizgisine en yakın noktası üzerinden (Z, 2.5D'de önemsiz)
+        float ReachDistance(Vector3 position, SecurableItem item)
         {
             var collider = item.GetComponent<Collider>();
-            Vector3 closest;
-            if (collider)
-            {
-                var bounds = collider.bounds;
-                closest = bounds.ClosestPoint(new Vector3(position.x, position.y, bounds.center.z));
-            }
-            else
-            {
-                closest = item.transform.position;
-            }
-            return Vector2.Distance(new Vector2(position.x, position.y), new Vector2(closest.x, closest.y));
+            if (!collider) return ReachDistance(position, item.transform.position);
+            var bounds = collider.bounds;
+            // Çizginin kutuya en yakın yüksekliği, sonra o noktaya kutunun en yakın noktası
+            float y = Mathf.Clamp(bounds.center.y, position.y - reachDown, position.y + reachUp);
+            var closest = bounds.ClosestPoint(new Vector3(position.x, y, bounds.center.z));
+            return ReachDistance(position, closest);
         }
+
 
         static void Clear()
         {

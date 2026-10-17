@@ -4,6 +4,9 @@ using UnityEngine;
 namespace Deprem.Spirit
 {
     // Ruh fazı: faz Spirit olunca ruhu yatağın yanında çıkarır ve sayacı başlatır.
+    // M49 (Mehmet'in play testi 26: ruh birden beliriyordu): ruh yatan bedenin içinden saydamdan görünüre geçerek,
+    // küçükten büyüyüp hafifçe dalgalanarak yükselir; beden kısa bir an soğuk ışıkla parlar. Bu sırada oyuncu
+    // kontrol edemez, sayaç ve konuşma çıkış bitince başlar. Ses: spirit.rise (ses bankasında yoksa sessiz).
     // Süre minigame sırasında da akar. Süre bitince ruh yatakta yatan bedene uçar, küçülüp solar (M31), sonra ana
     // depreme geçilir (beden yataktan kalkma animasyonuyla kalkar; Mehmet).
     // Ruh objesini kendisi kurar; sahnede tek bir objede durması yeter.
@@ -27,6 +30,14 @@ namespace Deprem.Spirit
         [Tooltip("M30: dururken ekip çizimi ruh_bekleme_N.png (prefab kurulurken bağlanır)")]
         [SerializeField] Texture2D[] spiritIdleFrames;
 
+        [Header("Bedenden çıkış (M49)")]
+        [Tooltip("Ruhun bedenden doğrulup yükselmesi (sn)")]
+        [SerializeField] float emergeSeconds = 1.1f;
+        [Tooltip("Yükselirken yana dalgalanma (m)")]
+        [SerializeField] float emergeSway = 0.08f;
+        [Tooltip("Bedenin parlaması: en yüksek şiddet")]
+        [SerializeField] float emergeGlow = 4f;
+
         [Header("Bedene dönüş (M31)")]
         [Tooltip("Ruhun bedene uçuşu (sn, yavaş başlar hızlanır)")]
         [SerializeField] float returnFlySeconds = 0.8f;
@@ -49,6 +60,8 @@ namespace Deprem.Spirit
         float remaining;
         bool running;
         Coroutine returning;
+        Coroutine emerging;
+        Light bodyGlow;
 
         // Ruh fazını daha önce görmüş mü (sahne yeniden yüklense de kalır): ilk sefer uzun, sonra kısa konuşur
         static bool seenBefore;
@@ -80,7 +93,7 @@ namespace Deprem.Spirit
         void HandlePhaseChanged(GamePhase phase)
         {
             if (phase == GamePhase.Spirit) Begin();
-            else if (running || returning != null) End();
+            else if (running || returning != null || emerging != null) End();
         }
 
         // M31: sayaç durur, HUD kapanır (Running = false), açık minigame kapanır; ruh bedene doğru hızlanarak uçar,
@@ -122,19 +135,72 @@ namespace Deprem.Spirit
         void Begin()
         {
             if (!spirit) spirit = CreateSpirit();
-            spirit.transform.position = SpawnPosition();
-            spirit.transform.localScale = Vector3.one;
-            spirit.Locked = false;
             var spiritInteractor = spirit.GetComponent<SpiritInteractor>();
-            spiritInteractor.enabled = true;
             spiritInteractor.InstantSecure = instantSecureWithoutMinigame;
-            var spiritVisual = spirit.GetComponentInChildren<SpiritVisual>();
-            if (spiritVisual) spiritVisual.SetFade(1f);
-            spirit.gameObject.SetActive(true);
-
             remaining = duration;
             Duration = duration;
             TimeLeft = remaining;
+            running = false;
+            Running = false;
+            if (emerging != null) StopCoroutine(emerging);
+            emerging = StartCoroutine(Emerge());
+        }
+
+        // M49: ruh bedenin içinden saydam ve küçük başlar, doğrulup yükselir (yavaş biter), yükselirken hafifçe yana
+        // dalgalanır; beden soğuk ışıkla parlayıp söner. Bitince kontrol, sayaç ve konuşma başlar.
+        System.Collections.IEnumerator Emerge()
+        {
+            var target = SpawnPosition();
+            var player = GameObject.Find("Player");
+            var start = player ? player.transform.position + bodyCenterOffset : target - Vector3.up * 0.8f;
+            start.z = target.z;
+
+            // Çıkış boyunca hareket (sınırlar, süzülme) ve etkileşim kapalı
+            spirit.Locked = true;
+            spirit.enabled = false;
+            var interactor = spirit.GetComponent<SpiritInteractor>();
+            interactor.enabled = false;
+            var visual = spirit.GetComponentInChildren<SpiritVisual>();
+            spirit.transform.position = start;
+            spirit.transform.localScale = Vector3.one * 0.55f;
+            if (visual) visual.SetFade(0f);
+            spirit.gameObject.SetActive(true);
+
+            if (!bodyGlow)
+            {
+                bodyGlow = new GameObject("SpiritBodyGlow").AddComponent<Light>();
+                bodyGlow.type = LightType.Point;
+                bodyGlow.shadows = LightShadows.None;
+                bodyGlow.color = glowColor;
+                bodyGlow.range = glowRange;
+            }
+            bodyGlow.transform.position = start + new Vector3(0f, 0.2f, -0.8f);
+            bodyGlow.gameObject.SetActive(true);
+            Audio.Sfx.Play("spirit.rise");
+
+            float total = Mathf.Max(0.1f, emergeSeconds);
+            for (float t = 0f; t < total; t += Time.deltaTime)
+            {
+                float k = t / total;
+                float ease = 1f - (1f - k) * (1f - k);
+                var position = Vector3.Lerp(start, target, ease);
+                position.x += Mathf.Sin(k * Mathf.PI * 3f) * emergeSway * (1f - k);
+                spirit.transform.position = position;
+                spirit.transform.localScale = Vector3.one * Mathf.Lerp(0.55f, 1f, ease);
+                if (visual) visual.SetFade(Mathf.Clamp01(k * 1.6f));
+                bodyGlow.intensity = emergeGlow * Mathf.Sin(k * Mathf.PI);
+                yield return null;
+            }
+            spirit.transform.position = target;
+            spirit.transform.localScale = Vector3.one;
+            if (visual) visual.SetFade(1f);
+            bodyGlow.gameObject.SetActive(false);
+
+            spirit.enabled = true;
+            spirit.Locked = false;
+            interactor.enabled = true;
+            emerging = null;
+
             running = true;
             Running = true;
             GameEvents.RaiseSpiritTimeChanged(remaining);
@@ -155,6 +221,11 @@ namespace Deprem.Spirit
         {
             if (returning != null) StopCoroutine(returning);
             returning = null;
+            if (emerging != null) StopCoroutine(emerging);
+            emerging = null;
+            if (bodyGlow) bodyGlow.gameObject.SetActive(false);
+            if (spirit) spirit.enabled = true;
+
             running = false;
             Running = false;
             TimeLeft = 0f;

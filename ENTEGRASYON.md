@@ -52,6 +52,20 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Play testi 26: M48, M49 (Berke)
+
+Play'de denenmedi; dört test geçiyor.
+
+- **M48, hayalet yere uzanıyor (`SpiritInteractor`):**
+  - Ruh yine yukarıda süzülüyor. Etkileşim uzaklığı artık ruhun merkezinden değil, merkezden ayak hizasına inen dikey "erişim çizgisinden" ölçülüyor (aşağı 1,3 m, yukarı 0,2 m; `reachDown`, `reachUp`).
+  - Yerdeki çanta bırakma noktasına, malzemelere ve alçak eşyalara yetişiyor.
+  - Döngü 4+ ile çantayı baştan sona Play'de doldurmadım; senin testinde bakabilir misin?
+- **M49, ruh bedenden çıkıyor (`SpiritPhase`):**
+  - Ruh yatan bedenin içinden saydam ve küçük başlıyor. 1,1 sn'de görünür olup büyüyerek yükseliyor, yükselirken hafifçe yana dalgalanıyor.
+  - Beden bu sırada soğuk ışıkla parlayıp sönüyor.
+  - Çıkış boyunca hareket ve etkileşim kapalı; sayaç ve ruhun konuşması çıkış bitince başlıyor. Ayarlar: `emergeSeconds`, `emergeSway`, `emergeGlow`.
+  - **Ses isteği:** çıkışta `Sfx.Play("spirit.rise")` çağırıyorum. Ses bankasında yoksa sessiz geçiyor; kısa, yumuşak, yükselen bir "çıkış" sesi sentezleyebilirsen bağlanmış olur.
+
 ### Play testi 24: M42 devamı, M43–M47 (Berke)
 
 Play'de denenmedi; dört test geçiyor.
