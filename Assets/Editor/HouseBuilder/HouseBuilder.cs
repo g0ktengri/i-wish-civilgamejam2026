@@ -520,12 +520,13 @@ namespace Deprem.HouseBuilder
             var salon = HouseLayout.Room("salon");
             var tex = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Decor/pencere.png");
             var emission = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Decor/pencere_emission.png");
-            var mat = GetMaterial("pencere", null, new Color(0.25f, 0.35f, 0.55f));
+            // Berke'nin play testi: doygun mavi sırıtıyordu; çizim gelene kadar sönük gece mavisi
+            var mat = GetMaterial("pencere", null, new Color(0.2f, 0.23f, 0.29f));
             mat.SetTexture("_BaseMap", tex);
-            mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(0.25f, 0.35f, 0.55f));
+            mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(0.2f, 0.23f, 0.29f));
             mat.EnableKeyword("_EMISSION");
             mat.SetTexture("_EmissionMap", emission);
-            mat.SetColor("_EmissionColor", emission != null ? Color.white : new Color(0.15f, 0.22f, 0.4f));
+            mat.SetColor("_EmissionColor", emission != null ? Color.white : new Color(0.06f, 0.08f, 0.12f));
             mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
 
             var window = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -542,7 +543,10 @@ namespace Deprem.HouseBuilder
         private static void BuildItem(ItemDef item, Transform parent)
         {
             var room = HouseLayout.Room(item.Room);
-            float frontZ = item.Mount == ItemMount.BackWall ? room.Depth - item.Size.z : HouseLayout.FloorItemFront(item);
+            float toppleFrontZ = HouseLayout.FloorItemFront(item);
+            float frontZ = item.Mount == ItemMount.BackWall ? room.Depth - item.Size.z
+                : item.RestsAtBackWall ? room.Depth - item.Size.z - HouseLayout.BackWallGap
+                : toppleFrontZ;
             var min = new Vector3(item.CenterX - item.Size.x * 0.5f, room.FloorY + item.BaseY, frontZ);
             var max = min + item.Size;
 
@@ -550,7 +554,15 @@ namespace Deprem.HouseBuilder
             var body = go.AddComponent<Rigidbody>();
             body.mass = Mathf.Max(5f, item.Size.x * item.Size.y * item.Size.z * 300f);
             body.isKinematic = true; // deprem sistemi sabitlenmemiş eşyayı serbest bırakır
-            go.AddComponent<Deprem.Quake.ItemToppler>();
+            var toppler = go.AddComponent<Deprem.Quake.ItemToppler>();
+            if (item.Mount == ItemMount.Floor && item.RestsAtBackWall)
+            {
+                // Arkada durur, devrilirken eski yerine (karakterin düzlemine düşeceği derinliğe) yürür
+                var toppleSo = new SerializedObject(toppler);
+                toppleSo.FindProperty("walkForward").boolValue = true;
+                toppleSo.FindProperty("walkToZ").floatValue = toppleFrontZ + item.Size.z * 0.5f;
+                toppleSo.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             // Core: Berke'nin minigame'i Secure() çağırır, deprem IsSecured okur
             var securedVisual = BuildSecuredVisual(item, go.transform, min, max);
@@ -726,13 +738,16 @@ namespace Deprem.HouseBuilder
         // Detay tonları (FurnitureShapes.PartTone, Body hariç): doku yokken parçalar bu renklerle seçilir
         private static readonly (string key, Color color)[] ToneMaterials =
         {
-            ("detay_metal", new Color(0.55f, 0.56f, 0.6f)),
-            ("detay_kumas", new Color(0.86f, 0.83f, 0.76f)),
-            ("detay_cam", new Color(0.62f, 0.74f, 0.8f)),
-            ("detay_koyu", new Color(0.09f, 0.09f, 0.11f)),
-            ("detay_renk_a", new Color(0.62f, 0.25f, 0.22f)),
-            ("detay_renk_b", new Color(0.24f, 0.36f, 0.58f)),
-            ("detay_renk_c", new Color(0.33f, 0.52f, 0.3f)),
+            // Berke'nin play testi: doygun kırmızı / mavi / yeşil parçalar absürt duruyordu (yeşil çekmece,
+            // gri şilte). Hepsi ahşap ve bej ailesinden; renk_b şilte/örtü, renk_c çekmece ve kapak
+            ("detay_metal", new Color(0.5f, 0.49f, 0.47f)),
+            ("detay_kumas", new Color(0.78f, 0.74f, 0.65f)),
+            ("detay_cam", new Color(0.56f, 0.6f, 0.6f)),
+            ("detay_koyu", new Color(0.16f, 0.14f, 0.13f)),
+            ("detay_renk_a", new Color(0.55f, 0.42f, 0.36f)),
+            ("detay_renk_b", new Color(0.72f, 0.67f, 0.57f)),
+            ("detay_renk_c", new Color(0.46f, 0.34f, 0.24f)),
+            ("detay_kitap", new Color(0.55f, 0.45f, 0.36f)), // eşyaya özel kitap sırtı dokusu (BooksMaterial)
         };
 
         /// <summary>
@@ -768,10 +783,27 @@ namespace Deprem.HouseBuilder
                 BodyMaterial(textureKey, "yan", plainSides ? null : $"Assets/Art/{artFolder}/{textureKey}_yan.png", side, new Vector2(size.z, size.y)),
                 BodyMaterial(textureKey, "ust", plainSides ? null : $"Assets/Art/{artFolder}/{textureKey}_ust.png", side, new Vector2(size.x, size.z)),
             };
-            foreach (var (key, color) in ToneMaterials) mats.Add(GetMaterial(key, null, color));
+            foreach (var (key, color) in ToneMaterials)
+                mats.Add(key == "detay_kitap" && !hasArt && parts.Any(p => p.Tone == PartTone.Books)
+                    ? BooksMaterial(textureKey, new Vector2(size.x, size.y), color)
+                    : GetMaterial(key, null, color));
             go.AddComponent<MeshRenderer>().sharedMaterials = mats.ToArray();
             if (collider) go.AddComponent<BoxCollider>().size = max - min;
             return go;
+        }
+
+        /// <summary>Kitap sırtları: eşyanın ön yüzü boyutunda (UV dış kutuya yayıldığı için) pixel doku</summary>
+        private static Material BooksMaterial(string key, Vector2 frontSize, Color fallback)
+        {
+            string name = key + "_kitap";
+            bool cached = MaterialCache.ContainsKey(name);
+            var mat = GetMaterial(name, null, fallback);
+            if (!cached)
+            {
+                mat.SetTexture("_BaseMap", PixelFurnitureTextures.Books(key, frontSize));
+                mat.SetColor("_BaseColor", Color.white);
+            }
+            return mat;
         }
 
         /// <summary>

@@ -92,6 +92,11 @@ namespace Deprem.HouseBuilder
         public ItemMount Mount;
         /// <summary>Ayna ve çerçeve: yan ve üst yüzey düz renk</summary>
         public bool PlainSides;
+        /// <summary>
+        /// Yerde: kanepe gibi arka duvara yaslı durur (Berke'nin play testi: önde durmaları tuhaftı). Devrilirken
+        /// önce sarsıntıyla FloorItemFront'a yürür (ItemToppler.walkForward), sonra karakterin düzlemine devrilir.
+        /// </summary>
+        public bool RestsAtBackWall;
     }
 
     /// <summary>Sabitlenemeyen mobilya: çarpışmasız, yerinden oynamaz. Şekli FurnitureShapes'te.</summary>
@@ -144,9 +149,9 @@ namespace Deprem.HouseBuilder
                 Size = new Vector3(1.6f, 0.7f, 0.35f), CenterX = 1.5f, BaseY = 1.5f, Mount = ItemMount.BackWall,
                 Minigame = Deprem.Core.MinigameType.CarryAndPlace },
             new ItemDef { Number = 2, Key = "kitaplik", Name = "Kitaplık", Room = "salon",
-                Size = new Vector3(1f, 2f, 0.375f), CenterX = 22f, Mount = ItemMount.Floor },
+                Size = new Vector3(1f, 2f, 0.375f), CenterX = 22f, Mount = ItemMount.Floor, RestsAtBackWall = true },
             new ItemDef { Number = 3, Key = "tv_unitesi", Name = "TV ünitesi", Room = "salon",
-                Size = new Vector3(1.5f, 0.5f, 0.5f), CenterX = 19.25f, Mount = ItemMount.Floor },
+                Size = new Vector3(1.5f, 0.5f, 0.5f), CenterX = 19.25f, Mount = ItemMount.Floor, RestsAtBackWall = true },
             new ItemDef { Number = 4, Key = "mutfak_dolabi", Name = "Mutfak üst dolapları", Room = "mutfak",
                 Size = new Vector3(1.5f, 0.75f, 0.375f), CenterX = 30f, BaseY = 1.8f, Mount = ItemMount.BackWall,
                 Minigame = Deprem.Core.MinigameType.Lock },
@@ -158,9 +163,9 @@ namespace Deprem.HouseBuilder
                 Size = new Vector3(0.75f, 1f, 0.0625f), CenterX = 8f, BaseY = 1f, Mount = ItemMount.BackWall, PlainSides = true,
                 Minigame = Deprem.Core.MinigameType.CarryAndPlace },
             new ItemDef { Number = 7, Key = "oyuncak_rafi", Name = "Oyuncak rafı", Room = "kardes",
-                Size = new Vector3(1f, 1.5f, 0.375f), CenterX = 3.5f, Mount = ItemMount.Floor },
+                Size = new Vector3(1f, 1.5f, 0.375f), CenterX = 3.5f, Mount = ItemMount.Floor, RestsAtBackWall = true },
             new ItemDef { Number = 8, Key = "gardirop", Name = "Gardırop", Room = "ebeveyn",
-                Size = new Vector3(1.5f, 2f, 0.5f), CenterX = 23.5f, Mount = ItemMount.Floor },
+                Size = new Vector3(1.5f, 2f, 0.5f), CenterX = 23.5f, Mount = ItemMount.Floor, RestsAtBackWall = true },
             new ItemDef { Number = 9, Key = "cerceve", Name = "Ebeveyn yatağının üstündeki çerçeve", Room = "ebeveyn",
                 Size = new Vector3(0.75f, 0.5f, 0.0625f), CenterX = 20.5f, BaseY = 1.4f, Mount = ItemMount.BackWall, PlainSides = true,
                 Minigame = Deprem.Core.MinigameType.CarryAndPlace },
@@ -219,6 +224,9 @@ namespace Deprem.HouseBuilder
         public const float FloorItemFrontZ = 1.5f;
 
         public static float FloorItemFront(ItemDef item) => Mathf.Max(FloorItemFrontZ, item.Size.y + 0.1f);
+
+        /// <summary>Arka duvara yaslı eşyanın duvardan payı (m)</summary>
+        public const float BackWallGap = 0.05f;
 
         private const float Z = HouseDims.PlayerPlaneZ;
         private const float Up = HouseDims.UpperFloorY;

@@ -97,6 +97,7 @@ namespace Deprem.Player
             // Ekip çizimleri: bekleme (2 kare) ve çömelme (5 kare; eğilme ve çök-kapan-tutun)
             SetFrames(so, "idleFrames", LoadFrames("oyuncu_bekleme"));
             SetFrames(so, "crouchFrames", LoadFrames("oyuncu_egilme"));
+            SetFrames(so, "flashlightRunFrames", LoadFrames("oyuncu_fenerle_kosma")); // kurtarma fazında fener yanarken
             so.ApplyModifiedPropertiesWithoutUndo();
 
             // 2.5D kenar ışığı: ışığa bakan kenarda 2 piksellik parlak şerit (Deprem/RimLight)

@@ -90,6 +90,7 @@ namespace Deprem.Loop.EditorTools
                 root.AddComponent<FinalScreen>();
                 root.AddComponent<PauseMenu>();
                 root.AddComponent<MainMenu>();
+                root.AddComponent<PixelScreen>();
 
                 BindArt(root);
 

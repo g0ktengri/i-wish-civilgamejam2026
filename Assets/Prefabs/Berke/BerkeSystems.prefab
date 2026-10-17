@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 6846049828846937271}
   - component: {fileID: 6176068554381073379}
   - component: {fileID: 857125433868889309}
+  - component: {fileID: 994702159011302593}
   m_Layer: 0
   m_Name: BerkeSystems
   m_TagString: Untagged
@@ -385,3 +386,18 @@ MonoBehaviour:
   sortingOrder: 120
   backgroundSprite: {fileID: 0}
   logoSprite: {fileID: 0}
+--- !u!114 &994702159011302593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd0cc5c04aeb0d43927108216d18837, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PixelScreen
+  targetHeight: 360
+  pixelate: 1
+  sortingOrder: -100

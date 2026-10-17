@@ -273,6 +273,15 @@ MonoBehaviour:
   idleFrame: 2
   airFrame: 0
   runFps: 12
+  flashlightRunFrames:
+  - {fileID: 2800000, guid: db51ee8d0847a0e4ca9112da778ee3a4, type: 3}
+  - {fileID: 2800000, guid: 689db6d66ef73f64a8a32cff13b487af, type: 3}
+  - {fileID: 2800000, guid: d67fb6185ef4da94ba262765c34a17cf, type: 3}
+  - {fileID: 2800000, guid: 744e393a8dfea6141b7e6798cb0847f3, type: 3}
+  - {fileID: 2800000, guid: 91dc6b3efba0af546aecd89f62788859, type: 3}
+  - {fileID: 2800000, guid: 32752e738b31d0941a254761169fd36c, type: 3}
+  - {fileID: 2800000, guid: e6dd9c4670755db45b732ac8f90492c7, type: 3}
+  - {fileID: 2800000, guid: a0dfd36eac56147498e5b45c2d786f04, type: 3}
   idleFrames:
   - {fileID: 2800000, guid: 3152c56d0fddbc549815a82c4b7cc582, type: 3}
   - {fileID: 2800000, guid: 24e39b706b526a34bbfd0fb4f1751577, type: 3}
@@ -284,6 +293,7 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 8f0357eb355c9d243abda63196b41938, type: 3}
   - {fileID: 2800000, guid: 8deeb1207b621ca4888e33c845afc215, type: 3}
   crouchFps: 14
+  crouchedScale: {x: 0.82, y: 0.58}
   moveThreshold: 0.2
 --- !u!114 &3980672761434934324
 MonoBehaviour:
@@ -318,7 +328,8 @@ MonoBehaviour:
   spot: {fileID: 7016433603941636863}
   nightSight: {fileID: 7817664845836169643}
   beam: {fileID: 6497101054209903149}
-  height: 1.3
+  height: 1.15
+  forward: 0.5
   downTilt: 12
 --- !u!1 &5056439655802367702
 GameObject:

@@ -51,7 +51,9 @@ namespace Deprem.Player
             if (cam == null) return;
             var controller = GetComponent<PlayerController>();
             float height = controller != null && controller.IsLying ? lyingHeadHeight : headHeight;
-            var screen = cam.WorldToScreenPoint(transform.position + Vector3.up * height);
+            // Viewport üzerinden: kamera düşük çözünürlüklü dokuya çizerken de (UI.PixelScreen) doğru yer
+            var viewport = cam.WorldToViewportPoint(transform.position + Vector3.up * height);
+            var screen = new Vector3(viewport.x * Screen.width, viewport.y * Screen.height, viewport.z);
             var canvasRect = (RectTransform)canvas.transform;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out var local))
                 bubble.Root.anchoredPosition = local; // kökün pivotu kuyruğun ucu

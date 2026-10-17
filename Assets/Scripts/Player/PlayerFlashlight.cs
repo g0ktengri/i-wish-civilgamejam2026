@@ -16,11 +16,16 @@ namespace Deprem.Player
         [SerializeField] private Light nightSight;
         [Tooltip("El fenerinin görünen huzmesi (spotun çocuğu)")]
         [SerializeField] private Renderer beam;
-        [SerializeField] private float height = 1.3f;
+        [Tooltip("Fenerin ucu: ayaktan yükseklik ve gövdeden öne (m). Fenerle koşu çizimindeki elin ortalaması")]
+        [SerializeField] private float height = 1.15f;
+        [SerializeField] private float forward = 0.5f;
         [Tooltip("Aşağı eğim (derece)")]
         [SerializeField] private float downTilt = 12f;
 
         private PlayerController player;
+
+        /// <summary>Fener yanıyor mu (PlayerVisual fenerle koşu karelerine geçer)</summary>
+        public bool IsOn { get; private set; }
 
         private void Awake()
         {
@@ -31,12 +36,13 @@ namespace Deprem.Player
         {
             bool dark = GameState.Phase == GamePhase.Rescue && !player.IsLying;
             if (nightSight != null) nightSight.enabled = dark;
-            if (spot == null) return;
             bool on = dark && GameState.HasBagItem(BagItemId.Flashlight);
+            IsOn = on;
+            if (spot == null) return;
             spot.enabled = on;
             if (beam != null) beam.enabled = on;
             if (!on) return;
-            spot.transform.localPosition = new Vector3(0.2f * player.Facing, height, -0.1f);
+            spot.transform.localPosition = new Vector3(forward * player.Facing, height, -0.1f);
             spot.transform.rotation = Quaternion.LookRotation(new Vector3(player.Facing, -Mathf.Tan(downTilt * Mathf.Deg2Rad), 0f));
         }
     }

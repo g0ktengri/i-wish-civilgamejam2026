@@ -17,6 +17,8 @@ namespace Deprem.HouseBuilder
         AccentA,
         AccentB,
         AccentC,
+        /// <summary>Kitap sırtları: eşyanın boyutunda üretilen pixel doku (PixelFurnitureTextures.Books)</summary>
+        Books,
     }
 
     /// <summary>Şeklin bir kutu parçası: eşyanın sol-alt-ön köşesine göre metre</summary>
@@ -97,7 +99,7 @@ namespace Deprem.HouseBuilder
 
                 case "ayakkabilik": // açık raf ve ayakkabılar
                     OpenCase(s, size, 0.05f, 0.05f, new[] { 0.35f, 0.65f }, 0.03f, 0f);
-                    Books(s, 0.05f, d, new[] { (0.1f, 0.3f, 0.1f), (0.55f, 0.75f, 0.22f) });
+                    Books(s, 0.05f, d, new[] { (0.1f, 0.3f, 0.1f), (0.55f, 0.75f, 0.22f) }, false); // ayakkabılar
                     Books(s, 0.38f, d, new[] { (0.12f, 0.32f, 0.1f), (0.4f, 0.6f, 0.12f), (0.68f, 0.88f, 0.1f) });
                     Books(s, 0.68f, d, new[] { (0.2f, 0.4f, 0.11f), (0.5f, 0.7f, 0.1f) });
                     break;
@@ -272,10 +274,11 @@ namespace Deprem.HouseBuilder
         }
 
         /// <summary>Raf üstünde dizili bloklar (kitap, ayakkabı): (x0, x1, yükseklik)</summary>
-        private static void Books(Shape s, float baseY, float depth, (float x0, float x1, float height)[] blocks)
+        // spines: kitap sırtı dokusu (Berke'nin play testi: tek renk geniş kutular kitap gibi durmuyordu); değilse renk blokları
+        private static void Books(Shape s, float baseY, float depth, (float x0, float x1, float height)[] blocks, bool spines = true)
         {
             foreach (var (x0, x1, height) in blocks)
-                s.Add(x0, baseY, 0.05f, x1, baseY + height, depth - 0.06f, s.NextAccent());
+                s.Add(x0, baseY, 0.05f, x1, baseY + height, depth - 0.06f, spines ? PartTone.Books : s.NextAccent());
         }
 
         /// <summary>Dört köşede kare ayak: kenardan (inX, inZ) içeride</summary>

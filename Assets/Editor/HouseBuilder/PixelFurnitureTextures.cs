@@ -28,10 +28,71 @@ namespace Deprem.HouseBuilder
             EnsureFolder(Folder);
 
             var style = StyleFor(key);
-            // Salonun paletine yaklaştır: yer tutucu eşya renkleri (yeşil, mavi...) sıcak duvarların yanında sırıtıyordu
-            float blend = style == Style.Wood ? 0.5f : style == Style.Fabric ? 0.3f : 0.12f;
-            baseColor = Color.Lerp(baseColor, PaletteTint(), blend);
+            // Berke'nin play testi: renkler hâlâ absürttü. Yer tutucu renk yerine sınırlı, sönük bir paletten seçilir
+            // (salonun bej duvarı ve koyu ahşap zeminiyle uyumlu). Kabin ayırt edilsin diye kendi renginde kalır.
+            baseColor = key.Contains("kabin")
+                ? Color.Lerp(baseColor, PaletteTint(), 0.25f)
+                : PaletteFor(style)[Mathf.Abs(StableHash(key)) % PaletteFor(style).Length];
             var texture = Generate(w, h, style, baseColor, StableHash(key + face), face == "ust");
+            return Save(path, texture);
+        }
+
+        // Kitap sırtları için sönük ama çeşitli renkler: aynı değer aralığında, birbirinden fazla kopmaz
+        private static readonly Color[] BookPalette =
+        {
+            new Color(0.55f, 0.36f, 0.32f), // kiremit
+            new Color(0.36f, 0.45f, 0.43f), // petrol
+            new Color(0.62f, 0.52f, 0.34f), // aşı
+            new Color(0.45f, 0.47f, 0.34f), // zeytin
+            new Color(0.37f, 0.4f, 0.48f),  // gece mavisi
+            new Color(0.7f, 0.65f, 0.54f),  // krem
+            new Color(0.47f, 0.37f, 0.42f), // mürdüm
+            new Color(0.5f, 0.38f, 0.28f),  // deri
+        };
+
+        /// <summary>
+        /// Kitap sırtları: dikey 3–7 px'lik sırtlar, aralarında 1 px koyu boşluk, solda 1 px ışık, bazı sırtlarda
+        /// etiket bandı. Eşyanın ön yüzü boyutunda (64 px/m); kitap kutuları dokunun kendi bölgesini gösterir.
+        /// </summary>
+        public static Texture2D Books(string key, Vector2 sizeMeters)
+        {
+            int w = Mathf.Clamp(Mathf.RoundToInt(sizeMeters.x * PixelsPerMeter), 4, MaxSize);
+            int h = Mathf.Clamp(Mathf.RoundToInt(sizeMeters.y * PixelsPerMeter), 4, MaxSize);
+            string path = $"{Folder}/{key}_kitap.png";
+            EnsureFolder(Folder);
+
+            var random = new System.Random(StableHash(key + "kitap"));
+            var texture = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            var pixels = new Color[w * h];
+            int x = 0;
+            while (x < w)
+            {
+                int width = random.Next(3, 8);
+                var color = BookPalette[random.Next(BookPalette.Length)];
+                color = Shade(color, 0.92f + (float)random.NextDouble() * 0.12f);
+                // Etiket bandı: sırtın 1/3'ünde, yüksekliği dokunun her ~0,45 m'sinde bir (rafların kitap boyu)
+                bool label = random.NextDouble() < 0.45;
+                int labelOffset = random.Next(6, 14);
+                for (int i = 0; i < width && x + i < w; i++)
+                for (int y = 0; y < h; y++)
+                {
+                    Color c = color;
+                    if (i == 0) c = Shade(color, 0.6f);             // kitaplar arası boşluk
+                    else if (i == 1) c = Shade(color, 1.1f);        // sırtın ışık alan kenarı
+                    if (label && i > 1 && i < width - 1 && (y + labelOffset) % 29 < 3) c = Shade(color, 1.22f);
+                    if (random.NextDouble() < 0.03) c = Shade(c, 0.94f);
+                    c.a = 1f;
+                    pixels[y * w + x + i] = c;
+                }
+                x += width;
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return Save(path, texture);
+        }
+
+        private static Texture2D Save(string path, Texture2D texture)
+        {
             File.WriteAllBytes(path, texture.EncodeToPNG());
             Object.DestroyImmediate(texture);
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
@@ -46,6 +107,28 @@ namespace Deprem.HouseBuilder
             importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
+
+        private static readonly Color[] WoodPalette =
+        {
+            new Color(0.36f, 0.24f, 0.17f), // ceviz
+            new Color(0.52f, 0.36f, 0.23f), // meşe
+            new Color(0.6f, 0.46f, 0.32f),  // çam
+        };
+        private static readonly Color[] FabricPalette =
+        {
+            // Play testi 7: hardal ve gül kurusu hâlâ sırıtıyordu; hepsi bej-kahve ailesinde, düşük doygunluk
+            new Color(0.56f, 0.5f, 0.42f),  // vizon
+            new Color(0.5f, 0.47f, 0.4f),   // haki gri
+            new Color(0.53f, 0.45f, 0.39f), // mantar
+        };
+        private static readonly Color[] SmoothPalette =
+        {
+            new Color(0.76f, 0.74f, 0.68f), // kırık beyaz
+            new Color(0.5f, 0.48f, 0.45f),  // sıcak gri
+        };
+
+        private static Color[] PaletteFor(Style style) =>
+            style == Style.Wood ? WoodPalette : style == Style.Fabric ? FabricPalette : SmoothPalette;
 
         private static Color? paletteTint;
 
@@ -86,7 +169,7 @@ namespace Deprem.HouseBuilder
 
         private static Style StyleFor(string key)
         {
-            if (key.Contains("kanepe") || key.Contains("yatak") || key.Contains("yatagi")) return Style.Fabric;
+            if (key.Contains("kanepe")) return Style.Fabric; // yatakların çerçevesi ahşap, şilte detay tonu
             if (key.Contains("buzdolabi") || key == "tv" || key.Contains("kabin") || key.Contains("ayna")) return Style.Smooth;
             return Style.Wood;
         }

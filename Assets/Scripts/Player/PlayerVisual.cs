@@ -23,15 +23,22 @@ namespace Deprem.Player
         [Tooltip("Havadayken gösterilen kare (zıplama animasyonu gelene kadar)")]
         [SerializeField] private int airFrame;
         [SerializeField] private float runFps = 12f;
+        [Tooltip("El feneri yanarken koşu (oyuncu_fenerle_kosma_N); yoksa normal koşu")]
+        [SerializeField] private Texture2D[] flashlightRunFrames;
         [SerializeField] private Texture2D[] idleFrames;
         [SerializeField] private float idleFps = 2f;
         [Tooltip("Ayaktan çömelmeye; bir kez oynar, son karede kalır")]
         [SerializeField] private Texture2D[] crouchFrames;
         [SerializeField] private float crouchFps = 14f;
+        [Tooltip("Çömelme çiziminin son karedeki ölçeği (en, boy). Çizim ~1,3 m; masalar 0,78 m. Play testi: eğilince " +
+                 "karakter masanın çok üstünde kalıyordu; 0,58 ile tablanın altına (~0,74 m) sığar")]
+        [SerializeField] private Vector2 crouchedScale = new Vector2(0.82f, 0.58f);
         [Tooltip("Bu yatay hızın altında duruyor sayılır (m/s)")]
         [SerializeField] private float moveThreshold = 0.2f;
 
-        private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");        private PlayerController player;
+        private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
+        private PlayerController player;
+        private PlayerFlashlight flashlight;
         private MaterialPropertyBlock block;
         private float frameTime;
         private float idleTime;
@@ -41,6 +48,7 @@ namespace Deprem.Player
         private void Awake()
         {
             player = GetComponent<PlayerController>();
+            flashlight = GetComponent<PlayerFlashlight>();
         }
 
         private void LateUpdate()
@@ -49,7 +57,15 @@ namespace Deprem.Player
             // Çömelme çizimi varsa görsel alçaltılmaz, kareler çömelir
             bool hasCrouchArt = crouchFrames != null && crouchFrames.Length > 0;
             float height = player.IsCrouching && !hasCrouchArt ? player.CrouchHeight / player.StandingHeight : 1f;
-            visual.localScale = new Vector3(player.Facing, height, 1f);
+            float width = 1f;
+            if (player.IsCrouching && hasCrouchArt)
+            {
+                // Çömelme kareleriyle birlikte yavaşça küçülür (ayaklar yerde kalır: pivot tabanda)
+                float t = Mathf.Clamp01(crouchTime * crouchFps / Mathf.Max(1, crouchFrames.Length - 1));
+                width = Mathf.Lerp(1f, crouchedScale.x, t);
+                height = Mathf.Lerp(1f, crouchedScale.y, t);
+            }
+            visual.localScale = new Vector3(player.Facing * width, height, 1f);
             // Yer tutucu: yatarken yan yatır, baş solda (yatağın başlığı), gövde pivotun ortasında ve
             // şiltenin üstünde (pivot = şilte üstü). Sprite gelince "yatakta uyuma" animasyonu.
             visual.localRotation = player.IsLying ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
@@ -85,7 +101,9 @@ namespace Deprem.Player
             else if (moving)
             {
                 frameTime += dt * runFps;
-                texture = runFrames[Mathf.FloorToInt(frameTime) % runFrames.Length];
+                var frames = flashlight != null && flashlight.IsOn && flashlightRunFrames != null && flashlightRunFrames.Length > 0
+                    ? flashlightRunFrames : runFrames;
+                texture = frames[Mathf.FloorToInt(frameTime) % frames.Length];
             }
             else
             {

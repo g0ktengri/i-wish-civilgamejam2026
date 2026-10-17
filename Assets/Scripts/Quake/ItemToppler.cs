@@ -16,13 +16,22 @@ namespace Deprem.Quake
         [Tooltip("Sarsıntıda tıkırdama açısı (derece)")]
         [SerializeField] private float rattleAngle = 1.5f;
 
+        [Header("2.5D: arkada duran eşya")]
+        [Tooltip("Açıksa devrilmeden önce sarsıntıyla öne, walkToZ'ye yürür: kanepe gibi arka duvarda durur, yine de " +
+                 "karakterin düzlemine devrilir. Yan görünüşte Z hareketi pek seçilmez (HouseBuilder ayarlar)")]
+        [SerializeField] private bool walkForward;
+        [Tooltip("Yürüyüşün sonunda eşyanın merkez Z'si")]
+        [SerializeField] private float walkToZ;
+        [SerializeField] private float walkSeconds = 0.55f;
+
         public bool HasToppled { get; private set; }
-        public bool HasSettled => HasToppled && body.isKinematic;
+        public bool HasSettled => HasToppled && walkTime < 0f && body.isKinematic;
 
         private Rigidbody body;
         private Vector3 restPosition;
         private Quaternion restRotation;
         private float stillTime;
+        private float walkTime = -1f;
 
         private void Awake()
         {
@@ -57,6 +66,16 @@ namespace Deprem.Quake
             HasToppled = true;
             stillTime = 0f;
             transform.SetPositionAndRotation(restPosition, restRotation);
+            if (walkForward && Mathf.Abs(walkToZ - restPosition.z) > 0.01f)
+            {
+                walkTime = 0f; // Tick yürütür, sonra Release
+                return;
+            }
+            Release();
+        }
+
+        private void Release()
+        {
             body.isKinematic = false;
             body.WakeUp();
 
@@ -73,10 +92,36 @@ namespace Deprem.Quake
         /// <summary>Durunca kinematik yap: oyuncu itip kaydıramasın, sabit engel olsun.</summary>
         public void Tick(float dt)
         {
-            if (!HasToppled || body.isKinematic) return;
+            if (!HasToppled) return;
+            if (walkTime >= 0f)
+            {
+                Walk(dt);
+                return;
+            }
+            if (body.isKinematic) return;
             bool still = body.linearVelocity.sqrMagnitude < 0.01f && body.angularVelocity.sqrMagnitude < 0.01f;
             stillTime = still ? stillTime + dt : 0f;
             if (stillTime >= settleTime) body.isKinematic = true;
+        }
+
+        // Depremde yerinden kayan mobilya gibi: sallanarak öne gelir, varınca fizikle devrilir
+        private void Walk(float dt)
+        {
+            walkTime += dt;
+            float t = Mathf.Clamp01(walkTime / Mathf.Max(0.01f, walkSeconds));
+            var position = restPosition;
+            position.z = Mathf.Lerp(restPosition.z, walkToZ, t * t * (3f - 2f * t));
+            float wobble = rattleAngle * 2f * (1f - t);
+            var rotation = restRotation * Quaternion.Euler(0f, 0f, Random.Range(-wobble, wobble));
+            if (t >= 1f)
+            {
+                walkTime = -1f;
+                rotation = restRotation;
+            }
+            transform.SetPositionAndRotation(position, rotation);
+            body.position = position;
+            body.rotation = rotation;
+            if (walkTime < 0f) Release();
         }
 
         public Bounds CombinedBounds()
