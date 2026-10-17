@@ -13,7 +13,7 @@ namespace Deprem.Player
         [Tooltip("Merdivende iki adım arası (sn)")]
         [SerializeField] private float stairStepInterval = 0.3f;
         [Tooltip("Play testi 20: adımlar çok zayıftı")]
-        [SerializeField, Range(0f, 1f)] private float stepVolume = 0.85f;
+        [SerializeField, Range(0f, 1f)] private float stepVolume = 1f;
         [SerializeField, Range(0f, 1f)] private float landVolume = 0.9f;
 
         private PlayerController player;
@@ -34,7 +34,7 @@ namespace Deprem.Player
             lastPosition = position;
 
             bool grounded = (player.IsGrounded || player.IsOnPath) && !player.IsLying && !player.IsDead;
-            if (grounded && !wasGrounded && !player.IsOnPath) Sfx.PlayAt("player.land", position, landVolume);
+            if (grounded && !wasGrounded && !player.IsOnPath) Sfx.Play("player.land", landVolume);
             wasGrounded = grounded;
 
             // Merdivende girdi yok (yol yürütüyor): hızdan anlaşılır
@@ -45,7 +45,7 @@ namespace Deprem.Player
                 return;
             }
             if (Time.time < nextStep) return;
-            Sfx.PlayAt("player.step", position, stepVolume);
+            Sfx.Play("player.step", stepVolume); // ekrana bağlı: kameradan uzaklık kısmasın
             nextStep = Time.time + (player.IsOnPath ? stairStepInterval : player.IsCrouching ? crouchStepInterval : stepInterval);
         }
     }

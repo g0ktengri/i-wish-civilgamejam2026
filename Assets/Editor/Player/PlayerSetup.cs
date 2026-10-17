@@ -134,10 +134,11 @@ namespace Deprem.Player
             var spot = spotGo.AddComponent<Light>();
             spot.type = LightType.Spot;
             spot.color = new Color(1f, 0.95f, 0.8f);
-            spot.intensity = 14f;
-            spot.range = 11f;
-            spot.spotAngle = 55f;
-            spot.innerSpotAngle = 30f;
+            // Play testi 22: 11 m menzil huzmeden (3 m) çok uzağa gidiyor, uzak duvarda kopuk bir ışık gibi duruyordu
+            spot.intensity = 10f;
+            spot.range = 5.5f;
+            spot.spotAngle = 40f;
+            spot.innerSpotAngle = 22f;
             spot.shadows = LightShadows.Soft;
             spot.enabled = false;
             // Elektrik kesikken oyuncunun çevresindeki loş görüş ışığı (karanlıkta sadece yakını görünür)

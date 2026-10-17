@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using Deprem.Core;
 using UnityEditor;
@@ -97,10 +98,22 @@ namespace Deprem.Family
             Object.DestroyImmediate(quad.GetComponent<Collider>());
             quad.transform.SetParent(visual.transform, false);
             quad.GetComponent<MeshFilter>().sharedMesh = Deprem.Player.CharacterQuadMesh.Get(); // tavan lambalarının ışığını alsın
-            quad.transform.localPosition = new Vector3(0f, def.Height * 0.5f, 0f);
-            quad.transform.localScale = new Vector3(0.55f * def.Height / 1.7f, def.Height, 1f);
+            var frames = LoadFrames(FramePrefix(def.Id));
             var renderer = quad.GetComponent<MeshRenderer>();
-            renderer.sharedMaterial = Material(def.Name.ToLowerInvariant(), def.Color);
+            if (frames.Length > 0)
+            {
+                // Ekip çizimi (ör. baba_yurume_1..8): 128 x 128 px kare = 2 x 2 m, oyuncunun kareleriyle aynı kurulum.
+                // Ayak alt kenardan 2 px yukarıda, gövde ortası x ≈ 61,5 px
+                quad.transform.localPosition = new Vector3((64f - 61.5f) / 64f, 1f - 2f / 64f, 0f);
+                quad.transform.localScale = new Vector3(2f, 2f, 1f);
+                renderer.sharedMaterial = FrameMaterial(def.Name.ToLowerInvariant(), frames[0]);
+            }
+            else
+            {
+                quad.transform.localPosition = new Vector3(0f, def.Height * 0.5f, 0f);
+                quad.transform.localScale = new Vector3(0.55f * def.Height / 1.7f, def.Height, 1f);
+                renderer.sharedMaterial = Material(def.Name.ToLowerInvariant(), def.Color);
+            }
             renderer.shadowCastingMode = ShadowCastingMode.TwoSided;
             renderer.receiveShadows = false; // kendi gölgesi yüzüne düşmesin (lamba arkada)
 
@@ -136,7 +149,55 @@ namespace Deprem.Family
             so.FindProperty("rockMaterial").objectReferenceValue =
                 def.Injured ? AssetDatabase.LoadAssetAtPath<Material>("Assets/Generated/Quake/siva.mat") : null;
             so.FindProperty("visual").objectReferenceValue = visual.transform;
+            so.FindProperty("body").objectReferenceValue = frames.Length > 0 ? renderer : null;
+            var walk = so.FindProperty("walkFrames");
+            walk.arraySize = frames.Length;
+            for (int i = 0; i < frames.Length; i++) walk.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
             so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Ekip çizimleri: Assets/Art/Characters/{önek}_N.png (anne ve kardeş gelince buraya eklenir)
+        private static string FramePrefix(FamilyMemberId id) => id switch
+        {
+            FamilyMemberId.Father => "baba_yurume",
+            FamilyMemberId.Mother => "anne_yurume",
+            FamilyMemberId.Sibling => "kardes_yurume",
+            _ => null,
+        };
+
+        private static Texture2D[] LoadFrames(string prefix)
+        {
+            const string folder = "Assets/Art/Characters";
+            if (prefix == null || !AssetDatabase.IsValidFolder(folder)) return new Texture2D[0];
+            return AssetDatabase.FindAssets(prefix + "_ t:Texture2D", new[] { folder })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(path => (path, name: Path.GetFileNameWithoutExtension(path)))
+                .Where(p => p.name.StartsWith(prefix + "_") && int.TryParse(p.name.Substring(prefix.Length + 1), out _))
+                .OrderBy(p => int.Parse(p.name.Substring(prefix.Length + 1)))
+                .Select(p => AssetDatabase.LoadAssetAtPath<Texture2D>(p.path))
+                .Where(t => t != null)
+                .ToArray();
+        }
+
+        /// <summary>Oyuncununki gibi: Lit, saydam kısımlar kesilir (alpha clip), okunaklılık için taban rengi 1,6</summary>
+        private static Material FrameMaterial(string name, Texture2D firstFrame)
+        {
+            string path = $"{MaterialFolder}/{name}_kareler.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.SetTexture("_BaseMap", firstFrame);
+            mat.SetColor("_BaseColor", new Color(1.6f, 1.6f, 1.6f, 1f));
+            mat.SetFloat("_AlphaClip", 1f);
+            mat.SetFloat("_Cutoff", 0.5f);
+            mat.EnableKeyword("_ALPHATEST_ON");
+            mat.SetFloat("_Smoothness", 0f);
+            mat.renderQueue = (int)RenderQueue.AlphaTest;
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         private static Material Material(string name, Color color)

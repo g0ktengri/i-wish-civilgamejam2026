@@ -100,10 +100,15 @@ MonoBehaviour:
   - key: player.step
     clips:
     - {fileID: 8300000, guid: db508f3cefd712a42b1754b9120fed0a, type: 3}
+    - {fileID: 8300000, guid: 2d99dfcc8a9a35440979a6a1480d5e0c, type: 3}
     - {fileID: 8300000, guid: fca72800eef511b4c832c44fe5190f77, type: 3}
     - {fileID: 8300000, guid: f9b976c463f4a944d8b5820f53a3afc9, type: 3}
     - {fileID: 8300000, guid: e4f9df9d48b67f44ab60b29db9f3858e, type: 3}
     - {fileID: 8300000, guid: ca8f8e5d0e615b14798745fa94194e44, type: 3}
+    - {fileID: 8300000, guid: e92f2ea0b221cfb46a2fd588c4fdceb8, type: 3}
+    - {fileID: 8300000, guid: bd07b96b82ce41946ba6f9f55d0c284f, type: 3}
+    - {fileID: 8300000, guid: e94b701110d0e544697122e449f2970f, type: 3}
+    - {fileID: 8300000, guid: 57e20067144c07f4b9bb13f65e530822, type: 3}
     volume: 1
     pitch: {x: 0.9, y: 1.1}
   - key: player.land
@@ -250,7 +255,7 @@ MonoBehaviour:
   - key: music.tension
     clips:
     - {fileID: 8300000, guid: 9b86d1fa274263444b03c88a18fd5b6a, type: 3}
-    volume: 0.6
+    volume: 0.9
     pitch: {x: 1, y: 1}
   - key: family.discover
     clips:

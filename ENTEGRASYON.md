@@ -834,6 +834,19 @@ Mehmet'in yorumu (özet):
 
 M35 (oklar) ve M38 (donma) sende kalıyor. Pushlayınca burada haber veririm.
 
+**M34, M36, M37 yapıldı (Mehmet):**
+- **M34:** `prompt.duck_cover` iki dilde "S (basılı tut): …"; `controls.short` ve `controls.body`'de de C yerine S.
+- **M36:** taşı-yerleştir'de yeşil alanın içine bırakılan eşya, merkezi 14 px'ten uzaksa kabul edilmiyordu (`carrySnapRadius` 14, alan 64 px). Artık eşyanın merkezi yeşil alanın içindeyse kabul (`CarryMinigame`).
+- **M37:** `Minigames/MinigameCloseUp.cs` (yeni):
+  - Minigame açılınca ana kamera aynı karede eşyanın önüne alınıp çekiliyor: arka plan oyundaki odanın kendisi (ışık, renk, Volume; 2 referans px = 1 doku pikseli, Point). Soyut pixel zemin gizleniyor.
+  - Taşı-yerleştir'de sürüklenen şey eşyanın kendi 3D modelinin görüntüsü (arkası saydam, sarı kontur hariç); asıl eşya arka plan çekiminde gizleniyor.
+  - Sanatçı görseli (`MinigameArt`) varsa o önceliklisi.
+  - `MinigameHost.Open(..., focus)` yeni isteğe bağlı parametre; `BagSupply` kendi nesnesini veriyor.
+  - Ayarlar: `MinigameHost.closeUpPixel / closeUpMargin / closeUpTint`.
+  - Önizleme: Tools > Deprem > Minigame Yakın Çekim Önizlemesi (`Logs/minigame_closeup_*.png`).
+  - Dört test geçiyor.
+- **Baba çizimi (ekip):** `Art/Characters/baba_yurume_1..8` (1920 → 128 px en yakın komşu). Mavi yer tutucunun yerine oyuncu gibi 2×2 m'lik kareli quad. Yürürken ve takip ederken 10 fps, kabine aksayarak yürürken 6 fps; dururken 3. kare. Yatma ve çömelme eskisi gibi döndürme ve ölçekleme. Anne ve kardeş gelince `anne_yurume_N` / `kardes_yurume_N` adıyla konursa `FamilySetup` kendiliğinden bağlıyor.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

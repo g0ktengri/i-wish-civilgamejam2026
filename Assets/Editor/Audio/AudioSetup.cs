@@ -205,7 +205,7 @@ namespace Deprem.Audio
             yield return new Recipe { key = "final.check", volume = 0.6f, make = FinalCheck };
             yield return new Recipe { key = "music.final", make = s => Music(s, FinalChords, 0.5f, 0.3f) };
             // Play testi 20: kurtarmada arkada gerilim, aile üyesinin durumu görülünce vurgu
-            yield return new Recipe { key = "music.tension", volume = 0.6f, make = TensionMusic };
+            yield return new Recipe { key = "music.tension", volume = 0.9f, make = TensionMusic };
             yield return new Recipe { key = "family.discover", volume = 0.85f, make = DiscoverStinger };
             yield return new Recipe { key = "family.loss", volume = 0.9f, make = LossStinger };
             yield return new Recipe { key = "music.menu", volume = 0.8f, make = s => Music(s, MenuChords, 1f, 0.2f) };
@@ -587,34 +587,51 @@ namespace Deprem.Audio
         // ------------------------------------------------------------------ Gerilim
 
         /// <summary>
-        /// Kurtarma fazının arkasındaki gerilim: derin, yavaş kabaran uğultu tonu (La ve Mi), kalp atışı gibi alçak
-        /// nabız, ara ara yarım ses aralıklı ürkütücü yüksek notalar. Döngü 32 sn, dikişsiz.
+        /// Kurtarma fazının arkasındaki gerilim (Play testi 22: alçak bas dizüstü hoparlörde duyulmuyordu; her şey
+        /// orta frekanslarda). Yavaş kabaran minör akorlar (La minör, Fa, Re minör, Mi; 8'er sn), 100 vuruşta tıkırdayan
+        /// tekrar notaları (sona doğru sıklaşır), kalp atışı nabzı ve titreşen ince yüksek ton. Döngü 32 sn, dikişsiz.
         /// </summary>
         private static float[] TensionMusic(SoundSynth s)
         {
-            const float length = 32f, tail = 4f;
+            const float length = 32f, tail = 4f, chordLength = 8f;
             var b = Buffer(length + tail);
-            foreach (var (hz, gain) in new[] { (55f, 0.5f), (55.3f, 0.35f), (82.41f, 0.3f), (110f, 0.12f) })
+            float[][] chords =
             {
-                var drone = Sine(length + tail, t => hz * (1f + 0.003f * Mathf.Sin(t * 0.5f)));
-                Shape(drone, t => 0.65f + 0.35f * Mathf.Sin(t * Mathf.PI * 2f / 16f));
-                Mix(b, drone, 0f, gain);
-            }
-            Mix(b, Scale(LowPass(LowPass(s.White(length + tail), 260f), 260f), 1.5f), 0f, 0.5f);
-            for (float t = 0f; t < length; t += 1.25f)
+                new[] { 220f, 261.63f, 329.63f }, new[] { 174.61f, 220f, 261.63f },
+                new[] { 146.83f, 174.61f, 220f }, new[] { 164.81f, 207.65f, 246.94f },
+            };
+            for (int c = 0; c < chords.Length; c++)
+                foreach (float hz in chords[c])
+                {
+                    // Telli çalgı gibi: iki hafif akort farklı ses, yavaş atak, uzun sönüm
+                    Mix(b, Note(chordLength + 2f, hz, 2f, 0.18f, 0.55f), c * chordLength, 0.13f);
+                    Mix(b, Note(chordLength + 2f, hz * 1.004f, 2.2f, 0.18f, 0.55f), c * chordLength, 0.09f);
+                }
+            // Tekrar notaları: akorun kökü ve oktavı, sekizlik; her sekiz vuruşta bir yarım ton yukarı "gerilim" notası
+            const float beat = 0.6f;
+            for (int i = 0; i * beat < length; i++)
             {
-                Mix(b, Envelope(Sine(0.4f, u => 42f + 18f * Mathf.Exp(-u * 18f)), 0.01f, 0.02f, 16f), t, 0.45f);
-                Mix(b, Envelope(Sine(0.3f, u => 38f + 14f * Mathf.Exp(-u * 18f)), 0.01f, 0.01f, 20f), t + 0.3f, 0.28f);
+                float t = i * beat;
+                var chord = chords[(int)(t / chordLength) % chords.Length];
+                float hz = i % 8 == 7 ? chord[0] * 2f * 1.0595f : (i % 2 == 0 ? chord[0] * 2f : chord[0]);
+                float gain = (i % 2 == 0 ? 0.16f : 0.1f) * Mathf.Lerp(0.8f, 1.1f, t / length);
+                Mix(b, Note(0.6f, hz, 0.003f, 7f, 0.6f), t, gain);
             }
-            float[] eerie = { 440f, 466.16f, 659.25f, 698.46f, 523.25f };
-            for (float t = 2f; t < length - 1f; t += s.Range(3.5f, 5.5f))
-                Mix(b, Note(3.5f, eerie[(int)(s.Rand() * eerie.Length)], 0.4f, 1.1f, 0.25f), t, 0.11f);
-            var wet = Reverb(b, 3f, 0.4f, 0.85f);
+            // Kalp atışı: tok vuruş, üstünde duyulur harmonik
+            for (float t = 0f; t < length; t += beat * 2f)
+            {
+                Mix(b, Envelope(Sine(0.3f, u => 70f + 50f * Mathf.Exp(-u * 20f)), 0.004f, 0.01f, 18f), t, 0.35f);
+                Mix(b, Envelope(Sine(0.15f, u => 160f), 0.002f, 0f, 35f), t, 0.08f);
+            }
+            // İnce, titreşen yüksek ton (keman tremolosu gibi), cümle sonlarında kabarır
+            var high = Sine(length + tail, t => 880f * (1f + 0.002f * Mathf.Sin(t * 5f)));
+            Shape(high, t => (0.5f + 0.5f * Mathf.Sin(t * Mathf.PI * 2f * 7f)) * Mathf.Pow(Mathf.Repeat(t, chordLength) / chordLength, 2f));
+            Mix(b, high, 0f, 0.035f);
+            var wet = Reverb(b, 2.5f, 0.35f, 0.82f);
             var loop = new float[Samples(length)];
             for (int i = 0; i < wet.Length; i++) loop[i % loop.Length] += wet[i];
-            return Normalize(loop, 0.7f);
+            return Normalize(loop, 0.8f);
         }
-
         /// <summary>Aile üyesinin durumu görülünce: tok vuruş, uyumsuz akor, kabaran hava</summary>
         private static float[] DiscoverStinger(SoundSynth s)
         {

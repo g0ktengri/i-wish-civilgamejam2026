@@ -106,6 +106,7 @@ namespace Deprem.Minigames
             if (Instance == this) Instance = null;
             if (snapshotBig) snapshotBig.Release();
             if (snapshotSmall) snapshotSmall.Release();
+            ReleaseCloseUp();
         }
 
         // Ana kamerayı bir kez küçük bir dokuya çizer, daha da küçültür: çift doğrusal büyütmeyle bulanık oda görüntüsü
@@ -151,8 +152,9 @@ namespace Deprem.Minigames
         // Çanta malzemesi gibi eşya olmayan şeyler için. Ruhun durması için
         // MinigameOpened/Closed event'leri ItemId.None ile tetiklenir.
         // title: başlıkta gösterilecek yazı (boşsa başlık yok); carryKind: taşınan şeyin çizimi, çeşidi de belirler
+        // focus: dünyadaki nesne (M37: arka planda onun odası, taşınan şey onun modeli); boşsa eski pixel çizimler
         public bool Open(MinigameType type, Action<bool> done, Sprite itemSprite = null, string title = null,
-            string carryKind = null)
+            string carryKind = null, GameObject focus = null)
         {
             var variant = new MinigameVariant { Seed = UnityEngine.Random.Range(0, 100000) };
             if (!string.IsNullOrEmpty(carryKind))
@@ -166,15 +168,23 @@ namespace Deprem.Minigames
                 {
                     GameEvents.RaiseMinigameClosed(ItemId.None, success);
                     done?.Invoke(success);
-                }))
+                }, focus))
                 return false;
             GameEvents.RaiseMinigameOpened(ItemId.None, type);
             return true;
         }
 
-        bool OpenPanel(MinigameType type, Sprite itemSprite, MinigameVariant variant, string title, Action<bool> done)
+        bool OpenPanel(MinigameType type, Sprite itemSprite, MinigameVariant variant, string title, Action<bool> done,
+            GameObject focus = null)
         {
             if (IsOpen) return false;
+            ReleaseCloseUp();
+            // M37: taşınan şey sanatçı görseli yoksa oyundaki modelinin görüntüsü
+            if (type == MinigameType.CarryAndPlace && !itemSprite && focus)
+            {
+                closeUpItem = MinigameCloseUp.RenderObject(focus, CarryBox(variant.CarryKind), 1f);
+                itemSprite = closeUpItem;
+            }
             current = Create(type, itemSprite);
             onDone = done;
             finishing = false;
@@ -188,7 +198,9 @@ namespace Deprem.Minigames
             successFlash.enabled = false;
             current.Build(content, art, variant);
             var background = content.Find("Background");
-            if (background && background.TryGetComponent<Image>(out var backgroundImage)) backgroundImage.color = contentTint;
+            var backgroundImage = background ? background.GetComponent<Image>() : null;
+            if (backgroundImage) backgroundImage.color = contentTint;
+            if (focus) ShowCloseUp(focus, type == MinigameType.CarryAndPlace ? focus : null, backgroundImage);
             TakeSnapshot();
 
             titleText.text = Capitalize(title);
@@ -204,6 +216,56 @@ namespace Deprem.Minigames
             return true;
         }
 
+        // ------------------------------------------------------------------ M37: oyundaki eşya ve odası
+
+        [Header("M37: yakın çekim (Mehmet'in play testi 22)")]
+        [Tooltip("Arka plan çekiminin piksel boyu (referans piksel / doku pikseli); oyunun pixel görünüşü")]
+        [SerializeField] float closeUpPixel = 2f;
+        [Tooltip("Eşyanın çevresindeki oda payı (1 = eşya paneli doldurur)")]
+        [SerializeField] float closeUpMargin = 1.9f;
+        [Tooltip("Arka plan rengi: üstündeki parçalar okunsun diye biraz kararır")]
+        [SerializeField] Color closeUpTint = new Color(0.62f, 0.64f, 0.72f);
+
+        RenderTexture closeUpTexture;
+        Sprite closeUpItem;
+
+        // Odanın eşyanın önünden görüntüsü, panelin en arkasında; soyut pixel zemin gizlenir
+        void ShowCloseUp(GameObject focus, GameObject hide, Image pixelBackground)
+        {
+            closeUpTexture = MinigameCloseUp.RenderScene(MinigameCloseUp.BoundsOf(focus), content.rect.size, closeUpPixel,
+                closeUpMargin, hide);
+            if (!closeUpTexture) return;
+            var image = UiBuilder.CreateChild<RawImage>(content, "SceneCloseUp");
+            image.raycastTarget = false;
+            image.texture = closeUpTexture;
+            image.color = closeUpTint;
+            var rect = image.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = content.rect.size;
+            rect.anchoredPosition = Vector2.zero;
+            rect.SetAsFirstSibling();
+            if (pixelBackground) pixelBackground.enabled = false;
+        }
+
+        void ReleaseCloseUp()
+        {
+            if (closeUpTexture)
+            {
+                closeUpTexture.Release();
+                Destroy(closeUpTexture);
+            }
+            if (closeUpItem)
+            {
+                Destroy(closeUpItem.texture);
+                Destroy(closeUpItem);
+            }
+            closeUpTexture = null;
+            closeUpItem = null;
+        }
+
+        // Taşınan şeyin kutusu: çarpışma dikdörtgeniyle aynı (CarryMinigame.ItemSize), oran korunur
+        static Vector2 CarryBox(string kind) => (Vector2)MinigamePixels.CarrySize(kind) * MinigamePixels.Scale;
+
         void HandleMinigameOpened(ItemId id, MinigameType type)
         {
             if (id == ItemId.None) return; // Open() ile açılan, eşya olmayan minigame
@@ -213,7 +275,8 @@ namespace Deprem.Minigames
             var variant = VariantFor(id);
             string title = Texts.Format("minigame.title", Texts.Get($"item.{id}"));
             doneKey = "minigame.done";
-            if (!item || item.IsSecured || !OpenPanel(type, CarrySpriteFor(id), variant, title, success => FinishItem(id, success)))
+            if (!item || item.IsSecured || !OpenPanel(type, CarrySpriteFor(id), variant, title, success => FinishItem(id, success),
+                    item ? item.gameObject : null))
                 GameEvents.RaiseMinigameClosed(id, false);
         }
 

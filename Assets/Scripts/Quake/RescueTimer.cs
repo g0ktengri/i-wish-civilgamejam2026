@@ -53,6 +53,7 @@ namespace Deprem.Quake
         [SerializeField] private float segmentGap = 3f;
         [SerializeField] private int labelFontSize = 20;
         [SerializeField] private float barTopMargin = 14f;
+        [SerializeField] private float barRightMargin = 16f;
         [SerializeField] private Color calmColor = new Color(1f, 0.85f, 0.45f);
         [SerializeField] private Color urgentColor = new Color(1f, 0.15f, 0.1f);
         [Tooltip("Çubuğun en fazla titreme miktarı (referans piksel)")]
@@ -230,9 +231,10 @@ namespace Deprem.Quake
             barRoot = canvas.gameObject;
             meter = SegmentMeter.Create(canvas.transform, "TimeMeter", barSegments, segmentSize, segmentGap,
                 Deprem.Localization.Texts.Get("hud.rescue_time"), labelFontSize);
-            meter.Root.anchorMin = meter.Root.anchorMax = new Vector2(0.5f, 1f);
-            meter.Root.pivot = new Vector2(0.5f, 1f);
-            meter.Root.anchoredPosition = new Vector2(0f, -barTopMargin);
+            // Play testi 22: üst ortada hedef paneline ve aile oklarına biniyordu; sağ üst köşe
+            meter.Root.anchorMin = meter.Root.anchorMax = new Vector2(1f, 1f);
+            meter.Root.pivot = new Vector2(1f, 1f);
+            meter.Root.anchoredPosition = new Vector2(-barRightMargin, -barTopMargin);
         }
 
         private void UpdateBar()
@@ -244,7 +246,7 @@ namespace Deprem.Quake
 
             // Sakinken de hafif titrer (GDD: titreşen sarsıntı çubuğu); süre azaldıkça sertleşir
             float jitter = barMaxJitter * Mathf.Lerp(0.15f, 1f, urgency);
-            meter.Root.anchoredPosition = new Vector2(Random.Range(-jitter, jitter), -barTopMargin + Random.Range(-jitter, jitter) * 0.5f);
+            meter.Root.anchoredPosition = new Vector2(-barRightMargin + Random.Range(-jitter, jitter), -barTopMargin + Random.Range(-jitter, jitter) * 0.5f);
         }
     }
 }

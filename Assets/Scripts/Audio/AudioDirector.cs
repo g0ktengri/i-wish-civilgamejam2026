@@ -14,7 +14,7 @@ namespace Deprem.Audio
     {
         [SerializeField] private SoundBank bank;
         [Range(0f, 1f)] [SerializeField] private float masterVolume = 1f;
-        [Range(0f, 1f)] [SerializeField] private float musicVolume = 0.55f;
+        [Range(0f, 1f)] [SerializeField] private float musicVolume = 0.7f;
         [SerializeField] private int voices2D = 12;
         [SerializeField] private int voices3D = 8;
 

@@ -214,7 +214,10 @@ namespace Deprem.Minigames
             {
                 dragging = false;
                 Audio.Sfx.Play("minigame.drop");
-                if (Vector2.Distance(item.anchoredPosition, target.anchoredPosition) <= snapRadius)
+                // M36 (Mehmet'in play testi 22): yeşil alanın içine bırakılan eşya, merkezi 14 px'ten uzaksa kabul
+                // edilmiyor, olduğu yerde kalıyordu. Eşyanın merkezi yeşil alanın içindeyse yeter
+                if (Contains(target.anchoredPosition, TargetSize + Vector2.one * 8f, item.anchoredPosition) ||
+                    Vector2.Distance(item.anchoredPosition, target.anchoredPosition) <= snapRadius)
                 {
                     item.anchoredPosition = target.anchoredPosition;
                     return true;

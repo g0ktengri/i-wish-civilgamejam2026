@@ -101,7 +101,8 @@ namespace Deprem.Bag
             {
                 opening = false;
                 if (success && GameState.Phase == GamePhase.Spirit) PickUp();
-            }, system ? system.ArtIconFor(id) : null, Localization.Texts.Get($"bag.{id}"), BagSystem.CarryKindFor(id));
+            }, system ? system.ArtIconFor(id) : null, Localization.Texts.Get($"bag.{id}"), BagSystem.CarryKindFor(id),
+                gameObject); // M37: minigame bu malzemenin modelini ve odasını gösterir
         }
 
         void PickUp() => BagSystem.SetCarrying(id);

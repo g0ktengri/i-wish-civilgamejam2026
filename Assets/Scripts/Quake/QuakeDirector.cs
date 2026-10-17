@@ -83,9 +83,8 @@ namespace Deprem.Quake
         [SerializeField] private Key standUpKey = Key.F;
         [SerializeField] private Key walkLeftKey = Key.A;
         [SerializeField] private Key walkRightKey = Key.D;
-        [SerializeField] private Key duckCoverKey = Key.C;
-        [Tooltip("Şimdilik çök-kapan S (eğilme) tuşuyla da yapılabilir (Berke'nin play testi)")]
-        [SerializeField] private Key altDuckCoverKey = Key.S;
+        [Tooltip("Play testi 22: çök-kapan yalnızca S (eğilme tuşu); C kaldırıldı")]
+        [SerializeField] private Key duckCoverKey = Key.S;
 
         [Tooltip("M19: raf yatağa düşünce kısa kamera sarsıntısı")]
         [SerializeField, Range(0f, 1f)] private float shelfImpactShake = 0.85f;
@@ -422,7 +421,7 @@ namespace Deprem.Quake
             float nextRubble = rubbleInterval.x;
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
-                bool pressing = Held(duckCoverKey) || Held(altDuckCoverKey);
+                bool pressing = Held(duckCoverKey);
                 bool inSafeSpot = SafeSpot.AnyContains(player.transform.position);
                 bool holding = pressing && inSafeSpot;
                 // Play testi 11: çök-kapan sırasında yukarıdan taş, sıva yağsın (masanın üstüne ve iki yana)

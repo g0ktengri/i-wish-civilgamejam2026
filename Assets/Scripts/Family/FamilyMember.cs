@@ -458,6 +458,46 @@ namespace Deprem.Family
                 visual.localRotation = Quaternion.Euler(0f, 0f, 4f * step * Facing);
             }
             else visual.localPosition = Vector3.zero;
+            Animate(lying || ducking);
+        }
+
+        // ------------------------------------------------------------------ Kareler (sanatçı çizimi gelen üyeler)
+
+        [Header("Kareler (ekip çizimi; yoksa düz renkli yer tutucu)")]
+        [SerializeField] private Renderer body;
+        [Tooltip("Yürüme döngüsü (ör. baba_yurume_1..8), sağa bakar")]
+        [SerializeField] private Texture2D[] walkFrames;
+        [Tooltip("Dururken gösterilen kare (en dar adımlı)")]
+        [SerializeField] private int idleFrame = 2;
+        [SerializeField] private float walkFps = 10f;
+        [Tooltip("Kabine aksayarak yürürken")]
+        [SerializeField] private float limpFps = 6f;
+
+        private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
+        private MaterialPropertyBlock block;
+        private Texture2D shownFrame;
+        private Vector3 lastPosition;
+        private float frameTime;
+
+        private void Animate(bool still)
+        {
+            if (body == null || walkFrames == null || walkFrames.Length == 0) return;
+            float dt = Time.deltaTime;
+            float speed = dt > 0f ? (transform.position - lastPosition).magnitude / dt : 0f;
+            lastPosition = transform.position;
+            Texture2D frame;
+            if (!still && speed > 0.2f)
+            {
+                frameTime += dt * (State == FamilyState.WalkingToCabin ? limpFps : walkFps);
+                frame = walkFrames[Mathf.FloorToInt(frameTime) % walkFrames.Length];
+            }
+            else frame = walkFrames[Mathf.Clamp(idleFrame, 0, walkFrames.Length - 1)];
+            if (frame == shownFrame) return;
+            shownFrame = frame;
+            block ??= new MaterialPropertyBlock();
+            body.GetPropertyBlock(block);
+            block.SetTexture(BaseMap, frame);
+            body.SetPropertyBlock(block);
         }
     }
 }

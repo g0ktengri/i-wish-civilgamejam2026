@@ -8,7 +8,7 @@ prompt.continue,F: Devam,F: Continue
 wish.rewind,<< Zaman geri sarılıyor...,<< Rewinding time...
 wish.prefix,Keşke,I wish
 prompt.stand_up,F: Kalk,F: Get up
-prompt.duck_cover,C / S: Parlayan masada Çök-Kapan-Tutun,"C / S: Drop, Cover, Hold On at the glowing table"
+prompt.duck_cover,S (basılı tut): Parlayan masada Çök-Kapan-Tutun,"S (hold): Drop, Cover, Hold On at the glowing table"
 prompt.duck_cover_find,Burada olmaz! Parlayan masaya geç,Not here! Go to the glowing table
 prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
@@ -86,19 +86,19 @@ bag.Whistle,Düdük,Whistle
 game.title,Keşke,I Wish
 menu.back,Geri,Back
 menu.paused,Duraklatıldı,Paused
-controls.short,"A/D: Yürü · Space: Zıpla · S: Eğil · F: Etkileşim · C: Çök-Kapan-Tutun · Esc: Duraklat","A/D: Walk · Space: Jump · S: Crouch · F: Interact · C: Drop-Cover-Hold On · Esc: Pause"
+controls.short,"A/D: Yürü · Space: Zıpla · S: Eğil, Çök-Kapan-Tutun · F: Etkileşim · Esc: Duraklat","A/D: Walk · Space: Jump · S: Crouch, Drop-Cover-Hold On · F: Interact · Esc: Pause"
 controls.body,"A / D: Yürü
 Space: Zıpla
 S: Eğil
 F: Etkileşim, kalk, aileyi topla, kabine gir
-C (basılı tut): Çök-Kapan-Tutun
+S (basılı tut, depremde): Çök-Kapan-Tutun
 W / A / S / D: Ruh olarak uç
 Fare: Minigame'ler
 Esc: Duraklat","A / D: Walk
 Space: Jump
 S: Crouch
 F: Interact, get up, gather family, enter the shelter
-C (hold): Drop-Cover-Hold On
+S (hold, during a quake): Drop-Cover-Hold On
 W / A / S / D: Fly as a spirit
 Mouse: Minigames
 Esc: Pause"
