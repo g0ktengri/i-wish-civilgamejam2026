@@ -30,27 +30,28 @@ namespace Deprem.HouseBuilder
             public FallingDecor.MountKind Mount;
         }
 
-        // Pencere, raflar, ayna ve çerçeve (sabitlenebilir eşyalar), kapılar ve merdivenle çakışmayacak yerler
+        // Pencere, raflar, ayna ve çerçeve (sabitlenebilir eşyalar), kapılar ve merdivenle çakışmayacak yerler.
+        // Play testi 31: tablolar alçak duruyordu; göz hizasının altındakiler 0,25 m, salondaki soyut tablo 0,15 m yukarı
         private static readonly PropDef[] Props =
         {
-            Wall("poster_uzay", "oyuncu", 3.5f, 1.45f),
+            Wall("poster_uzay", "oyuncu", 3.5f, 1.7f),
             Wall("saat", "oyuncu", 4.75f, 2.05f),
             Desk("kupa", "oyuncu", 3.45f, 0.78f, 0.45f),
-            Wall("aile_fotografi", "koridor", 7.3f, 1.5f),
-            Wall("tablo_manzara", "koridor", 16.2f, 1.45f),
+            Wall("aile_fotografi", "koridor", 7.3f, 1.75f),
+            Wall("tablo_manzara", "koridor", 16.2f, 1.7f),
             Desk("vazo", "koridor", 6.85f, 0.8f, 0.4f),
-            Wall("tablo_soyut", "salon", 19.25f, 1.9f),
+            Wall("tablo_soyut", "salon", 19.25f, 2.05f),
             Wall("aile_fotografi", "salon", 22f, 2.35f),
             Wall("saat", "salon", 26.3f, 1.95f),
             Desk("vazo", "salon", 25.2f, 0.78f, 0.4f),
             Wall("saat", "mutfak", 28f, 2.05f),
             Desk("kupa", "mutfak", 29.1f, 0.9f, 4.15f),
             Desk("sise", "mutfak", 31.1f, 0.9f, 4.2f),
-            Wall("poster_uzay", "kardes", 1.3f, 1.35f),
-            Wall("cocuk_cizimi", "kardes", 5.6f, 1.3f),
-            Wall("tablo_manzara", "sahanlik", 9.9f, 1.35f),
-            Wall("aile_fotografi", "sahanlik", 16.4f, 1.35f),
-            Wall("ayna_kucuk", "ebeveyn", 25.3f, 1.25f),
+            Wall("poster_uzay", "kardes", 1.3f, 1.6f),
+            Wall("cocuk_cizimi", "kardes", 5.6f, 1.55f),
+            Wall("tablo_manzara", "sahanlik", 9.9f, 1.6f),
+            Wall("aile_fotografi", "sahanlik", 16.4f, 1.6f),
+            Wall("ayna_kucuk", "ebeveyn", 25.3f, 1.5f),
             Wall("saat", "ebeveyn", 26.4f, 1.95f),
         };
 

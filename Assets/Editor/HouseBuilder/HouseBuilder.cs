@@ -804,6 +804,13 @@ namespace Deprem.HouseBuilder
             var min = new Vector3(item.CenterX - item.Size.x * 0.5f, room.FloorY + item.BaseY, frontZ);
             var max = min + item.Size;
 
+            if (item.Decorative)
+            {
+                // Sabitlenemeyen eşya (mutfak üst dolapları): aynı görünüş, çarpışma ve devrilme yok
+                var decor = AddShape(parent, $"Decor_{item.Key}", min, max, "Items", item.Key, ItemColor(item.Number), item.PlainSides, false);
+                decor.isStatic = true;
+                return;
+            }
             var go = AddShape(parent, $"Item_{item.Number}_{item.Key}", min, max, "Items", item.Key, ItemColor(item.Number), item.PlainSides, true);
             var body = go.AddComponent<Rigidbody>();
             body.mass = Mathf.Max(5f, item.Size.x * item.Size.y * item.Size.z * 300f);

@@ -75,7 +75,8 @@ namespace Deprem.Player
 
             public void Interact(PlayerController player)
             {
-                player.FollowPath(stairs.GetRoute(isBottom), stairs.climbSpeed);
+                // Play testi 31: yolda F'ye tekrar basınca geri döner (PlayerInteractor → ReversePath)
+                player.FollowPath(stairs.GetRoute(isBottom), stairs.climbSpeed, reversible: true);
             }
         }
     }

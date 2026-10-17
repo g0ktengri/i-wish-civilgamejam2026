@@ -90,6 +90,8 @@ namespace Deprem.Family
         [SerializeField] private float callQuietRange = 2.5f;
 
         public FamilyMemberId Id => id;
+        /// <summary>Sabitlenmezse bu üyenin üstüne düşen eşya (Play testi 31, M62: ruh fazında öne çıkarılır)</summary>
+        public ItemId DangerItem => dangerItem;
         /// <summary>Kabine vardığında gereken malzeme çantada yok mu (FamilyDirector kabin girişinde sorar)</summary>
         public bool NeedsCabinBagItem => cabinBagItem != BagItemId.None && !GameState.HasBagItem(cabinBagItem);
         public FamilyState State { get; private set; } = FamilyState.Waiting;
@@ -248,7 +250,11 @@ namespace Deprem.Family
                 if (discoverTimer >= failDelay)
                 {
                     if (State == FamilyState.Hit) GameState.FailLoop(LoseReason.FamilyHitByItem, HitBy);
-                    else GameState.FailLoop(LoseReason.MissingBagItem);
+                    else
+                    {
+                        BagLessons.NoteMissing(State == FamilyState.Bleeding ? cabinBagItem : requiredBagItem, id); // M65
+                        GameState.FailLoop(LoseReason.MissingBagItem);
+                    }
                 }
                 return;
             }
@@ -306,6 +312,7 @@ namespace Deprem.Family
             if (searchTimer < searchTime || aftershockRequested) return;
             aftershockRequested = true;
             BagLessons.Learn(requiredBagItem); // M54: bir dahaki döngüde el feneri evde bulunur
+            BagLessons.NoteMissing(requiredBagItem, id); // M65: keşke açıklaması "fenerin yoktu"
             if (!Deprem.Quake.QuakeDirector.RequestFatalAftershock(LoseReason.MissingBagItem))
                 GameState.FailLoop(LoseReason.MissingBagItem); // sahnede deprem sistemi yoksa (editör testi)
         }

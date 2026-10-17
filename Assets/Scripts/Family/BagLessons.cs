@@ -20,6 +20,26 @@ namespace Deprem.Family
         public static bool IsLearned(BagItemId id) => id != BagItemId.None && PlayerPrefs.GetInt(Prefix + id, 0) == 1;
 
         /// <summary>
+        /// Play testi 31 (ENTEGRASYON M65): son MissingBagItem kaybının hangi malzeme yüzünden, kim için olduğu.
+        /// Keşke ekranı açıklamada kullanır ("Kardeşini karanlıkta bulamadın; el fenerin yoktu."). Aile sistemi
+        /// FailLoop'tan hemen önce yazar; yeni denemede (sahne yüklenince) None olur.
+        /// </summary>
+        public static BagItemId LastMissingItem { get; private set; }
+        /// <summary>LastMissingItem kimin için gerekiyordu (kardeş: el feneri, baba: ilk yardım)</summary>
+        public static FamilyMemberId LastMissingMember { get; private set; }
+
+        public static void NoteMissing(BagItemId item, FamilyMemberId member)
+        {
+            LastMissingItem = item;
+            LastMissingMember = member;
+        }
+
+        public static void ClearMissing() => NoteMissing(BagItemId.None, FamilyMemberId.None);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => ClearMissing();
+
+        /// <summary>
         /// Play testi 28: el feneri ve ilk yardımdan biri yüzünden ölününce ikisi birden açılır (oyuncu deprem
         /// çantasının önemini bir kez öğrenince çantaya konacak her şeyi bulabilsin)
         /// </summary>

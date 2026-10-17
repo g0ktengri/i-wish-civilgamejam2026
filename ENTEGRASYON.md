@@ -1477,6 +1477,20 @@ Mehmet oyunu başkalarına oynattı. Çıkanlar (özet):
 3. Mutfak üst dolapları dekor (M66).
 4. `FamilyMember.DangerItem` (M62), `BagLessons.LastMissingItem` / `LastMissingMember` (M65); kardeşin "el fenerim olsaydı" balonu daha net.
 
+**Mehmet tarafı (Play testi 31): yapıldı.** Dört test geçiyor; Play'de denenmedi.
+
+- **Tablolar:** göz hizasının altındaki duvar resimleri 0,25 m, salondaki soyut tablo 0,15 m yukarıda.
+- **Merdivende geri dönme:**
+  - `PlayerController.FollowPath(..., reversible: true)`, `ReversePath()`, `PathReversible`. Merdiven yolu geri çevrilebilir.
+  - Merdivendeyken F oyuncuyu son geçtiği basamaktan geri götürüyor; yine basınca yeniden ileri.
+  - İpucu: `prompt.stairs_back` ("F: Geri dön"). `texts.csv`'ye bu tek satırı ekledim (senin dosyan). `PromptAnchor` merdivende oyuncunun başının üstünde.
+- **M66, mutfak üst dolapları dekor:** `ItemDef.Decorative`; sahnede `Decor_mutfak_dolabi`. `SecurableItem`, devrilme ve kontur yok, çarpışma yok. Testim artık 8 eşya bekliyor.
+- **M62 verisi:** `FamilyMember.DangerItem` (baba: kitaplık, anne: gardırop, kardeş: oyuncak rafı). Oyuncunun eşyası `ItemId.BedShelf`.
+- **M65 verisi:** `BagLessons.LastMissingItem` / `LastMissingMember`.
+  - Kardeş fenersiz bulunamayınca `Flashlight` + `Sibling`; baba vedasında `FirstAidKit` + `Father`.
+  - Yeni denemede (`FamilyDirector.Awake`) `None` oluyor.
+- **Kardeş balonu (`bubble.family_missing.flashlight`):** "…onu göremiyorum… Bir el fenerim olsaydı bulurdum!"
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

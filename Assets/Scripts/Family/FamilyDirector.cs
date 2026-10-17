@@ -54,6 +54,7 @@ namespace Deprem.Family
 
         private void Awake()
         {
+            BagLessons.ClearMissing(); // yeni deneme (sahne yeniden yüklendi): önceki kaybın açıklaması silinir
             Initialize();
         }
 
@@ -239,6 +240,7 @@ namespace Deprem.Family
             }
             if (farewellTimer < farewellDelay + farewellDuration) return;
             BagLessons.Learn(farewellMember.CabinBagItem); // M54: bir dahaki döngüde ilk yardım evde bulunur
+            BagLessons.NoteMissing(farewellMember.CabinBagItem, farewellMember.Id); // M65: keşke açıklaması
             farewellMember = null;
             GameState.FailLoop(LoseReason.MissingBagItem);
         }

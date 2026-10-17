@@ -98,6 +98,10 @@ namespace Deprem.HouseBuilder
         /// önce sarsıntıyla FloorItemFront'a yürür (ItemToppler.walkForward), sonra karakterin düzlemine devrilir.
         /// </summary>
         public bool RestsAtBackWall;
+        /// <summary>
+        /// Play testi 31: sabitlenemez, sadece görünüş (SecurableItem, devrilme, kontur yok). ItemId Core'da kalır.
+        /// </summary>
+        public bool Decorative;
     }
 
     /// <summary>Sabitlenemeyen mobilya: çarpışmasız, yerinden oynamaz. Şekli FurnitureShapes'te.</summary>
@@ -155,7 +159,8 @@ namespace Deprem.HouseBuilder
                 Size = new Vector3(1.5f, 0.5f, 0.5f), CenterX = 19.25f, Mount = ItemMount.Floor, RestsAtBackWall = true },
             new ItemDef { Number = 4, Key = "mutfak_dolabi", Name = "Mutfak üst dolapları", Room = "mutfak",
                 Size = new Vector3(1.5f, 0.75f, 0.375f), CenterX = 30f, BaseY = 1.8f, Mount = ItemMount.BackWall,
-                Minigame = Deprem.Core.MinigameType.Lock },
+                // Play testi 31: üçüncü tür minigame (kilitleme) kalktı; mutfak üst dolapları sabitlenemeyen dekor
+                Minigame = Deprem.Core.MinigameType.Lock, Decorative = true },
             // Kabinin sağında: devrilince salondan kabine giden yolu kapatır.
             // (Merdivenin alçak kısmının altında devrilirken basamağa takılıyordu.)
             new ItemDef { Number = 5, Key = "ayakkabilik", Name = "Ayakkabılık", Room = "koridor",

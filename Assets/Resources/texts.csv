@@ -179,7 +179,7 @@ bubble.family_hit.father,"Baba?! Baba, hadi kalk... Lütfen...","Dad?! Dad, come
 bubble.family_hit.mother,"Anne?! Anne, beni duyuyor musun?! Hayır...","Mom?! Mom, can you hear me?! No..."
 bubble.family_hit.sibling,"Hayır, hayır, hayır... Seni korumam gerekiyordu...","No, no, no... I was supposed to protect you..."
 bubble.family_missing.firstaidkit,"Kan durmuyor... Sarabileceğim hiçbir şey yok! Ne yapacağım?!","The bleeding won't stop... I have nothing to bandage it with! What do I do?!"
-bubble.family_missing.flashlight,"Kardeşim? Neredesin?! Zifiri karanlık, elimi bile göremiyorum... Bir fenerim olsaydı!","Where are you?! It's pitch black, I can't even see my hand... If only I had a flashlight!"
+bubble.family_missing.flashlight,"Kardeşim? Neredesin?! Zifiri karanlık, onu göremiyorum... Bir el fenerim olsaydı bulurdum!","Where are you?! It's pitch black, I can't see you... If only I had a flashlight, I'd find you!"
 cabin.sign,DEPREM KABİNİ,EARTHQUAKE SHELTER
 hud.rescue_time,ZAMAN,TIME
 bubble.injured,"Ah! Bacağım... Dayan, devam et.","Argh! My leg... Hold on, keep going."
@@ -208,6 +208,7 @@ bubble.intro.player_3,"Of... Biraz uzanayım.","Ugh... Let me lie down for a bit
 prompt.open_door,F: Kapıyı aç,F: Open the door
 prompt.stairs_up,F: Yukarı çık,F: Go upstairs
 prompt.stairs_down,F: Aşağı in,F: Go downstairs
+prompt.stairs_back,F: Geri dön,F: Turn back
 prompt.treat,F (basılı tut): Yarayı sar,F (hold): Treat the wound
 prompt.lift_rock,F (basılı tut): Kayayı kaldır,F (hold): Lift the rock
 prompt.take_along,F: Yanına al,F: Take along

@@ -63,6 +63,8 @@ namespace Deprem.Player
         public bool IsOnPath => path != null;
         /// <summary>Yolda yerinde bekletir; fizikten çıkmış kalır (intro: evin dışında, kapıyı açarken durur)</summary>
         public bool PathPaused { get; set; }
+        /// <summary>Yolda F ile geri dönülebilir (merdiven)</summary>
+        public bool PathReversible { get; private set; }
         public bool IsLying { get; private set; }
         /// <summary>Üstüne bir şey düştü, öldü (Play testi 17: ölme animasyonu darbe anında başlar). Sahne yenilenince sıfırlanır</summary>
         public bool IsDead { get; private set; }
@@ -111,6 +113,9 @@ namespace Deprem.Player
 
         private Vector3[] path;
         private int pathIndex;
+        private Vector3[] route;
+        private int routeTarget;
+        private int routeDirection = 1;
         private float pathSpeed;
         private Action pathDone;
 
@@ -262,8 +267,11 @@ namespace Deprem.Player
             if (jump) jumpRequestTime = clock;
         }
 
-        /// <summary>Karakteri fizikten çıkarıp noktalar boyunca sabit hızla taşır, sonunda fiziğe geri verir.</summary>
-        public void FollowPath(Vector3[] points, float speed, Action onDone = null)
+        /// <summary>
+        /// Karakteri fizikten çıkarıp noktalar boyunca sabit hızla taşır, sonunda fiziğe geri verir.
+        /// reversible: yolda ReversePath ile geri dönülebilir (merdiven; Play testi 31).
+        /// </summary>
+        public void FollowPath(Vector3[] points, float speed, Action onDone = null, bool reversible = false)
         {
             if (points == null || points.Length == 0) return;
             path = points;
@@ -271,6 +279,13 @@ namespace Deprem.Player
             pathSpeed = speed;
             pathDone = onDone;
             PathPaused = false;
+            PathReversible = reversible;
+            // Bütün güzergâh (başlangıç dahil) ve şu an gidilen noktası: geri dönüşte buradan hesaplanır
+            route = new Vector3[points.Length + 1];
+            route[0] = body.position;
+            Array.Copy(points, 0, route, 1, points.Length);
+            routeTarget = 1;
+            routeDirection = 1;
             body.linearVelocity = Vector3.zero;
             body.constraints = RigidbodyConstraints.FreezeRotation;
             body.isKinematic = true;
@@ -398,8 +413,29 @@ namespace Deprem.Player
             if ((next - target).sqrMagnitude < 0.0001f)
             {
                 pathIndex++;
+                routeTarget += routeDirection;
                 if (pathIndex >= path.Length) EndPath(true);
             }
+        }
+
+        /// <summary>
+        /// Play testi 31: merdivende F'ye tekrar basınca geri döner. Son geçilen noktadan güzergâhın başına doğru
+        /// yürür; yine basılırsa yeniden ileri. Bitince (iki yönde de) yolun kendi bitiş geri çağrısı çalışmaz.
+        /// </summary>
+        public bool ReversePath()
+        {
+            if (!IsOnPath || !PathReversible || PathPaused || route == null) return false;
+            int lastPassed = routeTarget - routeDirection;
+            routeDirection = -routeDirection;
+            int end = routeDirection > 0 ? route.Length - 1 : 0;
+            int count = Mathf.Abs(end - lastPassed) + 1;
+            var back = new Vector3[count];
+            for (int i = 0; i < count; i++) back[i] = route[lastPassed + i * routeDirection];
+            path = back;
+            pathIndex = 0;
+            routeTarget = lastPassed;
+            pathDone = null;
+            return true;
         }
 
         private void EndPath(bool completed)
@@ -409,6 +445,8 @@ namespace Deprem.Player
             path = null;
             pathDone = null;
             PathPaused = false;
+            PathReversible = false;
+            route = null;
             MoveInput = 0f;
             body.isKinematic = false;
             body.position = end;

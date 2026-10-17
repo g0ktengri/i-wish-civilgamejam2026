@@ -103,7 +103,9 @@ namespace Deprem.Quake
         private static void TestItems(PlayerController player)
         {
             var items = Object.FindObjectsByType<SecurableItem>(FindObjectsSortMode.None);
-            Check(items.Length == 9, $"9 eşyada SecurableItem var ({items.Length})");
+            // Play testi 31: mutfak üst dolapları sabitlenemez dekor oldu (9 → 8)
+            Check(items.Length == 8, $"8 eşyada SecurableItem var ({items.Length})");
+            Check(System.Array.TrueForAll(items, i => i.Id != ItemId.KitchenCabinets), "Mutfak üst dolapları sabitlenemez");
             foreach (var item in items)
             {
                 bool idMatches = item.name.StartsWith($"Item_{(int)item.Id}_");

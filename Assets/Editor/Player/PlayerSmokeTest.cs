@@ -168,6 +168,36 @@ namespace Deprem.Player
             Step(8f);
             p = player.transform.position;
             Check(Mathf.Abs(p.y) < 0.05f && Mathf.Abs(p.x - bottom.x) < 0.05f, $"Merdivenden indi (x={p.x:F2}, y={p.y:F2})");
+
+            // Play testi 31: çıkarken F'ye tekrar basınca geri döner; yine basınca yeniden çıkar
+            var start = bottom + Vector3.right * 0.3f;
+            player.Teleport(start);
+            Step(0.3f);
+            target = Interactables.FindNearest(player);
+            if (target == null) return;
+            target.Interact(player);
+            Step(1.2f);
+            float midY = player.transform.position.y;
+            Check(player.IsOnPath && player.PathReversible && midY > 0.2f, $"Merdivenin ortasında (y={midY:F2})");
+            Check(player.ReversePath(), "F ile geri döndü");
+            Step(8f);
+            p = player.transform.position;
+            Check(!player.IsOnPath && Mathf.Abs(p.y) < 0.05f && Mathf.Abs(p.x - start.x) < 0.05f && Mathf.Abs(p.z - 1f) < 0.01f,
+                $"Geri dönüp merdivenin dibine indi (x={p.x:F2}, y={p.y:F2}, z={p.z:F2})");
+
+            player.Teleport(start);
+            Step(0.3f);
+            Interactables.FindNearest(player)?.Interact(player);
+            Step(1.2f);
+            player.ReversePath();
+            Step(0.3f);
+            Check(player.ReversePath(), "İkinci kez F: yeniden yukarı");
+            Step(8f);
+            p = player.transform.position;
+            Check(!player.IsOnPath && Mathf.Abs(p.y - top.y) < 0.05f && Mathf.Abs(p.z - 1f) < 0.01f,
+                $"İki kez dönünce üst kata çıktı (y={p.y:F2}, z={p.z:F2})");
+            player.Teleport(start);
+            Step(0.3f);
         }
 
         /// <summary>Evin dört ucuna doğru yürü (ve zıpla): karakter evin içinde kalmalı</summary>

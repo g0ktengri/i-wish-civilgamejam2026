@@ -10,6 +10,8 @@ namespace Deprem.Player
         private static Key interactKey => KeyBindings.Interact; // M40: ayarlardan değiştirilebilir
 
         public IInteractable Current { get; private set; }
+        /// <summary>Merdivende: F geri döndürür, ipucu "F: Geri dön"</summary>
+        public bool OnReversiblePath { get; private set; }
 
         /// <summary>
         /// ENTEGRASYON M46 (Play testi 24): ekrandaki ipucunun dünya konumu. Etkileşilen objenin tepesinin biraz
@@ -37,9 +39,17 @@ namespace Deprem.Player
         {
             // Intro sinematiği: oyuncu yönlendiremez, hiçbir tuş ipucu görünmez (merdivendeki "Yukarı çık" dahil)
             bool cinematic = Deprem.Quake.Cinematic.IsPlaying;
-            Current = player.InputEnabled && !player.IsOnPath && !cinematic ? Interactables.FindNearest(player) : null;
             var keyboard = Keyboard.current;
-            if (Current != null && keyboard != null && keyboard[interactKey].wasPressedThisFrame)
+            bool pressed = keyboard != null && keyboard[interactKey].wasPressedThisFrame;
+            // Play testi 31: merdivende inerken / çıkarken F'ye tekrar basınca geri döner
+            OnReversiblePath = player.InputEnabled && player.IsOnPath && player.PathReversible && !cinematic;
+            if (OnReversiblePath && pressed)
+            {
+                player.ReversePath();
+                pressed = false;
+            }
+            Current = player.InputEnabled && !player.IsOnPath && !cinematic ? Interactables.FindNearest(player) : null;
+            if (Current != null && pressed)
             {
                 Current.Interact(player);
                 Current = null; // ipucu bir sonraki karede yeniden hesaplanır (kapı açıldı, merdivene çıkıldı...)
@@ -54,6 +64,12 @@ namespace Deprem.Player
             if (!string.IsNullOrEmpty(Deprem.Quake.QuakePrompts.Current))
             {
                 PromptAnchor = feet + Vector3.up * (player.StandingHeight + 0.35f);
+                return;
+            }
+            if (OnReversiblePath)
+            {
+                PromptAnchor = feet + Vector3.up * (player.StandingHeight + 0.35f);
+                anchoredTarget = null;
                 return;
             }
             if (Current == null)
@@ -102,7 +118,8 @@ namespace Deprem.Player
                 shownPrompt = null; // deprem ipucu bitince bizimki yeniden gönderilsin
                 return;
             }
-            string key = Current == null ? "" : Current is IPromptSource source ? source.PromptKey : "prompt.interact";
+            string key = OnReversiblePath ? "prompt.stairs_back"
+                : Current == null ? "" : Current is IPromptSource source ? source.PromptKey : "prompt.interact";
             if (key == shownPrompt) return;
             shownPrompt = key;
             Deprem.Core.GameEvents.RaisePromptChanged(key);
