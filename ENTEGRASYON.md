@@ -1071,6 +1071,34 @@ Dört test geçiyor; Play'de denenmedi.
   - İlerleme çubuğu alttaki kâğıt bandın ortasında, panonun %60'ı genişliğinde.
   - Pano yokken eski pixel levha akışı aynen duruyor.
 
+### Play testi 26: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- Kurtarma fazında rastgele mavi ışıklar var.
+- Hayaletken aşağı, zemine inemiyoruz; çantaya eşya koyamıyoruz.
+- Kardeşin odasına girince "kardeşim nerdesin" demiyor; sorunun el feneri olduğu anlaşılmıyor.
+- Ruh bedenden birden çıkmasın, bir animasyonla çıksın.
+- Kafaya parça tam düşmeden ölüyoruz gibi.
+- Ölünce ruh çıkıyormuş gibi duruyor; ölümdeki ruhu kaldır.
+
+**Berke'ye düşen**
+
+- **M48. Hayalet zemine uzanamıyor:**
+  - M45'teki `floorClearance` (1,15 m) yüzünden ruh, yerdeki çanta bırakma noktasına (`BagDropPoint`) ve yerdeki eşyalara yetişemiyor; çantaya malzeme konamıyor.
+  - Ruhun gövdesi yukarıda kalsın ama etkileşim aralığı dikeyde yere kadar ulaşsın; ya da çanta ve eşya etkileşimleri yükseklik farkına bakmasın. Ya da clearance'ı düşür, ruh sadece süzülsün.
+  - Döngü 4+ ile çantayı doldurmayı baştan sona dene.
+- **M49. Ruh bedenden animasyonla çıksın:**
+  - Ruh fazı başlarken ruh yataktaki bedenden birden belirmesin.
+  - Öneri: beden hafifçe parlar, ruh bedenin içinden saydamdan görünüre geçerek yavaşça doğrulur ve yükselir (0,8–1,2 sn), yükselirken hafif dalgalanır. Bu sırada oyuncu kontrol edemez, sayaç sonra başlar.
+  - İstersen çıkış sesi: `spirit.ambience` başlamadan kısa bir `wish.rewind` ya da yeni bir ses (söylersen sentezlerim).
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. Mavi ışıklar: kurtarma fazındaki soğuk ışık kaynaklarını bulup kaldırıyorum ya da pencereye bağlıyorum.
+2. Kardeşin odasına girince oyuncu "Kardeşim, neredesin? Zifiri karanlık... Bir el fenerim olsaydı!" diyor. Odaya girişte, kardeşin yanına gelmeden. `texts.csv`'de `bubble.family_missing.flashlight` metnini bununla değiştiriyorum.
+3. Tavandan düşen parça kafaya gerçekten değince ölüm başlıyor.
+4. Ölüm efektinden ruh kalkıyor; darbe, solma ve kararma kalıyor.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
