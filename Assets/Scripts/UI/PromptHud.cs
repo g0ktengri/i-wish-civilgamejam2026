@@ -62,7 +62,10 @@ namespace Deprem.UI
             if (!back) return;
             bool visible = !string.IsNullOrEmpty(key);
             back.gameObject.SetActive(visible);
-            if (visible) label.text = Texts.Get(key);
+            if (!visible) return;
+            label.text = Texts.Get(key);
+            // Panel yazıya göre genişler (en az 192, hud_ipucu 9-slice)
+            back.rectTransform.sizeDelta = new Vector2(Mathf.Max(192f, label.preferredWidth + 28f), 32f);
         }
     }
 }

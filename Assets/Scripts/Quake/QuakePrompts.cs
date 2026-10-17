@@ -11,6 +11,8 @@ namespace Deprem.Quake
     {
         public const string StandUp = "prompt.stand_up";
         public const string DuckCover = "prompt.duck_cover";
+        // Güvenli masanın dışında C basılınca: "Burada olmaz! Parlayan masanın altına geç"
+        public const string DuckCoverFind = "prompt.duck_cover_find";
 
         public static string Current { get; private set; } = "";
 

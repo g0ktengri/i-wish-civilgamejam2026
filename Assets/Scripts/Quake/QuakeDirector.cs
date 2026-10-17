@@ -357,9 +357,21 @@ namespace Deprem.Quake
             QuakePrompts.Set(QuakePrompts.DuckCover);
             SafeSpot.ShowAll(true);
             var check = new DuckCoverHoldCheck(grace, duckCoverTolerance);
+            bool warnedNotSafe = false;
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
-                bool holding = Held(duckCoverKey) && SafeSpot.AnyContains(player.transform.position);
+                bool pressing = Held(duckCoverKey);
+                bool inSafeSpot = SafeSpot.AnyContains(player.transform.position);
+                bool holding = pressing && inSafeSpot;
+                // Güvenli masanın dışında C işe yaramaz: oyuncu bunu görsün (ipucu değişir, masa daha çok parlar, bir kez konuşur)
+                bool wrongPlace = pressing && !inSafeSpot;
+                QuakePrompts.Set(wrongPlace ? QuakePrompts.DuckCoverFind : QuakePrompts.DuckCover);
+                SafeSpot.Emphasize(wrongPlace);
+                if (wrongPlace && !warnedNotSafe)
+                {
+                    warnedNotSafe = true;
+                    Say("bubble.not_safe_here", 2.5f);
+                }
                 check.Update(Time.deltaTime, holding);
                 player.InputEnabled = !holding;
                 player.SetScriptedInput(0f, crouch: holding);
@@ -368,6 +380,7 @@ namespace Deprem.Quake
                 yield return null;
             }
             if (duckCoverBar != null) duckCoverBar.Hide();
+            SafeSpot.Emphasize(false);
             SafeSpot.ShowAll(false);
             QuakePrompts.Clear();
             player.SetScriptedInput(0f);

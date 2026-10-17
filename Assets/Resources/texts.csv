@@ -6,7 +6,8 @@ key,tr,en
 content_warning,Bu oyun deprem ve kayıp temalarını içerir.,This game contains themes of earthquakes and loss.
 prompt.continue,F: Devam,F: Continue
 prompt.stand_up,F: Kalk,F: Get up
-prompt.duck_cover,C: Çök-Kapan-Tutun,C: Drop-Cover-Hold On
+prompt.duck_cover,C: Parlayan masanın altında Çök-Kapan-Tutun,C: Drop-Cover-Hold On under the glowing table
+prompt.duck_cover_find,Burada olmaz! Parlayan masanın altına geç,Not here! Get under the glowing table
 prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
 prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
@@ -125,6 +126,7 @@ bubble.panic_run,Deprem! Hemen buradan çıkmalıyım!,Earthquake! I have to get
 bubble.deja_vu,"Aman! Ne oluyor? Az önce bunu yaşamadım mı?","Wait! What's happening? Didn't I just live through this?"
 bubble.deja_vu_again,Yine mi? Bu sefer hazırlıklı olmalıyım.,Again? This time I have to be ready.
 bubble.door_jammed,"Eyvah, kapı açılmıyor! Önüne bir şey düşmüş.","Oh no, the door won't open! Something fell in front of it."
+bubble.not_safe_here,"Burası güvenli değil, sağlam bir masanın altına girmeliyim!","It's not safe here, I need to get under a sturdy table!"
 bubble.wake,Ne oluyor?,What's happening?
 bubble.family_hit.father,"Baba! Hayır, hayır...","Dad! No, no..."
 bubble.family_hit.mother,"Anne! Hayır... Anne!","Mom! No... Mom!"

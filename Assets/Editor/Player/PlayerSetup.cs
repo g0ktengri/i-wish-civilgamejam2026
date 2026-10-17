@@ -99,6 +99,9 @@ namespace Deprem.Player
                 framesProperty.GetArrayElementAtIndex(i).objectReferenceValue = runFrames[i];
             so.ApplyModifiedPropertiesWithoutUndo();
 
+            // 2.5D kenar ışığı: ışığa bakan kenarda 2 piksellik parlak şerit (Deprem/RimLight)
+            root.AddComponent<Deprem.Visual.CharacterRimLight>().Configure(renderer, RimMaterial());
+
             // El feneri: çantada varsa kurtarma fazında yanar
             var spotGo = new GameObject("Flashlight");
             spotGo.transform.SetParent(root.transform, false);
@@ -165,6 +168,23 @@ namespace Deprem.Player
             mesh.RecalculateBounds();
             EditorUtility.SetDirty(mesh);
             return mesh;
+        }
+
+        /// <summary>Karakter kenar ışığı materyali (Deprem/RimLight, eklemeli)</summary>
+        private static Material RimMaterial()
+        {
+            const string path = "Assets/Generated/Player/kenar_isigi.mat";
+            var shader = Shader.Find("Deprem/RimLight");
+            if (shader == null) throw new System.InvalidOperationException("Deprem/RimLight shader bulunamadı (Assets/Shaders/RimLight.shader)");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         /// <summary>URP Unlit, saydam sıcak beyaz</summary>

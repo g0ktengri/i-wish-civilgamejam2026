@@ -113,6 +113,7 @@ GameObject:
   - component: {fileID: 5532818211175703949}
   - component: {fileID: 2938270592028414152}
   - component: {fileID: 8684074246600651156}
+  - component: {fileID: 3980672761434934324}
   - component: {fileID: 704763786387298917}
   m_Layer: 0
   m_Name: Player
@@ -272,6 +273,24 @@ MonoBehaviour:
   airFrame: 0
   runFps: 12
   moveThreshold: 0.2
+--- !u!114 &3980672761434934324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4785924010238185731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 514402e138769734990a42747a62884f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Visual.CharacterRimLight
+  body: {fileID: 7844497210284148813}
+  rimMaterial: {fileID: 2100000, guid: da210e0a404c6294697f4dc86ff671b9, type: 2}
+  pixels: 2
+  gain: 0.35
+  maxStrength: 1.2
+  refreshInterval: 0.5
 --- !u!114 &704763786387298917
 MonoBehaviour:
   m_ObjectHideFlags: 0
