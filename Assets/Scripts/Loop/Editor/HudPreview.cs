@@ -195,6 +195,20 @@ namespace Deprem.Loop.EditorTools
                 Get<Text>(final, "hintText").text = Deprem.Localization.Texts.Get("prompt.main_menu");
             });
 
+            // M56, M57: sinema bantları ve "geç" (Cinematic sınıfı yokken elle açılır, halka yarı dolu)
+            RenderScene("cinematic", root =>
+            {
+                var hud = root.AddComponent<CinematicHud>();
+                Call(hud, "Awake");
+                Get<RectTransform>(hud, "top").gameObject.SetActive(true);
+                Get<RectTransform>(hud, "top").sizeDelta = new Vector2(0f, 58f);
+                Get<RectTransform>(hud, "bottom").gameObject.SetActive(true);
+                Get<RectTransform>(hud, "bottom").sizeDelta = new Vector2(0f, 58f);
+                Get<RectTransform>(hud, "skipRoot").gameObject.SetActive(true);
+                Get<UiPrompt>(hud, "skipPrompt").Set(Deprem.Localization.Texts.Get("cinematic.skip"));
+                Get<Image>(hud, "ring").fillAmount = 0.6f;
+            });
+
             // M40: tuş değiştirme ekranı
             RenderScene("settings_controls", root =>
             {

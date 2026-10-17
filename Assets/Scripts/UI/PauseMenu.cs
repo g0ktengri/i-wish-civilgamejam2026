@@ -81,6 +81,7 @@ namespace Deprem.UI
         {
             if (minigameClosedFrame == Time.frameCount) return false;
             if (MinigameHost.Instance && MinigameHost.Instance.IsOpen) return false;
+            if (CinematicHud.Playing) return true; // M56: intro sırasında da duraklatılır (faz henüz başlamamış olabilir)
             var phase = GameState.Phase;
             return phase != GamePhase.None && phase != GamePhase.Failed && phase != GamePhase.Won;
         }

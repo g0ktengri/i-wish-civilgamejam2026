@@ -25,6 +25,7 @@ GameObject:
   - component: {fileID: 8704440242858728718}
   - component: {fileID: 857125433868889309}
   - component: {fileID: 994702159011302593}
+  - component: {fileID: 8876226993560030020}
   m_Layer: 0
   m_Name: BerkeSystems
   m_TagString: Untagged
@@ -514,3 +515,21 @@ MonoBehaviour:
   targetHeight: 360
   pixelate: 1
   sortingOrder: -100
+--- !u!114 &8876226993560030020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdbe74962fd89664e948ab36e0cf49df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.CinematicHud
+  font: {fileID: 12800000, guid: b130f425b0541a64e94ef955310244fb, type: 3}
+  fontSize: 16
+  barHeight: 58
+  barSeconds: 0.6
+  holdSeconds: 1
+  sortingOrder: 100

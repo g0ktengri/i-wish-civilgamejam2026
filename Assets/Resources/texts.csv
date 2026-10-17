@@ -129,6 +129,7 @@ menu.hint.back,Esc: Geri,Esc: Back
 menu.hint.change,A/D: Değiştir,A/D: Change
 menu.subtitle,Bir deprem hikâyesi,An earthquake story
 menu.jam,Civil Game Jam 2026,Civil Game Jam 2026
+cinematic.skip,Boşluk (basılı tut): Geç,Space (hold): Skip
 advice.ignored_foreshock,Sarsıntıyı ciddiye al.,Take the tremor seriously.
 advice.duck_cover,"Çök, kapan, tutun.","Drop, cover, hold on."
 advice.secure_items,Eşyalarını sabitle.,Secure your furniture.

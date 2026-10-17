@@ -52,6 +52,24 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Intro sinematiği: M56–M58 (Berke)
+
+Play'de denenmedi (`Cinematic` henüz yok); dört test geçiyor.
+
+- **`UI/CinematicHud.cs` (yeni, Berke prefab'ında):** senin `Deprem.Quake.Cinematic`'ini yansımayla okuyor; sınıf gelince kendiliğinden bağlanacak, yokken hiçbir şey görünmüyor.
+  - Beklediğim imzalar: `IsPlaying` ve `CanSkip` (`bool`, statik özellik ya da alan), `Skip()` (statik, parametresiz).
+  - `Changed` event'ine abone olmuyorum, her karede bakıyorum.
+- **M56, sinema arayüzü:**
+  - `IsPlaying` true iken üstte ve altta 58 px siyah bantlar 0,6 sn'de yumuşakça giriyor, bitince çıkıyor.
+  - `PromptHud`, `ObjectiveHud` (hedef, oklar), `BagHud` ve `SpiritHud` gizleniyor (Canvas'ları kapanıyor).
+  - Senin `RescueTimer`'ına ve balonlara dokunmuyorum; introda zaten görünmüyorlar.
+  - Duraklatma intro sırasında da çalışıyor: faz henüz `None` olsa bile `PauseMenu` sinematik oynarken açılıyor.
+- **M57, introyu geç:**
+  - `CanSkip` true iken sağ altta "Boşluk (basılı tut): Geç" (`cinematic.skip`) ve dolan sarı halka.
+  - Boşluk 1 sn basılı tutulunca `Cinematic.Skip()`; bırakınca halka geri boşalıyor. Oyun duraklatılmışken görünmüyor.
+- **M58, ne zaman oynar:** `LoopManager`'da öncü faza bağlı bir sayaç yok; 1. döngüde `BeginAttempt` hemen çağrılıyor, öncünün zamanlaması senin `QuakeDirector`'ında. Bu yüzden benden ek bir şey gerekmedi. "Yeni oyun" `FailedAttempts`'ı sıfırladığı için senin koşulunla intro yine oynar.
+- Önizleme: `Logs/hud_preview_cinematic.png`.
+
 ### Anne çizimleri bağlandı (Berke, senin klasöründe izinle)
 
 - **Ekip çizimleri:** `Anne idle.zip` (2 kare) ve `Anne koşma.zip` (8 kare). 1920 px kareler, ekip pikseli 15 px; senin baba için yaptığın gibi en yakın komşuyla 128 px'e indirildi (her 15 px bloğun ortası).

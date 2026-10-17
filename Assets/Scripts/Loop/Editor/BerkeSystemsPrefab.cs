@@ -65,7 +65,7 @@ namespace Deprem.Loop.EditorTools
         // M33: oyun içi HUD yazıları okunaklı balon fontu DepremBalon (Mehmet'in play testi 21)
         static readonly Type[] HudFontUsers =
         {
-            typeof(SpiritHud), typeof(MinigameHost), typeof(PromptHud), typeof(ObjectiveHud), typeof(BagHud),
+            typeof(SpiritHud), typeof(MinigameHost), typeof(PromptHud), typeof(ObjectiveHud), typeof(BagHud), typeof(CinematicHud),
         };
 
         // Ortak UI stili (Assets/Resources/UiStyle.asset): alan → Assets/Art/UI dosyası
@@ -103,6 +103,7 @@ namespace Deprem.Loop.EditorTools
                 root.AddComponent<SettingsMenu>();
                 root.AddComponent<MainMenu>();
                 root.AddComponent<PixelScreen>();
+                root.AddComponent<CinematicHud>(); // M56, M57: intro sinematiği bantları ve geç
 
                 BindArt(root);
                 BindSpiritFrames(root.GetComponent<SpiritPhase>());
