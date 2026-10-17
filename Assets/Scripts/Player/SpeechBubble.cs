@@ -114,7 +114,8 @@ namespace Deprem.Player
         private void EnsureUi()
         {
             if (canvas != null) return;
-            canvas = UiBuilder.CreateCanvas(transform, "SpeechBubbleCanvas", 30);
+            // Sinema bantlarının (97) ve intro karartmasının (98) üstünde: merdivendeki annenin balonu bandın altında kalıyordu
+            canvas = UiBuilder.CreateCanvas(transform, "SpeechBubbleCanvas", 99);
             bubble = UiBuilder.CreateSpeechBubble(canvas.transform, font, fontSize);
             bubble.gameObject.SetActive(false);
         }

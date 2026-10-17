@@ -31,8 +31,12 @@ namespace Deprem.Quake
         [Header("Üst kat (anne, kardeş merdiven başında)")]
         [SerializeField] private Vector3 motherSpot = new Vector3(15.4f, 3.75f, 1f);
         [SerializeField] private Vector3 siblingSpot = new Vector3(16.3f, 3.75f, 1f);
-        [Tooltip("Merdivendeki konuşmada kamera iki katı birden göstersin (görüş açısı oranı)")]
-        [SerializeField] private float stairsViewFov = 1.3f;
+        [Tooltip("Merdivendeki konuşmada kamera iki katı birden göstersin (görüş açısı oranı; Berke'nin play testi: 1,3 → 1,6)")]
+        [SerializeField] private float stairsViewFov = 1.6f;
+        [Tooltip("Merdiven görüntüsünün yüksekliği: üst kattaki annenin yüksekliğinin oranı (annenin balonu bandın altında kalmasın)")]
+        [SerializeField] private float stairsViewHeight = 0.7f;
+        [Tooltip("Açılış: kapı açılmadan önceki bekleme (sn)")]
+        [SerializeField] private float enterDelay = 0.6f;
 
         [Header("Kararma")]
         [SerializeField] private float fadeInTime = 1.8f;
@@ -68,6 +72,7 @@ namespace Deprem.Quake
                 player.SpeedMultiplier = walkSpeedMultiplier;
             }
             yield return Run(Scene());
+            SetPlayerVisible(true); // "Geç" kapı açılmadan basıldıysa
 
             // Bitiş (ya da "Geç"): karar, gece olur; aile odalarına geçer
             player?.SetScriptedInput(0f);
@@ -97,11 +102,15 @@ namespace Deprem.Quake
             var sibling = FamilyMember.Find(FamilyMemberId.Sibling);
             var door = EntranceDoor.Instance;
 
-            // Kurulum, ekran siyahken: oyuncu giriş kapısının eşiğinde, kapılar açık, aile akşam yerlerinde
+            // Kurulum, ekran siyahken: oyuncu giriş kapısının eşiğinde (henüz dışarıda: görünmez), giriş kapısı
+            // kapalı, iç kapılar açık, aile akşam yerlerinde. Berke'nin play testi: kapı kapalı başlasın, oyuncu açıp girsin.
             var start = door != null ? door.Threshold : new Vector3(31.9f, 0f, 1f);
             player.Teleport(start);
             player.Face(-1);
-            if (door != null) door.SetOpenImmediate(true);
+            if (door != null) door.SetOpenImmediate(false);
+            SetPlayerVisible(false);
+            var visibility = Deprem.Visual.RoomVisibility.Instance;
+            if (visibility != null) visibility.Tick(start + Vector3.left * 1.5f, 1f); // mutfak açılışta görünsün
             foreach (var houseDoor in FindObjectsByType<HouseDoor>(FindObjectsSortMode.None))
                 if (houseDoor.transform.position.y < 1f) houseDoor.Open(start.x); // zemin kat: yol açık
             if (father != null)
@@ -121,6 +130,13 @@ namespace Deprem.Quake
             }
 
             yield return Fade(1f, 0f, fadeInTime);
+            yield return Wait(enterDelay);
+            if (door != null)
+            {
+                Audio.Sfx.PlayAt("cabin.door", door.transform.position, 0.4f);
+                yield return door.Swing(true);
+            }
+            SetPlayerVisible(true); // kapı açıldı: oyuncu dışarıdan içeri adım atar
             yield return WalkTo(start.x - 1.1f);
             if (door != null) StartCoroutine(door.Swing(false));
 
@@ -135,13 +151,15 @@ namespace Deprem.Quake
 
             // Merdiven: üst kattan anne ve kardeş seslenir; kamera iki katı birden gösterir
             yield return WalkTo(stairsTalkX);
+            // Berke'nin play testi: kamera anneye doğru uzaklaşsın (balonu sinema bandının altında kalmasın), oyuncu
+            // seslenen annesine dönsün
             var view = new GameObject("IntroStairsView").transform;
-            view.position = new Vector3((stairsTalkX + motherSpot.x) * 0.5f, motherSpot.y * 0.5f, start.z);
+            view.position = new Vector3(Mathf.Lerp(stairsTalkX, motherSpot.x, 0.6f), motherSpot.y * stairsViewHeight, start.z);
             PlayerCameraTarget.Focus(view, stairsViewFov);
             // Sahanlık örtüsü kalksın: anne ve kardeş merdiven başında görünsün
-            var visibility = Deprem.Visual.RoomVisibility.Instance;
             if (visibility != null) visibility.Tick(motherSpot, 1f);
             yield return Wait(0.9f);
+            if (player != null) player.Face(motherSpot.x > player.transform.position.x ? 1 : -1);
             if (mother != null) yield return Say(mother, "bubble.intro.mother", 3f);
             if (sibling != null) yield return Say(sibling, "bubble.intro.sibling", 2.6f);
             yield return Say(player, "bubble.intro.player_2", 3.8f);
@@ -205,7 +223,30 @@ namespace Deprem.Quake
             for (float t = 0f; t < seconds; t += Time.deltaTime) yield return null;
         }
 
+        // Oyuncunun görselleri (açılışta kapının arkasında, dışarıda: görünmez). Kapalı olanlar (el feneri vb.) dokunulmaz.
+        private readonly List<Renderer> hiddenRenderers = new List<Renderer>();
+
+        private void SetPlayerVisible(bool visible)
+        {
+            if (player == null) return;
+            if (!visible)
+            {
+                hiddenRenderers.Clear();
+                foreach (var r in player.GetComponentsInChildren<Renderer>())
+                    if (r.enabled)
+                    {
+                        r.enabled = false;
+                        hiddenRenderers.Add(r);
+                    }
+                return;
+            }
+            foreach (var r in hiddenRenderers)
+                if (r != null) r.enabled = true;
+            hiddenRenderers.Clear();
+        }
+
         // ------------------------------------------------------------------ Karartma
+
 
         private IEnumerator Fade(float from, float to, float seconds)
         {

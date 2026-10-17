@@ -106,7 +106,7 @@ namespace Deprem.Quake
         [Tooltip("Dolap devrildikten sonra kapıda kalma (sn)")]
         [SerializeField] private float entranceHold = 1.2f;
         [Tooltip("Yakın çekimde görüş açısı oranı (< 1 yaklaştırır)")]
-        [SerializeField] private float entranceCloseUpFov = 0.6f;
+        [SerializeField] private float entranceCloseUpFov = 0.9f; // Berke'nin play testi: 0,6 fazla yakındı, devrilme tam görünmüyordu
 
         [Tooltip("Play testi 24: kardeş bulunamayınca gelen artçıda tavanın çökmesinden önceki sarsıntı (sn)")]
         [SerializeField] private float fatalAftershockLead = 1.2f;
@@ -396,7 +396,7 @@ namespace Deprem.Quake
             var door = EntranceDoor.Instance;
             var focus = new GameObject("EntranceCloseUp").transform;
             var at = door != null ? door.Threshold : blocker.transform.position;
-            focus.position = new Vector3(at.x - 0.6f, at.y + 1.1f, at.z);
+            focus.position = new Vector3(at.x - 0.9f, at.y + 1.2f, at.z);
             Cinematic.Begin(false);
             PlayerCameraTarget.Focus(focus, entranceCloseUpFov);
             yield return new WaitForSeconds(entranceCameraTravel);

@@ -33,6 +33,8 @@ namespace Deprem.Family
             public bool Hides; // Play testi 24: karanlıkta saklanır, el feneriyle bulunur
             public float Height;
             public Color Color;
+            /// <summary>Ekip çizimi karesinin dünya boyu (m); 0 ise FrameSize</summary>
+            public float Frame;
         }
 
         // GDD "Artçılar ve kurtarma" ve "Sabitlenebilir eşyalar"
@@ -40,7 +42,9 @@ namespace Deprem.Family
         {
             new MemberDef { Name = "Father", Id = FamilyMemberId.Father, Marker = "Marker_Father", Danger = ItemId.Bookcase,
                 // Berke'nin play testi: kayayı kaldırmak için çanta şart değil; kan kaybı kabinde ortaya çıkar (ilk yardım)
-                Bag = BagItemId.None, CabinBag = BagItemId.FirstAidKit, Injured = true, Height = 1.65f, Color = new Color(0.35f, 0.5f, 0.85f) },
+                // Berke'nin play testi (intro): baba oyuncunun yanında fazla küçüktü; karesi 1,8 → 2,05 m (oyuncu 2)
+                Bag = BagItemId.None, CabinBag = BagItemId.FirstAidKit, Injured = true, Height = 1.85f, Color = new Color(0.35f, 0.5f, 0.85f),
+                Frame = 2.05f },
             new MemberDef { Name = "Mother", Id = FamilyMemberId.Mother, Marker = "Marker_Mother", Danger = ItemId.Wardrobe,
                 Bag = BagItemId.None, Injured = false, Height = 1.5f, Color = new Color(0.85f, 0.4f, 0.45f) },
             new MemberDef { Name = "Sibling", Id = FamilyMemberId.Sibling, Marker = "Marker_Sibling", Danger = ItemId.ToyShelf,
@@ -110,9 +114,11 @@ namespace Deprem.Family
                 // Ekip çizimi (ör. baba_yurume_1..8): 128 x 128 px kare, oyuncunun kareleriyle aynı kurulum.
                 // Ayak alt kenardan 2 px yukarıda, gövde ortası x ≈ 61,5 px. Play testi 24: aile çok iri duruyordu,
                 // kare FrameSize m (oyuncu 2 m)
-                float s = FrameSize / 128f;
+                float frameSize = def.Frame > 0f ? def.Frame : FrameSize;
+                float s = frameSize / 128f;
                 quad.transform.localPosition = new Vector3((64f - 61.5f) * s, 64f * s - 2f * s, 0f);
-                quad.transform.localScale = new Vector3(FrameSize, FrameSize, 1f);
+                quad.transform.localScale = new Vector3(frameSize, frameSize, 1f);
+
                 renderer.sharedMaterial = FrameMaterial(def.Name.ToLowerInvariant(), frames[0]);
             }
             else

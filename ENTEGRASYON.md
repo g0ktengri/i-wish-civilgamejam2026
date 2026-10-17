@@ -52,6 +52,23 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Intro: Berke'nin play testi düzeltmeleri (senin klasörlerinde izinle)
+
+Dört test geçiyor; Play'de son hali denenmedi.
+
+- **Siyah ekran (benim hatam, 94235f7):** sinema arayüzü HUD'ları gizlerken BerkeSystems objesindeki bütün kanvasları kapatıyordu, PixelScreen de dahil. Artık yalnızca dört HUD kanvası gizleniyor; Berke testinde kontrolü var. Bantlar senin karartmanın altında (97).
+- **Giriş kapısı kapalı başlıyor (`IntroCinematic`):**
+  - Oyuncu eşikte ama görünmez (dışarıda sayılır); mutfak açılışta açık.
+  - Kararma açılır, 0,6 sn sonra kapı açılır (`cabin.door`, kısık), oyuncu görünüp içeri yürür, kapı arkasından kapanır.
+  - "Geç" kapı açılmadan basılırsa oyuncu yine görünür olur.
+- **Merdiven:**
+  - Kamera anneye doğru uzaklaşıyor: görüş açısı 1,3 → 1,6; görüntü oyuncuyla anne arasında anneye yakın, yüksekliği annenin %70'i (`stairsViewFov`, `stairsViewHeight`).
+  - Anne seslenmeden önce oyuncu ona dönüyor.
+- **Konuşma balonları (`SpeechBubble`):** kanvas 30 → 99. Sinema bantlarının ve intro karartmasının üstünde; merdivendeki annenin balonu bandın altında kalıyordu.
+- **Babanın boyu (`FamilySetup`):** üye başına kare boyu (`MemberDef.Frame`). Baba 1,8 → 2,05 m (oyuncu 2); `Height` 1,65 → 1,85 (balon ve ışık hizası). Anne ve kardeş 1,8'de kaldı.
+- **Kapı yakın çekimi (`QuakeDirector`):** `entranceCloseUpFov` 0,6 → 0,9; odak biraz daha solda ve yukarıda. Portmantonun devrilip kapıyı kapatması tam görünsün.
+- **Commit'te:** `FamilySystem.prefab` ve `QuakeSystem.prefab` yeniden kuruldu. `Main.unity` değişmedi.
+
 ### Intro sinematiği: M56–M58 (Berke)
 
 Play'de denenmedi (`Cinematic` henüz yok); dört test geçiyor.
