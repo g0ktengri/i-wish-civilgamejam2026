@@ -477,10 +477,45 @@ namespace Deprem.Quake
             piece.transform.rotation = Quaternion.Euler(0f, 0f, UnityEngine.Random.Range(-15f, 15f));
             piece.transform.localScale = size;
             if (debrisMaterial != null) piece.GetComponent<MeshRenderer>().sharedMaterial = debrisMaterial;
+            DressAsPixelRubble(piece, name, size);
             var body = piece.AddComponent<Rigidbody>();
             body.mass = mass;
             body.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
             body.linearVelocity = Vector3.down * 1.5f;
+        }
+
+        private readonly Dictionary<Texture2D, Material> rubbleMaterials = new Dictionary<Texture2D, Material>();
+
+        /// <summary>
+        /// Berke'nin play testi: düz kutular pixel art'a uymuyordu. Kutu fizik için kalır ama görünmez;
+        /// önüne (kameraya bakan yüze) düzensiz kenarlı, konturlu pixel moloz dokusu konur.
+        /// </summary>
+        private void DressAsPixelRubble(GameObject piece, string name, Vector3 size)
+        {
+            if (debrisMaterial == null) return;
+            var texture = name == "CeilingSlab"
+                ? PixelRubble.Slab(Mathf.RoundToInt(size.x * 64f), Mathf.RoundToInt(size.y * 64f) + 6)
+                : PixelRubble.Chunk(UnityEngine.Random.Range(0, PixelRubble.AtlasTiles));
+            if (!rubbleMaterials.TryGetValue(texture, out var material))
+            {
+                material = new Material(debrisMaterial) { name = "PixelRubble" };
+                material.SetTexture("_BaseMap", texture);
+                material.SetColor("_BaseColor", Color.white);
+                material.SetFloat("_AlphaClip", 1f);
+                material.SetFloat("_Cutoff", 0.5f);
+                material.EnableKeyword("_ALPHATEST_ON");
+                rubbleMaterials[texture] = material;
+            }
+
+            piece.GetComponent<MeshRenderer>().enabled = false;
+            var face = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            face.name = "PixelFace";
+            Destroy(face.GetComponent<Collider>());
+            face.transform.SetParent(piece.transform, false);
+            face.transform.localPosition = new Vector3(0f, 0f, -0.51f); // kutunun kameraya bakan yüzünün önü
+            var renderer = face.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
         }
 
         private void Fail(LoseReason reason, ItemId item = ItemId.None)

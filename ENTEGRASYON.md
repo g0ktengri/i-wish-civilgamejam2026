@@ -71,6 +71,13 @@
   - Metinler `texts.csv` `# Mehmet` başlığında: `bubble.deja_vu`, `bubble.deja_vu_again`, `bubble.door_jammed`.
   - Play'de elle denenmesi gerekenler: merdivenden çıkınca artçının zamanı, masaların sarı konturu, salon kapısının TV devrilince kilitlenmesi, döngü 1'de rafın görselin önünde kalması.
   - **Düzeltme (Berke'nin play testi):** Bütün masa parçalarına kontur koymak çekmeceyi ve ayakları dolu sarı gösteriyordu. Artık sadece üst tabla ince konturlu (`kontur_masa.mat`: kalınlık 0,015, daha güçlü nabız) ve masanın altında yumuşak sıcak bir ışık (`SafeSpot.underGlow`) yanıyor.
+- **Berke'nin play testi 3 (Mehmet'in izniyle onun klasörlerinde de):**
+  - Kenar ışığı yanlış anlaşılmıştı, hafif olmalıydı: `CharacterRimLight.gain` 0,18, en fazla 0,45; shader'da en dış piksel tam, içteki yarım güçte.
+  - `FamilyMember.failDelay` 4 sn (5,5 uzun kaldı). Ezilen üye (`PinUnder`) devrilen eşyanın ön kenarının hemen önünde yatar: gardırobun altında görünmez oluyordu. Kayıp ışığı gölgesiz ve alçakta.
+  - Düşen parçalar pixel art: `Scripts/Quake/PixelRubble.cs` kodla düzensiz kenarlı, konturlu moloz dokuları üretir. `QuakeDirector.SpawnDebris` kutuyu fizik için tutar, önüne bu dokuyla bir quad koyar (beton levha için geniş doku). Tavandan düşen sıva parçacıkları da aynı atlastan (texture sheet, 4 değişken, döner).
+  - Toz: oranlar ve boyutlar arttı (toz 320/sn, bulut 24/sn, patlama 260, devrilme bulutu 90 tane), her odada tavan çatlaklarından 2 ince toz akıntısı.
+  - Konuşma balonu: sanatçı görseli yokken kodla üretilen pixel art balon (`UiBuilder.PixelBubbleSprite`, 9-slice; `PixelTailSprite`, gövdeye biner). Yatarken balon 1,15 m'de (`SpeechBubble.lyingHeadHeight`), 2,1 m yatakta çok yukarıdaydı.
+  - Keşke sahnesi: kayıpta oyun 1,4 sn ağır çekime girer, karakterin etrafında pixel bir daire kapanır (iris), siyahta cümle BÜYÜK harflerle her harfte hafif sarsıntıyla yazılır, altında kırmızı çizgi uzar, sonra bilgi satırı. Devam edince yazılar geri sarılarak silinir ("<< Zaman geri sarılıyor..."). Oyuncu objesi `Player` adıyla bulunuyor.
 - **Berke'nin play testi 2 (Mehmet'in izniyle onun klasörlerinde de):**
   - Vida: 4 vida süreye yetmiyordu; `MinigameHost.screwCount = 1` (levhanın ortasında tek vida, 2 tur). 4'e geri almak Inspector'dan.
   - Keşke ekranı: 1,6 sn'de yavaş kararma, keşke cümlesi harf harf (14 harf/sn, noktalamada durur), 1,6 sn sessizlik, bilgi satırı da yazılır; tıklayınca yazı tamamlanır.

@@ -42,7 +42,7 @@ namespace Deprem.Family
         [SerializeField] private float discoverRange = 3.5f;
         [SerializeField] private float interactRange = 1.2f;
         [Tooltip("Fark ettikten sonra keşke ekranına kadar süre: oyuncu durur, döner, balonla tepki verir")]
-        [SerializeField] private float failDelay = 5.5f; // Berke'nin play testi: balon okunmadan keşke ekranına geçiyordu
+        [SerializeField] private float failDelay = 4f; // 3 sn okunmuyordu, 5,5 sn fazla uzundu
         [Tooltip("Kayıp fark edilince sahne aydınlanır: karanlıkta devrilen eşya ve üye görünsün")]
         [SerializeField] private float revealIntensity = 3f;
         [SerializeField] private float revealRange = 4.5f;
@@ -159,7 +159,9 @@ namespace Deprem.Family
             var collider = securable.GetComponent<Collider>();
             float centerX = collider != null ? collider.bounds.center.x : securable.transform.position.x;
             var p = transform.position;
-            transform.position = new Vector3(centerX + lyingHalfLength, p.y, p.z);
+            // Eşyanın ön kenarının hemen önünde yatar: karanlıkta ve kameradan eşyanın altında kaybolmasın
+            float frontZ = collider != null ? collider.bounds.min.z - 0.08f : p.z;
+            transform.position = new Vector3(centerX + lyingHalfLength, p.y, Mathf.Min(p.z, frontZ));
         }
 
         public void OnItemToppled(ItemId item)
@@ -250,11 +252,12 @@ namespace Deprem.Family
         {
             var light = new GameObject("LossReveal").AddComponent<Light>();
             light.transform.SetParent(transform, false);
-            light.transform.localPosition = new Vector3(0f, 1.4f, -1.2f);
+            // Gölgesiz ve alçakta: devrilen eşya ışığı kesmesin, altındaki üye görünsün
+            light.transform.localPosition = new Vector3(0f, 0.7f, -1.4f);
             light.type = LightType.Point;
             light.color = revealColor;
             light.range = revealRange;
-            light.shadows = LightShadows.Soft;
+            light.shadows = LightShadows.None;
             for (float t = 0f; t < 0.8f; t += Time.deltaTime)
             {
                 light.intensity = Mathf.Lerp(0f, revealIntensity, t / 0.8f);

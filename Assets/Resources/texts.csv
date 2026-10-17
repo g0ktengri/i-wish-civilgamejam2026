@@ -5,6 +5,7 @@ key,tr,en
 # Genel
 content_warning,Bu oyun deprem ve kayıp temalarını içerir.,This game contains themes of earthquakes and loss.
 prompt.continue,F: Devam,F: Continue
+wish.rewind,<< Zaman geri sarılıyor...,<< Rewinding time...
 prompt.stand_up,F: Kalk,F: Get up
 prompt.duck_cover,C / S: Parlayan masanın altında Çök-Kapan-Tutun,C / S: Drop-Cover-Hold On under the glowing table
 prompt.duck_cover_find,Burada olmaz! Parlayan masanın altına geç,Not here! Get under the glowing table

@@ -77,8 +77,8 @@ Shader "Deprem/RimLight"
                 int pixels = (int)max(1, _RimPixels);
                 [unroll] for (int i = 1; i <= 4; i++)
                 {
-                    // step(a, 0.5) = 1 when the neighbour is transparent
-                    if (i <= pixels) edge = max(edge, step(Alpha(input.uv + pixelStep * i), 0.5));
+                    // step(a, 0.5) = 1 when the neighbour is transparent; en dış piksel tam, içerisi yarım
+                    if (i <= pixels) edge = max(edge, step(Alpha(input.uv + pixelStep * i), 0.5) / i);
                 }
                 return half4(_RimColor.rgb * edge, 0);
             }

@@ -69,6 +69,65 @@ namespace Deprem.UI
         }
 
         static Sprite circle;
+        static Sprite pixelBubble;
+        static Sprite pixelTail;
+
+        // Görseli yokken konuşma balonu: 16 x 16 pixel art, yuvarlak köşeli, 1 px koyu kontur, 9-slice (kenar 5)
+        public static Sprite PixelBubbleSprite
+        {
+            get
+            {
+                if (pixelBubble) return pixelBubble;
+                const int size = 16;
+                var texture = PixelTexture(size, size, "UiPixelBubble");
+                for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    // Köşelerden 2 px kırpılır (pixel art yuvarlak köşe)
+                    int dx = Mathf.Min(x, size - 1 - x), dy = Mathf.Min(y, size - 1 - y);
+                    bool outside = dx + dy < 2;
+                    bool edge = !outside && (dx == 0 || dy == 0 || dx + dy == 2);
+                    bool shade = !outside && !edge && dy == 1 && y < size / 2; // altta 1 px gölge
+                    texture.SetPixel(x, y, outside ? Color.clear : edge ? BubbleBorder : shade ? new Color(0.82f, 0.82f, 0.86f) : Color.white);
+                }
+                texture.Apply();
+                pixelBubble = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 64f, 0,
+                    SpriteMeshType.FullRect, new Vector4(5, 5, 5, 5));
+                return pixelBubble;
+            }
+        }
+
+        // Görseli yokken balon kuyruğu: 10 x 7, ucu aşağıda, konturlu
+        public static Sprite PixelTailSprite
+        {
+            get
+            {
+                if (pixelTail) return pixelTail;
+                const int w = 10, h = 7;
+                var texture = PixelTexture(w, h, "UiPixelTail");
+                for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    // Üst kenar geniş, aşağı doğru daralır (y = 0 uç)
+                    float half = (y + 1) * (w * 0.5f) / h;
+                    float d = Mathf.Abs(x + 0.5f - w * 0.5f);
+                    bool inside = d <= half;
+                    bool edge = inside && (d > half - 1.2f || y == 0);
+                    texture.SetPixel(x, y, !inside ? Color.clear : edge && y < h - 1 ? BubbleBorder : Color.white);
+                }
+                texture.Apply();
+                pixelTail = Sprite.Create(texture, new Rect(0, 0, w, h), new Vector2(0.5f, 1f), 64f);
+                return pixelTail;
+            }
+        }
+
+        static Texture2D PixelTexture(int w, int h, string name) =>
+            new Texture2D(w, h, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp,
+                name = name,
+            };
 
         // Görseli olmayan yuvarlak parçalar için kodla üretilen piksel daire (32 x 32, beyaz)
         public static Sprite CircleSprite
@@ -125,12 +184,15 @@ namespace Deprem.UI
             rootRect.pivot = new Vector2(0.5f, 0f);
 
             const float tailHeight = 12f;
-            var tailSprite = style ? style.bubbleTail : null;
+            // Sanatçı görseli yoksa kodla üretilen pixel art balon (düz kutu çok çirkin duruyordu)
+            var tailSprite = style && style.bubbleTail ? style.bubbleTail : PixelTailSprite;
+            Image tail = null;
             if (tailSprite)
             {
-                var tail = CreateImage(rootRect, "Tail", Color.white);
+                tail = CreateImage(rootRect, "Tail", Color.white);
                 ApplySprite(tail, tailSprite);
-                PlaceBottomCenter(tail.rectTransform, new Vector2(16f, tailHeight), 0f);
+                // Kuyruk gövdenin alt konturuna 2 px biner (beyaz üstü konturu örter: tek parça balon)
+                PlaceBottomCenter(tail.rectTransform, new Vector2(16f, tailHeight + 2f), 0f);
             }
             else
             {
@@ -144,13 +206,14 @@ namespace Deprem.UI
                 tailFill.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
             }
 
-            var body = CreateBox(rootRect, "Body", style ? style.bubble : null, BubbleFill, BubbleBorder);
+            var body = CreateBox(rootRect, "Body", style && style.bubble ? style.bubble : PixelBubbleSprite, BubbleFill, BubbleBorder);
             var bodyRect = body.rectTransform;
             bodyRect.anchorMin = Vector2.zero;
             bodyRect.anchorMax = Vector2.one;
             bodyRect.offsetMin = new Vector2(0f, tailHeight);
             bodyRect.offsetMax = Vector2.zero;
             if (!tailSprite) body.transform.SetAsLastSibling(); // karonun üst yarısını örtsün
+            else if (tail != null) tail.transform.SetAsLastSibling();
 
             var label = CreateText(bodyRect, "Text", font, fontSize, BubbleText);
             label.rectTransform.anchorMin = label.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);

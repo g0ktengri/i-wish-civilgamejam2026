@@ -13,6 +13,8 @@ namespace Deprem.Player
     {
         [Tooltip("Kuyruğun ucunun karakterin ayağından yüksekliği (m)")]
         [SerializeField] private float headHeight = 2.1f;
+        [Tooltip("Yatarken balonun yüksekliği (yatakta 2,1 m çok yukarıda kalıyordu)")]
+        [SerializeField] private float lyingHeadHeight = 1.15f;
         [SerializeField] private int fontSize = 14;
         [SerializeField] private float maxTextWidth = 220f;
 
@@ -47,7 +49,9 @@ namespace Deprem.Player
 
             var cam = Camera.main;
             if (cam == null) return;
-            var screen = cam.WorldToScreenPoint(transform.position + Vector3.up * headHeight);
+            var controller = GetComponent<PlayerController>();
+            float height = controller != null && controller.IsLying ? lyingHeadHeight : headHeight;
+            var screen = cam.WorldToScreenPoint(transform.position + Vector3.up * height);
             var canvasRect = (RectTransform)canvas.transform;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out var local))
                 bubble.Root.anchoredPosition = local; // kökün pivotu kuyruğun ucu

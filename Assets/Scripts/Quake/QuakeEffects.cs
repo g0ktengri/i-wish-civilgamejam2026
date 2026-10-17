@@ -27,18 +27,23 @@ namespace Deprem.Quake
 
         [Header("Tavandan toz")]
         [Tooltip("Tam şiddette oda başına saniyede toz tanesi")]
-        [SerializeField] private float dustRate = 140f;
-        [SerializeField] private Color dustColor = new Color(0.8f, 0.77f, 0.7f, 0.55f);
+        // Berke'nin play testi: toz yetersizdi; oranlar ve boyutlar arttı, tavandan ince toz akıntıları eklendi
+        [SerializeField] private float dustRate = 320f;
+        [SerializeField] private Color dustColor = new Color(0.8f, 0.77f, 0.7f, 0.6f);
         [Tooltip("Tam şiddette oda başına saniyede iri, yavaş düşen toz bulutu")]
-        [SerializeField] private float clumpRate = 10f;
-        [SerializeField] private Color clumpColor = new Color(0.78f, 0.75f, 0.68f, 0.18f);
-        [Tooltip("Tam şiddette oda başına saniyede sıva parçası (şiddet 0,4'ün üstünde başlar); yere çarpıp seker")]
-        [SerializeField] private float chunkRate = 10f;
+        [SerializeField] private float clumpRate = 24f;
+        [SerializeField] private Color clumpColor = new Color(0.78f, 0.75f, 0.68f, 0.28f);
+        [Tooltip("Tam şiddette oda başına saniyede sıva parçası (şiddet 0,3'ün üstünde başlar); yere çarpıp seker")]
+        [SerializeField] private float chunkRate = 18f;
+        [Tooltip("Tam şiddette tavandaki her çatlaktan saniyede akan ince toz")]
+        [SerializeField] private float streamRate = 70f;
+        [Tooltip("Oda başına tavan çatlağı (ince toz akıntısı) sayısı")]
+        [SerializeField] private int streamsPerRoom = 2;
         [Tooltip("Ana depremin ilk vuruşunda oda başına toz patlaması (tane)")]
-        [SerializeField] private int burstDust = 120;
+        [SerializeField] private int burstDust = 260;
 
         [Header("Devrilince toz bulutu")]
-        [SerializeField] private int puffCount = 45;
+        [SerializeField] private int puffCount = 90;
         [Tooltip("Devrilme başladıktan yere vurana kadar (sn)")]
         [SerializeField] private float puffDelay = 0.55f;
         [SerializeField] private Color puffColor = new Color(0.72f, 0.68f, 0.6f, 0.55f);
@@ -46,6 +51,7 @@ namespace Deprem.Quake
         private ParticleSystem[] dust;
         private ParticleSystem[] clumps;
         private ParticleSystem[] chunks;
+        private ParticleSystem[] streams;
         private ParticleSystem puff;
 
         public void Configure(Ceiling[] roomCeilings, Material dustMat, Material chunkMat)
@@ -61,19 +67,34 @@ namespace Deprem.Quake
             dust = new ParticleSystem[ceilings.Length];
             clumps = new ParticleSystem[ceilings.Length];
             chunks = new ParticleSystem[ceilings.Length];
+            streams = new ParticleSystem[ceilings.Length * Mathf.Max(0, streamsPerRoom)];
+            var rubble = PixelRubbleMaterial();
             for (int i = 0; i < ceilings.Length; i++)
             {
                 var c = ceilings[i];
                 var box = new Vector3(c.size.x, 0.05f, c.size.y);
                 dust[i] = CreateSystem("Dust_" + i, dustMaterial, c.center, box, 0.04f, 0.1f, 2f, 0.25f, dustColor, 900);
                 Drift(dust[i], 0.25f);
-                clumps[i] = CreateSystem("Clumps_" + i, dustMaterial, c.center, box, 0.4f, 0.9f, 3.5f, 0.05f, clumpColor, 120);
+                clumps[i] = CreateSystem("Clumps_" + i, dustMaterial, c.center, box, 0.6f, 1.4f, 3.5f, 0.05f, clumpColor, 200);
                 var grow = clumps[i].sizeOverLifetime;
                 grow.enabled = true;
                 grow.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.4f, 1f, 1.6f));
                 Drift(clumps[i], 0.15f);
-                chunks[i] = CreateSystem("Chunks_" + i, chunkMaterial != null ? chunkMaterial : dustMaterial,
-                    c.center, box, 0.05f, 0.14f, 2.2f, 1f, Color.white, 120);
+                // Sıva parçaları pixel moloz (düzensiz kenarlı, konturlu); 4 değişkenden biri rastgele
+                chunks[i] = CreateSystem("Chunks_" + i, rubble != null ? rubble : (chunkMaterial != null ? chunkMaterial : dustMaterial),
+                    c.center, box, 0.1f, 0.22f, 2.2f, 1f, Color.white, 160);
+                if (rubble != null)
+                {
+                    var sheet = chunks[i].textureSheetAnimation;
+                    sheet.enabled = true;
+                    sheet.numTilesX = PixelRubble.AtlasTiles;
+                    sheet.numTilesY = 1;
+                    sheet.frameOverTime = new ParticleSystem.MinMaxCurve(0f);
+                    sheet.startFrame = new ParticleSystem.MinMaxCurve(0f, PixelRubble.AtlasTiles - 0.01f);
+                    var spin = chunks[i].rotationOverLifetime;
+                    spin.enabled = true;
+                    spin.z = new ParticleSystem.MinMaxCurve(-3f, 3f);
+                }
                 // Sıva parçaları zemine (ve eşyalara) çarpıp seker, sonra yerde kalıp solar
                 var collision = chunks[i].collision;
                 collision.enabled = true;
@@ -84,7 +105,19 @@ namespace Deprem.Quake
                 collision.lifetimeLoss = 0f;
                 collision.quality = ParticleSystemCollisionQuality.Medium;
             }
-            puff = CreateSystem("ToppleDust", dustMaterial, transform.position, Vector3.one * 0.1f, 0.15f, 0.35f, 1.2f, -0.03f, puffColor, 400);
+            // Tavan çatlaklarından ince toz akıntısı: oda başına rastgele yerlerde dar kutular
+            for (int i = 0; i < ceilings.Length; i++)
+            for (int k = 0; k < streamsPerRoom; k++)
+            {
+                var c = ceilings[i];
+                var position = c.center + new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f) * c.size.x, 0f,
+                    UnityEngine.Random.Range(-0.3f, 0.1f) * c.size.y);
+                var stream = CreateSystem($"Stream_{i}_{k}", dustMaterial, position, new Vector3(0.12f, 0.02f, 0.12f),
+                    0.03f, 0.07f, 1.6f, 0.6f, dustColor, 300);
+                Drift(stream, 0.05f);
+                streams[i * streamsPerRoom + k] = stream;
+            }
+            puff = CreateSystem("ToppleDust", dustMaterial, transform.position, Vector3.one * 0.1f, 0.25f, 0.6f, 1.6f, -0.03f, puffColor, 700);
             var size = puff.sizeOverLifetime;
             size.enabled = true;
             size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.6f, 1f, 1.6f));
@@ -105,7 +138,14 @@ namespace Deprem.Quake
                 var clumpEmission = clumps[i].emission;
                 clumpEmission.rateOverTime = intensity * intensity * clumpRate;
                 var chunkEmission = chunks[i].emission;
-                chunkEmission.rateOverTime = Mathf.Max(0f, intensity - 0.4f) / 0.6f * chunkRate;
+                chunkEmission.rateOverTime = Mathf.Max(0f, intensity - 0.3f) / 0.7f * chunkRate;
+            }
+            if (streams == null) return;
+            foreach (var stream in streams)
+            {
+                if (stream == null) continue;
+                var emission = stream.emission;
+                emission.rateOverTime = intensity * streamRate;
             }
         }
 
@@ -146,6 +186,19 @@ namespace Deprem.Quake
                 };
                 puff.Emit(emit, 1);
             }
+        }
+
+        // Moloz parçacıkları için pixel moloz atlası ve alfa kesmeli materyal (chunkMaterial'in kopyası)
+        private Material PixelRubbleMaterial()
+        {
+            if (chunkMaterial == null) return null;
+            var material = new Material(chunkMaterial) { name = "PixelRubbleParticles" };
+            material.SetTexture("_BaseMap", PixelRubble.Atlas());
+            material.SetColor("_BaseColor", Color.white);
+            material.SetFloat("_AlphaClip", 1f);
+            material.SetFloat("_Cutoff", 0.5f);
+            material.EnableKeyword("_ALPHATEST_ON");
+            return material;
         }
 
         /// <summary>Toz düz düşmesin: havada hafifçe salınsın</summary>

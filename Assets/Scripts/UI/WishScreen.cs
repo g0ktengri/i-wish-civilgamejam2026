@@ -8,38 +8,63 @@ using UnityEngine.UI;
 
 namespace Deprem.UI
 {
-    // Keşke ekranı: kaybedince ekran yavaşça kararır, keşke cümlesi harf harf yazılır, kısa bir sessizlikten
-    // sonra altında bilgi satırı da yazılır (oyuncu sindirsin; Berke'nin play testi).
-    // Oyuncu F'ye (ya da Space/Enter/tık) basınca döngü yöneticisi zamanı geri sarar.
-    // Yeni denemede siyahtan açılarak başlar. Canvas'ı kendisi kurar; sahnede tek bir objede durması yeter.
+    // Keşke ekranı (Berke'nin play testi: etkili ve çarpıcı olsun, oyuncu sindirsin):
+    //   1. Kayıp anında oyun bir an ağır çekime girer, karakterin etrafında pixel bir daire kapanır (iris).
+    //   2. Siyahın üstünde keşke cümlesi büyük harflerle, her harfte hafif sarsıntıyla yazılır; altında çizgi uzar.
+    //   3. Kısa bir sessizlik, sonra bilgi satırı yazılır.
+    //   4. F (ya da Space/Enter/tık): yazılar geri sarılarak silinir ("zaman geri sarılıyor"), döngü yöneticisi
+    //      zamanı geri sarar. Yeni denemede siyahtan açılır. Canvas'ı kendisi kurar.
     public class WishScreen : MonoBehaviour
     {
-        [Header("Zamanlama (sn)")]
+        [Header("Kayıp anı")]
+        [Tooltip("Daire kapanırken oyunun hızı")]
+        [SerializeField] float slowMotionScale = 0.3f;
+        [Tooltip("Dairenin karakterin etrafında kapanma süresi (gerçek sn)")]
+        [SerializeField] float irisSeconds = 1.4f;
+        [Tooltip("Sahnede oyuncu bulunamazsa yavaş kararma süresi")]
         [SerializeField] float fadeToBlack = 1.6f;
+        [SerializeField] string playerObjectName = "Player";
+
+        [Header("Yazı (sn)")]
         [SerializeField] float wishDelay = 0.9f;
         [Tooltip("Keşke cümlesinin yazılma hızı (harf/sn)")]
-        [SerializeField] float wishCharsPerSecond = 14f;
+        [SerializeField] float wishCharsPerSecond = 12f;
+        [Tooltip("Her harfte yazının sarsılma miktarı (referans pikseli)")]
+        [SerializeField] float letterShake = 2f;
+        [SerializeField] float lineGrowSeconds = 0.7f;
         [Tooltip("Cümle bittikten sonra bilgi satırından önceki sessizlik")]
         [SerializeField] float infoDelay = 1.6f;
         [SerializeField] float infoCharsPerSecond = 40f;
         [Tooltip("Her şey yazıldıktan sonra devam ipucundan önceki bekleme")]
         [SerializeField] float hintDelay = 1.5f;
+        [Tooltip("Devam edince yazıların geri sarılarak silinme hızı (harf/sn)")]
+        [SerializeField] float rewindCharsPerSecond = 90f;
         [SerializeField] float fadeFromBlack = 0.8f;
 
         [Header("Görünüm")]
-        [Tooltip("Boşsa Unity'nin yerleşik fontu kullanılır; pixel font gelince buraya")]
+        [Tooltip("Boşsa UiStyle fontu (Pixelify Sans)")]
         [SerializeField] Font font;
-        [SerializeField] int wishFontSize = 32;
-        [SerializeField] int infoFontSize = 14;
-        [SerializeField] Color wishColor = Color.white;
-        [SerializeField] Color infoColor = new Color(0.75f, 0.75f, 0.75f);
+        [SerializeField] int wishFontSize = 40;
+        [SerializeField] int infoFontSize = 15;
+        [SerializeField] Color wishColor = new Color(1f, 0.95f, 0.88f);
+        [SerializeField] Color infoColor = new Color(0.72f, 0.72f, 0.75f);
+        [SerializeField] Color lineColor = new Color(0.85f, 0.35f, 0.25f);
         [SerializeField] int sortingOrder = 100;
 
+        const int IrisTextureSize = 128;
+        const float IrisHoleRadius = 0.25f; // dokunun içinde deliğin yarıçapı (UV)
+
         CanvasGroup group;
+        Image background;
+        RawImage iris;
         Text wishText;
         Text infoText;
         Text hintText;
+        RectTransform line;
+        RectTransform wishRect;
+        Vector2 wishHome;
         bool canContinue;
+        bool rewinding;
 
         void Awake() => BuildCanvas();
 
@@ -55,6 +80,7 @@ namespace Deprem.UI
             LoopManager.WishScreenPresent = false;
             GameEvents.LoopFailed -= HandleLoopFailed;
             GameEvents.LoopStarted -= HandleLoopStarted;
+            if (Time.timeScale < 1f && Time.timeScale > 0f) Time.timeScale = 1f;
         }
 
         void Start()
@@ -67,16 +93,17 @@ namespace Deprem.UI
         void HandleLoopStarted(int loop)
         {
             StopAllCoroutines();
+            RestoreTime();
             if (group.alpha > 0f) StartCoroutine(FadeFromBlack());
         }
 
         void Update()
         {
-            if (canContinue && ContinuePressed())
+            if (canContinue && !rewinding && ContinuePressed())
             {
                 canContinue = false;
                 hintText.enabled = false;
-                if (LoopManager.Instance) LoopManager.Instance.ContinueAfterWish();
+                StartCoroutine(RewindAndContinue());
             }
         }
 
@@ -89,13 +116,17 @@ namespace Deprem.UI
         IEnumerator Show(string wish, string info)
         {
             canContinue = false;
+            rewinding = false;
             wishText.text = string.Empty;
             infoText.text = string.Empty;
             hintText.enabled = false;
+            line.sizeDelta = new Vector2(0f, line.sizeDelta.y);
 
-            yield return Fade(group.alpha, 1f, fadeToBlack);
+            yield return CloseIris();
+
             yield return new WaitForSecondsRealtime(wishDelay);
-            yield return Type(wishText, wish, wishCharsPerSecond);
+            yield return TypeWish(wish);
+            yield return GrowLine();
             yield return new WaitForSecondsRealtime(infoDelay);
             yield return Type(infoText, info, infoCharsPerSecond);
             yield return new WaitForSecondsRealtime(hintDelay);
@@ -104,7 +135,82 @@ namespace Deprem.UI
             canContinue = true;
         }
 
-        // Harf harf yazar; noktalama işaretlerinde kısa durur. Hızlıca okumak isteyen tıklayınca tamamlanır.
+        // Ağır çekim + karakterin etrafında kapanan pixel daire; sonunda tam siyah
+        IEnumerator CloseIris()
+        {
+            var cam = Camera.main;
+            var player = GameObject.Find(playerObjectName);
+            group.alpha = 1f;
+            if (cam == null || player == null)
+            {
+                background.enabled = true;
+                yield return Fade(0f, 1f, fadeToBlack);
+                yield break;
+            }
+
+            background.enabled = false;
+            iris.enabled = true;
+            Time.timeScale = slowMotionScale;
+
+            float aspect = (float)Screen.width / Mathf.Max(1, Screen.height);
+            for (float t = 0f; t < irisSeconds; t += Time.unscaledDeltaTime)
+            {
+                // Karakter kamerayla birlikte kayabilir: her kare yeniden bul
+                Vector3 screen = cam.WorldToViewportPoint(player.transform.position + Vector3.up * 1f);
+                float k = t / irisSeconds;
+                // Delik ekranı kaplayandan (z küçük) noktaya (z büyük) üstel küçülür, sonda hızlanır
+                float z = 0.18f * Mathf.Pow(160f, k * k);
+                float w = z * aspect, h = z;
+                iris.uvRect = new Rect(0.5f - w * screen.x, 0.5f - h * screen.y, w, h);
+                yield return null;
+            }
+
+            background.enabled = true;
+            iris.enabled = false;
+            RestoreTime();
+        }
+
+        // Büyük harflerle, her harfte hafif sarsıntı; noktalamada durur. Tıklayınca tamamlanır.
+        IEnumerator TypeWish(string text)
+        {
+            wishText.text = string.Empty;
+            if (string.IsNullOrEmpty(text)) yield break;
+            text = text.ToUpper(new System.Globalization.CultureInfo(Texts.Current == Language.Turkish ? "tr-TR" : "en-US"));
+            float interval = 1f / Mathf.Max(1f, wishCharsPerSecond);
+            for (int i = 1; i <= text.Length; i++)
+            {
+                wishText.text = text.Substring(0, i);
+                char c = text[i - 1];
+                float wait = c == ',' || c == ';' ? interval * 5f : c == '.' || c == '!' || c == '?' ? interval * 8f : interval;
+                for (float t = 0f; t < wait; t += Time.unscaledDeltaTime)
+                {
+                    float shake = c == ' ' ? 0f : letterShake * (1f - t / wait);
+                    wishRect.anchoredPosition = wishHome + Random.insideUnitCircle * shake;
+                    if (ContinuePressed())
+                    {
+                        wishText.text = text;
+                        wishRect.anchoredPosition = wishHome;
+                        yield break;
+                    }
+                    yield return null;
+                }
+            }
+            wishRect.anchoredPosition = wishHome;
+        }
+
+        IEnumerator GrowLine()
+        {
+            float target = Mathf.Min(wishText.preferredWidth, ((RectTransform)wishText.canvas.transform).rect.width * 0.7f);
+            for (float t = 0f; t < lineGrowSeconds; t += Time.unscaledDeltaTime)
+            {
+                float k = 1f - (1f - t / lineGrowSeconds) * (1f - t / lineGrowSeconds);
+                line.sizeDelta = new Vector2(target * k, line.sizeDelta.y);
+                yield return null;
+            }
+            line.sizeDelta = new Vector2(target, line.sizeDelta.y);
+        }
+
+        // Harf harf yazar; noktalama işaretlerinde kısa durur. Tıklayınca tamamlanır.
         IEnumerator Type(Text target, string text, float charsPerSecond)
         {
             target.text = string.Empty;
@@ -127,12 +233,48 @@ namespace Deprem.UI
             }
         }
 
+        // Devam: önce bilgi satırı, sonra keşke cümlesi sondan başa hızla silinir; çizgi kısalır; zaman geri sarılır
+        IEnumerator RewindAndContinue()
+        {
+            rewinding = true;
+            hintText.text = Texts.Get("wish.rewind");
+            hintText.enabled = true;
+            yield return Erase(infoText);
+            float lineStart = line.sizeDelta.x;
+            int wishLength = wishText.text.Length;
+            float interval = 1f / Mathf.Max(1f, rewindCharsPerSecond);
+            for (int i = wishLength; i >= 0; i--)
+            {
+                wishText.text = wishText.text.Substring(0, i);
+                line.sizeDelta = new Vector2(wishLength > 0 ? lineStart * i / wishLength : 0f, line.sizeDelta.y);
+                wishRect.anchoredPosition = wishHome + new Vector2(Random.Range(-1f, 1f), 0f);
+                yield return new WaitForSecondsRealtime(interval);
+            }
+            wishRect.anchoredPosition = wishHome;
+            hintText.enabled = false;
+            rewinding = false;
+            if (LoopManager.Instance) LoopManager.Instance.ContinueAfterWish();
+        }
+
+        IEnumerator Erase(Text target)
+        {
+            float interval = 1f / Mathf.Max(1f, rewindCharsPerSecond * 2f);
+            for (int i = target.text.Length; i >= 0; i--)
+            {
+                target.text = target.text.Substring(0, i);
+                yield return new WaitForSecondsRealtime(interval);
+            }
+        }
+
         IEnumerator FadeFromBlack()
         {
             group.alpha = 1f;
+            background.enabled = true;
+            iris.enabled = false;
             wishText.text = string.Empty;
             infoText.text = string.Empty;
             hintText.enabled = false;
+            line.sizeDelta = new Vector2(0f, line.sizeDelta.y);
             yield return Fade(1f, 0f, fadeFromBlack);
         }
 
@@ -144,6 +286,11 @@ namespace Deprem.UI
                 yield return null;
             }
             group.alpha = to;
+        }
+
+        void RestoreTime()
+        {
+            if (Time.timeScale > 0f && Time.timeScale < 1f) Time.timeScale = 1f;
         }
 
         void Hide()
@@ -163,19 +310,52 @@ namespace Deprem.UI
             return mouse != null && mouse.leftButton.wasPressedThisFrame;
         }
 
+        // Ortası saydam, dışı siyah daire dokusu; kenarı pixel (point filtre). Dışarısı Clamp ile siyah kalır.
+        static Texture2D IrisTexture()
+        {
+            var texture = new Texture2D(IrisTextureSize, IrisTextureSize, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp,
+                name = "WishIris",
+            };
+            float radius = IrisTextureSize * IrisHoleRadius;
+            float center = IrisTextureSize * 0.5f;
+            for (int y = 0; y < IrisTextureSize; y++)
+            for (int x = 0; x < IrisTextureSize; x++)
+            {
+                float dx = x + 0.5f - center, dy = y + 0.5f - center;
+                texture.SetPixel(x, y, dx * dx + dy * dy <= radius * radius ? Color.clear : Color.black);
+            }
+            texture.Apply();
+            return texture;
+        }
+
         void BuildCanvas()
         {
             var canvas = UiBuilder.CreateCanvas(transform, "WishCanvas", sortingOrder);
             group = canvas.GetComponent<CanvasGroup>();
 
-            var background = UiBuilder.CreateImage(canvas.transform, "Background", Color.black);
+            background = UiBuilder.CreateImage(canvas.transform, "Background", Color.black);
             UiBuilder.Stretch(background.rectTransform, Vector2.zero, Vector2.one);
 
+            iris = UiBuilder.CreateChild<RawImage>(canvas.transform, "Iris");
+            iris.texture = IrisTexture();
+            iris.raycastTarget = false;
+            UiBuilder.Stretch(iris.rectTransform, Vector2.zero, Vector2.one);
+            iris.enabled = false;
+
             wishText = UiBuilder.CreateText(canvas.transform, "Wish", font, wishFontSize, wishColor);
-            UiBuilder.Stretch(wishText.rectTransform, new Vector2(0.1f, 0.5f), new Vector2(0.9f, 0.65f));
+            UiBuilder.Stretch(wishText.rectTransform, new Vector2(0.06f, 0.5f), new Vector2(0.94f, 0.68f));
+            wishRect = wishText.rectTransform;
+            wishHome = wishRect.anchoredPosition;
+
+            line = UiBuilder.CreateImage(canvas.transform, "Line", lineColor).rectTransform;
+            line.anchorMin = line.anchorMax = new Vector2(0.5f, 0.49f);
+            line.sizeDelta = new Vector2(0f, 3f);
 
             infoText = UiBuilder.CreateText(canvas.transform, "Info", font, infoFontSize, infoColor);
-            UiBuilder.Stretch(infoText.rectTransform, new Vector2(0.2f, 0.32f), new Vector2(0.8f, 0.48f));
+            UiBuilder.Stretch(infoText.rectTransform, new Vector2(0.2f, 0.3f), new Vector2(0.8f, 0.46f));
 
             hintText = UiBuilder.CreateText(canvas.transform, "Hint", font, infoFontSize, infoColor);
             UiBuilder.Stretch(hintText.rectTransform, new Vector2(0.3f, 0.05f), new Vector2(0.7f, 0.12f));
