@@ -52,6 +52,20 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Arayüz turu: menüler temaya uyduruldu (Berke)
+
+- **Ana menü, duraklatma, ayarlar** yeni görünümde (Berke Play'de denedi):
+  - Arkada evin bulanık, soğuk mavi görüntüsü (`UiBackdrop`), vinyet ve düşen toz. Tepede hafifçe sallanan pixel lamba, sıcak ışık konisi.
+  - Ara ara sarsıntı: görüntü titrer, lamba savrulur ve titreşir, tavandan moloz düşer. Her üçüncüsü daha güçlü.
+  - Kabartma başlık (`UiTitle`), harfleri yaran kırmızı çatlak, süslü alt başlık ("Bir deprem hikâyesi"), duvar köşelerinde çatlaklar, sol altta jam adı.
+- **Satırlar** (`MenuList`): HUD'un pixel panelinde, sola dayalı, pixel simgeli (`UiIcons`). Seçili satırda vurgu şeridi, nabız gibi parlayan sol çizgi, sağa kayan yazı.
+  - Ayarlarda ses ve sarsıntı için 10 dilimli pixel çubuk; değerler sağda, oklar arasında.
+- **Altta tuş kapaklı ipuçları** (`UiPromptRow`). `UiPrompt.Animate` yeni: false olunca belirme animasyonu yok.
+- **`texts.csv`:** `menu.hint.select/confirm/back/change`, `menu.subtitle`, `menu.jam` eklendi; `settings.hint` kalktı. Senin değiştireceğin `prompt.duck_cover*` satırlarına dokunulmadı.
+- **Ortak yardımcı:** `UiBuilder.CreateCrack` (pixel çatlak).
+- Önizleme: `Logs/hud_preview_menu_main.png`, `_menu_pause.png`, `_settings.png`. Dört test geçiyor.
+- **Sırada:** M35 (oklar) ve M38 (donma, `timeScale` geçişleri).
+
 ### Berke'nin play testi: büyüyen keşke çatlağı, kan kaybı kabinde (senin klasörlerinde izinle)
 
 - **Keşke çatlağı her keşkede büyüyor (`WishScreen`):** `GameState.FailedAttempts`'a göre. İlk keşkede cümlenin ~%30'u kadar, 2 px, az dallı. 5. keşkede (`crackFullAtWish`) cümleden geniş, 5 px, sık ve üç parçalı dallı. Yarılma süresi, sarsıntı ve kırmızı parlama da büyüyor. Önizleme: `Logs/hud_preview_wish_crack_1.png` / `_5.png`.

@@ -119,6 +119,24 @@ namespace Deprem.Loop.EditorTools
                     Deprem.Localization.Texts.Get("bag.Flashlight"), "flashlight");
             });
 
+            // Arayüz turu: ana menü ve duraklatma (bulanık arka plan ev önizlemesinden)
+            RenderScene("menu_main", root =>
+            {
+                var menu = root.AddComponent<MainMenu>();
+                Call(menu, "Awake");
+                var screens = typeof(MainMenu).GetNestedType("Screen", BindingFlags.NonPublic);
+                Call(menu, "Show", System.Enum.Parse(screens, "Main"));
+                var backdrop = Get<UiBackdrop>(menu, "backdrop");
+                if (backdrop) backdrop.SetTexture(HouseBlur());
+            });
+            RenderScene("menu_pause", root =>
+            {
+                var pause = root.AddComponent<PauseMenu>();
+                Call(pause, "Awake");
+                Call(pause, "SetPaused", true);
+                Get<UiBackdrop>(pause, "backdrop").SetTexture(HouseBlur());
+            });
+
             // M32: ayarlar menüsü
             RenderScene("settings", root =>
             {
@@ -293,6 +311,18 @@ namespace Deprem.Loop.EditorTools
                 Object.DestroyImmediate(root);
                 GameState.ResetAll();
             }
+        }
+
+        // Ev önizlemesinin bulanık hali (menü arka planı önizlemede kamera olmadan)
+        static Texture HouseBlur()
+        {
+            const string house = "Logs/house_preview_game.png";
+            if (!File.Exists(house)) return null;
+            var texture = new Texture2D(2, 2);
+            texture.LoadImage(File.ReadAllBytes(house));
+            var blur = new RenderTexture(96, 54, 0) { filterMode = FilterMode.Bilinear };
+            Graphics.Blit(texture, blur);
+            return blur;
         }
 
         static void Call(object target, string method, params object[] args) =>

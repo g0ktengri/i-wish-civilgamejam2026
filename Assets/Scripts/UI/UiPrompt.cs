@@ -28,6 +28,8 @@ namespace Deprem.UI
         float pop = -1f;
 
         public RectTransform Rect => (RectTransform)transform;
+        /// <summary>Yeni ipucunda büyüme ve parlama (menü alt satırında kapalı)</summary>
+        public bool Animate { get; set; } = true;
 
         public static UiPrompt Create(Transform parent, string name, Font font, int fontSize = 0)
         {
@@ -86,7 +88,7 @@ namespace Deprem.UI
             message.rectTransform.sizeDelta = new Vector2(width, 0f);
             x += width + padding;
             Rect.sizeDelta = new Vector2(x, height);
-            pop = 0f; // yeni ipucu: büyüme ve parlama
+            if (Animate) pop = 0f; // yeni ipucu: büyüme ve parlama
         }
 
         void Update()

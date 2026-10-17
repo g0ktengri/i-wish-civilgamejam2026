@@ -10,19 +10,23 @@ namespace Deprem.UI
 {
     // Esc ile duraklatma: Devam et / Dil / Ana menü. Oyun durur (timeScale 0), PauseChanged gönderilir.
     // Minigame açıkken Esc minigame'i kapatır; keşke ve final ekranlarında duraklatma yok.
+    // Arayüz turu 2: kabartma başlık, altında vurgu renginde bölüm adı, tepede sallanan lamba, satır simgeleri.
     public class PauseMenu : MonoBehaviour
     {
         [SerializeField] Font font;
-        [SerializeField] int titleFontSize = 26;
-        [SerializeField] int itemFontSize = 18;
-        [SerializeField] float rowHeight = 30f;
-        [SerializeField] Color normalColor = new Color(0.7f, 0.72f, 0.78f);
-        [SerializeField] Color highlightColor = Color.white;
-        [SerializeField] Color overlayColor = new Color(0f, 0f, 0f, 0.7f);
+        [SerializeField] int titleFontSize = 40;
+        [SerializeField] int subtitleFontSize = 17;
+        [SerializeField] int itemFontSize = 20;
+        [SerializeField] float rowHeight = 34f;
+        [SerializeField] Color normalColor = new Color(0.82f, 0.78f, 0.7f);
+        [SerializeField] Color highlightColor = new Color(1f, 0.82f, 0.4f);
         [SerializeField] int sortingOrder = 115;
 
         CanvasGroup group;
-        Text titleText;
+        UiBackdrop backdrop;
+        UiPromptRow footer;
+        UiTitle titleText;
+        Text subtitleText;
         MenuList menu;
         bool paused;
         int minigameClosedFrame = -1;
@@ -86,10 +90,15 @@ namespace Deprem.UI
             {
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
+                backdrop.Capture();
                 menu.Add("menu.resume", () => SetPaused(false));
+                menu.SetIcon(UiIcons.Play);
                 menu.Add("menu.settings", () => { if (SettingsMenu.Instance) SettingsMenu.Instance.Open(Refresh); });
+                menu.SetIcon(UiIcons.Gear);
                 menu.Add("menu.language", () => Texts.ToggleLanguage());
+                menu.SetIcon(UiIcons.Globe);
                 menu.Add("menu.main_menu", ReturnToMenu);
+                menu.SetIcon(UiIcons.House);
                 Refresh();
             }
             GameEvents.RaisePauseChanged(value);
@@ -103,7 +112,9 @@ namespace Deprem.UI
 
         void Refresh()
         {
-            titleText.text = Texts.Get("menu.paused");
+            titleText.Text = Texts.Get("menu.paused");
+            subtitleText.text = Texts.Format("menu.chapter", GameState.CurrentLoop);
+            footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
             menu.Refresh();
         }
 
@@ -112,15 +123,20 @@ namespace Deprem.UI
             var canvas = UiBuilder.CreateCanvas(transform, "PauseCanvas", sortingOrder);
             group = canvas.GetComponent<CanvasGroup>();
 
-            var overlay = UiBuilder.CreateImage(canvas.transform, "Overlay", overlayColor);
-            UiBuilder.Stretch(overlay.rectTransform, Vector2.zero, Vector2.one);
+            // Duraklatma: arkada oyunun bulanık soğuk mavi görüntüsü (UiBackdrop, toz yok)
+            backdrop = UiBackdrop.Create(canvas.transform, new Color(0.34f, 0.45f, 0.68f), 0.55f, false, 0.5f);
 
-            titleText = UiBuilder.CreateText(canvas.transform, "Title", font, titleFontSize, highlightColor);
-            UiBuilder.Stretch(titleText.rectTransform, new Vector2(0.2f, 0.62f), new Vector2(0.8f, 0.74f));
+            var titleArea = new GameObject("TitleArea", typeof(RectTransform)).GetComponent<RectTransform>();
+            titleArea.SetParent(canvas.transform, false);
+            UiBuilder.Stretch(titleArea, new Vector2(0.2f, 0.7f), new Vector2(0.8f, 0.82f));
+            titleText = UiTitle.Create(titleArea, "Title", font, titleFontSize, 2f);
+            subtitleText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Subtitle", font, subtitleFontSize, highlightColor));
+            UiBuilder.Stretch(subtitleText.rectTransform, new Vector2(0.2f, 0.64f), new Vector2(0.8f, 0.7f));
 
             var items = new GameObject("Items", typeof(RectTransform)).GetComponent<RectTransform>();
             items.SetParent(canvas.transform, false);
-            UiBuilder.Stretch(items, new Vector2(0.3f, 0.2f), new Vector2(0.7f, 0.58f));
+            UiBuilder.Stretch(items, new Vector2(0.35f, 0.2f), new Vector2(0.65f, 0.6f));
+            footer = UiPromptRow.Create(canvas.transform, font, 18, 16f);
             menu = new MenuList(items, font, itemFontSize, rowHeight, normalColor, highlightColor);
 
             group.alpha = 0f;

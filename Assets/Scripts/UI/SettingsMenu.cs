@@ -47,16 +47,18 @@ namespace Deprem.UI
     // Ayarlar menüsü (M32, Mehmet'in play testi 20): ana menüden ve duraklatmadan açılır.
     // W/S seç, A/D (ya da oklar) değiştir, F/Enter/tık değiştirir ya da açar, Esc geri.
     // Ses (genel, müzik, efekt), ekran sarsıntısı, tam ekran, çözünürlük, dil, kontroller. Canvas'ı kendisi kurar.
+    // Arayüz turu 2: kabartma başlık, satır simgeleri, ses ve sarsıntı için 10 dilimli pixel çubuk, değerler sağda.
     public class SettingsMenu : MonoBehaviour
     {
         [SerializeField] Font font;
-        [SerializeField] int titleFontSize = 26;
-        [SerializeField] int itemFontSize = 17;
-        [SerializeField] int bodyFontSize = 14;
-        [SerializeField] float rowHeight = 28f;
-        [SerializeField] Color normalColor = new Color(0.7f, 0.72f, 0.78f);
-        [SerializeField] Color highlightColor = Color.white;
-        [SerializeField] Color backgroundColor = new Color(0.02f, 0.03f, 0.06f, 0.98f);
+        [SerializeField] int titleFontSize = 34;
+        [SerializeField] int itemFontSize = 19;
+        [SerializeField] int bodyFontSize = 17;
+        [SerializeField] float rowHeight = 32f;
+        [SerializeField] Color normalColor = new Color(0.82f, 0.78f, 0.7f);
+        [SerializeField] Color highlightColor = new Color(1f, 0.82f, 0.4f);
+        [Tooltip("Arkadaki ana menü / duraklatma görünsün diye yarı saydam")]
+        [SerializeField] Color backgroundColor = new Color(0.01f, 0.02f, 0.05f, 0.8f);
         [Tooltip("Ana menünün ve duraklatmanın üstünde")]
         [SerializeField] int sortingOrder = 125;
 
@@ -66,9 +68,10 @@ namespace Deprem.UI
         public static int ClosedFrame { get; private set; } = -1;
 
         CanvasGroup group;
-        Text titleText;
+        UiTitle titleText;
         Text bodyText;
-        Text hintText;
+        UiPromptRow footer;
+        Image bodyPanel;
         RectTransform items;
         MenuList menu;
         bool open;
@@ -135,31 +138,38 @@ namespace Deprem.UI
             if (showingControls)
             {
                 menu.Add("menu.back", () => { showingControls = false; Rebuild(); });
+                menu.SetIcon(UiIcons.Back);
                 Refresh();
                 return;
             }
-            AddVolume("settings.master", () => SettingsStore.Master, v => SettingsStore.Master = v);
-            AddVolume("settings.music", () => SettingsStore.Music, v => SettingsStore.Music = v);
-            AddVolume("settings.effects", () => SettingsStore.Effects, v => SettingsStore.Effects = v);
-            AddVolume("settings.shake", () => SettingsStore.Shake, v => SettingsStore.Shake = v);
+            AddVolume("settings.master", () => SettingsStore.Master, v => SettingsStore.Master = v, UiIcons.Speaker);
+            AddVolume("settings.music", () => SettingsStore.Music, v => SettingsStore.Music = v, UiIcons.Music);
+            AddVolume("settings.effects", () => SettingsStore.Effects, v => SettingsStore.Effects = v, UiIcons.Speaker);
+            AddVolume("settings.shake", () => SettingsStore.Shake, v => SettingsStore.Shake = v, UiIcons.Shake);
             menu.AddAdjustable("settings.fullscreen", () => new object[] { Texts.Get(Screen.fullScreen ? "settings.on" : "settings.off") },
                 _ => Screen.fullScreen = !Screen.fullScreen);
+            menu.SetIcon(UiIcons.Screen);
             menu.AddAdjustable("settings.resolution", () => new object[] { ResolutionLabel() }, StepResolution);
+            menu.SetIcon(UiIcons.Screen);
             menu.AddAdjustable("menu.language", () => null, _ => Texts.ToggleLanguage());
+            menu.SetIcon(UiIcons.Globe);
             menu.Add("menu.controls", () => { showingControls = true; Rebuild(); });
+            menu.SetIcon(UiIcons.Key);
             menu.Add("menu.back", Close);
+            menu.SetIcon(UiIcons.Back);
             Refresh();
         }
 
         // %10 adımlarla; sağ / onay artırır (100'den sonra 0'a döner), sol azaltır
-        void AddVolume(string key, Func<float> get, Action<float> set)
+        void AddVolume(string key, Func<float> get, Action<float> set, Sprite icon)
         {
-            menu.AddAdjustable(key, () => new object[] { Mathf.RoundToInt(get() * 100f) }, direction =>
+            menu.AddSlider(key, get, direction =>
             {
                 float value = get() + direction * 0.1f;
                 if (value > 1.001f) value = 0f;
                 set(Mathf.Clamp01(value));
             });
+            menu.SetIcon(icon);
         }
 
         // Ekranın desteklediği çözünürlükler (tekrarsız en x boy), mevcut olanın sırası
@@ -186,11 +196,13 @@ namespace Deprem.UI
         void Refresh()
         {
             if (!titleText) return;
-            titleText.text = Texts.Get("menu.settings");
+            titleText.Text = Texts.Get("menu.settings");
             bodyText.text = showingControls ? Texts.Get("controls.body") : string.Empty;
-            hintText.text = showingControls ? string.Empty : Texts.Get("settings.hint");
-            UiBuilder.Stretch(items, new Vector2(0.28f, showingControls ? 0.06f : 0.1f),
-                new Vector2(0.72f, showingControls ? 0.16f : 0.74f));
+            bodyPanel.gameObject.SetActive(showingControls);
+            if (showingControls) footer.Set(Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
+            else footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.change"), Texts.Get("menu.hint.back"));
+            UiBuilder.Stretch(items, new Vector2(showingControls ? 0.33f : 0.22f, showingControls ? 0.06f : 0.1f),
+                new Vector2(showingControls ? 0.67f : 0.78f, showingControls ? 0.2f : 0.78f));
             menu.Refresh();
         }
 
@@ -202,18 +214,22 @@ namespace Deprem.UI
             var background = UiBuilder.CreateImage(canvas.transform, "Background", backgroundColor);
             UiBuilder.Stretch(background.rectTransform, Vector2.zero, Vector2.one);
 
-            titleText = UiBuilder.CreateText(canvas.transform, "Title", font, titleFontSize, highlightColor);
-            UiBuilder.Stretch(titleText.rectTransform, new Vector2(0.2f, 0.8f), new Vector2(0.8f, 0.92f));
+            var titleArea = new GameObject("TitleArea", typeof(RectTransform)).GetComponent<RectTransform>();
+            titleArea.SetParent(canvas.transform, false);
+            UiBuilder.Stretch(titleArea, new Vector2(0.2f, 0.8f), new Vector2(0.8f, 0.94f));
+            titleText = UiTitle.Create(titleArea, "Title", font, titleFontSize, 2f);
 
-            bodyText = UiBuilder.CreateText(canvas.transform, "Body", font, bodyFontSize, normalColor);
-            UiBuilder.Stretch(bodyText.rectTransform, new Vector2(0.15f, 0.2f), new Vector2(0.85f, 0.78f));
+            bodyPanel = UiBuilder.CreatePanel(canvas.transform, "BodyPanel");
+            UiBuilder.Stretch(bodyPanel.rectTransform, new Vector2(0.14f, 0.24f), new Vector2(0.86f, 0.78f));
+            bodyPanel.gameObject.SetActive(false);
+            bodyText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Body", font, bodyFontSize, normalColor));
+            UiBuilder.Stretch(bodyText.rectTransform, new Vector2(0.16f, 0.26f), new Vector2(0.84f, 0.76f));
 
             items = new GameObject("Items", typeof(RectTransform)).GetComponent<RectTransform>();
             items.SetParent(canvas.transform, false);
             menu = new MenuList(items, font, itemFontSize, rowHeight, normalColor, highlightColor);
 
-            hintText = UiBuilder.CreateText(canvas.transform, "Hint", font, bodyFontSize - 2, normalColor);
-            UiBuilder.Stretch(hintText.rectTransform, new Vector2(0.05f, 0.01f), new Vector2(0.95f, 0.07f));
+            footer = UiPromptRow.Create(canvas.transform, font, 18, 16f);
 
             group.alpha = 0f;
             group.blocksRaycasts = false;

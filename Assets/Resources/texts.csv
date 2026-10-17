@@ -125,6 +125,12 @@ menu.quit,Çıkış,Quit
 menu.resume,Devam et,Resume
 menu.main_menu,Ana menü,Main menu
 menu.settings,Ayarlar,Settings
+menu.hint.select,W/S: Seç,W/S: Select
+menu.hint.confirm,F: Onayla,F: Confirm
+menu.hint.back,Esc: Geri,Esc: Back
+menu.hint.change,A/D: Değiştir,A/D: Change
+menu.subtitle,Bir deprem hikâyesi,An earthquake story
+menu.jam,Civil Game Jam 2026,Civil Game Jam 2026
 settings.master,Genel ses: < %{0} >,Master volume: < {0}% >
 settings.music,Müzik: < %{0} >,Music: < {0}% >
 settings.effects,Efektler: < %{0} >,Effects: < {0}% >
@@ -133,7 +139,6 @@ settings.fullscreen,Tam ekran: < {0} >,Fullscreen: < {0} >
 settings.resolution,Çözünürlük: < {0} >,Resolution: < {0} >
 settings.on,Açık,On
 settings.off,Kapalı,Off
-settings.hint,W/S: seç · A/D: değiştir · Esc: geri,W/S: select · A/D: change · Esc: back
 
 # Mehmet: konuşma balonları (deprem akışı)
 bubble.ignore_foreshock,"Amaan, ne olacak ki... Uyumaya devam.","Oh, it's nothing... Back to sleep."

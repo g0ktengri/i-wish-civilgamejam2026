@@ -423,12 +423,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PauseMenu
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  titleFontSize: 26
-  itemFontSize: 18
-  rowHeight: 30
-  normalColor: {r: 0.7, g: 0.72, b: 0.78, a: 1}
-  highlightColor: {r: 1, g: 1, b: 1, a: 1}
-  overlayColor: {r: 0, g: 0, b: 0, a: 0.7}
+  titleFontSize: 40
+  subtitleFontSize: 17
+  itemFontSize: 20
+  rowHeight: 34
+  normalColor: {r: 0.82, g: 0.78, b: 0.7, a: 1}
+  highlightColor: {r: 1, g: 0.82, b: 0.4, a: 1}
   sortingOrder: 115
 --- !u!114 &8704440242858728718
 MonoBehaviour:
@@ -443,13 +443,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.SettingsMenu
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  titleFontSize: 26
-  itemFontSize: 17
-  bodyFontSize: 14
-  rowHeight: 28
-  normalColor: {r: 0.7, g: 0.72, b: 0.78, a: 1}
-  highlightColor: {r: 1, g: 1, b: 1, a: 1}
-  backgroundColor: {r: 0.02, g: 0.03, b: 0.06, a: 0.98}
+  titleFontSize: 34
+  itemFontSize: 19
+  bodyFontSize: 17
+  rowHeight: 32
+  normalColor: {r: 0.82, g: 0.78, b: 0.7, a: 1}
+  highlightColor: {r: 1, g: 0.82, b: 0.4, a: 1}
+  backgroundColor: {r: 0.01, g: 0.02, b: 0.05, a: 0.8}
   sortingOrder: 125
 --- !u!114 &857125433868889309
 MonoBehaviour:
@@ -464,12 +464,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.MainMenu
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  titleFontSize: 40
-  itemFontSize: 18
-  bodyFontSize: 14
-  rowHeight: 30
-  normalColor: {r: 0.7, g: 0.72, b: 0.78, a: 1}
-  highlightColor: {r: 1, g: 1, b: 1, a: 1}
+  titleFontSize: 64
+  subtitleFontSize: 16
+  itemFontSize: 20
+  bodyFontSize: 17
+  rowHeight: 32
+  normalColor: {r: 0.82, g: 0.78, b: 0.7, a: 1}
+  highlightColor: {r: 1, g: 0.82, b: 0.4, a: 1}
+  crackColor: {r: 0.9, g: 0.22, b: 0.16, a: 1}
+  tremorInterval: 5
   backgroundColor: {r: 0.02, g: 0.03, b: 0.06, a: 1}
   sortingOrder: 120
   backgroundSprite: {fileID: 0}

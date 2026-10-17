@@ -300,6 +300,39 @@ namespace Deprem.UI
 
         public static string Hex(Color color) => "#" + ColorUtility.ToHtmlStringRGB(color);
 
+        // Pixel çatlak (menü başlığı, duvar çatlakları): parent'ın ortasından, start yönünde length uzunluğunda kırık çizgi.
+        // thickness çekirdek, glowAlpha > 0 ise arkasında üç kat kalın yarı saydam ışıma. Seed aynıysa aynı çatlak.
+        public static void CreateCrack(RectTransform parent, Vector2 start, Vector2 direction, float length, int seed,
+            Color color, float thickness = 2f, float glowAlpha = 0f, float step = 14f, float jag = 3f)
+        {
+            var random = new System.Random(seed);
+            var dir = direction.normalized;
+            var normal = new Vector2(-dir.y, dir.x);
+            var points = new System.Collections.Generic.List<Vector2>();
+            float side = 0f;
+            for (float d = 0f; d <= length + 0.01f; d += step)
+            {
+                var p = start + dir * d + normal * side;
+                points.Add(new Vector2(Mathf.Round(p.x), Mathf.Round(p.y)));
+                side = Mathf.Clamp(side + (float)(random.NextDouble() * 2 - 1) * jag, -jag * 1.5f, jag * 1.5f);
+            }
+            for (int pass = glowAlpha > 0f ? 0 : 1; pass < 2; pass++)
+                for (int i = 0; i + 1 < points.Count; i++)
+                {
+                    var a = points[i];
+                    var b = points[i + 1];
+                    var segment = CreateImage(parent, "Crack", pass == 0 ? new Color(color.r, color.g, color.b, glowAlpha) : color);
+                    var rect = segment.rectTransform;
+                    rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+                    rect.pivot = new Vector2(0f, 0.5f);
+                    float size = pass == 0 ? thickness * 3f : thickness;
+                    var delta = b - a;
+                    rect.sizeDelta = new Vector2(delta.magnitude + size * 0.5f, size);
+                    rect.anchoredPosition = a;
+                    rect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
+                }
+        }
+
         static readonly System.Collections.Generic.Dictionary<Deprem.Core.BagItemId, Sprite> bagIcons =
             new System.Collections.Generic.Dictionary<Deprem.Core.BagItemId, Sprite>();
 
