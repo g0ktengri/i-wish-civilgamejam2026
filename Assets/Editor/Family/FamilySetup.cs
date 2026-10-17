@@ -102,6 +102,8 @@ namespace Deprem.Family
             quad.transform.SetParent(visual.transform, false);
             quad.GetComponent<MeshFilter>().sharedMesh = Deprem.Player.CharacterQuadMesh.Get(); // tavan lambalarının ışığını alsın
             var frames = LoadFrames(FramePrefix(def.Id));
+            // Yürüme çizimi henüz yoksa (ör. anne: sadece anne_bekleme_1..2 geldi) bekleme kareleri yürürken de oynar
+            if (frames.Length == 0) frames = LoadFrames(IdlePrefix(def.Id));
             var renderer = quad.GetComponent<MeshRenderer>();
             if (frames.Length > 0)
             {

@@ -52,6 +52,18 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Anne çizimleri bağlandı (Berke, senin klasöründe izinle)
+
+- **Ekip çizimleri:** `Anne idle.zip` (2 kare) ve `Anne koşma.zip` (8 kare). 1920 px kareler, ekip pikseli 15 px; senin baba için yaptığın gibi en yakın komşuyla 128 px'e indirildi (her 15 px bloğun ortası).
+  - `Assets/Art/Characters/anne_bekleme_1..2.png`
+  - `Assets/Art/Characters/anne_yurume_1..8.png`
+  - İçe aktarma Point. Zip'ler repoya konmadı.
+- **`FamilySetup` (Editor/Family):**
+  - Senin önek düzenin (`anne_yurume_N`, `anne_bekleme_N`) olduğu gibi çalışıyor; anne artık mavi yer tutucu değil, kareli quad (`Generated/Family/mother_kareler.mat`).
+  - Küçük ek: yürüme çizimi olmayan üyede bekleme kareleri yürürken de oynuyor. Şimdilik yalnızca kardeş için geçerli, çizimi gelene kadar.
+- **Kurulum:** `FamilySystem.prefab` yeniden kuruldu ve commit'te. `Main.unity`'yi değiştirmedim (aile prefab'dan yükleniyor). Aile ve Berke testleri geçiyor.
+- **Bakman gereken:** annenin karesinde gövde ortası x ≈ 58 px (babada 61,5). Yürürken hafif kayma görünürse `FamilySetup`'taki x payını üyeye göre ayarlayabilirsin.
+
 ### Play testi 28: M53–M55 (Berke)
 
 Play'de denenmedi; dört test geçiyor.
