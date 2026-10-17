@@ -88,12 +88,21 @@ namespace Deprem.Family
             TickMembers(3.5f, held: true);
             Check(father.State == FamilyState.WalkingToCabin, $"Kaya kalktı, baba kabine yürüyor ({father.State})");
             for (float t = 0f; t < 30f && father.State == FamilyState.WalkingToCabin; t += Dt) director.Tick(Dt);
-            Check(father.State == FamilyState.Bleeding, $"İlk yardım yok: baba kabin girişinde kanayıp yığıldı ({father.State})");
+            // Play testi 25: kanama sona kadar belli olmaz; baba kabine girer
+            Check(father.State == FamilyState.InCabin && GameState.Phase == GamePhase.Rescue,
+                $"İlk yardım yok ama baba kabine girdi, henüz kayıp yok ({father.State})");
             var entrance = GameObject.Find("Marker_CabinEntrance").transform.position;
+            mother.EnterCabin(entrance + Vector3.forward * 1.75f);
+            sibling.EnterCabin(entrance + Vector3.forward * 1.75f);
             player.Teleport(entrance);
-            TickMembers(6f);
+            StepWorld(0.2f);
+            var target = Interactables.FindNearest(player);
+            Check(target != null && !(target is FamilyMember), "Herkes kabindeyken girişte F");
+            target?.Interact(player);
+            Check(GameState.Phase == GamePhase.Rescue, $"Oyuncu girdi ama kazanılmadı: baba veda ediyor ({GameState.Phase})");
+            for (float t = 0f; t < 8f && GameState.Phase == GamePhase.Rescue; t += Dt) director.Tick(Dt);
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.MissingBagItem,
-                $"Kabinde fark edildi: 'Keşke deprem çantası hazırlasaydım' ({GameState.LastLoseReason})");
+                $"Vedadan sonra 'Keşke deprem çantası hazırlasaydım' ({GameState.LastLoseReason})");
         }
 
         private static void FullRescueAndWin()

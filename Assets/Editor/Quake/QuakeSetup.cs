@@ -61,9 +61,32 @@ namespace Deprem.Quake
 
             // Süre çubuğu artık parçalı pixel ölçer (SegmentMeter, Berke'nin paneli); ayrı sprite kullanılmıyor
             root.AddComponent<RescueTimer>();
+
+            // Play testi 25: ölümde bedenden ruh yükselir (ruh fazının bekleme kareleri)
+            var feedback = new SerializedObject(root.AddComponent<HitFeedback>());
+            var ghost = feedback.FindProperty("ghostFrames");
+            var frames = GhostFrames();
+            ghost.arraySize = frames.Length;
+            for (int i = 0; i < frames.Length; i++) ghost.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+            feedback.ApplyModifiedPropertiesWithoutUndo();
+
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        /// <summary>Assets/Art/Characters/ruh_bekleme_N.png, numara sırasıyla</summary>
+        private static Texture2D[] GhostFrames()
+        {
+            const string prefix = "ruh_bekleme_";
+            return AssetDatabase.FindAssets(prefix + " t:Texture2D", new[] { "Assets/Art/Characters" })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(path => (path, name: Path.GetFileNameWithoutExtension(path)))
+                .Where(p => p.name.StartsWith(prefix) && int.TryParse(p.name.Substring(prefix.Length), out _))
+                .OrderBy(p => int.Parse(p.name.Substring(prefix.Length)))
+                .Select(p => AssetDatabase.LoadAssetAtPath<Texture2D>(p.path))
+                .Where(t => t != null)
+                .ToArray();
         }
 
         /// <summary>Toz tanesi ve toz bulutu: URP Particles/Unlit, saydam; renk parçacıktan gelir.

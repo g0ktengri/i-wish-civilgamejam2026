@@ -1049,6 +1049,28 @@ Mehmet'in yorumu (özet):
   - **Kabin:** 1,3 × 1,9 m (ortası aynı). `Marker_Bag` 0,1 m kaydı.
   - **Ölüm:** `HitFeedback` artık `Time.timeScale`'e dokunmuyor. Karanlık (iris, sıralama 45) keşke ekranının altında kalır, döngü başlayınca kalkar.
 
+### Play testi 25: Mehmet'in düzeltmeleri (bilgi için)
+
+Dört test geçiyor; Play'de denenmedi.
+
+- **Babanın kanaması sona kadar belli olmuyor:**
+  - İlk yardım yoksa baba kabin girişinde yığılmıyor, kabine girip içeride kalıyor.
+  - Herkes kabine girip oyuncu da girince kazanılmıyor. 1,2 sn sonra baba veda ediyor (`bubble.family_farewell.father`: "...Elveda oğlum...") ve kayıp vurgusu çalıyor.
+  - 4,5 sn sonra `FailLoop(MissingBagItem)`.
+  - Bu sırada faz hâlâ `Rescue`. Kurtarma süresi bu 6 sn içinde biterse süre bitimiyle kaybedilir.
+  - **`texts.csv`'ye tek satır ekledim** (`bubble.family_farewell.father`, TR ve EN), babanın diğer balonlarının altına.
+- **Ölüm efekti yeniden yapıldı (iris kalktı, zoom gibi duruyordu):**
+  - Sert beyaz darbe ve sarsıntı.
+  - Dünya bir anda solup kararıyor: öncelik 50'lik global Volume (renk gider, kontrast, vinyet).
+  - Bedenden ruh fazının bekleme kareleriyle ruh yükseliyor (UI'da, renkli).
+  - 1,7 sn'de ekran kararıyor, karanlık döngü başlayana kadar kalıyor.
+  - Ölümden keşke ekranına kadar süre 1,6 → 2,4 sn (`deathLinger`).
+- **Vida minigame'i:**
+  - Ekibin panosu artık olduğu gibi (kendi levhasıyla) kullanılıyor. Benim ayrı levha çizimimi (`minigame_levha.png`) sildim; prefab'da `screwPlate` boş.
+  - Pano varken `ScrewMinigame` levha çizmiyor. Vidalar (ekibin vida başı, 18 px) levhanın dört köşe deliğine oturuyor: 2 vida çaprazda, 1 ve 3 vida rastgele deliklerde.
+  - İlerleme çubuğu alttaki kâğıt bandın ortasında, panonun %60'ı genişliğinde.
+  - Pano yokken eski pixel levha akışı aynen duruyor.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

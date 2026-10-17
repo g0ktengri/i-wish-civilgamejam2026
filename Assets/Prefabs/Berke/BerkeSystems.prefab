@@ -253,7 +253,7 @@ MonoBehaviour:
     panel: {fileID: 0}
     screwBackground: {fileID: 0}
     screwPanel: {fileID: 21300000, guid: 0b72b7b15c62dca408f6a1b3aa5a5ae9, type: 3}
-    screwPlate: {fileID: 21300000, guid: 14327cec648e3144f984387863ea7f84, type: 3}
+    screwPlate: {fileID: 0}
     screwHead: {fileID: 21300000, guid: 79f2ab9ac6e5aac4c9e30ee20d877b82, type: 3}
     screwdriver: {fileID: 0}
     screwDone: {fileID: 0}

@@ -111,14 +111,18 @@ namespace Deprem.Minigames
         protected override void OnBuild()
         {
             CreateBackground(Art.screwBackground, MinigamePixels.Ground((int)PanelSize.x, (int)PanelSize.y, "wood"));
-            // Play testi 24: ekibin vidalı panosu (Mehmet). Panelin yüksekliğini doldurur; levha panodaki boş yere oturur
-            if (Art.screwPanel)
-            {
-                float h = PanelSize.y;
-                float w = h * Art.screwPanel.rect.width / Art.screwPanel.rect.height;
-                CreateRect("ScrewPanel", PlateCenter + new Vector2(-0.006f * w, -0.04f * h), new Vector2(w, h), Color.white, null, Art.screwPanel);
-            }
+            float barY = -PanelSize.y * 0.4f;
+            // Play testi 25 (Mehmet): ekibin vidalı panosu olduğu gibi; levhası çizimde. Vidalar levhanın köşe
+            // deliklerine oturur, ilerleme çubuğu alttaki kâğıt bandın üstünde
+            barWidth = PanelSize.x * 0.72f;
+            if (Art.screwPanel) BuildTeamPanel(ref barY);
+            else BuildPixelPlate();
+            BuildBarAndDriver(barY);
+        }
 
+        // Sanat yokken: düzene göre levha (pixel), delikleri ve vidalar
+        void BuildPixelPlate()
+        {
             var (plateSize, layout) = LayoutFor(Variant.Screws);
             bool mirror = Random.NextDouble() < 0.5;
             var holes = new List<Vector2Int>();
@@ -137,21 +141,50 @@ namespace Deprem.Minigames
             if (!Art.screwPlate)
                 CreatePixel("PlateShadow", PlateCenter + new Vector2(4f, -5f), plateSize + Vector2.one * 6f, null,
                     MinigamePixels.Shadow(tex.x + 6, tex.y + 6));
-            var plate = CreatePixel("Plate", PlateCenter, plateSize, Art.screwPlate,
+            CreatePixel("Plate", PlateCenter, plateSize, Art.screwPlate,
                 MinigamePixels.Plate(tex.x, tex.y, holes, string.Join("_", holes)));
-            plate.preserveAspect = false; // Play testi 24: levha çizimi düzene göre gerilir, vidalar üstünde kalsın
 
-            foreach (var local in positions)
-            {
-                var position = PlateCenter + local;
-                var image = CreatePixel("Screw", position, Vector2.one * ScrewSize, Art.screwHead,
-                    MinigamePixels.ScrewHead(TexSize(Vector2.one * ScrewSize).x));
-                image.color = ScrewLoose;
-                screws.Add(new Screw { Position = position, Head = image.rectTransform, Image = image });
-            }
+            foreach (var local in positions) AddScrew(PlateCenter + local, ScrewSize);
+        }
 
-            barWidth = PanelSize.x * 0.72f;
-            float barY = -PanelSize.y * 0.4f;
+        // Ekibin panosundaki levhanın köşe delikleri (çizimin sol üstünden, 0-1) ve alt kâğıt bandın ortası
+        static readonly Vector2[] PanelHoles =
+            { new Vector2(0.3024f, 0.3094f), new Vector2(0.7115f, 0.3094f), new Vector2(0.3024f, 0.616f), new Vector2(0.7115f, 0.616f) };
+        const float PanelTapeCenter = 0.86f;
+        const float PanelScrewSize = 18f;
+
+        void BuildTeamPanel(ref float barY)
+        {
+            float h = PanelSize.y;
+            float w = h * Art.screwPanel.rect.width / Art.screwPanel.rect.height;
+            CreateRect("ScrewPanel", Vector2.zero, new Vector2(w, h), Color.white, null, Art.screwPanel);
+            Vector2 Hole(int i) => new Vector2((PanelHoles[i].x - 0.5f) * w, (0.5f - PanelHoles[i].y) * h);
+
+            // Vida sayısı eşyaya göre (1-4); 2 vida çaprazda, diğerlerinde delikler rastgele
+            int count = Mathf.Clamp(LayoutFor(Variant.Screws).screws.Length, 1, PanelHoles.Length);
+            var order = new List<int> { 0, 1, 2, 3 };
+            if (count == 2) order = Random.NextDouble() < 0.5 ? new List<int> { 0, 3 } : new List<int> { 1, 2 };
+            else
+                for (int i = order.Count - 1; i > 0; i--)
+                {
+                    int j = Random.Next(i + 1);
+                    (order[i], order[j]) = (order[j], order[i]);
+                }
+            for (int i = 0; i < count; i++) AddScrew(Hole(order[i]), PanelScrewSize);
+            barY = (0.5f - PanelTapeCenter) * h;
+            barWidth = w * 0.6f; // kâğıt bandın içinde kalsın
+        }
+
+        void AddScrew(Vector2 position, float size)
+        {
+            var image = CreatePixel("Screw", position, Vector2.one * size, Art.screwHead,
+                MinigamePixels.ScrewHead(TexSize(Vector2.one * size).x));
+            image.color = ScrewLoose;
+            screws.Add(new Screw { Position = position, Head = image.rectTransform, Image = image });
+        }
+
+        void BuildBarAndDriver(float barY)
+        {
             var trackSize = new Vector2(barWidth + 8f, 16f);
             CreatePixel("BarBack", new Vector2(0f, barY), trackSize, null, MinigamePixels.Track(TexSize(trackSize).x, TexSize(trackSize).y));
             fill = CreateRect("BarFill", new Vector2(-barWidth * 0.5f, barY), new Vector2(0f, 8f), MinigamePixels.Accent).rectTransform;

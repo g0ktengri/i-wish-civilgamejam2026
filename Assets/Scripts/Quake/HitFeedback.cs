@@ -1,9 +1,12 @@
 using System.Collections;
+using System.Collections.Generic;
 using Deprem.Audio;
 using Deprem.Core;
 using Deprem.Player;
 using Deprem.UI;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 namespace Deprem.Quake
@@ -11,11 +14,13 @@ namespace Deprem.Quake
     /// <summary>
     /// Darbe geri bildirimi. Play(güç) ile tetiklenir (0,45 yaralanma, 1 ölüm).
     ///   - Yaralanma: anlık kırmızı flaş (hemen söner), kısa sarsıntı, darbe sesi.
-    ///   - Ölüm (Play testi 24: ağır çekim kasma gibi görünüyordu, kırmızı fade in/out garipti): tek karelik sert beyaz
-    ///     darbe, güçlü ve kısa sarsıntı, ağır vuruş + kulak çınlaması (player.death), sonra karanlık oyuncunun
-    ///     etrafında daire şeklinde kapanır (iris). Karanlık keşke ekranı gelene kadar kalır; döngü yeniden
-    ///     başlayınca kalkar. Zaman ölçeğine dokunmaz.
-    /// QuakeDirector'ın yanında durur.
+    ///   - Ölüm (Play testi 25: kapanan daire zoom gibi duruyordu, güzel değildi):
+    ///       1. tek karelik sert beyaz darbe, güçlü kısa sarsıntı, ağır vuruş ve kulak çınlaması (player.death);
+    ///       2. dünya bir anda solar: renkler gider, kararır, kenarlar kapanır (öncelikli global Volume);
+    ///       3. bedenden ruhu (ruh fazının bekleme kareleri) renkli olarak süzülüp yükselir ve kaybolur;
+    ///       4. ekran kararır; karanlık keşke ekranı gelene kadar kalır, döngü yeniden başlayınca kalkar.
+    ///     Zaman ölçeğine dokunmaz.
+    /// QuakeDirector'ın yanında durur (QuakeSetup kurar, ruh karelerini bağlar).
     /// </summary>
     public sealed class HitFeedback : MonoBehaviour
     {
@@ -27,22 +32,35 @@ namespace Deprem.Quake
 
         [Header("Ölüm")]
         [SerializeField] private Color deathFlash = new Color(1f, 0.96f, 0.9f, 0.9f);
-        [Tooltip("Beyaz darbe tam parlaklıkta kalır (sn), sonra hızla söner")]
-        [SerializeField] private float deathFlashHold = 0.06f;
-        [SerializeField] private float deathFlashFade = 0.2f;
-        [SerializeField] private float deathShake = 1.6f;
-        [SerializeField] private float deathShakeTime = 0.5f;
-        [Tooltip("Karanlığın kapanmaya başladığı an ve süresi (sn)")]
-        [SerializeField] private float irisDelay = 0.12f;
-        [SerializeField] private float irisCloseTime = 1.3f;
-        [Tooltip("Kapanınca oyuncunun çevresinde kalan aydınlık dairenin çapı (referans piksel)")]
-        [SerializeField] private float irisEndSize = 230f;
+        [SerializeField] private float deathFlashHold = 0.05f;
+        [SerializeField] private float deathFlashFade = 0.22f;
+        [SerializeField] private float deathShake = 1.4f;
+        [SerializeField] private float deathShakeTime = 0.45f;
+        [Tooltip("Dünyanın solması (renk gider, kararır) ne kadar sürer (sn)")]
+        [SerializeField] private float drainTime = 0.5f;
+
+        [Header("Ruh (ölümde bedenden yükselir)")]
+        [Tooltip("Ruh fazının bekleme kareleri (ruh_bekleme_1..8); QuakeSetup bağlar. Boşsa ruh çıkmaz")]
+        [SerializeField] private Texture2D[] ghostFrames;
+        [SerializeField] private float ghostFps = 8f;
+        [SerializeField] private float ghostDelay = 0.3f;
+        [SerializeField] private float ghostTime = 1.8f;
+        [Tooltip("Ruhun yükseldiği yükseklik (m)")]
+        [SerializeField] private float ghostRise = 1.3f;
+        [SerializeField] private Color ghostColor = new Color(0.8f, 0.92f, 1f, 0.9f);
+
+        [Header("Kararma")]
+        [SerializeField] private float blackoutStart = 1.7f;
+        [SerializeField] private float blackoutTime = 0.6f;
         [Tooltip("Keşke ekranı gelmezse karanlık en fazla bu kadar kalır (sn)")]
-        [SerializeField] private float irisMaxHold = 6f;
+        [SerializeField] private float maxHold = 6f;
 
         private Canvas canvas;
         private Image flash;
-        private RectTransform iris;
+        private Image blackout;
+        private Image ghost;
+        private Volume deathLook;
+        private Sprite[] ghostSprites;
         private Coroutine running;
         private PlayerController player;
 
@@ -78,47 +96,58 @@ namespace Deprem.Quake
         {
             if (player == null) player = FindFirstObjectByType<PlayerController>();
             var canvasRect = (RectTransform)canvas.transform;
-            float open = OpenSize(canvasRect);
-            iris.gameObject.SetActive(true);
-            iris.sizeDelta = Vector2.one * open;
-            float closeEnd = irisDelay + irisCloseTime;
-            for (float t = 0f; t < closeEnd + irisMaxHold; t += Time.unscaledDeltaTime)
+            // Ruh bedenin ortasından çıkar (yere yığılmış beden: kökün biraz üstü)
+            var origin = player != null ? player.transform.position + Vector3.up * 0.35f : Vector3.zero;
+            float end = blackoutStart + blackoutTime;
+            for (float t = 0f; t < end + maxHold; t += Time.unscaledDeltaTime)
             {
-                // Sert beyaz darbe: yumuşak giriş yok
                 float f = t < deathFlashHold ? 1f : 1f - Mathf.Clamp01((t - deathFlashHold) / deathFlashFade);
                 flash.color = new Color(deathFlash.r, deathFlash.g, deathFlash.b, deathFlash.a * f);
                 if (t < deathShakeTime)
                     QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, deathShake * (1f - t / deathShakeTime));
-
-                float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - irisDelay) / irisCloseTime));
-                iris.sizeDelta = Vector2.one * Mathf.Lerp(open, irisEndSize, k);
-                iris.anchoredPosition = PlayerOnCanvas(canvasRect);
+                // Hızlı başlar, yavaş oturur
+                deathLook.weight = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / drainTime), 3f);
+                UpdateGhost(t - ghostDelay, origin, canvasRect);
+                blackout.color = new Color(0f, 0f, 0f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - blackoutStart) / blackoutTime)));
                 yield return null;
             }
             Clear();
         }
 
-        /// <summary>Daire ekranın en uzak köşesinin de dışında: karanlık henüz görünmez</summary>
-        private static float OpenSize(RectTransform canvasRect)
+        private void UpdateGhost(float t, Vector3 origin, RectTransform canvasRect)
         {
-            var size = canvasRect.rect.size;
-            return size.magnitude * 2.6f;
-        }
-
-        private Vector2 PlayerOnCanvas(RectTransform canvasRect)
-        {
+            if (ghostSprites == null || ghostSprites.Length == 0 || t < 0f || t > ghostTime)
+            {
+                if (ghost != null) ghost.enabled = false;
+                return;
+            }
             var cam = Camera.main;
-            if (player == null || cam == null) return Vector2.zero;
-            // Gövdenin ortası (ayak kökünden ~0,8 m yukarı)
-            var screen = cam.WorldToScreenPoint(player.transform.position + Vector3.up * 0.8f);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out var local);
-            return local;
+            if (cam == null) return;
+            float k = t / ghostTime;
+            // Yavaşlayarak yükselir, hafifçe salınır; belirir, sonra söner
+            float rise = ghostRise * (1f - Mathf.Pow(1f - k, 2f));
+            var world = origin + new Vector3(Mathf.Sin(t * 2.6f) * 0.06f, rise, -0.2f);
+            float alpha = Mathf.Clamp01(k / 0.2f) * Mathf.Clamp01((1f - k) / 0.45f);
+            // Ruh karesi oyuncu karesi gibi 2 m: dünyadaki 2 m'nin ekrandaki boyu
+            var a = cam.WorldToScreenPoint(world);
+            var b = cam.WorldToScreenPoint(world + Vector3.up * 2f);
+            if (a.z <= 0f) return;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, a, null, out var localA);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, b, null, out var localB);
+            float size = Mathf.Abs(localB.y - localA.y);
+            ghost.enabled = true;
+            ghost.sprite = ghostSprites[Mathf.FloorToInt(t * ghostFps) % ghostSprites.Length];
+            ghost.rectTransform.anchoredPosition = localA;
+            ghost.rectTransform.sizeDelta = new Vector2(size, size);
+            ghost.color = new Color(ghostColor.r, ghostColor.g, ghostColor.b, ghostColor.a * alpha);
         }
 
         private void Clear()
         {
             if (flash != null) flash.color = Color.clear;
-            if (iris != null) iris.gameObject.SetActive(false);
+            if (blackout != null) blackout.color = Color.clear;
+            if (ghost != null) ghost.enabled = false;
+            if (deathLook != null) deathLook.weight = 0f;
             running = null;
         }
 
@@ -131,7 +160,7 @@ namespace Deprem.Quake
             Clear();
         }
 
-        // Döngü yeniden başladı (keşke ekranından sonra): karanlık kalkar
+        // Döngü yeniden başladı (keşke ekranından sonra): karanlık ve solgunluk kalkar
         private void OnLoopStarted(int loop)
         {
             if (running != null) StopCoroutine(running);
@@ -143,50 +172,47 @@ namespace Deprem.Quake
             if (canvas != null) return;
             canvas = UiBuilder.CreateCanvas(transform, "HitFeedback", 45);
 
-            // İris: ortası delik daire; dört yanındaki siyah bantlar ekranın geri kalanını örter
-            var hole = UiBuilder.CreateImage(canvas.transform, "Iris", Color.black);
-            hole.sprite = HoleSprite();
-            hole.raycastTarget = false;
-            iris = hole.rectTransform;
-            iris.anchorMin = iris.anchorMax = iris.pivot = new Vector2(0.5f, 0.5f);
-            const float far = 20000f;
-            Band("Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(1f, 0.5f), new Vector2(far, far * 2f));
-            Band("Right", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, 0.5f), new Vector2(far, far * 2f));
-            Band("Top", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 0f), new Vector2(0f, far));
-            Band("Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, far));
-            iris.gameObject.SetActive(false);
+            // Ruh: alt orta pivot (ayakları bedende), karenin içindeki konumu oyuncu karesiyle aynı
+            ghost = UiBuilder.CreateImage(canvas.transform, "Ghost", Color.clear);
+            ghost.raycastTarget = false;
+            ghost.preserveAspect = true;
+            var rect = ghost.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            ghost.enabled = false;
+
+            blackout = UiBuilder.CreateImage(canvas.transform, "Blackout", Color.clear);
+            blackout.raycastTarget = false;
+            UiBuilder.Stretch(blackout.rectTransform, Vector2.zero, Vector2.one);
 
             flash = UiBuilder.CreateImage(canvas.transform, "Flash", Color.clear);
             flash.raycastTarget = false;
             UiBuilder.Stretch(flash.rectTransform, Vector2.zero, Vector2.one);
-        }
 
-        private void Band(string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 size)
-        {
-            var band = UiBuilder.CreateImage(iris, name, Color.black);
-            band.raycastTarget = false;
-            var rect = band.rectTransform;
-            rect.anchorMin = anchorMin;
-            rect.anchorMax = anchorMax;
-            rect.pivot = pivot;
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = size;
-        }
+            var sprites = new List<Sprite>();
+            if (ghostFrames != null)
+                foreach (var frame in ghostFrames)
+                    if (frame != null)
+                        sprites.Add(Sprite.Create(frame, new Rect(0, 0, frame.width, frame.height), new Vector2(0.5f, 0f), 64f));
+            ghostSprites = sprites.ToArray();
 
-        // Ortası saydam yumuşak kenarlı daire, dışı siyah (köşeler dahil)
-        private static Sprite HoleSprite()
-        {
-            const int size = 128;
-            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            for (int y = 0; y < size; y++)
-                for (int x = 0; x < size; x++)
-                {
-                    float dx = (x + 0.5f) / size * 2f - 1f, dy = (y + 0.5f) / size * 2f - 1f;
-                    float d = Mathf.Sqrt(dx * dx + dy * dy);
-                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.55f, 0.98f, d))));
-                }
-            tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+            // Ölümde dünyanın solması: faz Volume'larının (öncelik 0–2) üstünde
+            var lookGo = new GameObject("DeathLook");
+            lookGo.transform.SetParent(transform, false);
+            deathLook = lookGo.AddComponent<Volume>();
+            deathLook.isGlobal = true;
+            deathLook.priority = 50f;
+            deathLook.weight = 0f;
+            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            var color = profile.Add<ColorAdjustments>(true);
+            color.saturation.Override(-100f);
+            color.contrast.Override(25f);
+            color.postExposure.Override(-0.6f);
+            var vignette = profile.Add<Vignette>(true);
+            vignette.color.Override(Color.black);
+            vignette.intensity.Override(0.5f);
+            vignette.smoothness.Override(0.55f);
+            deathLook.sharedProfile = profile;
         }
     }
 }

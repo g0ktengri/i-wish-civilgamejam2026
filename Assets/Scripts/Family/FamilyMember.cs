@@ -552,6 +552,17 @@ namespace Deprem.Family
             if (bubble != null) bubble.Say("bubble.family_treated." + id.ToString().ToLowerInvariant(), callDuration);
         }
 
+        /// <summary>
+        /// Play testi 25: kabinde, herkes içerideyken kanaması durmayan üyenin vedası ("Elveda oğlum...").
+        /// Kayıp vurgusu çalar; keşke ekranını FamilyDirector açar.
+        /// </summary>
+        public void SayFarewell(float duration)
+        {
+            if (bubble == null) bubble = GetComponent<SpeechBubble>();
+            if (bubble != null) bubble.Say("bubble.family_farewell." + id.ToString().ToLowerInvariant(), duration);
+            Deprem.Audio.Sfx.Play("family.loss");
+        }
+
         public void EnterCabin(Vector3 inside)
         {
             State = FamilyState.InCabin;

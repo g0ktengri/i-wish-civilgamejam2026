@@ -98,8 +98,8 @@ namespace Deprem.Quake
         [SerializeField] private float debrisFrontOffset = 0.15f;
         [Tooltip("Tavandan kopan parçanın başa değmesi (sn): ölme animasyonu o an başlar")]
         [SerializeField] private float debrisImpactDelay = 0.3f;
-        [Tooltip("Öldükten sonra kayıp ekranından önce sahnede kalma (sn): ölme kareleri biter, yıkıntı üstüne yığılır")]
-        [SerializeField] private float deathLinger = 1.6f;
+        [Tooltip("Öldükten sonra kayıp ekranından önce sahnede kalma (sn): ölme kareleri biter, ruh yükselir, ekran kararır (Play testi 25)")]
+        [SerializeField] private float deathLinger = 2.4f;
         [Tooltip("Play testi 24: kardeş bulunamayınca gelen artçıda tavanın çökmesinden önceki sarsıntı (sn)")]
         [SerializeField] private float fatalAftershockLead = 1.2f;
         [Tooltip("Döngü 1: raf yatan oyuncunun üstüne düşer; kaplama kutusunun merkezi oyuncunun kökünden bu kadar uzakta")]
@@ -573,7 +573,7 @@ namespace Deprem.Quake
             // çarpışmaz: parçalar başta sekmez, yere yığılan bedenin üstüne düşer ve orada kalır (DebrisSettle)
             yield return new WaitForSeconds(debrisImpactDelay);
             player.Die();
-            Feedback.Play(1f); // Play testi 24: sert darbe, sarsıntı, kulak çınlaması, kapanan karanlık
+            Feedback.Play(1f); // Play testi 25: sert darbe, dünya solar, bedenden ruh yükselir, ekran kararır
             yield return new WaitForSeconds(deathLinger);
         }
 
@@ -607,6 +607,7 @@ namespace Deprem.Quake
             player.Body.detectCollisions = false;
             yield return new WaitForSeconds(1.4f);
             player.Body.detectCollisions = true;
+            yield return new WaitForSeconds(Mathf.Max(0f, deathLinger - 1.4f)); // ruh yükselip ekran kararsın
         }
 
         private void SpawnDebris(string name, Vector3 position, Vector3 size, float mass)
