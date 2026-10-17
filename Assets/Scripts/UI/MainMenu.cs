@@ -151,7 +151,7 @@ namespace Deprem.UI
                 case Screen.Main:
                     // M42: "Bölüm seç" yerine kayıtlı döngüden "Devam et" (kayıt yoksa soluk, seçilemez); yeni oyun kaydı
                     // silmeden önce sorar
-                    menu.Add("menu.continue", () => StartLoop(SaveGame.Loop));
+                    menu.Add("menu.continue", ContinueGame);
                     menu.SetEnabled(SaveGame.Exists);
                     menu.Add("menu.new_game", () =>
                     {
@@ -270,9 +270,18 @@ namespace Deprem.UI
                 : titleHome;
         }
 
+        // M42: kayıtlı döngüden, keşke sayısıyla birlikte
+        static void ContinueGame()
+        {
+            warningShown = true;
+            WishLines.ClearHistory();
+            if (LoopManager.Instance) LoopManager.Instance.ContinueFromSave(SaveGame.Loop, SaveGame.FailedAttempts);
+        }
+
         static void StartNewGame()
         {
             SaveGame.Clear();
+            WishLines.ClearHistory();
             StartLoop(1);
         }
 

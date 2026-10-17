@@ -20,8 +20,12 @@ namespace Deprem.Spirit
         [SerializeField] float boundsPadding = 0.3f;
 
         [Header("Süzülme")]
-        [SerializeField] float bobHeight = 0.08f;
+        [SerializeField] float bobHeight = 0.12f;
         [SerializeField] float bobSpeed = 2.5f;
+        [Tooltip("M45 (hayalet çok aşağıdaydı, ayağı yere giriyordu): gövde merkezi en alt zeminin en az bu kadar üstünde, " +
+                 "en üst tavanın en az bu kadar altında (m). Görselin merkezi altından 0,94 m, tepesinden 1,06 m uzakta.")]
+        [SerializeField] float floorClearance = 1.15f;
+        [SerializeField] float ceilingClearance = 1.1f;
 
         Transform visual;
         Vector2 velocity;
@@ -54,6 +58,7 @@ namespace Deprem.Spirit
             if (houseBounds)
             {
                 position = houseBounds.ClampToHouse(position, boundsPadding);
+                position.y = ClampHover(position.y, houseBounds);
             }
             else
             {
@@ -63,6 +68,21 @@ namespace Deprem.Spirit
             transform.position = position;
 
             if (visual) visual.localPosition = new Vector3(0f, Mathf.Sin(Time.time * bobSpeed) * bobHeight, 0f);
+        }
+
+        // M45: ruh yerde yürümez, süzülür: en alt zeminden ve en üst tavandan görselin boyu kadar uzak durur
+        float ClampHover(float y, Player.HouseBounds houseBounds)
+        {
+            var floors = houseBounds.Floors;
+            if (floors == null || floors.Length == 0) return y;
+            float minY = float.MaxValue, maxY = float.MinValue;
+            foreach (var floor in floors)
+            {
+                minY = Mathf.Min(minY, floor.floorY);
+                maxY = Mathf.Max(maxY, floor.ceilingY);
+            }
+            float low = minY + floorClearance, high = maxY - ceilingClearance;
+            return high > low ? Mathf.Clamp(y, low, high) : y;
         }
 
         static Vector2 ReadInput()

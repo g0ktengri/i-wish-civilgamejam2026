@@ -167,6 +167,7 @@ namespace Deprem.UI
         void HandleLoopFailed(LoseReason reason, ItemId item)
         {
             StopAllCoroutines();
+            WishLines.Record(reason, item); // M47: final ekranı için
             StartCoroutine(Show(WishLines.Wish(reason, item), WishLines.Info(reason)));
         }
 

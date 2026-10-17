@@ -129,19 +129,30 @@ menu.hint.back,Esc: Geri,Esc: Back
 menu.hint.change,A/D: Değiştir,A/D: Change
 menu.subtitle,Bir deprem hikâyesi,An earthquake story
 menu.jam,Civil Game Jam 2026,Civil Game Jam 2026
+advice.ignored_foreshock,Sarsıntıyı ciddiye al.,Take the tremor seriously.
+advice.duck_cover,"Çök, kapan, tutun.","Drop, cover, hold on."
+advice.secure_items,Eşyalarını sabitle.,Secure your furniture.
+advice.secure_item,{0} sabitle.,Secure the {0}.
+advice.bag,Deprem çantanı hazırla.,Pack your emergency bag.
+advice.aftershock,"Artçıda da çök, kapan, tutun.",Take cover in the aftershocks too.
+final.closing,Deprem geldiğinde keşkelerin olmasın.,"When the earthquake comes, have no regrets."
+final.closing_sub,Bugün hazırlan.,Prepare today.
+final.site,afad.gov.tr,afad.gov.tr
 menu.hint.cancel,Esc: Vazgeç,Esc: Cancel
 controls.hint.change,F: Tuşu değiştir,F: Change key
 controls.press,Bir tuşa bas…,Press a key…
-controls.reset,Varsayılana dön,Reset to defaults
+controls.reset,Varsayılana dön: {0},Reset to defaults: {0}
+controls.header.spirit,Ruh (hayalet),Spirit (ghost)
+controls.reset_done,Geri geldi,Restored
 controls.bind.left,Sola yürü: {0},Walk left: {0}
 controls.bind.right,Sağa yürü: {0},Walk right: {0}
 controls.bind.jump,Zıpla: {0},Jump: {0}
-controls.bind.crouch,"Eğil, çök-kapan: {0}","Crouch, drop and cover: {0}"
+controls.bind.crouch,Eğil / Çök-Kapan-Tutun: {0},"Crouch / Drop, Cover, Hold On: {0}"
 controls.bind.interact,Etkileşim: {0},Interact: {0}
-controls.bind.spirit_up,Ruh yukarı: {0},Spirit up: {0}
-controls.bind.spirit_down,Ruh aşağı: {0},Spirit down: {0}
-controls.bind.spirit_left,Ruh sola: {0},Spirit left: {0}
-controls.bind.spirit_right,Ruh sağa: {0},Spirit right: {0}
+controls.bind.spirit_up,Yukarı: {0},Up: {0}
+controls.bind.spirit_down,Aşağı: {0},Down: {0}
+controls.bind.spirit_left,Sola: {0},Left: {0}
+controls.bind.spirit_right,Sağa: {0},Right: {0}
 menu.continue,Devam et,Continue
 menu.new_confirm,Kayıtlı ilerlemen silinecek. Baştan başlamak istiyor musun?,Your saved progress will be deleted. Do you want to start over?
 menu.new_confirm_yes,"Evet, baştan başla","Yes, start over"

@@ -40,7 +40,7 @@ namespace Deprem.UI
         // Tuş değişince aynı ipucu yeni tuşla yeniden kurulsun
         void HandleBindingsChanged()
         {
-            if (!RemapKeys || string.IsNullOrEmpty(shown)) return;
+            if (!this || !RemapKeys || string.IsNullOrEmpty(shown)) return;
             string text = shown;
             shown = null;
             Set(text);

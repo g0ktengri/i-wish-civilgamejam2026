@@ -40,6 +40,7 @@ namespace Deprem.UI
             public float UnderlineTarget;
             public bool Disabled;
             public bool ShowValue;
+            public bool Header;
             public Func<float> SliderValue;
             public Action<float> SliderSet;
             public float Slide;
@@ -213,6 +214,16 @@ namespace Deprem.UI
             Layout(entry);
         }
 
+        /// <summary>M44: seçilemeyen bölüm başlığı satırı (vurgu renginde, soluk; W/S ve fare atlar)</summary>
+        public void AddHeader(string key)
+        {
+            Add(key, null);
+            var entry = entries[entries.Count - 1];
+            entry.Disabled = true;
+            entry.Header = true;
+            Refresh();
+        }
+
         /// <summary>M42: son eklenen satır seçilebilir mi (kapalıysa soluk, W/S ve fare atlar)</summary>
         public void SetEnabled(bool enabled)
         {
@@ -340,7 +351,9 @@ namespace Deprem.UI
                     ? Texts.Format(entry.Key, args)
                     : Texts.Get(entry.Key);
                 bool on = i == selected && !entry.Disabled;
-                var color = on ? highlight : entry.Disabled ? new Color(normal.r, normal.g, normal.b, 0.35f) : normal;
+                var color = on ? highlight
+                    : entry.Header ? new Color(highlight.r, highlight.g, highlight.b, 0.7f)
+                    : entry.Disabled ? new Color(normal.r, normal.g, normal.b, 0.35f) : normal;
 
                 // Ayarlanabilir: "Ad: < değer >" → ad solda, değer sağda (oklar pixel)
                 int colon = entry.Adjust != null || entry.ShowValue ? text.IndexOf(':') : -1;

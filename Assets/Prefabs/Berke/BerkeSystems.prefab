@@ -150,7 +150,7 @@ MonoBehaviour:
   duration: 50
   spawnPoint: {fileID: 0}
   spawnMarkerName: Marker_PlayerBed
-  spawnOffset: {x: 0, y: 1, z: 0}
+  spawnOffset: {x: 0, y: 1.2, z: 0}
   spiritPrefab: {fileID: 0}
   spiritFrames:
   - {fileID: 2800000, guid: 7468175b27cf3bb4fbdb7ddb57e31f2d, type: 3}
@@ -338,6 +338,10 @@ MonoBehaviour:
   font: {fileID: 12800000, guid: b130f425b0541a64e94ef955310244fb, type: 3}
   fontSize: 0
   bottomOffset: 60
+  worldFontSize: 16
+  worldLift: 10
+  screenMargin: 12
+  playerHeadHeight: 2.1
   sortingOrder: 60
 --- !u!114 &1766816693970637449
 MonoBehaviour:
@@ -404,17 +408,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.FinalScreen
   startDelay: 2
-  fadeTime: 1
-  rowDelay: 0.7
-  checkDelay: 0.6
+  fadeTime: 1.2
+  lineDelay: 0.6
+  shatterTime: 0.35
+  turnDelay: 0.45
+  closingDelay: 0.9
+  maxLines: 7
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  titleFontSize: 26
-  rowFontSize: 16
-  rowHeight: 30
-  wishColor: {r: 0.55, g: 0.55, b: 0.6, a: 1}
-  doneColor: {r: 1, g: 1, b: 1, a: 1}
-  boxColor: {r: 0.3, g: 0.3, b: 0.35, a: 1}
-  checkColor: {r: 0.45, g: 0.85, b: 0.5, a: 1}
+  lineFontSize: 20
+  closingFontSize: 30
+  subFontSize: 22
+  smallFontSize: 14
+  lineHeight: 34
+  backgroundAlpha: 0.97
+  wishColor: {r: 0.62, g: 0.6, b: 0.58, a: 1}
+  adviceColor: {r: 1, g: 0.82, b: 0.4, a: 1}
+  creamColor: {r: 0.96, g: 0.92, b: 0.84, a: 1}
   sortingOrder: 110
 --- !u!114 &6176068554381073379
 MonoBehaviour:
@@ -451,7 +460,7 @@ MonoBehaviour:
   titleFontSize: 34
   itemFontSize: 19
   bodyFontSize: 17
-  rowHeight: 32
+  rowHeight: 30
   normalColor: {r: 0.82, g: 0.78, b: 0.7, a: 1}
   highlightColor: {r: 1, g: 0.82, b: 0.4, a: 1}
   backgroundColor: {r: 0.01, g: 0.02, b: 0.05, a: 0.8}

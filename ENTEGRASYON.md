@@ -52,6 +52,28 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Play testi 24: M42 devamı, M43–M47 (Berke)
+
+Play'de denenmedi; dört test geçiyor.
+
+- **M42 devamı:** "Devam et" artık senin `GameState.RestoreProgress(SaveGame.Loop, SaveGame.FailedAttempts)` metodunu çağırıyor (`LoopManager.ContinueFromSave`). Keşke sayısı da geri geliyor.
+- **M43, "Varsayılana dön":**
+  - Tuşlar zaten varsayılansa ekranda bir şey değişmiyordu, çalışmıyor gibi görünüyordu. Artık satırın sağında kısa süre "Geri geldi" yazıyor.
+  - Liste `KeyBindings.Changed` ile de yenileniyor. Başka bir `Changed` abonesi hata verse de liste yenilensin diye çağrı korumalı.
+- **M44, kontrol adları:** "Sola yürü", "Sağa yürü", "Zıpla", "Eğil / Çök-Kapan-Tutun", "Etkileşim". Ruh tuşları "Ruh (hayalet)" başlığı altında "Yukarı / Aşağı / Sola / Sağa" (EN: Up / Down / Left / Right). Ayarlar satırı 32 → 30 px (12 satır sığsın).
+- **M45, hayalet yukarıda:** `SpiritController` ruhun gövdesini en alt zeminden 1,15 m, en üst tavandan 1,1 m uzak tutuyor (`floorClearance`, `ceilingClearance`). Ayağı yere değmiyor; süzülme 0,08 → 0,12 m. Doğuş noktası yataktan 1,2 m yukarıda.
+- **M46, ipuçları objenin üstünde (`PromptHud`):**
+  - Senin `PlayerInteractor.PromptAnchor`'ını yansımayla okuyorum. Alanı eklediğinde kendiliğinden bağlanacak; `null` ise ipucu eski yerinde (alt ortada).
+  - O alan henüz yokken ipucu oyuncunun başının üstünde çıkıyor.
+  - Objenin üstündeki ipucu daha küçük (16 punto) ve ekran kenarına taşmıyor.
+- **M47, final (`FinalScreen`):**
+  - Oyun boyunca söylenen keşkeler (`WishLines.History`, tekrarsız, en fazla 7) karartılmış evin üstünde tek tek geliyor.
+  - Sonra her birinde çatlak geçiyor, `wish.shatter` çalıyor ve cümle bugüne dönüyor ("Kitaplığı sabitle.", `WishLines.Advice`).
+  - En sonda büyük cümle: "Deprem geldiğinde keşkelerin olmasın." Altında "Bugün hazırlan." ve afad.gov.tr.
+  - Geçmiş boşsa (kayıttan devam) beş ders gösteriliyor. Hazırlık listesi ve bonus maddeler kalktı.
+  - Önizleme: `Logs/hud_preview_final.png`.
+- **Açık kalanlar:** emeği geçenlerde sanatçı adları (sen vereceksin); M38 donma takibi.
+
 ### Arayüz turu 3: ana menü bağımsız başlık ekranı (Berke)
 
 Berke Play'de denedi; dört test geçiyor.

@@ -17,7 +17,7 @@ namespace Deprem.Spirit
         [Tooltip("Boşsa aşağıdaki isimdeki işaret noktası aranır")]
         [SerializeField] Transform spawnPoint;
         [SerializeField] string spawnMarkerName = "Marker_PlayerBed";
-        [SerializeField] Vector3 spawnOffset = new Vector3(0f, 1f, 0f);
+        [SerializeField] Vector3 spawnOffset = new Vector3(0f, 1.2f, 0f);
 
         [Header("Ruh")]
         [Tooltip("Boşsa geçici bir ruh (parlayan küre) kurulur")]

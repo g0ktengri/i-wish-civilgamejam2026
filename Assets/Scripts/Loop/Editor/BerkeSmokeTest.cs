@@ -346,8 +346,11 @@ namespace Deprem.Loop.EditorTools
             foreach (var lesson in new[] { "ignored_foreshock", "duck_cover", "secure_items", "bag", "aftershock" })
             {
                 Need($"wish.{lesson}");
-                Need($"final.{lesson}");
+                Need($"advice.{lesson}"); // M47: final ekranında bugüne dönmüş hali
             }
+            foreach (var key in new[] { "advice.secure_item", "final.closing", "final.closing_sub", "final.site",
+                         "controls.header.spirit", "controls.reset", "controls.reset_done", "menu.continue" })
+                Need(key);
             foreach (var key in new[] { "wish.prefix", "wish.rewind", "prompt.continue", "minigame.lock.hint",
                          "minigame.carry.hint", "minigame.screw.hint" })
                 Need(key);
@@ -368,6 +371,8 @@ namespace Deprem.Loop.EditorTools
                 {
                     string wish = WishLines.Wish(reason, item);
                     string info = WishLines.Info(reason);
+                    string advice = WishLines.Advice(reason, item);
+                    if (string.IsNullOrEmpty(advice) || advice.Contains("[")) problems.Add($"{reason}/{item}: öğüt '{advice}'");
                     if (string.IsNullOrEmpty(wish) || wish.Contains("[")) problems.Add($"{reason}/{item}: cümle '{wish}'");
                     if (string.IsNullOrEmpty(info) || info.Contains("[")) problems.Add($"{reason}: bilgi '{info}'");
                     if (split == null) continue;

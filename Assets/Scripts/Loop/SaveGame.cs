@@ -13,7 +13,7 @@ namespace Deprem.Loop
 
         public static bool Exists => PlayerPrefs.GetInt(LoopKey, 0) > 0;
         public static int Loop => Mathf.Clamp(PlayerPrefs.GetInt(LoopKey, 1), 1, GameConstants.LoopCount);
-        // Kayıtta tutulur; GameState.FailedAttempts'ın setter'ı Core'da kapalı olduğu için şimdilik geri yüklenmez
+        // "Devam et"te GameState.RestoreProgress ile geri yüklenir (LoopManager.ContinueFromSave)
         public static int FailedAttempts => PlayerPrefs.GetInt(FailedKey, 0);
 
         public static void Save(int loop, int failedAttempts)

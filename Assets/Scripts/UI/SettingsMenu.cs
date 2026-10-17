@@ -58,7 +58,7 @@ namespace Deprem.UI
         [SerializeField] int titleFontSize = 34;
         [SerializeField] int itemFontSize = 19;
         [SerializeField] int bodyFontSize = 17;
-        [SerializeField] float rowHeight = 32f;
+        [SerializeField] float rowHeight = 30f;
         [SerializeField] Color normalColor = new Color(0.82f, 0.78f, 0.7f);
         [SerializeField] Color highlightColor = new Color(1f, 0.82f, 0.4f);
         [Tooltip("Arkadaki ana menü / duraklatma görünsün diye yarı saydam")]
@@ -83,6 +83,8 @@ namespace Deprem.UI
         bool controlsOnly;
         string listening;
         int listenFrame;
+        float resetFeedbackUntil;
+        const float ResetFeedbackSeconds = 1.6f;
         Action onClose;
 
         // M40: değiştirilebilir eylemler (KeyBindings adları) ve satır metinleri
@@ -106,8 +108,17 @@ namespace Deprem.UI
             if (Instance == this) Instance = null;
         }
 
-        void OnEnable() => Texts.LanguageChanged += Refresh;
-        void OnDisable() => Texts.LanguageChanged -= Refresh;
+        void OnEnable()
+        {
+            Texts.LanguageChanged += Refresh;
+            KeyBindings.Changed += HandleBindingsChanged;
+        }
+
+        void OnDisable()
+        {
+            Texts.LanguageChanged -= Refresh;
+            KeyBindings.Changed -= HandleBindingsChanged;
+        }
 
         public void Open(Action closed)
         {
@@ -156,6 +167,12 @@ namespace Deprem.UI
                 LeaveControls();
                 return;
             }
+            // "Geri geldi" yazısının süresi dolunca satırı temizle
+            if (resetFeedbackUntil > 0f && Time.unscaledTime >= resetFeedbackUntil)
+            {
+                resetFeedbackUntil = 0f;
+                menu.Refresh();
+            }
             menu.Tick();
         }
 
@@ -200,6 +217,25 @@ namespace Deprem.UI
             }
         }
 
+        void ResetBindings()
+        {
+            resetFeedbackUntil = Time.unscaledTime + ResetFeedbackSeconds;
+            try
+            {
+                KeyBindings.ResetDefaults();
+            }
+            finally
+            {
+                // Başka bir Changed abonesi hata verse de liste yenilensin
+                Refresh();
+            }
+        }
+
+        void HandleBindingsChanged()
+        {
+            if (open && showingControls) menu.Refresh();
+        }
+
         void Rebuild()
         {
             menu.Clear();
@@ -207,17 +243,20 @@ namespace Deprem.UI
             {
                 foreach (var (action, key) in Bindings)
                 {
+                    // M44: ruh tuşları ayrı başlık altında, sade adlarla (Yukarı / Aşağı / Sola / Sağa)
+                    if (action == "SpiritUp") menu.AddHeader("controls.header.spirit");
                     menu.AddValue(key, () => new object[]
                     {
                         listening == action ? Texts.Get("controls.press") : KeyBindings.Label(KeyBindings.Get(action)),
                     }, () => StartListening(action));
                     menu.SetIcon(action.StartsWith("Spirit") ? UiIcons.Heart : UiIcons.Key);
                 }
-                menu.Add("controls.reset", () =>
+                // M43: tuşlar zaten varsayılansa ekranda bir şey değişmiyordu, çalışmıyor sanılıyordu: satırın sağında
+                // kısa süre "Geri geldi" yazar. Liste KeyBindings.Changed ile de yenilenir.
+                menu.AddValue("controls.reset", () => new object[]
                 {
-                    KeyBindings.ResetDefaults();
-                    Refresh();
-                });
+                    Time.unscaledTime < resetFeedbackUntil ? Texts.Get("controls.reset_done") : string.Empty,
+                }, ResetBindings);
                 menu.SetIcon(UiIcons.Gear);
                 menu.Add("menu.back", LeaveControls);
                 menu.SetIcon(UiIcons.Back);

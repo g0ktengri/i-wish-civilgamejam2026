@@ -108,6 +108,13 @@ namespace Deprem.Loop
             Restart(loop);
         }
 
+        // M42: ana menüdeki "Devam et": kayıttaki döngü ve keşke sayısı geri yüklenir (çatlak büyüklüğü, gizli +10 sn)
+        public void ContinueFromSave(int loop, int failedAttempts)
+        {
+            GameState.RestoreProgress(loop, failedAttempts);
+            Restart(loop);
+        }
+
         // Final ekranı ya da duraklatma menüsünden ana menüye dönüş
         public void ReturnToMenu()
         {

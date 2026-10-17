@@ -166,6 +166,35 @@ namespace Deprem.Loop.EditorTools
                 settings.Open(null);
             });
 
+            // M47: final ekranının son hali (ilk iki cümle henüz keşke, gerisi bugüne dönmüş; büyük cümle ve AFAD)
+            RenderScene("final", root =>
+            {
+                var final = root.AddComponent<FinalScreen>();
+                Call(final, "Awake");
+                Get<CanvasGroup>(final, "group").alpha = 1f;
+                var addLine = typeof(FinalScreen).GetMethod("AddLine", Flags);
+                var said = new[]
+                {
+                    (LoseReason.IgnoredForeshock, ItemId.None), (LoseReason.NoDuckCoverHold, ItemId.None),
+                    (LoseReason.FamilyHitByItem, ItemId.Bookcase), (LoseReason.MissingBagItem, ItemId.None),
+                    (LoseReason.AftershockInjury, ItemId.None),
+                };
+                for (int i = 0; i < said.Length; i++)
+                {
+                    bool turned = i >= 2;
+                    var text = turned ? WishLines.Advice(said[i].Item1, said[i].Item2) : WishLines.Wish(said[i].Item1, said[i].Item2);
+                    var line = (Text)addLine.Invoke(final, new object[] { text });
+                    line.color = turned ? new Color(1f, 0.82f, 0.4f) : new Color(0.62f, 0.6f, 0.58f);
+                }
+                Get<UiTitle>(final, "closingText").Text = Deprem.Localization.Texts.Get("final.closing");
+                Get<RectTransform>(final, "closingArea").GetComponent<CanvasGroup>().alpha = 1f;
+                Get<Text>(final, "subText").text = Deprem.Localization.Texts.Get("final.closing_sub");
+                var site = Get<Text>(final, "siteText");
+                site.text = Deprem.Localization.Texts.Get("final.site");
+                site.color = new Color(0.96f, 0.92f, 0.84f, 0.6f);
+                Get<Text>(final, "hintText").text = Deprem.Localization.Texts.Get("prompt.main_menu");
+            });
+
             // M40: tuş değiştirme ekranı
             RenderScene("settings_controls", root =>
             {
