@@ -1,37 +1,33 @@
 using Deprem.Core;
 using Deprem.Localization;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Deprem.UI
 {
     // Tuş ipucu: GameEvents.PromptChanged ile gelen texts.csv anahtarını ekranın altında gösterir
-    // ("F: Kalk", "C: Çök-Kapan-Tutun"). Boş anahtar ipucunu gizler (ENTEGRASYON M1).
+    // ("F: Kalk" → [F] Kalk). Boş anahtar ipucunu gizler (ENTEGRASYON M1).
+    // M24: ortak HUD stili (UiPrompt: pixel panel, ayrı tuş kapakları); ekranın en altına yakın, çök-kapan
+    // çubuğu ile çakışmaz.
     public class PromptHud : MonoBehaviour
     {
         [SerializeField] Font font;
-        [SerializeField] int fontSize = 20;
-        [SerializeField] Color color = Color.white;
+        [Tooltip("0: UiStyle.hudFontSize")]
+        [SerializeField] int fontSize;
+        [Tooltip("Ekranın altından yükseklik (referans pikseli)")]
+        [SerializeField] float bottomOffset = 22f;
         [SerializeField] int sortingOrder = 60;
 
-        Image back;
-        Text label;
+        UiPrompt prompt;
         string key = string.Empty;
 
         void Awake()
         {
             var canvas = UiBuilder.CreateCanvas(transform, "PromptCanvas", sortingOrder);
-
-            // Görünüş UiStyle.panel'den (hud_ipucu.png), yoksa kenarlıklı kutu
-            back = UiBuilder.CreatePanel(canvas.transform, "Back");
-            var backRect = back.rectTransform;
-            backRect.anchorMin = backRect.anchorMax = new Vector2(0.5f, 0.18f);
-            backRect.sizeDelta = new Vector2(192f, 32f);
-
-            label = UiBuilder.CreateText(back.transform, "Label", font, fontSize, color);
-            UiBuilder.Stretch(label.rectTransform, Vector2.zero, Vector2.one);
-            label.horizontalOverflow = HorizontalWrapMode.Overflow; // uzun ipucu tek satırda taşsın
-
+            prompt = UiPrompt.Create(canvas.transform, "Prompt", font, fontSize);
+            var rect = prompt.Rect;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(0f, bottomOffset);
             Apply();
         }
 
@@ -59,13 +55,8 @@ namespace Deprem.UI
 
         void Apply()
         {
-            if (!back) return;
-            bool visible = !string.IsNullOrEmpty(key);
-            back.gameObject.SetActive(visible);
-            if (!visible) return;
-            label.text = Texts.Get(key);
-            // Panel yazıya göre genişler (en az 192, hud_ipucu 9-slice)
-            back.rectTransform.sizeDelta = new Vector2(Mathf.Max(192f, label.preferredWidth + 28f), 32f);
+            if (!prompt) return;
+            prompt.Set(string.IsNullOrEmpty(key) ? string.Empty : Texts.Get(key));
         }
     }
 }

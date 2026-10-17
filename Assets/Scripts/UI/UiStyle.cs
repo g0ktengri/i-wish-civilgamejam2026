@@ -20,6 +20,21 @@ namespace Deprem.UI
         public Sprite panel;
         [Tooltip("hud_ok.png, 32 x 32: ekran kenarındaki yön oku, sağa bakar (kod döndürür ve renklendirir; beyaz çizin)")]
         public Sprite arrow;
+        [Tooltip("hud_tus.png, 12 x 14, 9-slice (kenar 4): tuş kapağı ([F], [C]); altta 2-3 px koyu kalınlık")]
+        public Sprite keyCap;
+
+        // M24: bütün HUD'ların ortak renkleri ve boyu (oyunun sıcak ahşap / gece paleti)
+        [Header("HUD")]
+        public Color hudText = new Color(0.96f, 0.92f, 0.84f);
+        [Tooltip("Sayaç, vurgulanan sayı, çantaya eklenen malzeme")]
+        public Color hudAccent = new Color(1f, 0.82f, 0.4f);
+        [Tooltip("Başlık, ikincil yazı")]
+        public Color hudMuted = new Color(0.74f, 0.69f, 0.6f);
+        public Color hudWarning = new Color(1f, 0.42f, 0.36f);
+        public Color keyText = new Color(0.13f, 0.11f, 0.1f);
+        public int hudFontSize = 15;
+        [Tooltip("Kenarlardan pay (referans pikseli, 960 x 540)")]
+        public float hudMargin = 16f;
 
         static UiStyle current;
         static bool loaded;

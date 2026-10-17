@@ -17,3 +17,11 @@ MonoBehaviour:
   bubbleTail: {fileID: 0}
   panel: {fileID: 0}
   arrow: {fileID: 0}
+  keyCap: {fileID: 0}
+  hudText: {r: 0.96, g: 0.92, b: 0.84, a: 1}
+  hudAccent: {r: 1, g: 0.82, b: 0.4, a: 1}
+  hudMuted: {r: 0.74, g: 0.69, b: 0.6, a: 1}
+  hudWarning: {r: 1, g: 0.42, b: 0.36, a: 1}
+  keyText: {r: 0.13, g: 0.11, b: 0.1, a: 1}
+  hudFontSize: 15
+  hudMargin: 16

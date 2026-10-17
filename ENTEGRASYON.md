@@ -41,6 +41,17 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Play testi 12: M24 HUD (Berke)
+
+- **Tek stil:** `UiBuilder.CreatePanel` artık kodla üretilen pixel panel çiziyor: köşeleri kırpık koyu kontur, üst-solda açık krem, alt-sağda koyu kenar, sıcak koyu dolgu, sağ altta UI `Shadow` (3, -3). 1 sprite pikseli = 2 referans pikseli. `UiStyle.panel` (`hud_ipucu`) gelirse o kullanılır. Senin `SegmentMeter` / süre ve çök-kapan çubukların bunu kendiliğinden aldı. Gölge sprite'a gömülü değil, iç ölçülerin kaymaz.
+- **Renkler ve boy `UiStyle`'da:** `hudText` krem, `hudAccent` sarı (sayaç, vurgulanan ad), `hudMuted`, `hudWarning`, `keyText`, `hudFontSize` 15, `hudMargin` 16. Kodda `UiBuilder.HudText` / `HudAccent` / `HudMargin`... Çubuklarının etiket rengini (`0.95, 0.9, 0.8`) `UiBuilder.HudText` yaparsan birebir aynı olur.
+- **Tuş kapakları:** `UiPrompt` (yeni) "C / S: …" metnini ayrıştırıp her tuşu ayrı pixel kapağa koyuyor (`UiBuilder.CreateKeyCap`, krem yüz, altta koyu kalınlık); "F (basılı tut): Yarayı sar" → [F] (basılı tut) Yarayı sar; ':' yoksa düz yazı. `texts.csv`'deki ipuçlarına dokunmana gerek yok, biçim aynı.
+- **Yerleşim:** hedef sol üst ("Aileni kabine götür  0/3", sayaç vurgu renginde); ipucu alt ortada, alttan 22 px; çanta sol altta (58 px, ruh fazındaki [W][A][S][D] Uç ipucunun üstünde); ruh sayacı üst ortada (son 10 sn kırmızı + nabız), taşınan malzeme sağ üstte. Senin süre çubuğun üst ortada ama sadece kurtarmada; ruh sayacı sadece ruh fazında, çakışmıyor.
+- **Kısa yazılar:** `prompt.duck_cover` "C / S: Parlayan masada Çök-Kapan-Tutun", `prompt.duck_cover_find` "Burada olmaz! Parlayan masaya geç". `objective.compact` yerine `objective.short`; kullanılmayan eski `objective.*` satırları kalktı.
+- **Çanta ikonları:** `ikon_*.png` yokken kodla çizilmiş 16 px pixel ikonlar (`UiBuilder.PixelBagIcon`: haçlı kırmızı çanta, sarı fener, mavi şişe, turuncu düdük). `BagSystem.IconFor` bunları veriyor; HUD, taşı-yerleştir minigame'i ve (model yoksa) dünya aynı ikonu kullanıyor.
+- **Önizleme:** `Deprem.Loop.EditorTools.HudPreview.Render` (Tools > Deprem > Berke: HUD Önizlemesi, `-nographics` olmadan): `Logs/hud_preview_rescue.png` ve `Logs/hud_preview_spirit.png`. HUD'lar gerçek kodlarıyla evin önizlemesinin üstüne çiziliyor.
+- **B12. Şablon isteği:** `Sablonlar/UI/hud_tus.png` (12 × 14, 9-slice kenar 4, altta 2–3 px koyu kalınlık) ArtTemplates'e eklenebilir mi? Yuvası hazır (`UiStyle.keyCap`, prefab kurulurken `Art/UI/hud_tus.png` bağlanır).
+
 ### Play testi 11: M21–M23 (Berke)
 
 - **M21. Keşke girişi:** Önce tek başına, büyük (76 px) "KEŞKE..." daktilo gibi gelir: her harf büyükten oturur, hafif sarsılır. 1,2 sn titreyerek bekler, sonra küçülüp (×0,6) yukarı kayar. Cümlenin devamı ("...KİTAPLIĞI SABİTLESEYDİM") ayrıca, harf harf sarsılarak yazılır. Ön ek `texts.csv`'deki `wish.prefix`'ten (TR "Keşke", EN "I wish"); cümle onunla başlamıyorsa tek parça yazılır. Bütün süreler `WishScreen`'de `[SerializeField]`.

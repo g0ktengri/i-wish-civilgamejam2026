@@ -176,11 +176,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.SpiritHud
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  timerFontSize: 28
-  promptFontSize: 14
-  timerColor: {r: 0.8, g: 0.92, b: 1, a: 1}
-  warningColor: {r: 1, g: 0.45, b: 0.4, a: 1}
+  timerFontSize: 24
+  promptFontSize: 0
+  hintFontSize: 13
   warningSeconds: 10
+  promptBottomOffset: 22
   sortingOrder: 50
 --- !u!114 &5672897155684826516
 MonoBehaviour:
@@ -290,8 +290,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PromptHud
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  fontSize: 20
-  color: {r: 1, g: 1, b: 1, a: 1}
+  fontSize: 0
+  bottomOffset: 22
   sortingOrder: 60
 --- !u!114 &1766816693970637449
 MonoBehaviour:
@@ -306,10 +306,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.ObjectiveHud
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  fontSize: 13
-  arrowFontSize: 10
-  color: {r: 1, g: 1, b: 1, a: 1}
-  arrowColor: {r: 1, g: 0.85, b: 0.4, a: 0.8}
+  fontSize: 0
+  arrowFontSize: 11
+  arrowColor: {r: 1, g: 0.82, b: 0.4, a: 0.85}
   cabinArrowColor: {r: 0.45, g: 0.9, b: 0.55, a: 0.8}
   arrowMargin: 26
   arrowSize: 18
@@ -327,8 +326,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.BagHud
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  fontSize: 12
-  toastFontSize: 16
+  fontSize: 13
+  toastFontSize: 0
+  bottomOffset: 58
   toastSeconds: 2
   fadeSeconds: 0.3
   popScale: 1.6

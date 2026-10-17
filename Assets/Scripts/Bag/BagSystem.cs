@@ -77,16 +77,19 @@ namespace Deprem.Bag
             return Color.white;
         }
 
+        // Sanatçı ikonu yoksa kodla çizilmiş pixel ikon (UI.UiBuilder.PixelBagIcon; M24)
         public Sprite IconFor(BagItemId id)
         {
+            Sprite icon;
             switch (id)
             {
-                case BagItemId.FirstAidKit: return firstAidIcon;
-                case BagItemId.Flashlight: return flashlightIcon;
-                case BagItemId.Water: return waterIcon;
-                case BagItemId.Whistle: return whistleIcon;
+                case BagItemId.FirstAidKit: icon = firstAidIcon; break;
+                case BagItemId.Flashlight: icon = flashlightIcon; break;
+                case BagItemId.Water: icon = waterIcon; break;
+                case BagItemId.Whistle: icon = whistleIcon; break;
                 default: return null;
             }
+            return icon ? icon : UI.UiBuilder.PixelBagIcon(id);
         }
 
         void Start()

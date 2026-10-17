@@ -8,8 +8,8 @@ prompt.continue,F: Devam,F: Continue
 wish.rewind,<< Zaman geri sarılıyor...,<< Rewinding time...
 wish.prefix,Keşke,I wish
 prompt.stand_up,F: Kalk,F: Get up
-prompt.duck_cover,C / S: Parlayan masanın altında Çök-Kapan-Tutun,C / S: Drop-Cover-Hold On under the glowing table
-prompt.duck_cover_find,Burada olmaz! Parlayan masanın altına geç,Not here! Get under the glowing table
+prompt.duck_cover,C / S: Parlayan masada Çök-Kapan-Tutun,"C / S: Drop, Cover, Hold On at the glowing table"
+prompt.duck_cover_find,Burada olmaz! Parlayan masaya geç,Not here! Go to the glowing table
 prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
 prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
@@ -23,11 +23,7 @@ prompt.put_in_bag,F: Çantaya koy,F: Put in bag
 hud.carrying,Taşınan: {0},Carrying: {0}
 hud.bag,Çanta,Bag
 bag.added,{0} deprem çantasında,{0} is in the emergency bag
-objective.compact,Aileni kabine götür · {0}/{1},Get your family to the shelter · {0}/{1}
-objective.rescue,Aileni bul ve deprem kabinine götür,Find your family and get them into the earthquake shelter
-objective.shelter_info,Merdiven altındaki deprem kabini: ailen içine girerse güvende.,The earthquake shelter under the stairs: your family is safe inside.
-objective.banner,Ailen tehlikede! Onları bul ve kabine götür,Your family is in danger! Find them and get them to the shelter
-objective.family,Aile: bulunan {0}/{1} · kabinde {2}/{1},Family: found {0}/{1} · in shelter {2}/{1}
+objective.short,Aileni kabine götür,Get your family to the shelter
 family.Father,Baba,Dad
 family.Mother,Anne,Mom
 family.Sibling,Kardeş,Sibling

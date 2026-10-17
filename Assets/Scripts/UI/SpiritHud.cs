@@ -7,24 +7,27 @@ using UnityEngine.UI;
 
 namespace Deprem.UI
 {
-    // Ruh fazı HUD'u: üstte kalan süre, altta etkileşim ipucu (F: Sabitle / Al / Çantaya koy),
-    // taşınan çanta malzemesi ve uçma ipucu.
-    // Canvas'ı kendisi kurar; sadece ruh fazında görünür.
+    // Ruh fazı HUD'u (M24: ortak HUD stili): üst ortada kalan süre paneli (son saniyelerde kırmızı, nabız),
+    // altta etkileşim ipucu ([F] Sabitle / Al / Çantaya koy), sol altta uçma ipucu ([W] [A] [S] [D] Uç),
+    // sağ üstte taşınan çanta malzemesi (ikon + ad). Canvas'ı kendisi kurar; sadece ruh fazında görünür.
     public class SpiritHud : MonoBehaviour
     {
         [SerializeField] Font font;
-        [SerializeField] int timerFontSize = 28;
-        [SerializeField] int promptFontSize = 14;
-        [SerializeField] Color timerColor = new Color(0.8f, 0.92f, 1f);
-        [SerializeField] Color warningColor = new Color(1f, 0.45f, 0.4f);
-        [Tooltip("Son kaç saniyede sayaç kırmızıya döner")]
+        [SerializeField] int timerFontSize = 24;
+        [Tooltip("0: UiStyle.hudFontSize")]
+        [SerializeField] int promptFontSize;
+        [SerializeField] int hintFontSize = 13;
+        [Tooltip("Son kaç saniyede sayaç kırmızıya döner ve atar")]
         [SerializeField] float warningSeconds = 10f;
+        [SerializeField] float promptBottomOffset = 22f;
         [SerializeField] int sortingOrder = 50;
 
         CanvasGroup group;
+        RectTransform timerPanel;
         Text timerText;
-        Text promptText;
-        Text hintText;
+        UiPrompt prompt;
+        UiPrompt flyHint;
+        RectTransform carryPanel;
         Text carryText;
         Image carryIcon;
         int shownSeconds = -1;
@@ -35,32 +38,47 @@ namespace Deprem.UI
         {
             var canvas = UiBuilder.CreateCanvas(transform, "SpiritHudCanvas", sortingOrder);
             group = canvas.GetComponent<CanvasGroup>();
+            float margin = UiBuilder.HudMargin;
 
-            // Sayaç paneli tuş ipucuyla aynı stilde (UiStyle.panel)
-            var timerBack = UiBuilder.CreatePanel(canvas.transform, "TimerBack");
-            var rect = timerBack.rectTransform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.915f);
-            rect.sizeDelta = new Vector2(80f, 36f);
-            timerText = UiBuilder.CreateText(canvas.transform, "Timer", font, timerFontSize, timerColor);
-            UiBuilder.Stretch(timerText.rectTransform, new Vector2(0.4f, 0.86f), new Vector2(0.6f, 0.97f));
+            timerPanel = UiBuilder.CreatePanel(canvas.transform, "Timer").rectTransform;
+            timerPanel.anchorMin = timerPanel.anchorMax = new Vector2(0.5f, 1f);
+            timerPanel.pivot = new Vector2(0.5f, 1f);
+            timerPanel.anchoredPosition = new Vector2(0f, -margin);
+            timerPanel.sizeDelta = new Vector2(84f, 38f);
+            timerText = UiBuilder.CreateText(timerPanel, "Text", font, timerFontSize, UiBuilder.HudText);
+            UiBuilder.Stretch(timerText.rectTransform, Vector2.zero, Vector2.one);
 
-            promptText = UiBuilder.CreateText(canvas.transform, "Prompt", font, promptFontSize, Color.white);
-            UiBuilder.Stretch(promptText.rectTransform, new Vector2(0.3f, 0.12f), new Vector2(0.7f, 0.2f));
+            prompt = UiPrompt.Create(canvas.transform, "Prompt", font, promptFontSize);
+            prompt.Rect.anchorMin = prompt.Rect.anchorMax = new Vector2(0.5f, 0f);
+            prompt.Rect.pivot = new Vector2(0.5f, 0f);
+            prompt.Rect.anchoredPosition = new Vector2(0f, promptBottomOffset);
 
-            hintText = UiBuilder.CreateText(canvas.transform, "Hint", font, promptFontSize, timerColor,
-                TextAnchor.LowerLeft);
-            UiBuilder.Stretch(hintText.rectTransform, new Vector2(0.02f, 0.02f), new Vector2(0.4f, 0.08f));
+            flyHint = UiPrompt.Create(canvas.transform, "FlyHint", font, hintFontSize);
+            flyHint.Rect.anchorMin = flyHint.Rect.anchorMax = Vector2.zero;
+            flyHint.Rect.pivot = Vector2.zero;
+            flyHint.Rect.anchoredPosition = new Vector2(margin, margin);
 
-            carryText = UiBuilder.CreateText(canvas.transform, "Carrying", font, promptFontSize, Color.white,
-                TextAnchor.UpperRight);
-            UiBuilder.Stretch(carryText.rectTransform, new Vector2(0.6f, 0.88f), new Vector2(0.94f, 0.97f));
-
-            // Taşınan malzemenin ikonu (32 x 32, BagSystem'deki ikon)
-            carryIcon = UiBuilder.CreateImage(canvas.transform, "CarryIcon", Color.white);
+            // Taşınan malzeme: ikon (BagSystem'deki ikon ya da rengi) + "Taşınan: El feneri"
+            carryPanel = UiBuilder.CreatePanel(canvas.transform, "Carrying").rectTransform;
+            carryPanel.anchorMin = carryPanel.anchorMax = Vector2.one;
+            carryPanel.pivot = Vector2.one;
+            carryPanel.anchoredPosition = new Vector2(-margin, -margin);
+            carryIcon = UiBuilder.CreateImage(carryPanel, "Icon", Color.white);
             var iconRect = carryIcon.rectTransform;
-            iconRect.anchorMin = iconRect.anchorMax = new Vector2(0.97f, 0.925f);
-            iconRect.sizeDelta = new Vector2(32f, 32f);
-            carryIcon.enabled = false;
+            iconRect.anchorMin = iconRect.anchorMax = new Vector2(0f, 0.5f);
+            iconRect.pivot = new Vector2(0f, 0.5f);
+            iconRect.anchoredPosition = new Vector2(10f, 0f);
+            iconRect.sizeDelta = new Vector2(24f, 24f);
+            carryText = UiBuilder.CreateText(carryPanel, "Text", font, UiBuilder.HudFontSize, UiBuilder.HudText,
+                TextAnchor.MiddleLeft);
+            var textRect = carryText.rectTransform;
+            textRect.anchorMin = new Vector2(0f, 0f);
+            textRect.anchorMax = new Vector2(0f, 1f);
+            textRect.pivot = new Vector2(0f, 0.5f);
+            textRect.anchoredPosition = new Vector2(42f, 0f);
+            carryText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            carryText.supportRichText = true;
+            carryPanel.gameObject.SetActive(false);
 
             group.alpha = 0f;
         }
@@ -80,13 +98,18 @@ namespace Deprem.UI
                 return;
             }
 
-            int seconds = Mathf.CeilToInt(SpiritPhase.TimeLeft);
+            float timeLeft = SpiritPhase.TimeLeft;
+            int seconds = Mathf.CeilToInt(timeLeft);
+            bool warning = timeLeft <= warningSeconds;
             if (seconds != shownSeconds)
             {
                 shownSeconds = seconds;
                 timerText.text = $"{seconds / 60}:{seconds % 60:00}";
-                timerText.color = SpiritPhase.TimeLeft <= warningSeconds ? warningColor : timerColor;
+                timerText.color = warning ? UiBuilder.HudWarning : UiBuilder.HudText;
             }
+            // Son saniyelerde her saniyenin başında kısa nabız
+            float beat = warning ? Mathf.Clamp01(1f - (Mathf.Ceil(timeLeft) - timeLeft) * 4f) : 0f;
+            timerPanel.localScale = Vector3.one * (1f + 0.08f * beat);
 
             if (SpiritInteractor.PromptKey != shownPrompt || BagSystem.Carrying != shownCarry)
             {
@@ -98,15 +121,18 @@ namespace Deprem.UI
 
         void RefreshStaticTexts()
         {
-            promptText.text = string.IsNullOrEmpty(shownPrompt) ? string.Empty : Texts.Get(shownPrompt);
-            hintText.text = Texts.Get("prompt.fly");
-            carryText.text = shownCarry > BagItemId.None
-                ? Texts.Format("hud.carrying", Texts.Get($"bag.{shownCarry}"))
-                : string.Empty;
+            prompt.Set(string.IsNullOrEmpty(shownPrompt) ? string.Empty : Texts.Get(shownPrompt));
+            flyHint.Set(Texts.Get("prompt.fly"));
 
-            var icon = shownCarry > BagItemId.None && BagSystem.Instance ? BagSystem.Instance.IconFor(shownCarry) : null;
-            carryIcon.sprite = icon;
-            carryIcon.enabled = icon;
+            bool carrying = shownCarry > BagItemId.None;
+            carryPanel.gameObject.SetActive(carrying);
+            if (!carrying) return;
+            carryText.text = Texts.Format("hud.carrying",
+                $"<color={UiBuilder.Hex(UiBuilder.HudAccent)}>{Texts.Get($"bag.{shownCarry}")}</color>");
+            var bag = BagSystem.Instance;
+            var icon = bag ? bag.IconFor(shownCarry) : UiBuilder.PixelBagIcon(shownCarry);
+            UiBuilder.ApplySprite(carryIcon, icon);
+            carryPanel.sizeDelta = new Vector2(42f + carryText.preferredWidth + 12f, 36f);
         }
     }
 }

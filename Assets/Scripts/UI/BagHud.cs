@@ -12,14 +12,18 @@ namespace Deprem.UI
     // çantadaki malzemelerin ikonları. Malzeme çantaya konunca ortada kısa bir yazı
     // ("El feneri deprem çantasında") ve yeni ikon büyüyüp yerine oturur. Sadece konanlar görünür;
     // eksikler gösterilmez (oyuncu neyin gerektiğini kendisi çıkarır).
+    // M24: ortak HUD paneli; başlık soluk, eklenen malzemenin adı vurgu renginde.
     public class BagHud : MonoBehaviour
     {
         const float IconSize = 32f;
         const float IconGap = 6f;
 
         [SerializeField] Font font;
-        [SerializeField] int fontSize = 12;
-        [SerializeField] int toastFontSize = 16;
+        [SerializeField] int fontSize = 13;
+        [Tooltip("0: UiStyle.hudFontSize")]
+        [SerializeField] int toastFontSize;
+        [Tooltip("Sol alttan yükseklik: ruh fazındaki uçma ipucunun üstünde kalsın")]
+        [SerializeField] float bottomOffset = 58f;
         [SerializeField] float toastSeconds = 2f;
         [SerializeField] float fadeSeconds = 0.3f;
         [SerializeField] float popScale = 1.6f;
@@ -42,23 +46,26 @@ namespace Deprem.UI
             panel = UiBuilder.CreatePanel(canvas.transform, "Bag").rectTransform;
             panel.anchorMin = panel.anchorMax = new Vector2(0f, 0f);
             panel.pivot = new Vector2(0f, 0f);
-            panel.anchoredPosition = new Vector2(12f, 44f);
+            panel.anchoredPosition = new Vector2(UiBuilder.HudMargin, bottomOffset);
 
-            title = UiBuilder.CreateText(panel, "Title", font, fontSize, Color.white, TextAnchor.MiddleLeft);
+            title = UiBuilder.CreateText(panel, "Title", font, fontSize, UiBuilder.HudMuted, TextAnchor.MiddleLeft);
             var titleRect = title.rectTransform;
             titleRect.anchorMin = new Vector2(0f, 0f);
             titleRect.anchorMax = new Vector2(0f, 1f);
             titleRect.pivot = new Vector2(0f, 0.5f);
-            titleRect.anchoredPosition = new Vector2(8f, 0f);
+            titleRect.anchoredPosition = new Vector2(10f, 0f);
             titleRect.sizeDelta = new Vector2(48f, 0f);
 
             var toast = UiBuilder.CreatePanel(canvas.transform, "Toast");
             var toastRect = toast.rectTransform;
-            toastRect.anchorMin = toastRect.anchorMax = new Vector2(0.5f, 0.72f);
-            toastRect.sizeDelta = new Vector2(280f, 34f);
+            toastRect.anchorMin = toastRect.anchorMax = new Vector2(0.5f, 0.76f);
+            toastRect.sizeDelta = new Vector2(280f, 36f);
             toastGroup = toast.gameObject.AddComponent<CanvasGroup>();
-            toastText = UiBuilder.CreateText(toastRect, "Text", font, toastFontSize, Color.white);
+            toastText = UiBuilder.CreateText(toastRect, "Text", font, toastFontSize > 0 ? toastFontSize : UiBuilder.HudFontSize,
+                UiBuilder.HudText);
             UiBuilder.Stretch(toastText.rectTransform, Vector2.zero, Vector2.one);
+            toastText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            toastText.supportRichText = true;
             toastGroup.alpha = 0f;
 
             Rebuild();
@@ -92,7 +99,9 @@ namespace Deprem.UI
             var added = icons.Find(icon => icon.name == $"Icon_{id}");
             if (added) StartCoroutine(Pop(added));
 
-            toastText.text = Texts.Format("bag.added", Texts.Get($"bag.{id}"));
+            toastText.text = Texts.Format("bag.added", $"<color={UiBuilder.Hex(UiBuilder.HudAccent)}>{Texts.Get($"bag.{id}")}</color>");
+            ((RectTransform)toastText.rectTransform.parent).sizeDelta =
+                new Vector2(Mathf.Max(200f, toastText.preferredWidth + 32f), 36f);
             if (toastRoutine != null) StopCoroutine(toastRoutine);
             toastRoutine = StartCoroutine(ShowToast());
         }
@@ -109,7 +118,7 @@ namespace Deprem.UI
             foreach (var id in GameState.BagItems)
             {
                 var image = UiBuilder.CreateImage(panel, $"Icon_{id}", bag ? bag.ColorFor(id) : Color.white);
-                var sprite = bag ? bag.IconFor(id) : null;
+                var sprite = bag ? bag.IconFor(id) : UiBuilder.PixelBagIcon(id);
                 if (sprite) UiBuilder.ApplySprite(image, sprite);
                 var rect = image.rectTransform;
                 rect.anchorMin = rect.anchorMax = new Vector2(0f, 0.5f);

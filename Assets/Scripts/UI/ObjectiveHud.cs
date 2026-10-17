@@ -11,6 +11,7 @@ namespace Deprem.UI
     // - Ekran dışında kalan, henüz bulunmamış aile üyesine ekran kenarında küçük, yarı saydam ok;
     //   herkes bulununca kabine ok (Marker_CabinEntrance)
     // Büyük "Ailen tehlikede" yazısı ve kabin açıklaması kalktı: oyuncunun balonu ve kabin tabelası söylüyor.
+    // M24: ortak HUD paneli; hedef kısa ("Aileni kabine götür"), sayaç vurgu renginde ayrı ("0/3").
     public class ObjectiveHud : MonoBehaviour
     {
         static readonly (FamilyMemberId id, string marker)[] Family =
@@ -22,10 +23,10 @@ namespace Deprem.UI
         const string CabinMarker = "Marker_CabinEntrance";
 
         [SerializeField] Font font;
-        [SerializeField] int fontSize = 13;
-        [SerializeField] int arrowFontSize = 10;
-        [SerializeField] Color color = Color.white;
-        [SerializeField] Color arrowColor = new Color(1f, 0.85f, 0.4f, 0.8f);
+        [Tooltip("0: UiStyle.hudFontSize")]
+        [SerializeField] int fontSize;
+        [SerializeField] int arrowFontSize = 11;
+        [SerializeField] Color arrowColor = new Color(1f, 0.82f, 0.4f, 0.85f);
         [SerializeField] Color cabinArrowColor = new Color(0.45f, 0.9f, 0.55f, 0.8f);
 
         [Header("Oklar")]
@@ -58,14 +59,18 @@ namespace Deprem.UI
             canvasRect = (RectTransform)canvas.transform;
             group = canvas.GetComponent<CanvasGroup>();
 
+            float margin = UiBuilder.HudMargin;
             panel = UiBuilder.CreatePanel(canvas.transform, "Objective").rectTransform;
             panel.anchorMin = panel.anchorMax = new Vector2(0f, 1f);
             panel.pivot = new Vector2(0f, 1f);
-            panel.anchoredPosition = new Vector2(12f, -12f);
-            panel.sizeDelta = new Vector2(220f, 26f);
-            objectiveText = UiBuilder.CreateText(panel, "Text", font, fontSize, color);
+            panel.anchoredPosition = new Vector2(margin, -margin);
+            panel.sizeDelta = new Vector2(220f, 34f);
+            objectiveText = UiBuilder.CreateText(panel, "Text", font, fontSize > 0 ? fontSize : UiBuilder.HudFontSize,
+                UiBuilder.HudText, TextAnchor.MiddleLeft);
             UiBuilder.Stretch(objectiveText.rectTransform, Vector2.zero, Vector2.one);
+            objectiveText.rectTransform.offsetMin = new Vector2(12f, 0f);
             objectiveText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            objectiveText.supportRichText = true;
 
             group.alpha = 0f;
         }
@@ -190,6 +195,7 @@ namespace Deprem.UI
             }
 
             var label = UiBuilder.CreateText(root, "Label", font, arrowFontSize, tint);
+            label.gameObject.AddComponent<Shadow>().effectColor = new Color(0f, 0f, 0f, 0.7f);
             label.rectTransform.sizeDelta = new Vector2(60f, 12f);
             label.rectTransform.anchoredPosition = new Vector2(0f, -arrowSize * 0.85f);
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
@@ -217,8 +223,9 @@ namespace Deprem.UI
 
         void Refresh()
         {
-            objectiveText.text = Texts.Format("objective.compact", inCabin.Count, FamilyTotal());
-            panel.sizeDelta = new Vector2(Mathf.Max(160f, objectiveText.preferredWidth + 24f), panel.sizeDelta.y);
+            objectiveText.text = $"{Texts.Get("objective.short")}   " +
+                                 $"<color={UiBuilder.Hex(UiBuilder.HudAccent)}>{inCabin.Count}/{FamilyTotal()}</color>";
+            panel.sizeDelta = new Vector2(Mathf.Max(160f, objectiveText.preferredWidth + 26f), panel.sizeDelta.y);
             foreach (var arrow in arrows) arrow.Label.text = Texts.Get(arrow.LabelKey);
         }
     }
