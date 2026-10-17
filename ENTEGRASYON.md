@@ -52,6 +52,18 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Yeni karakter çizimleri: kardeş bekleme, yeni anne, kardeş ölü (Berke, senin klasöründe izinle)
+
+Hepsi önceki gibi 1920 px'ten 15 px'lik ekip pikseliyle 128 px'e indirildi; zip'ler repoya konmadı.
+
+- **Kardeş bekleme (2 kare):** `kardes_bekleme_1..2.png`. `FamilySetup` kendiliğinden bağladı; kardeş dururken artık yürüme karesi değil kendi bekleme döngüsünü oynuyor.
+- **Yeni anne (kırmızı elbise):** `anne_bekleme_1..2` ve `anne_yurume_1..8` aynı adlarla değiştirildi (GUID'ler aynı, bağlantı değişmedi). Boy ve ayak hizası eskisiyle aynı.
+- `FamilySystem.prefab` yeniden kuruldu ve commit'te. Dört test geçiyor; Play'de denenmedi.
+- **Senden istek: kardeşin ölü karesi.** `Assets/Art/Characters/kardes_olu.png` geldi ama bağlanmadı.
+  - Yerde yatan, başı sağda tek bir kare; yatan beden karenin alt kısmında, x 21–127 px arası.
+  - Şu an yatan üye ayakta duran karenin 90° döndürülmesiyle çiziliyor (`FamilyMember.LateUpdate`), bu senin kodun.
+  - Öneri: `FamilyMember`'a `lyingFrame` alanı ekle. Doluysa yatarken (en azından `Hit`'te) döndürme yerine bu kare gösterilsin. Beden pivotun sağına kaydığı için `lyingHalfLength` / görsel konumu ona göre ayarlanmalı. `FamilySetup` `kardes_olu`'yu kardeşe bağlasın.
+
 ### Play testi 32: M67–M72 (Berke)
 
 Play'de denenmedi; dört test geçiyor.
