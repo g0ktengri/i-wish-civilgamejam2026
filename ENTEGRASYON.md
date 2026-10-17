@@ -573,6 +573,29 @@ Mehmet'in yorumu: "Oyun içi balonlardaki yazı bazen tarzından dolayı okunmuy
 - **Yataktan kalkma animasyonu** (sanatçıdan 6 kare, `Art/Characters/oyuncu_kalkma_1..6.png`; sanatçı yan yatırarak çizmiş, PNG'ler 90° döndürülmüş hali). 1. kare sırtüstü yatıyor, bir bacağı yataktan sarkık, baş yastıkta. Yatarken artık döndürülmüş ayakta durma karesi yerine bu görünüyor. Oyuncu yatağın ön kenarında yatıyor (yatak ortasından 0,75 m önde), sarkan bacağı şilte örtmesin diye. Kalkış ~1,2 sn: doğrulur, kenara oturur, kalkıp öne, karakter düzlemine çıkar. Kalkınca yatağın tam önünde durur (x = yatak ortası; eskiden +1,2), yüzü sağa dönük. Bu sürede `IsLying` hâlâ doğru, yeni `IsGettingUp`. Önizleme: Tools > Deprem > Yataktan Kalkma Önizlemesi.
 - Ayrıca: ayak sesleri ve yere iniş (`PlayerFootsteps`), ana depremde rastgele gıcırtı ve düşen parçalar, kurtarmada gerilime göre yükselen uğultu ve son 15 sn kalp atışı, süre bitince büyük artçı (`quake.big`).
 
+### Play testi 17: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- İlk düşen dolap ve yıkıntılar üstümüzde kalsın, hemen yok oluyor.
+- Üstümüze bir şey düşünce (çök-kapan yapamayınca) ölüyoruz, ama senaryodaki 2. yerde ölme animasyonu geç giriyor.
+- Minigame'ler aşırı low-poly ve çirkin; örneğin el fenerini geçirirken hitbox bile doğru değil. Minigame arka planı kötü.
+- Merdivenin parçaları (basamaklar, korkuluklar) birbirinden bağımsız ve çirkin duruyor.
+- Odalar aşırı sade: düşen ya da yamulan cam, tablo gibi şeyler eklensin.
+
+**Berke'ye düşen**
+
+- **M26. Minigame görünüşü.**
+  - Eşya çizimleri: low-poly / kaba pikselli şekiller yerine daha detaylı pixel çizimler. Sanatçı görseli varsa o; yoksa `MinigamePixels` daha ince çizsin, gölge ve kontur olsun, en az 2–3 ton.
+  - Taşı-yerleştir'de çarpışma şekli eşyanın görünen biçimine uysun. Örneğin el feneri ince ve uzun, ama hitbox'ı kare gibi davranıyor; eşyanın kendi dikdörtgeni ya da birkaç kutudan oluşan biçimi kullanılsın.
+  - Arka plan: düz panel yerine oyunun paletinde bir sahne. Örneğin bulanıklaştırılmış oda görüntüsü üstünde koyu bir çerçeve, ya da odanın duvar ve zemin dokusu. Ruh fazının soğuk mavi tonuyla uyumlu olsun.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. **Düşen dolap ve yıkıntı üstümüzde kalsın:** döngü 2'deki ilk düşen eşya ve çök-kapan sırasında düşen parçalar karakterin üstünde kalır, kaybolmaz. Keşke ekranı kararana kadar görünür.
+2. **Ölme animasyonu darbe anında:** üstüne bir şey düşünce senin ölme karelerin hemen başlar. `PlayerVisual.Dying` koşuluna senin önerdiğin bayrak eklenir (`PlayerController.IsDying` ya da benzeri); `Phase == Failed`'i beklemez.
+3. **Merdiven tek parça:** basamaklar, kirişler, korkuluk ve dikmeler tek bir ahşap merdiven gibi birleşik; boşluksuz, aynı tonlarda.
+4. **Odalara düşen ve yamulan eşyalar:** duvarda tablolar, çerçeveler, ayna ve camlar, raflarda vazo ve kupalar. Öncüde sallanır ve yamulur, ana depremde düşer ve kırılır (cam sesi). Hepsi dekor; sabitlenmez, oyunu etkilemez.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
