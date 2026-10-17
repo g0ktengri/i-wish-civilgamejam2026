@@ -456,6 +456,51 @@ Mehmet'in yorumu: "UI çok kötü." Ekran görüntüsünde sol üstte "Aileni ka
 - Çubuk etiketleri artık `UiBuilder.HudText`.
 - **B12 yapıldı:** `Sablonlar/UI/hud_tus.png` (12 × 14, yeşil çizgiler 4 px kenarda). `ArtTextureImporter` `Art/UI/hud_tus.png`'yi 9-slice, 4 px kenarla içe aktarıyor (`KeyCapSliceBorder`). Altta 2–3 px koyu kalınlık kenarın içinde kalıyor, tuş genişleyince bozulmuyor.
 
+### Play testi 13: ses ve balon yazısı (görev dağılımı)
+
+Mehmet'in yorumu: "Oyun içi balonlardaki yazı bazen tarzından dolayı okunmuyor; sırıtmayacak bir font bulalım. Sese girelim."
+
+**Mehmet'in yapacakları**
+
+1. **Balon fontu:** Pixelify Sans balonda zor okunuyor. Daha sade, Türkçe destekli, lisansı açık bir pixel font bulunur; sadece oyunun konuşma balonlarında kullanılır (`SpeechBubble`'a ayrı font alanı). HUD ve keşke ekranı Pixelify Sans'ta kalır. Font gelince `Assets/Art/Fonts/` altına konur. `SpiritBubble`'ın da aynı fontu kullanmasını istersen dosya adını buraya yazarım.
+2. **Ses sistemi (`Scripts/Audio/`):** `AudioDirector` (Mehmet'in prefab'ında), GameEvents'i dinleyerek GDD'deki ses tablosunu çalar:
+
+   | Ne zaman | Ses | Kim tetikler |
+   |---|---|---|
+   | Öncü | kısa yer uğultusu, tıkırdayan eşyalar | Mehmet (event) |
+   | Ana deprem | uzun derin uğultu, ahşap gıcırtısı, düşen taşlar | Mehmet |
+   | Eşya devrilince / artçı | gürültülü düşme, cam kırılması | Mehmet (`ItemToppled`) |
+   | Ana deprem sonu | elektrik "tık", ardından sessizlik | Mehmet |
+   | Kurtarma | uzak uğultu; son 15 sn kalp atışı ve uğultu hızlanır | Mehmet (`RescueTimer`) |
+   | Yaralanma, kabine giriş, aile kurtarılınca | darbe, kapı, kısa ton | Mehmet (event) |
+   | Ruh fazı | boğuk ambiyans, saniyede bir saat tik-takı (son 10 sn hızlanır) | Mehmet (`SpiritTimeChanged`) |
+   | Eşya sabitlenince, çantaya malzeme | onay sesi | Mehmet (`ItemSecured`, `BagItemCollected`) |
+
+   Sesler önce kodla üretilir (`Assets/Generated/Audio/`, lisans derdi yok). Biri hazır ses bulursa `Assets/Audio/<anahtar>.wav` adıyla koyar, kodla üretilenin yerine o çalar; kaynağı ve lisansı commit mesajına ve ASSETS.md'ye yazılır.
+
+**Berke'ye düşen**
+
+- **M25. Kendi sistemlerinde ses çağrıları.** Giriş noktası şimdiden pushlandı: `Deprem.Audio.Sfx` (`Scripts/Audio/Sfx.cs`). Ses sistemi gelene kadar çağrılar sessizce hiçbir şey yapmaz, derleme bozulmaz.
+  - `Sfx.Play(anahtar)` ekran sesi, `Sfx.PlayAt(anahtar, konum)` dünyadan gelen ses, `Sfx.PlayMusic(anahtar)` / `Sfx.StopMusic()` müzik. Sesler `timeScale 0`'dan etkilenmez.
+  - Anahtarlar:
+
+    | Anahtar | Nerede |
+    |---|---|
+    | `ui.move` / `ui.click` / `ui.back` | menüde seçim değişince / onay / geri ve Esc |
+    | `minigame.screw` | vida her çeyrek turda (tıkırtı, art arda çalabilir) |
+    | `minigame.bracket` | L demiri takıldı |
+    | `minigame.latch` / `minigame.miss` | kilit doğru anda / yanlış anda |
+    | `minigame.pickup` / `minigame.drop` | taşı-yerleştir'de tutunca / bırakınca |
+    | `minigame.fail` | minigame süresi bitti ya da vazgeçildi |
+    | `wish.shatter` | keşke geçişinde camın kırıldığı an |
+    | `wish.note` | "KEŞKE..." başlığı geldiğinde tek nota |
+    | `wish.type` | keşke yazısında her harf (çok kısık, isteğe bağlı) |
+    | `wish.rewind` | "Zaman geri sarılıyor" anı |
+    | `final.check` | final listesinde her madde "yaptım"a dönerken |
+    | `music.final` | `Sfx.PlayMusic("music.final")` final listesi açılınca; `music.menu` ana menüde |
+
+  - Ruh fazı tik-takını, eşya sabitlenme ve çanta onay sesini ben event'lerden çalıyorum; bunları sen çağırma (iki kez çalar).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
