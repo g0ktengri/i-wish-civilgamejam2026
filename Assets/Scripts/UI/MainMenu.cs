@@ -157,7 +157,7 @@ namespace Deprem.UI
             {
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
-                if (backdrop) backdrop.Capture();
+                if (backdrop) StartCoroutine(CaptureSettled());
             }
             // M25: ana menü müziği alt ekranlarda kesilmez; oyun başlayınca susar
             if (visible != musicPlaying)
@@ -295,7 +295,18 @@ namespace Deprem.UI
                 : titleHome;
         }
 
+        // Arka plan görüntüsü hemen, kamera yerine oturunca bir kez daha çekilir (ilk karede kamera ve sahne hazır değil)
+        System.Collections.IEnumerator CaptureSettled()
+        {
+            backdrop.Capture();
+            yield return null;
+            yield return null;
+            yield return new WaitForSecondsRealtime(0.3f);
+            if (screen != Screen.Hidden && backdrop) backdrop.Capture();
+        }
+
         // M42: kayıtlı döngüden, keşke sayısıyla birlikte
+
         static void ContinueGame()
         {
             warningShown = true;

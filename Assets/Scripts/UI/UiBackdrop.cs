@@ -116,10 +116,21 @@ namespace Deprem.UI
                 big = new RenderTexture(384, 216, 24) { name = "MenuSnapshot" };
                 small = new RenderTexture(96, 54, 0) { name = "MenuSnapshotBlur", filterMode = FilterMode.Bilinear };
             }
+            // Oda örtüleri (Mehmet'in RoomVisibility'si: oyuncu girmeden odalar karanlık) çekim anında gizlenir; menü
+            // açılırken hepsi kapalı olduğu için arka plan simsiyah çıkıyordu
+            var covers = new System.Collections.Generic.List<Renderer>();
+            foreach (var r in FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+                if (r.enabled && r.sharedMaterial && r.sharedMaterial.name.StartsWith("oda_ortusu"))
+                {
+                    r.enabled = false;
+                    covers.Add(r);
+                }
             var previous = cam.targetTexture;
             cam.targetTexture = big;
             cam.Render();
             cam.targetTexture = previous;
+            foreach (var r in covers) r.enabled = true;
+
             Graphics.Blit(big, small);
             SetTexture(small);
         }

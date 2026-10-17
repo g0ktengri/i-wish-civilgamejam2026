@@ -19,6 +19,45 @@ namespace Deprem.Loop.EditorTools
     {
         const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
+        // Ana menünün arka plan görüntüsünü gerçek sahneden dener: Main.unity'deki kamerayı oda örtüleri açıkken ve
+        // UiBackdrop.Capture gibi gizlenmişken çizer (Logs/menu_snapshot_covers.png, _clean.png). Menüde arka plan
+        // siyah çıkıyordu (örtüler kapalıydı).
+        public static void RenderMainSnapshot()
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/Scenes/Main.unity");
+            var cam = Camera.main ? Camera.main : Object.FindFirstObjectByType<Camera>();
+            if (!cam)
+            {
+                Debug.LogError("[HudPreview] Main'de kamera yok");
+                return;
+            }
+            var covers = Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None)
+                .Where(r => r.sharedMaterial && r.sharedMaterial.name.StartsWith("oda_ortusu")).ToList();
+            Debug.Log($"[HudPreview] Oda örtüsü: {covers.Count}, kamera {cam.name} @ {cam.transform.position}");
+            foreach (var (name, hide) in new[] { ("covers", false), ("clean", true) })
+            {
+                foreach (var r in covers) r.enabled = !hide;
+                var target = new RenderTexture(384, 216, 24);
+                var previous = cam.targetTexture;
+                cam.targetTexture = target;
+                cam.Render();
+                cam.targetTexture = previous;
+                RenderTexture.active = target;
+                var output = new Texture2D(384, 216, TextureFormat.RGB24, false);
+                output.ReadPixels(new Rect(0, 0, 384, 216), 0, 0);
+                output.Apply();
+                RenderTexture.active = null;
+                float sum = 0f;
+                foreach (var c in output.GetPixels()) sum += c.grayscale;
+                Directory.CreateDirectory("Logs");
+                File.WriteAllBytes($"Logs/menu_snapshot_{name}.png", output.EncodeToPNG());
+                Debug.Log($"[HudPreview] menu_snapshot_{name}: ortalama parlaklık {sum / (384 * 216):0.000}");
+                Object.DestroyImmediate(output);
+                target.Release();
+            }
+            foreach (var r in covers) r.enabled = true;
+        }
+
         [MenuItem("Tools/Deprem/Berke: HUD Önizlemesi")]
         public static void Render()
         {
