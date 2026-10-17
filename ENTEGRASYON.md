@@ -388,6 +388,23 @@ Mehmet: "İlk yardım ve el fenerinin 3D'de ne olduğu anlaşılmıyor; pixel'e 
   ```
   Collider yok (senin küpünde de silinmişti); `glow` ışığı kalabilir.
 
+### Play testi 11: görev dağılımı (18 Ekim)
+
+**Berke'ye düşenler**
+
+- **M21. Keşke ekranı girişi daha etkili olsun.** Önce tek başına, büyük "KEŞKE..." gelsin (kısa bekleme, belki hafif titreşim ya da daktilo), sonra cümlenin devamı ("…kitaplığı sabitleseydim") ayrıca ve vurguyla girsin. Yer: `Scripts/UI/WishScreen.cs`, `WishLines.cs`.
+- **M22. Kırmızı çizgi beğenilmedi, daha etkileyici olsun.** Mehmet'in tarifi: keşke kısmındaki kırmızı çizgi. Keşke sahnendeki çizgiyse onu yenile (örneğin çatlak gibi kırılan bir çizgi, ekranı yaran kırmızı ışık, nabız). Kastedilen kurtarma süresinin üstteki kırmızılaşan çubuğuysa (`Quake/RescueTimer`) haber ver, o Mehmet'te.
+- **M23. Deprem çantası çanta gibi değil.** Kabinin önündeki çantanın (`BagDropPoint`) modeli Mehmet'ten gelecek: `Assets/Prefabs/Mehmet/BagItems/EarthquakeBag.prefab`. Turuncu acil durum sırt çantası: cepler, askılar, reflektör şerit; pivot taban; sarı kontur `PickupHighlight`'ta. Bağlama M20'deki gibi `BagDropPoint.Create` içinde (sprite / küp yerine). Kontur ruh fazında yansın, malzeme taşınırken daha belirgin olsun (`SetHighlight`).
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. **Döngü 2'de eğilinebiliyor:** o döngünün dersi çök-kapan-tutunu bilmemek; döngü 2'de S / eğilme kapalı. Döngü 3+ açık.
+2. **Konuşma balonu:** yazı harf harf (daktilo) gelir, balon küçükten büyür; font 14 → 18, okunur olsun.
+3. **Kardeş odaya girmeden konuşuyor:** aile üyesi, odası henüz görülmemişse (örtülü) seslenmez.
+4. **Çök-kapan sırasında yukarıdan çok şey düşsün:** tutarken oyuncunun çevresine ve masanın üstüne taş, sıva parçaları yağar (ilk ölümdeki gibi ama ona değmeden).
+5. **Oyuncak dolabı oyuncak dolabı gibi değil:** şekil ve renkler baştan: renkli bölmeler, top, ayıcık, küpler, araba, oyuncak kutusu.
+6. **Deprem çantası modeli:** M23 için prefab.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
