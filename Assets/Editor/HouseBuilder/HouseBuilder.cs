@@ -170,7 +170,7 @@ namespace Deprem.HouseBuilder
 
             BuildLights(Child(root.transform, "Lights"));
             BuildMarkers(Child(root.transform, "Markers"));
-            BuildSafeSpots(Child(root.transform, "SafeSpots"));
+            BuildSafeSpots(Child(root.transform, "SafeSpots"), decor);
 
             AssetDatabase.SaveAssets();
             return root;
@@ -274,7 +274,9 @@ namespace Deprem.HouseBuilder
                 var leaf = AddShape(hinge.transform, "Leaf", min, min + size, "Decor", "kapi", color, false, true);
 
                 var door = go.AddComponent<Deprem.Player.HouseDoor>();
-                door.Configure(hinge.transform, leaf.GetComponent<Collider>(), room.Key, right.Key);
+                // M17: salon kapısının hemen arkasındaki TV ünitesi devrilirse kapı açılmaz
+                var jammedBy = room.Key == "koridor" && right.Key == "salon" ? Deprem.Core.ItemId.TvUnit : Deprem.Core.ItemId.None;
+                door.Configure(hinge.transform, leaf.GetComponent<Collider>(), room.Key, right.Key, jammedBy);
                 doors.Add(door);
             }
             return doors.ToArray();
@@ -594,11 +596,17 @@ namespace Deprem.HouseBuilder
         /// </summary>
         private static void BuildOutline(GameObject item, GameObject securedVisual)
         {
+            item.AddComponent<Deprem.Visual.ItemOutline>().Configure(BuildOutlineRenderers(item, securedVisual));
+        }
+
+        /// <summary>Objenin gövde mesh'lerinin kontur kopyaları (kapalı). Eşya konturu ve güvenli masa (M16) kullanır.</summary>
+        private static Renderer[] BuildOutlineRenderers(GameObject item, GameObject skip)
+        {
             var mat = OutlineMaterial();
             var renderers = new List<Renderer>();
             foreach (var filter in item.GetComponentsInChildren<MeshFilter>(true).ToList())
             {
-                if (securedVisual != null && filter.transform.IsChildOf(securedVisual.transform)) continue;
+                if (skip != null && filter.transform.IsChildOf(skip.transform)) continue;
                 var outline = new GameObject("Outline");
                 outline.transform.SetParent(filter.transform, false);
                 outline.AddComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
@@ -609,7 +617,7 @@ namespace Deprem.HouseBuilder
                 renderer.enabled = false;
                 renderers.Add(renderer);
             }
-            item.AddComponent<Deprem.Visual.ItemOutline>().Configure(renderers.ToArray());
+            return renderers.ToArray();
         }
 
         private static Material OutlineMaterial()
@@ -850,14 +858,12 @@ namespace Deprem.HouseBuilder
             }
         }
 
-        /// <summary>Güvenli noktalar: karakter düzleminde, yerde parlayan şerit (sarsıntıda görünür)</summary>
-        private static void BuildSafeSpots(Transform parent)
+        /// <summary>
+        /// Güvenli noktalar: karakter düzleminde, odanın önde duran sağlam masasının altı.
+        /// M16: sarsıntıda yerde şerit yerine masanın konturu sarı parlar.
+        /// </summary>
+        private static void BuildSafeSpots(Transform parent, Transform decorRoot)
         {
-            var mat = GetMaterial("guvenli_nokta", "Assets/Art/Decals/guvenli_nokta.png", new Color(0.55f, 1f, 0.6f));
-            mat.EnableKeyword("_EMISSION");
-            mat.SetColor("_EmissionColor", new Color(0.35f, 0.9f, 0.45f) * 1.5f);
-            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
-
             foreach (var (roomKey, x) in HouseLayout.SafeSpots)
             {
                 var room = HouseLayout.Room(roomKey);
@@ -865,19 +871,13 @@ namespace Deprem.HouseBuilder
                 go.transform.SetParent(parent, false);
                 go.transform.position = new Vector3(x, room.FloorY, HouseDims.PlayerPlaneZ);
 
-                var glow = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                glow.name = "Glow";
-                Object.DestroyImmediate(glow.GetComponent<Collider>());
-                glow.transform.SetParent(go.transform, false);
-                glow.transform.localPosition = new Vector3(0f, 0.01f, 0f);
-                glow.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-                glow.transform.localScale = new Vector3(HouseLayout.SafeSpotWidth, HouseLayout.SafeSpotDepth, 1f);
-                var renderer = glow.GetComponent<MeshRenderer>();
-                renderer.sharedMaterial = mat;
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                glow.SetActive(false);
+                Renderer[] outline = null;
+                var table = HouseLayout.Decor.FirstOrDefault(d => d.Room == roomKey && Mathf.Approximately(d.Z0, HouseLayout.SafeTableZ));
+                var tableObject = table != null ? decorRoot.Find($"Decor_{table.Key}_{table.Room}") : null;
+                if (tableObject != null) outline = BuildOutlineRenderers(tableObject.gameObject, null);
+                else Debug.LogWarning($"[HouseBuilder] Güvenli masa bulunamadı: {roomKey}");
 
-                go.AddComponent<Deprem.Quake.SafeSpot>().Configure(HouseLayout.SafeSpotWidth, glow);
+                go.AddComponent<Deprem.Quake.SafeSpot>().Configure(HouseLayout.SafeSpotWidth, null, outline);
             }
         }
 

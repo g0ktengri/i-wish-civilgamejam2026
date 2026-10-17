@@ -52,6 +52,7 @@ MonoBehaviour:
   scriptedWaitBeforeMainQuake: 5
   standUpWindow: 8
   waitAfterStandUp: 3
+  dejaVuSeconds: 2.5
   scriptedHitDelay: 2.5
   mainQuakeDuration: 7
   mainQuakeIntensity: 1
@@ -62,13 +63,14 @@ MonoBehaviour:
   aftershockIntensity: 0.5
   aftershockGrace: 2.5
   injuredSpeedMultiplier: 0.6
+  aftershockAfterPathDelay: 0.75
   aftershockZones:
   - name: "Koridora giri\u015F"
     min: {x: 6.3, y: -0.5}
     max: {x: 7.2, y: 1}
   - name: "Merdiven ba\u015F\u0131"
-    min: {x: 14, y: 3.5}
-    max: {x: 15.5, y: 5}
+    min: {x: 15.3, y: 3.5}
+    max: {x: 16.8, y: 5}
   - name: "\xDCst kat, karde\u015Fin odas\u0131"
     min: {x: 5.5, y: 3.5}
     max: {x: 6.8, y: 5}
@@ -79,6 +81,7 @@ MonoBehaviour:
   walkLeftKey: 15
   walkRightKey: 18
   duckCoverKey: 17
+  shelfImpactShake: 0.85
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
   debrisFrontOffset: 0.15
   devStartLoop: 0

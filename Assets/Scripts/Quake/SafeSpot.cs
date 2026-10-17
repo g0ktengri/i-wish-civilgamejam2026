@@ -4,9 +4,9 @@ using UnityEngine;
 namespace Deprem.Quake
 {
     /// <summary>
-    /// Çök-kapan-tutun için güvenli nokta (sağlam bir eşyanın yanı, devrilecek eşyalardan uzak).
-    /// Sarsıntıda yerde parlar; C sadece bu noktalardan birindeyken sayılır (GDD: "Sağlam bir eşyanın yanında çök").
-    /// HouseBuilder kurar.
+    /// Çök-kapan-tutun için güvenli nokta: önde duran sağlam masanın altı (AFAD), devrilecek eşyalardan uzak.
+    /// Sarsıntıda masanın konturu sarı parlar (M16; eski yeşil zemin şeridi kalktı);
+    /// C sadece bu noktalardan birindeyken sayılır. HouseBuilder kurar.
     /// </summary>
     public sealed class SafeSpot : MonoBehaviour
     {
@@ -15,12 +15,34 @@ namespace Deprem.Quake
 
         [Tooltip("Noktanın X ekseninde yarı genişliği (m)")]
         [SerializeField] private float halfWidth = 0.7f;
+        [Tooltip("Eski zemin şeridi (artık kurulmuyor, boş kalabilir)")]
         [SerializeField] private GameObject visual;
+        [Tooltip("Masanın kontur kopyaları (Deprem/Outline)")]
+        [SerializeField] private Renderer[] outlineRenderers;
+        [SerializeField] private Color outlineColor = new Color(1f, 0.92f, 0.55f);
 
-        public void Configure(float width, GameObject glow)
+        private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
+        private MaterialPropertyBlock block;
+
+        public void Configure(float width, GameObject glow, Renderer[] tableOutline = null)
         {
             halfWidth = width * 0.5f;
             visual = glow;
+            outlineRenderers = tableOutline;
+        }
+
+        private void SetVisible(bool visible)
+        {
+            if (visual != null) visual.SetActive(visible);
+            if (outlineRenderers == null) return;
+            block ??= new MaterialPropertyBlock();
+            block.SetColor(OutlineColorId, outlineColor);
+            foreach (var r in outlineRenderers)
+            {
+                if (r == null) continue;
+                r.SetPropertyBlock(block);
+                r.enabled = visible;
+            }
         }
 
         private void OnEnable()
@@ -55,8 +77,7 @@ namespace Deprem.Quake
 
         public static void ShowAll(bool visible)
         {
-            foreach (var spot in AllSpots)
-                if (spot.visual != null) spot.visual.SetActive(visible);
+            foreach (var spot in AllSpots) spot.SetVisible(visible);
         }
     }
 }

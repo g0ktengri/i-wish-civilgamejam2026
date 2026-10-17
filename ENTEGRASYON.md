@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 18 Ekim (vida minigame'i yenilendikten sonra)*
+*Son güncelleme: Berke'nin Claude'u, 18 Ekim (Play testi 6: M15–M19 bittikten sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -62,6 +62,14 @@
   - Kilitle: 3 isabet gerekir. Her isabette yeşil alan %30 daralır ve ibre hızlanır; ıskalayınca bir isabet geri gider.
 - **M7. Ruh sınırı:** `SpiritController` artık `HouseBounds.Instance.ClampToHouse(pozisyon, 0.3)` kullanıyor; `HouseBounds` yoksa eski renderer sınırlarına düşüyor.
 - **M8. Kontur shader'ı:** Bağlandı. `SpiritHighlighter`, `ItemOutline` olan eşyalara artık point light koymuyor; ruhun yanındaki eşyada `SetEmphasis(true)`, uzaklaşınca `false` çağırıyor. Konturu olmayan eşyaya yedek ışık konuyor.
+- **Play testi 6 (M15–M19): hepsi yapıldı.** Mehmet'in izniyle Mehmet'in klasörlerinde değişti; Main `BuildMainSceneBatch` ile yeniden kuruldu, Oyuncu / Deprem / Aile testlerinin hepsi geçti.
+  - **M15** `QuakeDirector`: "Merdiven başı" artçı alanı x 15,3–16,8'e kaydı (merdiven çıkışı ~14,5; oyuncu alana girdiğinde sahanlık konsolunun güvenli noktası 14,45–15,95 ayağının altında). Merdiven yolu bittikten sonra 0,75 sn geçmeden artçı alanı sayılmıyor (`aftershockAfterPathDelay`).
+  - **M16** `SafeSpot` + `HouseBuilder.BuildSafeSpots`: yeşil zemin şeridi artık kurulmuyor. Her güvenli noktaya odanın önde duran masasının kontur kopyaları (`BuildOutlineRenderers`, `Deprem/Outline`) bağlı; `SafeSpot.ShowAll(true)` onları sarı (`_OutlineColor`) açıyor. `BuildOutline` aynı yardımcıyı kullanıyor.
+  - **M17** `HouseDoor`: yeni `jammedBy` alanı (koridor→salon kapısında `ItemId.TvUnit`, HouseBuilder kurar). TV `ItemToppled` olursa kapı kilitlenir; F'de oyuncu `bubble.door_jammed` der, kapı açılmaz. `HouseDoor.BlockedByItem` doluysa `RescueTimer.MostSlowingItem()` önce onu döndürür, keşke "Keşke TV ünitesini sabitleseydim" olur.
+  - **M18** `QuakeDirector.ForeshockRoutine`: döngü 2'de önce `bubble.deja_vu` (2,5 sn, `dejaVuSeconds`), sonra `bubble.panic_run`; döngü 3+'ta kaybedilmişse `bubble.wake` yerine `bubble.deja_vu_again`.
+  - **M19** `QuakeDirector.MainQuakeRoutine`: yatan oyuncuda raf düşecekse kapsül çarpışması baştan kapanıyor (raf şilteye düşer), raf düşünce kısa kamera sarsıntısı (`shelfImpactShake`). `Marker_PlayerBed` z 3,6 → 3,9: yatan görsel şiltenin arka yarısında, raf önünde kalıyor.
+  - Metinler `texts.csv` `# Mehmet` başlığında: `bubble.deja_vu`, `bubble.deja_vu_again`, `bubble.door_jammed`.
+  - Play'de elle denenmesi gerekenler: merdivenden çıkınca artçının zamanı, masaların sarı konturu, salon kapısının TV devrilince kilitlenmesi, döngü 1'de rafın görselin önünde kalması.
 - **Vida minigame'i yenilendi (Berke'nin play testi):** Tek vida yerine levha 4 köşesinden vidalanıyor. Vidaya tıklayıp basılı tutunca tornavida oturuyor, fareyi vidanın etrafında saat yönünde çevirmek sıkıyor (vida başına 1,25 tur), ters yönde çevirmek gevşetiyor. Ruh fazı **60 sn'den 50 sn'ye** indi (fazla zaman kalıyordu). Şablon isteği: `minigame_levha` (168 × 112), `minigame_tornavida` (96 × 16, ucu solda) ve `minigame_vida_basi`'nın 32 × 32'ye güncellenmesi.
 - **M14. Kurtarma hedefi: hazır.** `ObjectiveHud` (tablo). Büyük yazı, Aile sayacı ve ekran kenarı okları. Ok hedefi işaret noktası (ezilen üye ~1 m yakında yattığı için yeterli); üye `MarkRescued` olunca oku kalkar. Metinler `objective.banner`, `objective.family`, `family.*`. İstek: `Sablonlar/UI/hud_ok.png` (32 × 32, sağa bakan beyaz ok) şablonu. Kurtarmanın başında senin "Ailem! Onları bulmalıyım!" balonun ve benim büyük yazım aynı anda çıkacak; çok kalabalık olursa yazıyı 1 sn geciktiririm, söyle.
 - **M13. Çanta geri bildirimi: hazır.** `BagHud` (tablo). Geri bildirim `GameEvents.BagItemCollected` ile tetikleniyor, yani çantaya her konuşta çalışıyor. Çanta kabinin önüne taşınınca kodda iş yok; görsel ve parlama `Marker_Bag`'in olduğu yerde çıkar. Metinler `hud.bag`, `bag.added`. Eksik malzemeleri bilerek göstermiyorum: oyuncu neyin gerektiğini keşke ekranından öğrensin (farkındalık hedefi).

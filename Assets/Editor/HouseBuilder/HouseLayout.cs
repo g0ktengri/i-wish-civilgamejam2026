@@ -226,7 +226,8 @@ namespace Deprem.HouseBuilder
         public static readonly MarkerDef[] Markers =
         {
             // Yatağın ortası (yatak X 0,5–2,5); kalkınca QuakeDirector.standUpOffsetX kadar sağda, masanın önünde
-            new MarkerDef("Marker_PlayerBed", new Vector3(1.5f, 0f, 3.6f)),
+            // M19: z 3,9 (şiltenin arka yarısı): devrilen raf yatan görselin önünde kalır
+            new MarkerDef("Marker_PlayerBed", new Vector3(1.5f, 0f, 3.9f)),
             new MarkerDef("Marker_PlayerStart", new Vector3(3f, 0f, Z)),
             // Aile, devrilecek eşyasının hemen yanında (önünde değil): yer tutucu eşyanın parçası gibi görünmesin
             new MarkerDef("Marker_Father", new Vector3(22.75f, 0f, Z)),

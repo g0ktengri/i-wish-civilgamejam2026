@@ -194,6 +194,9 @@ namespace Deprem.Quake
         /// <summary>Oyuncunun yanında en çok vakit geçirdiği, yolu tıkayan devrilmiş eşya; yoksa ilk devrilen, o da yoksa None.</summary>
         public ItemId MostSlowingItem()
         {
+            // M17: oyuncunun açamadığı kapıyı kapatan eşya en çok yavaşlatandır (babaya hiç ulaşamadı)
+            if (Deprem.Player.HouseDoor.BlockedByItem != ItemId.None) return Deprem.Player.HouseDoor.BlockedByItem;
+
             ItemToppler best = null;
             float bestTime = 0f;
             foreach (var pair in slowTime)

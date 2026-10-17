@@ -37,6 +37,8 @@ namespace Deprem.Quake
         [SerializeField] private float standUpWindow = 8f;
         [Tooltip("Kalktıktan sonra ana depreme kadar bekleme (sn)")]
         [SerializeField] private float waitAfterStandUp = 3f;
+        [Tooltip("M18: döngü 2'de 'Az önce bunu yaşamadım mı?' balonunun süresi")]
+        [SerializeField] private float dejaVuSeconds = 2.5f;
         [Tooltip("Döngü 2: ana deprem başladıktan kaç sn sonra tavan oyuncunun üstüne çöker")]
         [SerializeField] private float scriptedHitDelay = 2.5f;
 
@@ -56,11 +58,14 @@ namespace Deprem.Quake
         [SerializeField, Range(0f, 1f)] private float aftershockIntensity = 0.5f;
         [SerializeField] private float aftershockGrace = 2.5f;
         [SerializeField] private float injuredSpeedMultiplier = 0.6f;
+        [Tooltip("M15: merdiven/yol bittikten sonra artçı alanının sayılması için bekleme (sn)")]
+        [SerializeField] private float aftershockAfterPathDelay = 0.75f;
         [Tooltip("Oyuncu bu alanlara girince artçı olur (her deneme bir kez). GDD: koridor, merdiven, üst kat")]
         [SerializeField] private AftershockZone[] aftershockZones =
         {
             new AftershockZone { name = "Koridora giriş", min = new Vector2(6.3f, -0.5f), max = new Vector2(7.2f, 1f) },
-            new AftershockZone { name = "Merdiven başı", min = new Vector2(14f, 3.5f), max = new Vector2(15.5f, 5f) },
+            // M15: merdiven çıkışının (x ~14,5) 1 m sağı; oyuncu sahanlıktaki konsolun (güvenli nokta 14,45-15,95) önünde
+            new AftershockZone { name = "Merdiven başı", min = new Vector2(15.3f, 3.5f), max = new Vector2(16.8f, 5f) },
             new AftershockZone { name = "Üst kat, kardeşin odası", min = new Vector2(5.5f, 3.5f), max = new Vector2(6.8f, 5f) },
         };
 
@@ -73,6 +78,9 @@ namespace Deprem.Quake
         [SerializeField] private Key walkLeftKey = Key.A;
         [SerializeField] private Key walkRightKey = Key.D;
         [SerializeField] private Key duckCoverKey = Key.C;
+
+        [Tooltip("M19: raf yatağa düşünce kısa kamera sarsıntısı")]
+        [SerializeField, Range(0f, 1f)] private float shelfImpactShake = 0.85f;
 
         [Header("Tavandan düşen parça")]
         [Tooltip("Sıva parçası materyali (QuakeSetup atar)")]
@@ -94,6 +102,7 @@ namespace Deprem.Quake
         private bool aftershockRunning;
         private DuckCoverBar duckCoverBar;
         private QuakeEffects effects;
+        private float offPathTime;
 
         private void Awake()
         {
@@ -153,7 +162,11 @@ namespace Deprem.Quake
 
         private void Update()
         {
+            if (player != null && player.IsOnPath) offPathTime = 0f;
+            else offPathTime += Time.deltaTime;
             if (GameState.Phase != GamePhase.Rescue || aftershockRunning || player == null || player.IsOnPath) return;
+            // M15: merdivenden yeni çıkan oyuncu önce yürüyüp güvenli noktayı görebilsin
+            if (offPathTime < aftershockAfterPathDelay) return;
             var p = player.transform.position;
             for (int i = 0; i < aftershockZones.Length; i++)
             {
@@ -185,6 +198,9 @@ namespace Deprem.Quake
             {
                 // Döngü 2 (senaryolu ama kontrol oyuncuda): ciddiye alıp kalkar, kaçmak ister;
                 // çök-kapan-tutun henüz bilinmiyor, ana depremde nereye giderse gitsin tavan çöker
+                // M18: önce yeniden doğduğunu fark eder
+                Say("bubble.deja_vu", dejaVuSeconds);
+                yield return new WaitForSeconds(dejaVuSeconds);
                 Say("bubble.panic_run", 2.5f);
                 yield return new WaitForSeconds(1f);
                 yield return GetUp();
@@ -194,7 +210,8 @@ namespace Deprem.Quake
             else
             {
                 // Döngü 3+ (serbest): "F: Kalk"; yürümeye başlamak da kaldırır
-                Say("bubble.wake", 2f);
+                // M18: daha önce yaşadığını bilir
+                Say(GameState.FailedAttempts > 0 ? "bubble.deja_vu_again" : "bubble.wake", 2.5f);
                 QuakePrompts.Set(QuakePrompts.StandUp);
                 bool stoodUp = false;
                 for (float t = 0f; t < standUpWindow; t += Time.deltaTime)
@@ -237,16 +254,22 @@ namespace Deprem.Quake
 
             if (player.IsLying)
             {
-                // Kalkmadı: yatağın üstündeki raf üstüne düşer
-                yield return new WaitForSeconds(toppleWindow.x + 1.5f);
+                // Kalkmadı: yatağın üstündeki raf üstüne düşer.
+                // M19: yatan oyuncunun dik kapsülü rafı havada tutmasın; raf yatağın şiltesine, yatan görselin önüne düşer
                 var shelf = SecurableItem.Find(ItemId.BedShelf);
-                if (shelf == null || !shelf.IsSecured)
+                bool shelfFalls = shelf == null || !shelf.IsSecured;
+                if (shelfFalls) player.Body.detectCollisions = false;
+                yield return new WaitForSeconds(toppleWindow.x + 0.45f);
+                if (shelfFalls) QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, shelfImpactShake);
+                yield return new WaitForSeconds(1.05f);
+                if (shelfFalls)
                 {
                     // Play testi 5: sadece raf düşmesi ciddi durmuyordu; ağır raftan sonra tavan da yatağa çöker
                     yield return CollapseOnBed();
                     Fail(LoseReason.IgnoredForeshock, ItemId.BedShelf);
                     yield break;
                 }
+                player.Body.detectCollisions = true;
                 yield return new WaitForSeconds(mainQuakeDuration - toppleWindow.x - 1.5f);
             }
             else if (!GameState.StandUpUnlocked)
