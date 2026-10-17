@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 18 Ekim (M14 kurtarma hedefi bittikten sonra)*
+*Son güncelleme: Berke'nin Claude'u, 18 Ekim (vida minigame'i yenilendikten sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -62,6 +62,7 @@
   - Kilitle: 3 isabet gerekir. Her isabette yeşil alan %30 daralır ve ibre hızlanır; ıskalayınca bir isabet geri gider.
 - **M7. Ruh sınırı:** `SpiritController` artık `HouseBounds.Instance.ClampToHouse(pozisyon, 0.3)` kullanıyor; `HouseBounds` yoksa eski renderer sınırlarına düşüyor.
 - **M8. Kontur shader'ı:** Bağlandı. `SpiritHighlighter`, `ItemOutline` olan eşyalara artık point light koymuyor; ruhun yanındaki eşyada `SetEmphasis(true)`, uzaklaşınca `false` çağırıyor. Konturu olmayan eşyaya yedek ışık konuyor.
+- **Vida minigame'i yenilendi (Berke'nin play testi):** Tek vida yerine levha 4 köşesinden vidalanıyor. Vidaya tıklayıp basılı tutunca tornavida oturuyor, fareyi vidanın etrafında saat yönünde çevirmek sıkıyor (vida başına 1,25 tur), ters yönde çevirmek gevşetiyor. Ruh fazı **60 sn'den 50 sn'ye** indi (fazla zaman kalıyordu). Şablon isteği: `minigame_levha` (168 × 112), `minigame_tornavida` (96 × 16, ucu solda) ve `minigame_vida_basi`'nın 32 × 32'ye güncellenmesi.
 - **M14. Kurtarma hedefi: hazır.** `ObjectiveHud` (tablo). Büyük yazı, Aile sayacı ve ekran kenarı okları. Ok hedefi işaret noktası (ezilen üye ~1 m yakında yattığı için yeterli); üye `MarkRescued` olunca oku kalkar. Metinler `objective.banner`, `objective.family`, `family.*`. İstek: `Sablonlar/UI/hud_ok.png` (32 × 32, sağa bakan beyaz ok) şablonu. Kurtarmanın başında senin "Ailem! Onları bulmalıyım!" balonun ve benim büyük yazım aynı anda çıkacak; çok kalabalık olursa yazıyı 1 sn geciktiririm, söyle.
 - **M13. Çanta geri bildirimi: hazır.** `BagHud` (tablo). Geri bildirim `GameEvents.BagItemCollected` ile tetikleniyor, yani çantaya her konuşta çalışıyor. Çanta kabinin önüne taşınınca kodda iş yok; görsel ve parlama `Marker_Bag`'in olduğu yerde çıkar. Metinler `hud.bag`, `bag.added`. Eksik malzemeleri bilerek göstermiyorum: oyuncu neyin gerektiğini keşke ekranından öğrensin (farkındalık hedefi).
 - **M12. Font: eklendi.** `Assets/Art/Fonts/PixelifySans.ttf` + `OFL.txt`. Kaynak: Google Fonts (github.com/google/fonts, `ofl/pixelifysans`), lisans SIL Open Font License 1.1. Dosyanın cmap tablosu denetlendi: ğ Ğ ş Ş ı İ ç Ç ö Ö ü Ü ve · × … — ’ dahil hepsi var (574 glif), Tiny5/Silkscreen'e gerek kalmadı. Prefab kurucusu fontu `UiStyle.font` ve Berke'nin bütün UI bileşenlerine bağlıyor; import ayarı keskin piksel (`HintedRaster`). `UiBuilder.DefaultFont` kullanan her şey (balon, kabin tabelası, tutma çubuğu) fontu kendiliğinden alır. Teslim formunda Diğer > Hazır kaynak olarak beyan edilecek.
@@ -109,7 +110,9 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 | `ikon_ilk_yardim`, `ikon_el_feneri`, `ikon_su`, `ikon_duduk` | 32 × 32 | Çanta malzemeleri; dünyada, HUD'da ve taşı-yerleştir minigame'inde aynı | var |
 | `deprem_cantasi` | 48 × 48 | Kabinin yanındaki çanta (dünyada; tabanı yere basar) | var |
 | `minigame_panel` | 256 × 256 | Bütün minigame'lerin çerçevesi (isteğe bağlı) | **yok** |
-| `minigame_vida_basi` | 48 × 48 | Dönen vida başı (ortası dönme merkezi) | **yok** |
+| `minigame_vida_basi` | **32 × 32** | Yuvarlak vida başı, dönme merkezi ortada (4 tane çizilir) | var, **48'den 32'ye güncellenmeli** |
+| `minigame_levha` | 168 × 112 | 4 köşesinden vidalanan L demiri levhası | **yok** |
+| `minigame_tornavida` | 96 × 16 | Tornavida; ucu **solda ortada**, sap sağa uzanır (kod uç etrafında döndürür) | **yok** |
 | `minigame_tasi` | 256 × 256 | Taşı-yerleştir arka planı | **yok** |
 | `minigame_duvar` | 16 × 256 | Ortadaki duvar; dikey döşenir, boşluğu kod açar | **yok** |
 | `minigame_guvenli_alan` | 64 × 64 | Güvenli bırakma alanı | **yok** |

@@ -26,14 +26,13 @@ namespace Deprem.Minigames
 
         // GDD: 60 sn'de 5-6 eşya (yol dahil); her minigame yaklaşık 5-7 sn sürmeli
 
-        [Header("Vida sıkma")]
-        [SerializeField] float screwTurns = 4f;
+        [Header("Vida sıkma (4 vida)")]
+        [Tooltip("Her vida için tornavidayla gereken tur")]
+        [SerializeField] float screwTurnsPerScrew = 1.25f;
         [Tooltip("Ters yönde dönmenin geri alma katsayısı (1 = aynı hızda gevşer)")]
         [SerializeField] float screwReversePenalty = 1f;
-        [SerializeField] float screwMinRadius = 35f;
-        [SerializeField] float screwMaxRadius = 110f;
-        [Tooltip("Hiç dönülmezse saniyede gevşeyen tur")]
-        [SerializeField] float screwIdleLoosen = 0.3f;
+        [Tooltip("Fare vidaya bundan yakınken dönüş sayılmaz (referans pikseli)")]
+        [SerializeField] float screwMinRadius = 18f;
 
         [Header("Taşı ve yerleştir")]
         [SerializeField] float carrySnapRadius = 14f;
@@ -222,8 +221,7 @@ namespace Deprem.Minigames
                     return new LockMinigame(lockCyclesPerSecond, lockZoneWidth, lockRequiredHits, lockShrinkPerHit,
                         lockSpeedUpPerHit);
                 default:
-                    return new ScrewMinigame(screwTurns, screwReversePenalty, screwMinRadius, screwMaxRadius,
-                        screwIdleLoosen);
+                    return new ScrewMinigame(screwTurnsPerScrew, screwReversePenalty, screwMinRadius);
             }
         }
 

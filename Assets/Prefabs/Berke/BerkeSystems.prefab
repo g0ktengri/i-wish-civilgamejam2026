@@ -117,7 +117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec33bfa992b1d5740ae086db755ca236, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Spirit.SpiritPhase
-  duration: 60
+  duration: 50
   spawnPoint: {fileID: 0}
   spawnMarkerName: Marker_PlayerBed
   spawnOffset: {x: 0, y: 1, z: 0}
@@ -183,17 +183,17 @@ MonoBehaviour:
   panelColor: {r: 0.1, g: 0.12, b: 0.16, a: 0.95}
   successColor: {r: 0.2, g: 0.4, b: 0.25, a: 0.95}
   successHold: 0.4
-  screwTurns: 4
+  screwTurnsPerScrew: 1.25
   screwReversePenalty: 1
-  screwMinRadius: 35
-  screwMaxRadius: 110
-  screwIdleLoosen: 0.3
+  screwMinRadius: 18
   carrySnapRadius: 14
   carryGapHeight: 70
   art:
     panel: {fileID: 0}
     screwBackground: {fileID: 0}
+    screwPlate: {fileID: 0}
     screwHead: {fileID: 0}
+    screwdriver: {fileID: 0}
     screwDone: {fileID: 0}
     carryBackground: {fileID: 0}
     carryWall: {fileID: 0}

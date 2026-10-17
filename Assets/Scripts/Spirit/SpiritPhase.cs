@@ -9,8 +9,8 @@ namespace Deprem.Spirit
     public class SpiritPhase : MonoBehaviour
     {
         [Header("Süre")]
-        [Tooltip("GDD: 60-90 sn arası, testle ayarlanacak")]
-        [SerializeField] float duration = 60f;
+        [Tooltip("GDD: 60-90 sn; Play testinde fazla zaman kaldığı için 50")]
+        [SerializeField] float duration = 50f;
 
         [Header("Çıkış noktası")]
         [Tooltip("Boşsa aşağıdaki isimdeki işaret noktası aranır")]

@@ -68,6 +68,34 @@ namespace Deprem.UI
             return image;
         }
 
+        static Sprite circle;
+
+        // Görseli olmayan yuvarlak parçalar için kodla üretilen piksel daire (32 x 32, beyaz)
+        public static Sprite CircleSprite
+        {
+            get
+            {
+                if (circle) return circle;
+                const int size = 32;
+                var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+                {
+                    filterMode = FilterMode.Point,
+                    wrapMode = TextureWrapMode.Clamp,
+                    name = "UiCircle",
+                };
+                float radius = size * 0.5f;
+                for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x + 0.5f - radius, dy = y + 0.5f - radius;
+                    texture.SetPixel(x, y, dx * dx + dy * dy <= radius * radius ? Color.white : Color.clear);
+                }
+                texture.Apply();
+                circle = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 64f);
+                return circle;
+            }
+        }
+
         // Sprite'ı pixel art için ayarlar: kenarı varsa 9-slice, 1 sprite pikseli = 1 referans pikseli
         public static void ApplySprite(Image image, Sprite sprite)
         {
