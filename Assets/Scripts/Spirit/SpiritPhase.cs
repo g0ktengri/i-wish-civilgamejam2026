@@ -101,7 +101,9 @@ namespace Deprem.Spirit
         void HandlePhaseChanged(GamePhase phase)
         {
             if (phase == GamePhase.Spirit) Begin();
-            else if (running || returning != null || emerging != null) End();
+            // Play testi 29 (Mehmet): bedene dönüş bitince running ve returning zaten sıfırdı, End çağrılmıyordu; solmuş
+            // ruh mavi ışığıyla yatakta açık kalıyor, elektrik kesilince "odamızdaki mavi ışık" oluyordu
+            else if (running || returning != null || emerging != null || (spirit && spirit.gameObject.activeSelf)) End();
         }
 
         // M31: sayaç durur, HUD kapanır (Running = false), açık minigame kapanır; ruh bedene doğru hızlanarak uçar,
@@ -122,6 +124,8 @@ namespace Deprem.Spirit
             var body = player ? player.transform.position + bodyCenterOffset : start + Vector3.up * spirit.CenterHeight;
             body.z = start.z;
             var visual = spirit.GetComponentInChildren<SpiritVisual>();
+            var glow = spirit.GetComponentInChildren<Light>(); // Play testi 29: bedene girerken ışık da söner
+            float glowStart = glow ? glow.intensity : 0f;
             // M50: kök ayak hizasında; görselin merkezi bedene otursun diye kök bedenin CenterHeight × ölçek altında.
             // Sınırlar (zemin) dönüşü bozmasın diye hareket kapalı.
             spirit.enabled = false;
@@ -138,8 +142,10 @@ namespace Deprem.Spirit
                 spirit.transform.localScale = Vector3.one * scale;
                 spirit.transform.position = body - Vector3.up * spirit.CenterHeight * scale;
                 if (visual) visual.SetFade(1f - k);
+                if (glow) glow.intensity = glowStart * (1f - k);
                 yield return null;
             }
+            if (glow) glow.intensity = glowStart; // bir sonraki çıkış için
             returning = null;
             GameState.SetPhase(GamePhase.MainQuake);
         }

@@ -161,56 +161,61 @@ namespace Deprem.Audio
         private static IEnumerable<Recipe> Recipes()
         {
             // Play testi 28 (ses föyü): quake.creak, bag.collect, family.rescued ve final.check susturuldu; bankada
-            // yokken çağrılar sessizce geçer
+            // yokken çağrılar sessizce geçer.
+            // Play testi 29: sesler kendi arasında dengelendi (adımlar çok yüksekti). Kaba karışım: deprem olayları ve
+            // ölüm önde (0,85-1), darbe ve çarpmalar 0,6-0,8, minigame ve ruh sesleri 0,4-0,65, arayüz 0,35-0,45,
+            // ortam 0,4-0,45, müzik 0,5-0,6, adım 0,35 (PlayerFootsteps ayrıca 0,45 ile çarpar).
             // --- Deprem (Mehmet, event'lerden)
             yield return new Recipe { key = "quake.rumble", volume = 0.9f, make = s => Normalize(MakeLoop(Rumble(s, 12f, 1f), 1.5f), 0.85f) };
             yield return new Recipe { key = "quake.foreshock", make = Foreshock };
             yield return new Recipe { key = "quake.impact", make = s => Normalize(Impact(s, 2.6f, 1f), 0.95f) };
             yield return new Recipe { key = "quake.aftershock", make = Aftershock };
             yield return new Recipe { key = "quake.big", make = Big };
-            yield return new Recipe { key = "quake.debris", variants = 4, volume = 0.5f, pitch = new Vector2(0.85f, 1.15f), make = Debris };
-            yield return new Recipe { key = "item.crash", variants = 2, pitch = new Vector2(0.9f, 1.05f), make = Crash };
-            yield return new Recipe { key = "glass.break", variants = 3, volume = 0.85f, pitch = new Vector2(0.94f, 1.08f), make = GlassBreak }; // Play testi 28: Kenney "yay" gibiydi
-            yield return new Recipe { key = "power.off", make = PowerCut }; // Play testi 28: gerçek elektrik kesintisi
-            yield return new Recipe { key = "ambience.night", volume = 0.5f, make = NightAmbience };
-            yield return new Recipe { key = "ambience.dark", volume = 0.6f, make = DarkAmbience };
-            yield return new Recipe { key = "rescue.heartbeat", make = Heartbeat };
-            yield return new Recipe { key = "player.hit", variants = 3, pitch = new Vector2(0.92f, 1.05f), make = BodyHit }; // Play testi 28: Kenney davul gibiydi
-            yield return new Recipe { key = "player.step", variants = 4, volume = 1f, pitch = new Vector2(0.9f, 1.1f), make = Step };
-            yield return new Recipe { key = "player.land", pitch = new Vector2(0.95f, 1.05f), make = Land };
-            yield return new Recipe { key = "cabin.door", make = CabinDoor };
+            // Play testi 29: sarsıntıda ara ara uzaktan duvar çatlaması ve dökülen moloz (taş kırılma, çökme)
+            yield return new Recipe { key = "quake.crumble", variants = 3, volume = 0.7f, pitch = new Vector2(0.9f, 1.08f), make = Crumble };
+            yield return new Recipe { key = "quake.debris", variants = 4, volume = 0.45f, pitch = new Vector2(0.85f, 1.15f), make = Debris };
+            yield return new Recipe { key = "item.crash", variants = 2, volume = 0.75f, pitch = new Vector2(0.9f, 1.05f), make = Crash };
+            yield return new Recipe { key = "glass.break", variants = 3, volume = 0.6f, pitch = new Vector2(0.94f, 1.08f), make = GlassBreak }; // Play testi 28: Kenney "yay" gibiydi
+            yield return new Recipe { key = "power.off", volume = 0.8f, make = PowerCut }; // Play testi 28: gerçek elektrik kesintisi
+            yield return new Recipe { key = "ambience.night", volume = 0.4f, make = NightAmbience };
+            yield return new Recipe { key = "ambience.dark", volume = 0.45f, make = DarkAmbience };
+            yield return new Recipe { key = "rescue.heartbeat", volume = 0.7f, make = Heartbeat };
+            yield return new Recipe { key = "player.hit", variants = 3, volume = 0.85f, pitch = new Vector2(0.92f, 1.05f), make = BodyHit }; // Play testi 28: Kenney davul gibiydi
+            yield return new Recipe { key = "player.step", variants = 4, volume = 0.35f, pitch = new Vector2(0.9f, 1.1f), make = Step };
+            yield return new Recipe { key = "player.land", volume = 0.55f, pitch = new Vector2(0.95f, 1.05f), make = Land };
+            yield return new Recipe { key = "cabin.door", volume = 0.8f, make = CabinDoor };
 
             // --- Ruh fazı
-            yield return new Recipe { key = "spirit.ambience", volume = 0.7f, make = SpiritAmbience };
-            yield return new Recipe { key = "spirit.rise", volume = 0.75f, make = SpiritRise }; // ENTEGRASYON M49 (Berke)
-            yield return new Recipe { key = "spirit.tick", volume = 0.6f, make = s => Tick(s, 3200f) };
-            yield return new Recipe { key = "spirit.tock", volume = 0.6f, make = s => Tick(s, 2300f) };
-            yield return new Recipe { key = "item.secured", volume = 0.8f, make = Secured };
+            yield return new Recipe { key = "spirit.ambience", volume = 0.55f, make = SpiritAmbience };
+            yield return new Recipe { key = "spirit.rise", volume = 0.65f, make = SpiritRise }; // ENTEGRASYON M49 (Berke)
+            yield return new Recipe { key = "spirit.tick", volume = 0.4f, make = s => Tick(s, 3200f) };
+            yield return new Recipe { key = "spirit.tock", volume = 0.4f, make = s => Tick(s, 2300f) };
+            yield return new Recipe { key = "item.secured", volume = 0.7f, make = Secured };
 
             // --- Berke'nin çağırdıkları (M25)
             yield return new Recipe { key = "ui.move", volume = 0.35f, make = s => Blip(new[] { 1046.5f }, 0.06f) };
             yield return new Recipe { key = "ui.click", volume = 0.45f, make = s => Blip(new[] { 1046.5f, 1568f }, 0.05f) };
             yield return new Recipe { key = "ui.back", volume = 0.45f, make = s => Blip(new[] { 784f, 523.25f }, 0.05f) };
-            yield return new Recipe { key = "minigame.screw", variants = 3, volume = 0.55f, pitch = new Vector2(0.92f, 1.08f), make = Ratchet };
-            yield return new Recipe { key = "minigame.bracket", volume = 0.8f, make = Bracket };
-            yield return new Recipe { key = "minigame.latch", volume = 0.7f, make = Latch };
+            yield return new Recipe { key = "minigame.screw", variants = 3, volume = 0.45f, pitch = new Vector2(0.92f, 1.08f), make = Ratchet };
+            yield return new Recipe { key = "minigame.bracket", volume = 0.65f, make = Bracket };
+            yield return new Recipe { key = "minigame.latch", volume = 0.6f, make = Latch };
             yield return new Recipe { key = "minigame.miss", volume = 0.5f, make = Miss };
-            yield return new Recipe { key = "minigame.pickup", volume = 0.5f, make = Pickup };
-            yield return new Recipe { key = "minigame.drop", volume = 0.6f, make = Drop };
+            yield return new Recipe { key = "minigame.pickup", volume = 0.4f, make = Pickup };
+            yield return new Recipe { key = "minigame.drop", volume = 0.5f, make = Drop };
             yield return new Recipe { key = "minigame.fail", volume = 0.6f, make = s => Arpeggio(new[] { 440f, 329.63f }, 0.18f, 1.2f, 3f) };
-            yield return new Recipe { key = "wish.shatter", make = Shatter };
-            yield return new Recipe { key = "wish.note", volume = 0.8f, make = WishNote };
+            yield return new Recipe { key = "wish.shatter", volume = 0.85f, make = Shatter };
+            yield return new Recipe { key = "wish.note", volume = 0.7f, make = WishNote };
             yield return new Recipe { key = "wish.type", volume = 0.25f, pitch = new Vector2(0.9f, 1.1f), make = TypeClick };
-            yield return new Recipe { key = "wish.rewind", volume = 0.8f, make = TapeRewind }; // Play testi 28: kaset geri sarma
-            yield return new Recipe { key = "music.final", make = MemorialMusic }; // Play testi 28: ölenleri anan, acıklı
+            yield return new Recipe { key = "wish.rewind", volume = 0.7f, make = TapeRewind }; // Play testi 28: kaset geri sarma
+            yield return new Recipe { key = "music.final", volume = 0.6f, make = MemorialMusic }; // Play testi 28: ölenleri anan, acıklı
             // Play testi 20: kurtarmada arkada gerilim, aile üyesinin durumu görülünce vurgu
-            yield return new Recipe { key = "music.tension", volume = 0.9f, make = TensionMusic2 }; // Play testi 28: daha gerilimli
+            yield return new Recipe { key = "music.tension", volume = 0.55f, make = TensionMusic2 }; // Play testi 28: daha gerilimli
             // Play testi 23: balon yazı sesi (Undertale gibi), ölüm vurgusu
-            yield return new Recipe { key = "bubble.blip", volume = 0.6f, pitch = new Vector2(0.97f, 1.03f), make = Blip };
-            yield return new Recipe { key = "player.death", make = DeathStinger };
-            yield return new Recipe { key = "family.discover", volume = 0.85f, make = DiscoverStinger };
-            yield return new Recipe { key = "family.loss", volume = 0.9f, make = LossStinger };
-            yield return new Recipe { key = "music.menu", volume = 0.8f, make = QuakeMenuMusic }; // Play testi 28: depremi yansıtsın
+            yield return new Recipe { key = "bubble.blip", volume = 0.4f, pitch = new Vector2(0.97f, 1.03f), make = Blip };
+            yield return new Recipe { key = "player.death", volume = 0.9f, make = DeathStinger };
+            yield return new Recipe { key = "family.discover", volume = 0.75f, make = DiscoverStinger };
+            yield return new Recipe { key = "family.loss", volume = 0.8f, make = LossStinger };
+            yield return new Recipe { key = "music.menu", volume = 0.6f, make = QuakeMenuMusic }; // Play testi 28: depremi yansıtsın
         }
 
         // ------------------------------------------------------------------ Deprem
@@ -274,6 +279,33 @@ namespace Deprem.Audio
             Mix(b, Normalize(Debris(s), 1f), 0.25f, 0.4f);
             Mix(b, Normalize(Crash(s), 1f), 0.6f, 0.4f);
             return Fade(Normalize(Saturate(b, 1.3f), 0.95f));
+        }
+
+        /// <summary>
+        /// Taş kırılma, çökme (Play testi 29): betonun sert çatlaması (kuru "çat" ve altında tok vuruş), ardından
+        /// seyrelerek dökülen moloz ve çakıl, sonunda süzülen kum; altta kısa uğultu. Sarsıntı sırasında uzaktan gelir.
+        /// </summary>
+        private static float[] Crumble(SoundSynth s)
+        {
+            const float len = 2f;
+            var b = Buffer(len);
+            Mix(b, Normalize(Envelope(BandPass(s.White(0.12f), s.Range(1100f, 1800f), 1.5f), 0.0003f, 0.003f, 45f), 1f), 0f, 0.8f);
+            Mix(b, Normalize(Envelope(LowPass(s.White(0.4f), 220f), 0.001f, 0.01f, 14f), 1f), 0f, 0.7f);
+            // Moloz: başta sık, seyrelerek; her parça kısa, bant geçirilmiş darbe
+            for (int i = 0; i < 45; i++)
+            {
+                float t = 0.06f - Mathf.Log(1f - s.Rand() * 0.95f) * 0.35f;
+                if (t > len - 0.25f) continue;
+                var grain = Envelope(BandPass(s.White(0.06f), s.Range(400f, 2600f), 2.5f), 0.0004f, 0f, s.Range(60f, 130f));
+                Mix(b, Normalize(grain, 1f), t, s.Range(0.1f, 0.4f) * Mathf.Exp(-t * 1.6f));
+            }
+            var sand = HighPass(s.White(len), 2500f);
+            Shape(sand, t => Mathf.Clamp01((t - 0.15f) / 0.2f) * Mathf.Exp(-Mathf.Max(0f, t - 0.35f) * 2.2f));
+            Mix(b, Normalize(sand, 1f), 0f, 0.08f);
+            var rumble = LowPass(s.Brown(1.4f), 120f);
+            Shape(rumble, t => Mathf.Exp(-t * 2.5f));
+            Mix(b, Normalize(rumble, 1f), 0f, 0.35f);
+            return Fade(Normalize(Reverb(b, 0.9f, 0.25f, 0.7f), 0.9f));
         }
 
         /// <summary>Tavandan düşen taş ve sıva: birkaç küçük tok darbe ve kum hışırtısı</summary>

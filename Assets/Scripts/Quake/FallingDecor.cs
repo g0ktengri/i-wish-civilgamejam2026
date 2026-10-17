@@ -38,6 +38,12 @@ namespace Deprem.Quake
         [Tooltip("Sarsıntıda biriken yamukluk sınırı (derece); öncüden sonra öyle kalır")]
         [SerializeField] private float maxTilt = 12f;
         [SerializeField] private float tiltDrift = 30f;
+        [Header("Cam sesi (Play testi 29: çok sık geliyordu)")]
+        [Tooltip("Çatlayan çerçeve / saat / aynanın cam sesi çalma olasılığı; gerisi sessiz çatlar")]
+        [SerializeField, Range(0f, 1f)] private float crackSoundChance = 0.3f;
+        [Tooltip("İki cam sesi arasında en az süre (sn), bütün dekorlar için ortak")]
+        [SerializeField] private float glassSoundInterval = 1.2f;
+        private static float lastGlassSound = -100f;
 
         private static readonly List<FallingDecor> all = new List<FallingDecor>();
         public static IReadOnlyList<FallingDecor> All => all;
@@ -150,7 +156,12 @@ namespace Deprem.Quake
         private void Break()
         {
             IsBroken = true;
-            Sfx.PlayAt("glass.break", transform.position, breakKind == BreakKind.Shatter ? 0.6f : 0.75f);
+            bool audible = breakKind == BreakKind.Shatter || Random.value < crackSoundChance;
+            if (audible && (Time.time - lastGlassSound >= glassSoundInterval || Time.time < lastGlassSound))
+            {
+                lastGlassSound = Time.time;
+                Sfx.PlayAt("glass.break", transform.position, breakKind == BreakKind.Shatter ? 0.6f : 0.5f);
+            }
             if (breakKind == BreakKind.Crack && brokenTexture != null && view != null)
             {
                 var block = new MaterialPropertyBlock();

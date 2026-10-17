@@ -543,7 +543,8 @@ namespace Deprem.Family
         public void SetFollowPosition(Vector3 position)
         {
             float dx = position.x - transform.position.x;
-            if (Mathf.Abs(dx) > 0.001f) Facing = dx > 0f ? 1 : -1;
+            // Play testi 29: izdeki küçük geri adımlarda bir anlık ters dönme olmasın
+            if (Mathf.Abs(dx) > 0.01f) Facing = dx > 0f ? 1 : -1;
             transform.position = position;
         }
 
@@ -629,6 +630,9 @@ namespace Deprem.Family
         [Tooltip("Bekleme döngüsü (ör. baba_bekleme_1..5); boşsa idleFrame karesi")]
         [SerializeField] private Texture2D[] idleFrames;
         [SerializeField] private float idleFps = 5f;
+        [Tooltip("Hareket durduktan sonra yürüme karelerinin sürdüğü süre (sn); takipte kare kare duraklama titremesin")]
+        [SerializeField] private float walkHoldTime = 0.25f;
+        private float moveHold;
 
         private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
         private MaterialPropertyBlock block;
@@ -643,8 +647,12 @@ namespace Deprem.Family
             float dt = Time.deltaTime;
             float speed = dt > 0f ? (transform.position - lastPosition).magnitude / dt : 0f;
             lastPosition = transform.position;
+            // Play testi 29: takip eden anne kare kare yürüyüp duruyordu (oyuncunun izi 5 cm'lik adımlarla güncellenir),
+            // yürüme ve bekleme kareleri arasında gidip geliyordu. Hareket bitince kısa bir süre daha yürüyor sayılır
+            if (speed > 0.2f) moveHold = walkHoldTime;
+            else moveHold -= dt;
             Texture2D frame;
-            if (!still && speed > 0.2f)
+            if (!still && moveHold > 0f)
             {
                 frameTime += dt * (State == FamilyState.WalkingToCabin ? limpFps : walkFps);
                 frame = walkFrames[Mathf.FloorToInt(frameTime) % walkFrames.Length];

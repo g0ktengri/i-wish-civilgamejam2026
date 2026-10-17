@@ -20,7 +20,7 @@ namespace Deprem.Audio
 
         [Header("Ana deprem")]
         [Tooltip("İki gıcırtı arası (sn)")]
-        [SerializeField] private Vector2 creakInterval = new Vector2(2.8f, 5.5f);
+        [SerializeField] private Vector2 creakInterval = new Vector2(4f, 7.5f); // Play testi 29: taş kırılma sesi, seyrek
 
         [Header("Kurtarma (RescueTimer gerilimi 0..1)")]
         [Tooltip("Uzak uğultunun sesi: sakin → son saniyeler")]
@@ -145,10 +145,10 @@ namespace Deprem.Audio
             if (mainShaking)
             {
                 // Play testi 20: rastgele çıtırtı tekrarı çok fazlaydı; düşen parçalar artık kendi sesini çıkarıyor
-                // (DebrisSettle). Burada sadece seyrek, kısık ahşap gıcırtısı kalır
+                // (DebrisSettle). Play testi 29: gıcırtı susturuldu; yerine seyrek, uzaktan taş kırılma ve çökme
                 if (Time.time >= nextCreak)
                 {
-                    Play2D("quake.creak", 0.45f, Random.Range(-0.7f, 0.7f));
+                    Play2D("quake.crumble", 0.6f, Random.Range(-0.7f, 0.7f));
                     nextCreak = Time.time + Random.Range(creakInterval.x, creakInterval.y);
                 }
             }
@@ -273,7 +273,7 @@ namespace Deprem.Audio
         private void OnAftershock()
         {
             Play2D("quake.aftershock", 1f, 0f);
-            Play2D("quake.creak", 0.7f, Random.Range(-0.5f, 0.5f), 0.5f);
+            Play2D("quake.crumble", 0.7f, Random.Range(-0.5f, 0.5f), 0.4f);
         }
 
         private void OnItemToppled(ItemId id)

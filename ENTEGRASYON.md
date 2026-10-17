@@ -1242,6 +1242,21 @@ Mehmet'in yorumu (özet):
     - `music.tension`, `music.menu`, `music.final` yeniden yazıldı. Final müziği artık 48 sn'lik ağıt.
   - **`quake.debris`:** ses aynı. `DebrisSettle` artık aynı anahtarı en az 0,45 sn arayla çalıyor, arada düşenler sessiz, ses rastgele kısık.
 
+### Play testi 29: Mehmet'in düzeltmeleri (bu turda Berke'ye iş yok)
+
+Dört test geçiyor; Play'de denenmedi.
+
+- **"Odamızdaki mavi ışık" bulundu (senin dosyanda, ben düzelttim; `SpiritPhase`):**
+  - Bedene dönüş (`ReturnToBody`) bitince `running` ve `returning` zaten sıfırdı. Bu yüzden `MainQuake`'e geçişte `End()` çağrılmıyordu.
+  - Küçülmüş ruh, mavi `Glow` ışığıyla (şiddet 3, 3 m) yatakta açık kalıyordu; elektrik kesilince görünüyordu.
+  - `HandlePhaseChanged` artık ruh açıksa da `End()` çağırıyor. Dönüşte ışık da ruhla birlikte sönüyor.
+- **Annenin yürüme/bekleme titremesi:** takipte iz 5 cm'lik adımlarla güncellendiği için kare kare durup yürüyordu. Hareket bitince 0,25 sn daha yürüyor sayılıyor; yön de 1 cm'den küçük geri adımlarda dönmüyor.
+- **Ses seviyeleri dengelendi:**
+  - Adım 1 → 0,35, müzikler 0,55–0,6, ortam 0,4–0,45, minigame ve ruh sesleri biraz kısık.
+  - `bubble.blip` 0,6 → 0,4, `ui.*` aynı.
+- **Cam sesi seyreldi:** çatlayan çerçeve, saat ve aynalarda %30 olasılıkla çalıyor; bütün dekorlarda iki cam sesi arası en az 1,2 sn.
+- **Yeni ses `quake.crumble`:** taş kırılma ve çökme. Sarsıntıda 4–7,5 sn'de bir uzaktan çalıyor ve artçı başlarken (susturulan `quake.creak`'in yerinde).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

@@ -79,6 +79,16 @@ namespace Deprem.HouseBuilder
                 houseLights.SetPower(false);
                 volumes.SetImmediate(volumes.PowerOut);
                 HousePreview.Render("Logs/house_preview_salon_dark.png", null, salonCamera, 1920, 1080);
+                // Play testi 29: oyuncunun odası elektrik kesikken ("odamızdaki mavi ışık")
+                var oyuncu = HouseLayout.Room("oyuncu");
+                var oyuncuCamera = new Vector3((oyuncu.X0 + oyuncu.X1) * 0.5f, oyuncu.FloorY + 1.9f, -12f);
+                HousePreview.Render("Logs/house_preview_oyuncu_dark.png", null, oyuncuCamera, 1920, 1080);
+                // Aynısı oyuncunun ışıkları (el feneri, yakın görüş) açıkken: ışığın kaynağı sahne mi oyuncu mu
+                var playerLights = Object.FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                    .Where(l => (l.name == "Flashlight" || l.name == "NightSight") && !l.enabled).ToList();
+                foreach (var l in playerLights) l.enabled = true;
+                HousePreview.Render("Logs/house_preview_oyuncu_dark_oyuncu_isiklari.png", null, oyuncuCamera, 1920, 1080);
+                foreach (var l in playerLights) l.enabled = false;
                 volumes.SetImmediate(volumes.Night);
                 houseLights.SetPower(true);
             }
