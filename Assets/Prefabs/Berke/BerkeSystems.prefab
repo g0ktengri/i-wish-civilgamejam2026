@@ -235,21 +235,25 @@ MonoBehaviour:
     markerName: Marker_FirstAid
     offset: {x: 0, y: 0, z: 0}
     color: {r: 0.85, g: 0.2, b: 0.2, a: 1}
+    model: {fileID: 1980987559015791253, guid: c1aef9a80dc121e48b33bae49eb0ceea, type: 3}
   - id: 2
     enabled: 1
     markerName: Marker_Flashlight
     offset: {x: 0, y: 0, z: 0}
     color: {r: 0.95, g: 0.8, b: 0.25, a: 1}
+    model: {fileID: 2895202046940448019, guid: 3cb03f51f64611543b8622a3589bce98, type: 3}
   - id: 3
     enabled: 0
     markerName: Marker_Flashlight
     offset: {x: 0.6, y: 0, z: 0}
     color: {r: 0.4, g: 0.7, b: 1, a: 1}
+    model: {fileID: 1988465516832275551, guid: b2774273e74d921458a11aa23ca6d9ec, type: 3}
   - id: 4
     enabled: 0
     markerName: Marker_FirstAid
     offset: {x: 0.6, y: 0, z: 0}
     color: {r: 0.7, g: 0.7, b: 0.75, a: 1}
+    model: {fileID: 153426857578419304, guid: 14c8a85cb1de3464c89cf5a2feecbc08, type: 3}
   bagMarkerName: Marker_Bag
   supplySize: 0.3
   bagSize: {x: 0.6, y: 0.6, z: 0.35}

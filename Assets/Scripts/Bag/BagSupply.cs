@@ -1,6 +1,7 @@
 using Deprem.Core;
 using Deprem.Minigames;
 using Deprem.Spirit;
+using Deprem.Visual;
 using UnityEngine;
 
 namespace Deprem.Bag
@@ -16,6 +17,8 @@ namespace Deprem.Bag
         Vector3 home;
         Light glow;
         Renderer visual;
+        PickupHighlight pickup;
+        bool shown = true;
         Sprite icon;
         Transform spirit;
         bool opening;
@@ -29,15 +32,24 @@ namespace Deprem.Bag
             !opening && GameState.Phase == GamePhase.Spirit && BagSystem.Carrying == BagItemId.None &&
             !GameState.HasBagItem(id);
 
-        // icon varsa dünyada sprite (64 PPU, ölçeklenmez), yoksa renkli küp
+        // position: işaret noktası (masa / komodin yüzeyi). Görünüş sırası: Mehmet'in modeli (pivot taban ortası,
+        // sarı kontur), ikon sprite'ı (64 PPU), renkli küp. Sprite ve küp merkezli: yüzeye gömülmesin diye yarım boy yukarı.
         public static BagSupply Create(BagSystem system, BagItemId id, Vector3 position, float size, Color color,
-            Sprite icon)
+            Sprite icon, GameObject model = null)
         {
             GameObject go;
-            if (icon)
+            float centerHeight = size * 0.5f;
+            if (model)
+            {
+                go = Instantiate(model);
+                foreach (var collider in go.GetComponentsInChildren<Collider>()) Destroy(collider);
+            }
+            else if (icon)
             {
                 go = new GameObject();
                 go.AddComponent<SpriteRenderer>().sprite = icon;
+                position += Vector3.up * icon.bounds.extents.y;
+                centerHeight = 0f;
             }
             else
             {
@@ -45,6 +57,8 @@ namespace Deprem.Bag
                 Destroy(go.GetComponent<Collider>());
                 go.transform.localScale = Vector3.one * size;
                 go.GetComponent<Renderer>().material.color = color;
+                position += Vector3.up * centerHeight;
+                centerHeight = 0f;
             }
             go.name = $"BagSupply_{id}";
             go.transform.SetParent(system.transform, false);
@@ -52,6 +66,7 @@ namespace Deprem.Bag
 
             var glow = new GameObject("Glow").AddComponent<Light>();
             glow.transform.SetParent(go.transform, false);
+            glow.transform.position = position + Vector3.up * centerHeight; // modelin ortası
             glow.type = LightType.Point;
             glow.color = color;
             glow.range = 1.5f;
@@ -63,7 +78,8 @@ namespace Deprem.Bag
             supply.id = id;
             supply.home = position;
             supply.glow = glow;
-            supply.visual = go.GetComponent<Renderer>();
+            supply.pickup = go.GetComponent<PickupHighlight>();
+            supply.visual = supply.pickup ? null : go.GetComponent<Renderer>();
             supply.icon = icon;
             return supply;
         }
@@ -110,7 +126,19 @@ namespace Deprem.Bag
 
             // Çantaya konan malzeme dünyada görünmez (çantanın içinde)
             var visible = !inBag;
-            if (visual.enabled != visible) visual.enabled = visible;
+            if (pickup)
+            {
+                if (shown != visible)
+                {
+                    shown = visible;
+                    pickup.SetShown(visible);
+                }
+                pickup.SetHighlight(!carried); // taşınırken sarı kontur kapalı
+            }
+            else if (visual && visual.enabled != visible)
+            {
+                visual.enabled = visible;
+            }
             glow.enabled = visible && GameState.Phase == GamePhase.Spirit;
         }
     }

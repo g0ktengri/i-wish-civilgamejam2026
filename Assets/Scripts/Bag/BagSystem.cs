@@ -19,6 +19,9 @@ namespace Deprem.Bag
             public string markerName;
             public Vector3 offset;
             public Color color = Color.white;
+            [Tooltip("Mehmet'in modeli (Prefabs/Mehmet/BagItems/BagItem_{id}, pivot taban ortası, sarı kontur). " +
+                     "Prefab kurulurken bağlanır; yoksa ikon, o da yoksa renkli küp")]
+            public GameObject model;
         }
 
         [SerializeField] SupplyDef[] supplies =
@@ -97,7 +100,7 @@ namespace Deprem.Bag
                     continue;
                 }
                 BagSupply.Create(this, def.id, marker.transform.position + def.offset, supplySize, def.color,
-                    IconFor(def.id));
+                    IconFor(def.id), def.model);
             }
 
             var bagMarker = GameObject.Find(bagMarkerName);

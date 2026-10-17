@@ -39,6 +39,13 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - Kilitleme: yeşil alan ve ibre hızı birikimliydi. Her isabette daralıp hızlanıyor, ıskalayınca isabet düşse de geri gelmiyordu; birkaç denemede imkansızlaşıyordu. Artık ikisi de o anki isabet sayısından hesaplanıyor (`LockMinigame.ApplyDifficulty`). Ayarlar yumuşadı: 0,75 tur/sn, alan 0,24, isabet başına ×0,8 alan / ×1,15 hız.
 - Çömelme: `crouchedScale` 0,95 × 0,72 (son karede ~0,92 m). Eni neredeyse tam kalıyor, cüce görünümü bundandı.
 
+### M20: çanta malzemesi modelleri bağlandı
+
+- `BagSystem.SupplyDef.model`: prefab kurucu (`BerkeSystemsPrefab.BindBagModels`) her malzemeye `Prefabs/Mehmet/BagItems/BagItem_{id}.prefab`'ı bağlıyor. Model yoksa uyarı yazıp ikon / küp kullanıyor.
+- `BagSupply.Create`: görünüş sırası model → ikon sprite'ı → renkli küp. Model işarete doğrudan konuyor (pivot taban ortası). Sprite ve küp yüzeye gömülmesin diye yarım boy yukarıda. Collider'lar siliniyor; `glow` modelin ortasında.
+- Görünürlük `PickupHighlight.SetShown(!inBag)` ile, sadece değişince çağrılıyor. Taşınırken `SetHighlight(false)`: sarı kontur kapanıyor. Ruh fazı dışında konturu senin `onlyInSpirit` kapatıyor.
+- HUD ve minigame ikonları değişmedi; onlar hâlâ `ikon_*.png` / renk.
+
 ### Berke'nin pushladıkları
 
 | Sistem | Dosya | Ne yapar |

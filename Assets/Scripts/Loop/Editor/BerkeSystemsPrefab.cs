@@ -83,7 +83,7 @@ namespace Deprem.Loop.EditorTools
                 root.AddComponent<SpiritHighlighter>();
                 root.AddComponent<SpiritHud>();
                 root.AddComponent<MinigameHost>();
-                root.AddComponent<BagSystem>();
+                BindBagModels(root.AddComponent<BagSystem>());
                 root.AddComponent<PromptHud>();
                 root.AddComponent<ObjectiveHud>();
                 root.AddComponent<BagHud>();
@@ -103,6 +103,25 @@ namespace Deprem.Loop.EditorTools
                 Object.DestroyImmediate(root);
             }
             AssetDatabase.SaveAssets();
+        }
+
+        // M20: Mehmet'in çanta malzemesi modelleri (HouseBuilder.BuildMainSceneBatch üretir). Yoksa ikon / küp kalır.
+        const string BagModelFolder = "Assets/Prefabs/Mehmet/BagItems";
+
+        static void BindBagModels(BagSystem bag)
+        {
+            var so = new SerializedObject(bag);
+            var supplies = so.FindProperty("supplies");
+            for (int i = 0; i < supplies.arraySize; i++)
+            {
+                var def = supplies.GetArrayElementAtIndex(i);
+                var idProperty = def.FindPropertyRelative("id");
+                string id = idProperty.enumNames[idProperty.enumValueIndex];
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{BagModelFolder}/BagItem_{id}.prefab");
+                def.FindPropertyRelative("model").objectReferenceValue = model;
+                if (!model) Debug.LogWarning($"[BerkeSystemsPrefab] Çanta modeli yok: BagItem_{id} (ikon / küp kullanılır)");
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void BindArt(GameObject root)
