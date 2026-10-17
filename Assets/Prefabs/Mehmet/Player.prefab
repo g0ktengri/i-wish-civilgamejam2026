@@ -250,8 +250,8 @@ MonoBehaviour:
   headHeight: 2.1
   lyingHeadHeight: 1.15
   font: {fileID: 12800000, guid: b130f425b0541a64e94ef955310244fb, type: 3}
-  fontSize: 18
-  maxTextWidth: 260
+  fontSize: 24
+  maxTextWidth: 340
   charsPerSecond: 45
   popTime: 0.18
   minReadTime: 1.2
@@ -269,8 +269,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.PlayerFootsteps
   stepInterval: 0.32
   crouchStepInterval: 0.5
-  stepVolume: 0.35
-  landVolume: 0.7
+  stairStepInterval: 0.3
+  stepVolume: 0.85
+  landVolume: 0.9
 --- !u!114 &8684074246600651156
 MonoBehaviour:
   m_ObjectHideFlags: 0

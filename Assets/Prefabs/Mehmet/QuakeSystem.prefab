@@ -159,8 +159,9 @@ MonoBehaviour:
   playerPlaneZ: 1
   playerRadius: 0.25
   barSegments: 24
-  segmentSize: {x: 7, y: 10}
-  segmentGap: 2
+  segmentSize: {x: 10, y: 15}
+  segmentGap: 3
+  labelFontSize: 20
   barTopMargin: 14
   calmColor: {r: 1, g: 0.85, b: 0.45, a: 1}
   urgentColor: {r: 1, g: 0.15, b: 0.1, a: 1}
