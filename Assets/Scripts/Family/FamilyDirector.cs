@@ -173,10 +173,22 @@ namespace Deprem.Family
             }
         }
 
-        /// <summary>İz boyunca oyuncunun bu kadar gerisindeki nokta</summary>
+        /// <summary>
+        /// İz boyunca oyuncunun bu kadar gerisindeki nokta. Play testi: anne yürürken titriyordu; iz 5 cm'lik
+        /// adımlarla güncellendiği için hedef sıçrıyor, takipçi hızla yetişip duruyordu. Ölçüm oyuncunun anlık
+        /// konumundan başlar (iz ucuna kadarki parça da sayılır): hedef oyuncuyla birlikte sürekli kayar.
+        /// </summary>
         private Vector3 PointBehind(float distance)
         {
             float remaining = distance;
+            if (trail.Count > 0)
+            {
+                var head = player.transform.position;
+                var last = trail[trail.Count - 1];
+                float lead = Vector3.Distance(head, last);
+                if (lead >= remaining) return lead > 0f ? Vector3.Lerp(head, last, remaining / lead) : head;
+                remaining -= lead;
+            }
             for (int i = trail.Count - 1; i > 0; i--)
             {
                 float segment = Vector3.Distance(trail[i], trail[i - 1]);

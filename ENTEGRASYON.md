@@ -52,6 +52,20 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Mehmet'in play testi: kardeş, salon penceresi, anne, ölüm efekti, çök-kapan ipucu, keşke yazıları
+
+Dört test geçiyor; Play'de denenmedi.
+
+- **Senin dosyan, Mehmet'in isteğiyle biz yaptık (`UI/WishScreen.cs`, `BerkeSystems.prefab` yeniden kuruldu):** keşke yazıları büyüdü.
+  - Punto: KEŞKE 76 → 96, cümle 40 → 54, bilgi ve ipucu 19 → 23.
+  - Cümle alanı iki satıra göre açıldı. Başlık cümlenin üstüne 62 yerine 92 px kalkıyor; çatlak ve bilgi satırı biraz aşağı indi.
+  - Önizleme: `Logs/hud_preview_wish_*.png`.
+- **Kardeş (`FamilyMember`):** oyuncak dolabı düşünce oyuncu odaya girmeden görüp konuşuyordu. Kayıp tepkisi ve vurgu sesi artık oyuncu üyenin odasındayken.
+- **Salon penceresi (`DecorProps.BuildSalonWindow`):** kanepenin üstündeki pencere düz koyu bir dikdörtgendi. Artık camlı gece penceresi: kasa, kayıtlar, perde, denizlik, camda parıltı. Eski `pencere.mat` silindi.
+- **Anne (`FamilyDirector.PointBehind`):** yürürken titriyordu, çünkü takip hedefi iz adımlarıyla sıçrıyordu. Hedef artık oyuncunun anlık konumundan ölçülüyor.
+- **Ölüm efekti (`QuakeDirector`):** 1. döngüde efekt rafın yatağa çarptığı anda başlıyor; tavan 0,25 sn sonra çöküyor (`collapseAfterShelf`).
+- **Çök-kapan ipucu:** önceki oyunlardan kalan "öğrenildi" kaydı yüzünden hiç çıkmıyordu. "Yeni oyun"da (intro oynarken) kayıt siliniyor; ipucu bir kez yeniden gösteriliyor.
+
 ### Intro: dışarıdan giriş ve portmanto yönü (Mehmet)
 
 Dört test geçiyor; Play'de denenmedi.

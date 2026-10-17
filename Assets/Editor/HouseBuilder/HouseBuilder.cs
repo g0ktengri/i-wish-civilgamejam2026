@@ -18,7 +18,7 @@ namespace Deprem.HouseBuilder
     ///   Eşyalar: Assets/Art/Items/{esya}_on.png, _yan.png, _ust.png (kabin dahil: kabin_on ...)
     ///   Mobilya: Assets/Art/Decor/{mobilya}_on.png, _yan.png, _ust.png (şekiller: FurnitureShapes)
     ///   Ortak  : Assets/Art/Tiles/kesit.png, Assets/Art/Tiles/merdiven_basamak.png
-    ///   Pencere: Assets/Art/Decor/pencere.png, pencere_emission.png
+    ///   Pencere: Assets/Art/Decor/pencere.png (yoksa DecorProps camlı gece penceresi çizer)
     /// Doku ekledikten sonra Tools > Deprem > Evi Yeniden Kur yeterli.
     /// </summary>
     internal static class HouseBuilder
@@ -788,25 +788,8 @@ namespace Deprem.HouseBuilder
 
         private static void BuildWindow(Transform parent)
         {
-            var salon = HouseLayout.Room("salon");
-            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Decor/pencere.png");
-            var emission = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Decor/pencere_emission.png");
-            // Berke'nin play testi: doygun mavi sırıtıyordu; çizim gelene kadar sönük gece mavisi
-            var mat = GetMaterial("pencere", null, new Color(0.2f, 0.23f, 0.29f));
-            mat.SetTexture("_BaseMap", tex);
-            mat.SetColor("_BaseColor", tex != null ? Color.white : new Color(0.2f, 0.23f, 0.29f));
-            mat.EnableKeyword("_EMISSION");
-            mat.SetTexture("_EmissionMap", emission);
-            mat.SetColor("_EmissionColor", emission != null ? Color.white : new Color(0.06f, 0.08f, 0.12f));
-            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
-
-            var window = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            window.name = "Window_Salon";
-            Object.DestroyImmediate(window.GetComponent<Collider>());
-            window.transform.SetParent(parent, false);
-            window.transform.position = new Vector3(HouseDims.SalonWindowX, 1.5f, salon.Depth - 0.01f);
-            window.transform.localScale = new Vector3(1.5f, 1f, 1f);
-            window.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            // Play testi: kanepenin üstündeki pencerede cam yoktu; camlı gece penceresi DecorProps'ta
+            DecorProps.BuildSalonWindow(parent, (name, color) => GetMaterial(name, null, color));
         }
 
         // ---------------------------------------------------------------- Eşyalar

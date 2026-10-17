@@ -57,7 +57,7 @@ namespace Deprem.UI
         [Tooltip("KEŞKE'nin küçülüp yukarı kayma süresi")]
         [SerializeField] float headMoveSeconds = 0.45f;
         [SerializeField] float headEndScale = 0.6f;
-        [SerializeField] float headEndRise = 62f;
+        [SerializeField] float headEndRise = 92f; // büyüyen cümlenin (iki satır olabilir) üstünde kalsın
 
         [Header("Cümlenin devamı (sn)")]
         [Tooltip("Cümlenin devamının yazılma hızı (harf/sn)")]
@@ -93,10 +93,12 @@ namespace Deprem.UI
         [Header("Görünüm")]
         [Tooltip("Boşsa UiStyle fontu (Pixelify Sans)")]
         [SerializeField] Font font;
-        [SerializeField] int headFontSize = 76;
-        [SerializeField] int wishFontSize = 40;
-        [Tooltip("M33: bilgi satırı ve ipucu 15'ten 19'a (okunmuyordu)")]
-        [SerializeField] int infoFontSize = 19;
+        [Tooltip("Mehmet'in play testi: keşkeler daha büyük olsun (76 → 96)")]
+        [SerializeField] int headFontSize = 96;
+        [Tooltip("Mehmet'in play testi: keşke cümlesi daha büyük (40 → 54; uzun cümle iki satıra iner)")]
+        [SerializeField] int wishFontSize = 54;
+        [Tooltip("M33: bilgi satırı ve ipucu 15'ten 19'a (okunmuyordu); Mehmet'in play testi: 23")]
+        [SerializeField] int infoFontSize = 23;
         [SerializeField] Color wishColor = new Color(1f, 0.95f, 0.88f);
         [SerializeField] Color infoColor = new Color(0.72f, 0.72f, 0.75f);
         [SerializeField] Color lineColor = new Color(0.9f, 0.22f, 0.16f);
@@ -743,17 +745,17 @@ namespace Deprem.UI
             headHome = headRect.anchoredPosition;
 
             wishText = UiBuilder.CreateText(contentRoot, "Wish", font, wishFontSize, wishColor);
-            UiBuilder.Stretch(wishText.rectTransform, new Vector2(0.06f, 0.5f), new Vector2(0.94f, 0.66f));
+            UiBuilder.Stretch(wishText.rectTransform, new Vector2(0.03f, 0.46f), new Vector2(0.97f, 0.7f));
             wishRect = wishText.rectTransform;
             wishHome = wishRect.anchoredPosition;
 
             crackRoot = new GameObject("CrackRoot", typeof(RectTransform)).GetComponent<RectTransform>();
             crackRoot.SetParent(contentRoot, false);
-            crackRoot.anchorMin = crackRoot.anchorMax = new Vector2(0.5f, 0.48f);
+            crackRoot.anchorMin = crackRoot.anchorMax = new Vector2(0.5f, 0.43f);
             crackRoot.sizeDelta = Vector2.zero;
 
             infoText = UiBuilder.CreateText(contentRoot, "Info", font, infoFontSize, infoColor);
-            UiBuilder.Stretch(infoText.rectTransform, new Vector2(0.2f, 0.28f), new Vector2(0.8f, 0.44f));
+            UiBuilder.Stretch(infoText.rectTransform, new Vector2(0.15f, 0.22f), new Vector2(0.85f, 0.4f));
 
             hintText = UiBuilder.CreateText(contentRoot, "Hint", font, infoFontSize, infoColor);
             UiBuilder.Stretch(hintText.rectTransform, new Vector2(0.3f, 0.05f), new Vector2(0.7f, 0.12f));

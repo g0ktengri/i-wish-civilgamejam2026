@@ -112,7 +112,7 @@ MonoBehaviour:
   headHold: 1.2
   headMoveSeconds: 0.45
   headEndScale: 0.6
-  headEndRise: 62
+  headEndRise: 92
   wishCharsPerSecond: 12
   letterShake: 2
   crackSeconds: 0.4
@@ -129,9 +129,9 @@ MonoBehaviour:
   rewindCharsPerSecond: 90
   fadeFromBlack: 0.8
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  headFontSize: 76
-  wishFontSize: 40
-  infoFontSize: 19
+  headFontSize: 96
+  wishFontSize: 54
+  infoFontSize: 23
   wishColor: {r: 1, g: 0.95, b: 0.88, a: 1}
   infoColor: {r: 0.72, g: 0.72, b: 0.75, a: 1}
   lineColor: {r: 0.9, g: 0.22, b: 0.16, a: 1}

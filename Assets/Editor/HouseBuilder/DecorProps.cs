@@ -335,6 +335,130 @@ namespace Deprem.HouseBuilder
             Part("KornişUcSag", 62, 0, 63, 3, 0.12f, new Color(0.24f, 0.17f, 0.11f));
         }
 
+        /// <summary>
+        /// Play testi: salonda kanepenin üstündeki pencere düz koyu bir dikdörtgendi, cam yoktu. Arka duvarda camlı
+        /// gece penceresi (oyuncunun odasındakinin geniş hali): gökyüzü, ay, uzak ev ışıkları, camda parıltı; kasa,
+        /// kayıtlar, denizlik ve korniş duvardan öne çıkar. Assets/Art/Decor/pencere.png gelirse o kullanılır.
+        /// </summary>
+        public static void BuildSalonWindow(Transform root, Func<string, Color, Material> material)
+        {
+            var room = HouseLayout.Room("salon");
+            var art = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Decor/pencere.png");
+            EnsureFolder();
+            var texture = art != null ? art : Save($"{Folder}/pencere_salon.png", BackWindow());
+            string matPath = $"{Folder}/pencere_salon.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                AssetDatabase.CreateAsset(mat, matPath);
+            }
+            mat.SetTexture("_BaseMap", texture);
+            mat.SetColor("_BaseColor", Color.white);
+            mat.SetFloat("_AlphaClip", 1f);
+            mat.SetFloat("_Cutoff", 0.5f);
+            mat.EnableKeyword("_ALPHATEST_ON");
+            mat.SetFloat("_Smoothness", 0.6f); // cam: ışığı hafifçe yansıtır
+            mat.EnableKeyword("_EMISSION");
+            mat.SetTexture("_EmissionMap", texture);
+            mat.SetColor("_EmissionColor", new Color(0.22f, 0.24f, 0.32f)); // ay ışığı, karanlıkta seçilsin
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            EditorUtility.SetDirty(mat);
+
+            float w = texture.width / (float)Ppu, h = texture.height / (float)Ppu;
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "Window_Salon";
+            UnityEngine.Object.DestroyImmediate(quad.GetComponent<Collider>());
+            quad.transform.SetParent(root, false);
+            quad.transform.position = new Vector3(HouseDims.SalonWindowX, room.FloorY + 1.6f, room.Depth - 0.01f);
+            quad.transform.localScale = new Vector3(w, h, 1f);
+            var renderer = quad.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = mat;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (art != null) return;
+
+            // Ölçüler çizimin pikselleriyle aynı (BackWindow: 96 x 72, sol üstten)
+            var c = quad.transform.position;
+            float wall = room.Depth;
+            void Part(string name, int u0, int v0, int u1, int v1, float outward, Color color)
+            {
+                float x0 = c.x + (u0 / 96f - 0.5f) * w, x1 = c.x + ((u1 + 1) / 96f - 0.5f) * w;
+                float yTop = c.y + (0.5f - v0 / 72f) * h, yBottom = c.y + (0.5f - (v1 + 1) / 72f) * h;
+                var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cube.name = "PencereSalon_" + name;
+                UnityEngine.Object.DestroyImmediate(cube.GetComponent<Collider>());
+                cube.transform.SetParent(root, false);
+                cube.transform.position = new Vector3((x0 + x1) * 0.5f, (yTop + yBottom) * 0.5f, wall - outward * 0.5f);
+                cube.transform.localScale = new Vector3(x1 - x0, yTop - yBottom, outward);
+                cube.GetComponent<MeshRenderer>().sharedMaterial = material($"pencere_{name}", color);
+            }
+            var frame = new Color(0.86f, 0.84f, 0.78f);
+            var frameShade = new Color(0.66f, 0.64f, 0.6f);
+            Part("KasaUst", 12, 6, 83, 8, 0.045f, frame);
+            Part("KasaAlt", 12, 59, 83, 61, 0.045f, frameShade);
+            Part("KasaSol", 12, 6, 14, 61, 0.045f, frame);
+            Part("KasaSag", 81, 6, 83, 61, 0.045f, frameShade);
+            Part("KayitDikey", 47, 9, 48, 58, 0.03f, frame);
+            Part("KayitYatay", 15, 33, 80, 34, 0.03f, frame);
+            Part("Denizlik", 10, 62, 85, 64, 0.12f, new Color(0.9f, 0.88f, 0.82f));
+            Part("Korniş", 0, 1, 95, 2, 0.1f, new Color(0.3f, 0.22f, 0.15f));
+        }
+
+        // Salonun geniş gece penceresi: SideWindow'un aynısı, 96 px en; dört cam, artı kayıt, perde, denizlik
+        private static Canvas BackWindow()
+        {
+            const int W = 96;
+            var c = new Canvas(W, 72);
+            var skyTop = new Color(0.1f, 0.13f, 0.27f);
+            var skyLow = new Color(0.32f, 0.3f, 0.48f);
+            for (int y = 8; y < 60; y++)
+                for (int x = 14; x < 82; x++) c.Set(x, y, Color.Lerp(skyTop, skyLow, (y - 8) / 52f));
+            var rng = new System.Random(37);
+            for (int i = 0; i < 18; i++) c.Set(16 + rng.Next(64), 10 + rng.Next(28), new Color(0.95f, 0.93f, 0.8f));
+            c.Disc(26, 19, 4.5f, new Color(0.96f, 0.92f, 0.72f));
+            var town = new Color(0.12f, 0.12f, 0.2f);
+            for (int x = 14; x < 82; x++)
+            {
+                int top = 47 - (x / 7 % 3) * 3 - (x % 13 < 4 ? 3 : 0);
+                for (int y = top; y < 60; y++) c.Set(x, y, town);
+            }
+            for (int i = 0; i < 11; i++) c.Set(16 + rng.Next(64), 50 + rng.Next(8), new Color(0.95f, 0.8f, 0.4f));
+            // Kasa ve kayıt
+            var frame = new Color(0.86f, 0.84f, 0.78f);
+            var frameDark = new Color(0.6f, 0.58f, 0.54f);
+            c.Rect(12, 6, 83, 8, frame);
+            c.Rect(12, 59, 83, 61, frameDark);
+            c.Rect(12, 6, 14, 61, frame);
+            c.Rect(81, 6, 83, 61, frameDark);
+            c.Rect(47, 6, 48, 61, frame);
+            c.Rect(12, 33, 83, 34, frame);
+            // Camda parıltı: her camda çapraz iki ince ışık çizgisi (cam olduğu belli olsun)
+            void Glint(int x, int y, int length, float strength)
+            {
+                for (int i = 0; i < length; i++) c.Set(x + i, y - i, Color.Lerp(c.Get(x + i, y - i), Color.white, strength));
+            }
+            Glint(18, 30, 9, 0.45f);
+            Glint(22, 30, 5, 0.25f);
+            Glint(52, 30, 9, 0.4f);
+            Glint(19, 57, 7, 0.3f);
+            Glint(54, 57, 9, 0.35f);
+            Glint(58, 57, 5, 0.2f);
+            // Perdeler ve korniş
+            var curtain = new Color(0.62f, 0.32f, 0.26f);
+            var curtainDark = new Color(0.47f, 0.22f, 0.18f);
+            for (int y = 3; y < 68; y++)
+            {
+                int width = 13 + (y > 42 ? (y - 42) / 6 : 0);
+                for (int x = 0; x < width; x++) c.Set(x, y, x % 4 == 1 ? curtainDark : curtain);
+                for (int x = W - width; x < W; x++) c.Set(x, y, x % 4 == 2 ? curtainDark : curtain);
+            }
+            c.Rect(0, 1, W - 1, 2, new Color(0.3f, 0.22f, 0.15f));
+            // Denizlik
+            c.Rect(10, 62, 85, 64, new Color(0.9f, 0.88f, 0.82f));
+            c.Rect(10, 65, 85, 65, frameDark);
+            return c;
+        }
+
         // Gece penceresi: beyaz ahşap kasa, artı kayıt, dört cam (gök, ay, yıldız, uzak ev ışıkları), yanlarda perde, denizlik
         private static Canvas SideWindow()
         {

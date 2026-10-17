@@ -241,7 +241,7 @@ namespace Deprem.Family
             bool lost = State == FamilyState.Hit || State == FamilyState.Bleeding ||
                         (missingBagItem && (State == FamilyState.Waiting || State == FamilyState.Injured));
             PlayDiscoverStinger(lost);
-            if (lost && IsNear(player.transform.position, discoverRange))
+            if (lost && IsNear(player.transform.position, discoverRange) && InSameRoom())
             {
                 if (!PlayerReacted) ReactToLoss(State == FamilyState.Hit);
                 discoverTimer += dt;
@@ -311,6 +311,16 @@ namespace Deprem.Family
         }
 
         /// <summary>
+        /// Play testi: kardeşin üstüne oyuncak dolabı düşünce oyuncu odaya girmeden (duvarın arkasından) görüp
+        /// konuşuyordu. Kayıp tepkisi oyuncu üyenin odasındayken; oda sistemi yoksa (editör testi) her zaman.
+        /// </summary>
+        private bool InSameRoom()
+        {
+            var visibility = Deprem.Visual.RoomVisibility.Instance;
+            return visibility == null || visibility.SameRoom(player.transform.position, transform.position);
+        }
+
+        /// <summary>
         /// Play testi 20: üyenin durumu ilk görüldüğü an bir müzik vurgusu (yaralı / bekliyor: gerilim,
         /// kaybedilmiş: ağır kayıp vurgusu). Odası açık ve oyuncu yakınsa, döngüde bir kez.
         /// </summary>
@@ -320,6 +330,7 @@ namespace Deprem.Family
             if (!IsNear(player.transform.position, stingerRange)) return;
             var visibility = Deprem.Visual.RoomVisibility.Instance;
             if (visibility != null && !visibility.IsVisibleAt(transform.position)) return;
+            if (lost && !InSameRoom()) return; // kayıp vurgusu da odaya girince (yukarıdaki tepkiyle birlikte)
             stingerPlayed = true;
             Deprem.Audio.Sfx.Play(lost ? "family.loss" : "family.discover");
         }

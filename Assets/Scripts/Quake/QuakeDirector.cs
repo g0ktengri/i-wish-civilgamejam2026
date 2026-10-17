@@ -100,6 +100,8 @@ namespace Deprem.Quake
         [SerializeField] private float debrisImpactDelay = 1.5f;
         [Tooltip("Öldükten sonra kayıp ekranından önce sahnede kalma (sn): ölme kareleri biter, ruh yükselir, ekran kararır (Play testi 25)")]
         [SerializeField] private float deathLinger = 2.6f;
+        [Tooltip("Yatağa raf düşünce tavanın çökmesine kadar (sn); ölüm efekti raf çarparken başlar, tavan kararmadan düşsün")]
+        [SerializeField] private float collapseAfterShelf = 0.25f;
         [Header("Intro: giriş kapısı yakın çekimi")]
         [Tooltip("Kameranın kapıya kayma süresi (sn); dönüş bunun 0,6'sı")]
         [SerializeField] private float entranceCameraTravel = 1.6f;
@@ -254,6 +256,8 @@ namespace Deprem.Quake
         {
             // Intro sinematiği: 1. döngünün ilk denemesinde oyuncu okuldan gelip yatar; sonra gece açılır
             bool intro = IntroCinematic.ShouldPlay;
+            // Play testi: "Yeni oyun"da çök-kapan ipucu yeniden bir kez gösterilsin (önceki oyunlardan kalan kayıt silinir)
+            if (intro) PlayerPrefs.DeleteKey(DuckCoverLearnedKey);
             if (intro) yield return Intro.Play();
             LieInBed();
             if (intro) StartCoroutine(Intro.FadeIn());
@@ -342,18 +346,23 @@ namespace Deprem.Quake
                 var shelf = SecurableItem.Find(ItemId.BedShelf);
                 bool shelfFalls = shelf == null || !shelf.IsSecured;
                 if (shelfFalls) player.Body.detectCollisions = false;
-                yield return new WaitForSeconds(toppleWindow.x + 0.45f);
-                if (shelfFalls) QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, shelfImpactShake);
-                yield return new WaitForSeconds(1.05f);
+                yield return new WaitForSeconds(toppleWindow.x + shelfDropTime); // raf yatağa çarptığı an
+                if (shelfFalls)
+                {
+                    // Play testi: ölüm efekti raf çarptıktan 1 sn sonra, tavan çökerken giriyordu; çarptığı an başlar
+                    QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, shelfImpactShake);
+                    Feedback.Play(1f);
+                }
+                yield return new WaitForSeconds(shelfFalls ? collapseAfterShelf : 1.05f);
                 if (shelfFalls)
                 {
                     // Play testi 5: sadece raf düşmesi ciddi durmuyordu; ağır raftan sonra tavan da yatağa çöker
-                    yield return CollapseOnBed();
+                    yield return CollapseOnBed(false);
                     Fail(LoseReason.IgnoredForeshock, ItemId.BedShelf);
                     yield break;
                 }
                 player.Body.detectCollisions = true;
-                yield return new WaitForSeconds(mainQuakeDuration - toppleWindow.x - 1.5f);
+                yield return new WaitForSeconds(mainQuakeDuration - toppleWindow.x - shelfDropTime - 1.05f);
             }
             else if (!GameState.StandUpUnlocked)
             {
@@ -655,7 +664,7 @@ namespace Deprem.Quake
         /// Yatakta kalan oyuncunun üstüne tavan çöker: geniş beton parçası, sıva ve kırıntılar yatağın üstüne,
         /// sert sarsıntı ve toz patlaması. Sonra döngü biter.
         /// </summary>
-        private IEnumerator CollapseOnBed()
+        private IEnumerator CollapseOnBed(bool playFeedback = true)
         {
             QuakePrompts.Clear();
             var center = player.transform.position;
@@ -676,7 +685,7 @@ namespace Deprem.Quake
             }
             if (effects != null) effects.Burst(1.2f);
             QuakeCameraShake.Intensity = 1f;
-            Feedback.Play(1f);
+            if (playFeedback) Feedback.Play(1f); // raf düştüyse ölüm efekti raf çarparken başladı
             // Yatan oyuncunun dik kapsülü parçaları havada tutmasın: parçalar yatağın şiltesine düşer
             player.Body.detectCollisions = false;
             yield return new WaitForSeconds(1.4f);
