@@ -768,6 +768,43 @@ Mehmet'in yorumu: "İpuçları ve mesajlar hiç oyuncu dostu değil, adam akıll
 
 **Mehmet tarafı: yapıldı.** Süre çubuğunda kareler 10×15, "ZAMAN" etiketi 20 boyunda; çök-kapan çubuğunda kareler 12×12. Oyuncu ve aile balonlarında yazı 24 boyunda, en fazla 340 genişlikte.
 
+### Play testi 22: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- Çök-kapan sadece S ile çalışsın.
+- HUD'lar üst üste biniyor: sol üstte hedef paneli, üstteki süre çubuğu ("ZAMAN"), ekran kenarındaki aile okları ve rozetleri (K, A) birbirinin üstünde.
+- İlk yardım çantasının minigame'i buglu.
+- Odamızda rastgele bir ışık açık.
+- Adım sesleri hâlâ kötü; arkada gerilim müziği duyulmuyor.
+- Bir yerde karakter donup kaldı, süre de durdu: merdivenin altında, kabinin önünde, 0/3, el feneri yanıyor.
+- Minigame grafikleri oyunla hiç alakalı değil.
+- Ebeveyn odası dokuları geldi.
+
+**Berke'ye düşen**
+
+- **M34. Çök-kapan metni:** tuş artık yalnızca S (C kaldırıldı). `prompt.duck_cover` ve `prompt.duck_cover_find`, iki dilde "S: …" olsun.
+- **M35. HUD çakışması:**
+  - Aile okları ve rozetleri hiçbir HUD panelinin üstüne gelmesin: kenara yapışırken üstteki HUD şeridinden (hedef paneli ve süre çubuğu, ~üst 70 referans px) ve alttakilerden (çanta, ipucu) uzak bir "güvenli alan" içinde kalsınlar.
+  - Hedef paneli 1,5 kat büyüyünce süre çubuğuna değiyor. Süre çubuğunu ben sağ üste alıyorum (`RescueTimer`, sağdan 16 px pay); hedef sol üstte kalsın.
+- **M36. İlk yardım çantası minigame'i:** Mehmet buglu diyor, ayrıntı vermedi. Taşı-yerleştir'i ilk yardım çantasıyla baştan sona dene: duvara takılma, boşluktan geçememe, hedefe bırakınca kabul etmeme, çarpışma biçimi.
+- **M37. Minigame grafikleri oyunla alakasız.** Mehmet'in yorumu: "Hiç mi hiç alakalı değil." Öneri:
+  - Eşya görseli oyundaki eşyanın kendisi olsun. Eşyanın sahnedeki modelini ya da `Art/Items/{key}_on.png` dokusunu kullan; malzemelerde `Prefabs/Mehmet/BagItems/BagItem_*.prefab` modellerinin renkleri.
+  - Arka plan, eşyanın bulunduğu odanın gerçek görüntüsü: sahneden alınmış, büyütülmüş, karartılmış kare ya da `Art/Rooms/{oda}/arka.png`. Soyut koyu zemin olmasın.
+  - Piksel ölçüsü oyunla aynı (64 px/m, ekranda aynı iriliğe büyütülmüş); minigame'e özel ayrı palet yerine oyunun paleti.
+- **M38. Donma (birlikte):**
+  - Ekran görüntüsünde oyuncu kabinin önünde, kurtarma fazında; hareket etmiyor, süre çubuğu duruyor. Editor.log'da oyun kodundan hata yok.
+  - Süre çubuğu yalnızca faz `Rescue` değilse durur. Yani bir şey fazı değiştirmiş (`Failed`?) ama keşke ekranı gelmemiş olabilir, ya da `timeScale` 0'da kalmış olabilir.
+  - Sen `WishScreen` "kayıp anı" (`timeScale 0`) ve kabinde kan kaybı akışına bak; ben `QuakeDirector` (artçı, çök-kapan girdisi) ve `FamilyDirector` (kabin) akışına bakıyorum.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. Çök-kapan yalnızca S.
+2. Süre çubuğu sağ üste.
+3. Odadaki "rastgele ışık": el fenerinin spot ışığı huzmeden çok uzağa (11 m) ulaşıyordu, uzak duvarda kopuk bir parlama gibi duruyordu. Menzili huzmeyle uyumlu olacak.
+4. Adım sesleri yeniden: başka kayıt, ekrana bağlı (2D), daha gür. Gerilim müziği hoparlörde duyulacak şekilde yeniden: orta frekanslarda ritim ve pad. Şimdikinin çoğu alçak bas, dizüstü hoparlörde duyulmuyor.
+5. Ebeveyn odasının yeni dokuları.
+6. Donma: kendi tarafımı arıyorum.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
