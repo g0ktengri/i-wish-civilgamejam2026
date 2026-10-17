@@ -205,6 +205,9 @@ namespace Deprem.HouseBuilder
             var decor = Child(root.transform, "Decor");
             foreach (var piece in HouseLayout.Decor)
                 BuildDecor(piece, decor);
+            // Play testi 17: duvarda tablo, saat, ayna; masada vazo, kupa (sallanır, yamulur, düşer)
+            DecorProps.Build(root.transform, (name, color) => GetMaterial(name, null, color));
+            DecorProps.BuildSideWindow(root.transform, (name, color) => GetMaterial(name, null, color)); // Play testi 18: odamızın sol duvarında pencere
 
             var doors = BuildDoors(Child(root.transform, "Doors"));
             var covers = BuildRoomCovers(Child(root.transform, "RoomCovers"));
@@ -392,9 +395,86 @@ namespace Deprem.HouseBuilder
 
         // ---------------------------------------------------------------- Merdiven, kabin, pencere
 
+        // Play testi 17: merdiven parçaları beş ayrı düz renkteydi, birbirinden bağımsız duruyordu. Hepsi tek pixel
+        // ahşap dokusunun üç tonu: basamak (orta), burun ve küpeşte başı (açık), kiriş, dikme, küpeşte (koyu)
+        private static readonly Color WoodMid = new Color(0.58f, 0.42f, 0.28f);
+        private static readonly Color WoodLight = new Color(0.7f, 0.53f, 0.36f);
+        private static readonly Color WoodDark = new Color(0.36f, 0.24f, 0.16f);
+
+        private static Material WoodMaterial(string name, string artPath, Color tint)
+        {
+            var mat = GetMaterial(name, artPath, tint);
+            if (artPath != null && AssetDatabase.LoadAssetAtPath<Texture2D>(artPath) != null) return mat;
+            mat.SetTexture("_BaseMap", PixelWoodTexture());
+            mat.SetColor("_BaseColor", tint);
+            return mat;
+        }
+
+        /// <summary>
+        /// Sanatçı dokusu yokken ahşap: 64 x 64 px (1 m), gri tonlu, renk materyalden. Yatay tahtalar (16 px),
+        /// aralarında koyu derz, tahta boyunca damar çizgileri ve birkaç budak. Point filtre, tekrar eder.
+        /// </summary>
+        private static Texture2D PixelWoodTexture()
+        {
+            const string path = "Assets/Generated/House/ahsap_piksel.png";
+            var existing = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            if (existing != null && WoodTextureBuilt) return existing;
+            const int size = 64;
+            var random = new System.Random(1717);
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            for (int y = 0; y < size; y++)
+            {
+                int plank = y / 16, row = y % 16;
+                float plankShade = 0.9f + 0.1f * (float)random.NextDouble();
+                for (int x = 0; x < size; x++)
+                {
+                    float v = plankShade;
+                    if (row == 0) v = 0.55f; // derz
+                    else if (row == 1) v *= 1.08f; // tahtanın üst kenarı ışık alır
+                    tex.SetPixel(x, y, new Color(v, v, v, 1f));
+                }
+                if (row == 0) continue;
+                // Damar: tahta boyunca kesik koyu çizgiler
+                for (int s = 0; s < 3; s++)
+                {
+                    int gy = plank * 16 + 3 + random.Next(11);
+                    int gx = random.Next(size), len = 6 + random.Next(18);
+                    for (int k = 0; k < len; k++)
+                    {
+                        var c = tex.GetPixel((gx + k) % size, gy);
+                        tex.SetPixel((gx + k) % size, gy, c * 0.85f);
+                    }
+                }
+            }
+            // Budaklar
+            for (int n = 0; n < 3; n++)
+            {
+                int kx = random.Next(size), ky = random.Next(size / 16) * 16 + 6 + random.Next(5);
+                tex.SetPixel(kx, ky, new Color(0.5f, 0.5f, 0.5f));
+                tex.SetPixel((kx + 1) % size, ky, new Color(0.62f, 0.62f, 0.62f));
+            }
+            tex.Apply();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(path);
+            if (AssetImporter.GetAtPath(path) is TextureImporter importer)
+            {
+                importer.filterMode = FilterMode.Point;
+                importer.wrapMode = TextureWrapMode.Repeat;
+                importer.mipmapEnabled = false;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.SaveAndReimport();
+            }
+            WoodTextureBuilt = true;
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
+        private static bool WoodTextureBuilt;
+
         private static void BuildStairs(Transform parent)
         {
-            var mat = GetMaterial("merdiven_basamak", "Assets/Art/Tiles/merdiven_basamak.png", new Color(0.45f, 0.38f, 0.3f));
+            var mat = WoodMaterial("merdiven_basamak", "Assets/Art/Tiles/merdiven_basamak.png", WoodMid);
             float run = HouseDims.StairLength / HouseDims.StairSteps;
             float rise = HouseDims.UpperFloorY / HouseDims.StairSteps;
             for (int i = 0; i < HouseDims.StairSteps; i++)
@@ -409,64 +489,94 @@ namespace Deprem.HouseBuilder
         }
 
         /// <summary>
-        /// Merdivenin süsü (çarpışmasız). Play testi 4–5: havada duran kutular gibiydi, basamaklı küpeşte de
-        /// tırtıklıydı. Kameraya bakan tek parça eğik yan kiriş, eğik küpeşte ve dikmeler, basamak burunları;
-        /// kabine kadar basamakların altı kapalı (duvar), kabin yüksek ucun altında açık kalır.
-        /// Üst katta merdiven boşluğunun önünde korkuluk.
+        /// Merdivenin süsü (çarpışmasız), tek ahşap ailesi (Play testi 17: parçalar bağımsız ve çirkin duruyordu):
+        ///   - önde tek parça eğik kiriş, basamak uçlarını örter; altında kabine kadar ahşap lambri (dikey çıtalı)
+        ///   - her basamakta bir dikme, kesintisiz eğik küpeşte, altta ve üstte kalın baş direği (başlıklı)
+        ///   - basamak burunları açık ton, ince
+        ///   - üst katta merdiven boşluğunun önündeki korkuluk aynı dikme aralığıyla üst baş direğine bağlanır
         /// </summary>
         private static void BuildStairTrim(Transform parent, float run, float rise)
         {
-            var beam = GetMaterial("merdiven_kiris", "Assets/Art/Tiles/merdiven_kiris.png", new Color(0.32f, 0.24f, 0.18f));
-            var rail = GetMaterial("korkuluk", "Assets/Art/Tiles/korkuluk.png", new Color(0.22f, 0.2f, 0.19f));
-            var nose = GetMaterial("merdiven_burun", null, new Color(0.55f, 0.45f, 0.35f));
-            var under = GetMaterial("merdiven_alti", "Assets/Art/Tiles/merdiven_alti.png", new Color(0.78f, 0.72f, 0.62f));
+            var dark = WoodMaterial("merdiven_kiris", "Assets/Art/Tiles/merdiven_kiris.png", WoodDark);
+            var rail = WoodMaterial("korkuluk", "Assets/Art/Tiles/korkuluk.png", WoodDark);
+            var light = WoodMaterial("merdiven_burun", null, WoodLight);
+            var panel = WoodMaterial("merdiven_alti", "Assets/Art/Tiles/merdiven_alti.png", WoodMid);
             var trim = Child(parent, "Trim");
             float x0 = HouseDims.StairX0;
             float z0 = HouseDims.StairZ0;
             float slope = rise / run;
             float angle = Mathf.Atan(slope) * Mathf.Rad2Deg;
+            float cos = Mathf.Cos(angle * Mathf.Deg2Rad);
             const float railHeight = 0.9f;
+            const float postSize = 0.12f;
+            float up = HouseDims.UpperFloorY;
             // Basamak burunlarından geçen çizgi: y = rise + (x - x0) * slope
             float Nose(float x) => rise + (x - x0) * slope;
+            var tile = (BoxMeshBuilder.UvFunc)BoxMeshBuilder.TileUv;
 
-            // Eğik yan kiriş: üst kenarı burun çizgisinin hemen üstünde, 0,3 m kalınlık; alt ucu zeminin içinde
-            float xs = x0 - 0.3f, xe = x0 + HouseDims.StairLength;
-            float length = (xe - xs) / Mathf.Cos(angle * Mathf.Deg2Rad);
-            AddSlopedBox(trim, "Stringer", new Vector3((xs + xe) * 0.5f, Nose((xs + xe) * 0.5f) - 0.12f, z0 - 0.03f),
-                new Vector3(length, 0.3f, 0.06f), angle, beam);
-            // Eğik küpeşte: burun çizgisinin railHeight üstünde
-            AddSlopedBox(trim, "Handrail", new Vector3((x0 + xe) * 0.5f, Nose((x0 + xe) * 0.5f) + railHeight, z0 + 0.05f),
-                new Vector3((xe - x0) / Mathf.Cos(angle * Mathf.Deg2Rad), 0.06f, 0.08f), angle, rail);
+            // Eğik kiriş: üst kenarı burun çizgisinin biraz üstünde, 0,34 m; basamak uçlarını önden örter
+            float xs = x0 - 0.2f, xe = x0 + HouseDims.StairLength;
+            AddSlopedBox(trim, "Stringer", new Vector3((xs + xe) * 0.5f, Nose((xs + xe) * 0.5f) - 0.13f, z0 - 0.04f),
+                new Vector3((xe - xs) / cos, 0.34f, 0.08f), angle, dark, tile);
 
+            // Kabine kadar basamak altı: ahşap lambri, kirişin hemen arkasında; dikey çıtalar 0,6 m'de bir
+            float panelEnd = HouseDims.CabinMin.x;
+            for (int i = 0; i < HouseDims.StairSteps; i++)
+            {
+                float xa = x0 + i * run;
+                if (xa >= panelEnd - 0.01f) break;
+                float xb = Mathf.Min(xa + run, panelEnd);
+                AddDecorBox(trim, $"Under_{i:00}", new Vector3(xa, 0f, z0 + 0.01f), new Vector3(xb, i * rise + rise * 0.5f, HouseDims.StairZ1), panel, tile);
+            }
+            for (float x = x0 + 0.3f; x < panelEnd - 0.1f; x += 0.6f)
+                AddDecorBox(trim, $"PanelStrip_{x:F2}", new Vector3(x, 0f, z0 - 0.005f), new Vector3(x + 0.05f, Nose(x) - 0.28f, z0 + 0.01f), dark, tile);
+            AddDecorBox(trim, "PanelBase", new Vector3(x0 - 0.2f, 0f, z0 - 0.03f), new Vector3(panelEnd, 0.1f, z0 + 0.01f), dark, tile);
+
+            // Basamak burunları ve her basamakta bir dikme
             for (int i = 0; i < HouseDims.StairSteps; i++)
             {
                 float xa = x0 + i * run;
                 float top = (i + 1) * rise;
-                // Basamak burnu: önde ince, açık renkli kenar
-                AddDecorBox(trim, $"Nose_{i:00}", new Vector3(xa - 0.02f, top - 0.04f, z0 - 0.08f),
-                    new Vector3(xa + run, top, HouseDims.StairZ1), nose);
-                // Dikme her iki basamakta bir: basamaktan küpeşteye
-                if (i % 2 == 0)
-                {
-                    float bx = xa + run * 0.4f;
-                    AddDecorBox(trim, $"Baluster_{i:00}", new Vector3(bx, top, z0 + 0.03f),
-                        new Vector3(bx + 0.04f, Nose(bx + 0.02f) + railHeight, z0 + 0.07f), rail);
-                }
-                // Basamağın altı kabine kadar kapalı (kabin yüksek ucun altında)
-                if (xa + run <= HouseDims.CabinMin.x + 0.01f && top - rise > 0.01f)
-                    AddDecorBox(trim, $"Under_{i:00}", new Vector3(xa, 0f, z0 + 0.02f),
-                        new Vector3(xa + run, top - rise, HouseDims.StairZ1), under);
+                AddDecorBox(trim, $"Nose_{i:00}", new Vector3(xa - 0.02f, top - 0.035f, z0 - 0.06f),
+                    new Vector3(xa + run, top, HouseDims.StairZ1), light, tile);
+                float bx = xa + run * 0.5f - 0.02f;
+                AddDecorBox(trim, $"Baluster_{i:00}", new Vector3(bx, top, z0 + 0.03f),
+                    new Vector3(bx + 0.04f, Mathf.Min(Nose(bx + 0.02f), up) + railHeight, z0 + 0.07f), rail, tile);
             }
 
-            // Üst kat: merdiven boşluğunun önünde (karakterin arkasında) korkuluk
-            float up = HouseDims.UpperFloorY;
-            float hx0 = HouseDims.StairHoleX0, hx1 = HouseDims.StairHoleX1;
+            // Kesintisiz küpeşte: alt baş direğinden eğimle sahanlık yüksekliğine çıkar, oradan düz devam edip üst
+            // baş direğine bağlanır (Play testi 18: üstte sahanlık korkuluğundan yüksekte kalıyordu)
+            float railY0 = Nose(x0) + railHeight, landingRailY = up + railHeight;
+            float xr = x0 + (up - rise) / slope; // burun çizgisi sahanlık zeminine ulaştığı yer
+            AddSlopedBox(trim, "Handrail", new Vector3((x0 + xr) * 0.5f, (railY0 + landingRailY) * 0.5f, z0 + 0.05f),
+                new Vector3((xr - x0) / cos + 0.06f, 0.07f, 0.1f), angle, rail, tile);
+            AddDecorBox(trim, "HandrailTop", new Vector3(xr - 0.03f, landingRailY - 0.035f, z0),
+                new Vector3(xe, landingRailY + 0.035f, z0 + 0.1f), rail, tile);
+
+            // Baş direkleri: altta zeminden, üstte sahanlıktan; başlıkları açık ton
+            void Newel(string name, float x, float bottom, float height)
+            {
+                AddDecorBox(trim, name, new Vector3(x - postSize * 0.5f, bottom, z0 + 0.05f - postSize * 0.5f),
+                    new Vector3(x + postSize * 0.5f, bottom + height, z0 + 0.05f + postSize * 0.5f), dark, tile);
+                AddDecorBox(trim, name + "_Cap", new Vector3(x - postSize * 0.7f, bottom + height, z0 + 0.05f - postSize * 0.7f),
+                    new Vector3(x + postSize * 0.7f, bottom + height + 0.05f, z0 + 0.05f + postSize * 0.7f), light, tile);
+            }
+            Newel("NewelBottom", x0 - 0.06f, 0f, railY0 + 0.08f);
+            Newel("NewelTop", xe, up, railHeight + 0.08f); // sahanlıktaki baş direğiyle aynı boy
+
+            // Üst kat: merdiven boşluğunun önünde korkuluk, aynı dikme aralığı; üst baş direğine bağlanır
+            float hx0 = HouseDims.StairHoleX0, hx1 = xe;
             float hz = HouseDims.StairZ0 - 0.05f;
-            AddDecorBox(trim, "LandingRail", new Vector3(hx0, up + railHeight - 0.03f, hz - 0.04f),
-                new Vector3(hx1, up + railHeight + 0.03f, hz + 0.04f), rail);
-            for (float x = hx0; x <= hx1 + 0.01f; x += 0.45f)
-                AddDecorBox(trim, $"LandingBaluster_{x:F2}", new Vector3(Mathf.Min(x, hx1 - 0.04f), up, hz - 0.02f),
-                    new Vector3(Mathf.Min(x, hx1 - 0.04f) + 0.04f, up + railHeight, hz + 0.02f), rail);
+            AddDecorBox(trim, "LandingRail", new Vector3(hx0, up + railHeight - 0.035f, hz - 0.05f),
+                new Vector3(hx1, up + railHeight + 0.035f, hz + 0.05f), rail, tile);
+            int count = Mathf.Max(2, Mathf.RoundToInt((hx1 - hx0) / run));
+            for (int i = 0; i < count; i++)
+            {
+                float x = hx0 + (i + 0.5f) * (hx1 - hx0) / count - 0.02f;
+                AddDecorBox(trim, $"LandingBaluster_{i:00}", new Vector3(x, up, hz - 0.02f),
+                    new Vector3(x + 0.04f, up + railHeight, hz + 0.02f), rail, tile);
+            }
+            Newel("NewelLanding", hx0, up, railHeight + 0.08f);
         }
 
         /// <summary>Her katın iç sınırları: dış duvarların iç yüzleri arası</summary>
@@ -766,17 +876,19 @@ namespace Deprem.HouseBuilder
         }
 
         /// <summary>Çarpışmasız, Z ekseninde açılı kutu (eğik kiriş, küpeşte): merkez, boyut (yerel), açı (derece)</summary>
-        private static GameObject AddSlopedBox(Transform parent, string name, Vector3 center, Vector3 size, float angle, Material mat)
+        private static GameObject AddSlopedBox(Transform parent, string name, Vector3 center, Vector3 size, float angle, Material mat,
+            BoxMeshBuilder.UvFunc uv = null)
         {
-            var go = AddDecorBox(parent, name, center - size * 0.5f, center + size * 0.5f, mat);
+            var go = AddDecorBox(parent, name, center - size * 0.5f, center + size * 0.5f, mat, uv);
             go.transform.rotation = Quaternion.Euler(0f, 0f, angle);
             return go;
         }
 
-        /// <summary>Çarpışmasız, tek materyalli küçük kutu</summary>
-        private static GameObject AddDecorBox(Transform parent, string name, Vector3 min, Vector3 max, Material mat)
+        /// <summary>Çarpışmasız, tek materyalli küçük kutu. uv verilmezse doku kutuya sığdırılır</summary>
+        private static GameObject AddDecorBox(Transform parent, string name, Vector3 min, Vector3 max, Material mat,
+            BoxMeshBuilder.UvFunc uv = null)
         {
-            var mesh = BoxMeshBuilder.Build(name, min, max, BoxMeshBuilder.FitUv(min, max), face => 0, 1);
+            var mesh = BoxMeshBuilder.Build(name, min, max, uv ?? BoxMeshBuilder.FitUv(min, max), face => 0, 1);
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.transform.position = (min + max) * 0.5f;

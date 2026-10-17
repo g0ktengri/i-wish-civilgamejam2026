@@ -41,6 +41,18 @@ namespace Deprem.Player
                 Call(visual, "LateUpdate");
                 HousePreview.Render($"Logs/getup_preview_{i}.png", 0.75f, new Vector3(1.9f, 1.3f, -4.5f), 960, 640);
             }
+            // Döngü 1: raf yatan oyuncunun üstüne kapaklanmış (Play testi 17)
+            player.LieDown(bed);
+            Call(visual, "LateUpdate");
+            var director = Object.FindFirstObjectByType<Deprem.Quake.QuakeDirector>();
+            typeof(Deprem.Quake.QuakeDirector).GetField("player", Flags).SetValue(director, player);
+            // Edit mode'da SecurableItem listesi dolmaz: sahnede aranır
+            var shelf = System.Array.Find(Object.FindObjectsByType<Deprem.Core.SecurableItem>(FindObjectsSortMode.None),
+                s => s.Id == Deprem.Core.ItemId.BedShelf).GetComponent<Deprem.Quake.ItemToppler>();
+            shelf.Initialize();
+            var (center, rotation) = director.ShelfLanding(shelf);
+            shelf.PlaceDropped(center, rotation);
+            HousePreview.Render("Logs/getup_preview_shelf.png", 0.75f, new Vector3(1.9f, 1.3f, -4.5f), 960, 640);
             EditorSceneManager.CloseScene(scene, false);
             Debug.Log("[GetUpPreview] Kaydedildi: Logs/getup_preview_0..4.png");
         }

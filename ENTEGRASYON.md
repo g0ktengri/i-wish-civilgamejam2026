@@ -607,6 +607,19 @@ Mehmet'in yorumu (özet):
 3. **Merdiven tek parça:** basamaklar, kirişler, korkuluk ve dikmeler tek bir ahşap merdiven gibi birleşik; boşluksuz, aynı tonlarda.
 4. **Odalara düşen ve yamulan eşyalar:** duvarda tablolar, çerçeveler, ayna ve camlar, raflarda vazo ve kupalar. Öncüde sallanır ve yamulur, ana depremde düşer ve kırılır (cam sesi). Hepsi dekor; sabitlenmez, oyunu etkilemez.
 
+**Mehmet tarafı: 1–4 yapıldı** (Play'de son kontrol bekliyor).
+- **Ölüm:** `PlayerController.Die()` / `IsDead`. Parça başa değdiği an (0,3 sn) çağrılıyor; `PlayerVisual.Dying` artık `IsDead` olunca da başlıyor, senin `Phase == Failed` koşulun da duruyor. Kayıp ekranından önce 1,6 sn bekleniyor (`QuakeDirector.deathLinger`): ölme kareleri biter, yıkıntı yere yığılan bedenin üstüne düşer. Beden ölünce çarpışmıyor; parçalar başta sekmiyor.
+- **Yıkıntı kalıcı:** düşen her parça yere ya da bedene oturunca donuyor (`DebrisSettle`). Döngü 1'de raf artık fizikle değil senaryolu düşüyor: yatan oyuncunun üstüne yüzüstü kapaklanıyor ve orada kalıyor, tavan parçaları üstüne yığılıyor (`ItemToppler.DropOnto`).
+- **Merdiven:** tek ahşap ailesi (pixel ahşap dokusu, üç ton), kesintisiz kiriş ve küpeşte, her basamakta dikme, başlıklı baş direkleri, basamak altında çıtalı lambri. Sahanlık korkuluğu aynı aralıkla üst baş direğine bağlanıyor.
+- **Dekor:** `Quake/FallingDecor` + `Editor/HouseBuilder/DecorProps.cs`. 19 parça: tablolar, aile fotoğrafı, saat, ayna, poster, çocuk resmi; masada ve tezgâhta vazo, kupa, şişe. Görseller kodla çiziliyor; `Art/Decor/{anahtar}.png` gelirse o kullanılıyor (`tablo_manzara`, `tablo_soyut`, `aile_fotografi`, `saat`, `ayna_kucuk`, `poster_uzay`, `cocuk_cizimi`, `vazo`, `kupa`, `sise`). Öncüde sallanır ve yamuk kalır. Ana depremde %70'i düşer: camlıların camı çatlar, vazo, kupa ve şişe kırılıp dağılır, cam sesi çalar. Artçıda kalanların %40'ı düşer. Dekor ve parçalar oyuncunun yolunu kesmez.
+- **Play testi 18 (Mehmet):**
+  - Merdivenin üst ucu düzeltildi: küpeşte sahanlık korkuluğu yüksekliğinde düzleşip baş direğine bağlanıyor, üstteki iki direk aynı boyda.
+  - Yeni oda dokuları bağlandı: koridor, sahanlık, kardeşin odası ve bizim odanın düz mavi yan duvarı.
+  - Dekor ~%35 büyüdü; aynı 64 px/m yoğunlukta, daha çok pikselle çiziliyor.
+  - Oyuncunun odasının sol duvarında camlı pencere var: gece göğü, perdeler; `Art/Decor/pencere_yan.png` gelirse o kullanılır.
+  - Dekorun derinliği var: tablo, fotoğraf, ayna ve saatin arkasında çerçeve kalınlığında gövde (3–5 cm), pencerede öne çıkan kasa, kayıt, denizlik ve korniş.
+  - Dekorun renkleri odaya göre ayarlanıyor: odanın arka duvar dokusunun ortalama tonuna doğru kaydırılıyor (`DecorProps.Grade`).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

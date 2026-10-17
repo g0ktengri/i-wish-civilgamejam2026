@@ -97,6 +97,18 @@ namespace Deprem.Quake
         [SerializeField] private Vector2 rubbleInterval = new Vector2(0.35f, 0.7f);
         [Tooltip("Parça karakter düzleminin bu kadar önünde düşer (m)")]
         [SerializeField] private float debrisFrontOffset = 0.15f;
+        [Tooltip("Tavandan kopan parçanın başa değmesi (sn): ölme animasyonu o an başlar")]
+        [SerializeField] private float debrisImpactDelay = 0.3f;
+        [Tooltip("Öldükten sonra kayıp ekranından önce sahnede kalma (sn): ölme kareleri biter, yıkıntı üstüne yığılır")]
+        [SerializeField] private float deathLinger = 1.6f;
+        [Tooltip("Döngü 1: raf yatan oyuncunun üstüne düşer; kaplama kutusunun merkezi oyuncunun kökünden bu kadar uzakta")]
+        [SerializeField] private Vector3 shelfLandOffset = new Vector3(-0.15f, 0.24f, -0.05f);
+        [Tooltip("Rafın duvardan oyuncunun üstüne düşüşü (sn)")]
+        [SerializeField] private float shelfDropTime = 0.45f;
+        [Tooltip("Ana depremde düşen dekor oranı (tablo, saat, vazo...); kalanlar yamuk kalır")]
+        [SerializeField, Range(0f, 1f)] private float mainQuakeDecorFall = 0.7f;
+        [Tooltip("Artçıda kalan dekordan düşen oran")]
+        [SerializeField, Range(0f, 1f)] private float aftershockDecorFall = 0.4f;
 
         [Header("Geliştirme")]
         [Tooltip("Sahnede döngü yöneticisi yoksa bu döngüyle başlat (0 = kapalı)")]
@@ -263,6 +275,7 @@ namespace Deprem.Quake
 
             StartCoroutine(Shake(mainQuakeIntensity, mainQuakeDuration));
             StartCoroutine(ToppleItems());
+            StartCoroutine(DropDecor(mainQuakeDecorFall, toppleWindow.x * 0.5f, toppleWindow.y + 1.5f));
             if (effects != null) effects.Burst(1f);
 
             if (player.IsLying)
@@ -326,16 +339,50 @@ namespace Deprem.Quake
                 schedule.Add((time, toppler));
             }
             schedule.Sort((a, b) => a.time.CompareTo(b.time));
+            bool lying = player != null && player.IsLying;
 
             float elapsed = 0f;
             foreach (var entry in schedule)
             {
                 if (entry.time > elapsed) yield return new WaitForSeconds(entry.time - elapsed);
                 elapsed = Mathf.Max(elapsed, entry.time);
-                entry.toppler.Topple();
+                var shelfItem = entry.toppler.GetComponent<SecurableItem>();
+                if (lying && shelfItem != null && shelfItem.Id == ItemId.BedShelf)
+                {
+                    // Play testi 17: fizikle içinden geçip yatağın önüne düşüyor, kayboluyordu. Senaryolu: oyuncunun
+                    // üstüne kapaklanır ve orada kalır; tavan parçaları da üstüne yığılır
+                    var (center, rotation) = ShelfLanding(entry.toppler);
+                    StartCoroutine(entry.toppler.DropOnto(center, rotation, shelfDropTime));
+                }
+                else entry.toppler.Topple();
                 var item = entry.toppler.GetComponent<SecurableItem>();
                 if (item != null) GameEvents.RaiseItemToppled(item.Id);
             }
+        }
+
+        /// <summary>Asılı ve masadaki dekorun bir kısmı rastgele anlarda düşer (kalanlar yamuk kalır)</summary>
+        private IEnumerator DropDecor(float fraction, float from, float to)
+        {
+            var pending = new List<(float time, FallingDecor decor)>();
+            foreach (var decor in FallingDecor.All)
+                if (!decor.HasFallen && UnityEngine.Random.value < fraction)
+                    pending.Add((UnityEngine.Random.Range(from, to), decor));
+            pending.Sort((a, b) => a.time.CompareTo(b.time));
+            float elapsed = 0f;
+            foreach (var (time, decor) in pending)
+            {
+                if (time > elapsed) yield return new WaitForSeconds(time - elapsed);
+                elapsed = Mathf.Max(elapsed, time);
+                if (decor != null) decor.Drop();
+            }
+        }
+
+        /// <summary>Yatan oyuncunun üstüne kapaklanmış rafın duruşu: öne yüzüstü, hafif yamuk</summary>
+        public (Vector3 center, Quaternion rotation) ShelfLanding(ItemToppler shelf)
+        {
+            var rotation = Quaternion.AngleAxis(5f, Vector3.forward) * Quaternion.AngleAxis(-90f, Vector3.right) *
+                           shelf.transform.rotation;
+            return (player.transform.position + shelfLandOffset, rotation);
         }
 
         // ------------------------------------------------------------------ Artçılar
@@ -345,6 +392,7 @@ namespace Deprem.Quake
             aftershockRunning = true;
             GameEvents.RaiseAftershockStarted();
             StartCoroutine(Shake(aftershockIntensity, aftershockDuration));
+            StartCoroutine(DropDecor(aftershockDecorFall, 0.2f, aftershockDuration * 0.6f));
             if (effects != null) effects.Burst(0.4f);
 
             bool survived = true;
@@ -458,6 +506,7 @@ namespace Deprem.Quake
             if (lights != null) lights.Flicker(intensity);
             if (effects != null) effects.SetIntensity(intensity);
             foreach (var toppler in topplers) toppler.Rattle(intensity);
+            FallingDecor.ShakeAll(intensity); // Play testi 17: tablolar sallanır, yamulur
             // ENTEGRASYON B11: sallanırken zıplayınca karakter takılıp yavaşlıyordu; depremde zıplanmaz
             if (player != null) player.JumpEnabled = intensity < noJumpIntensity;
         }
@@ -479,14 +528,20 @@ namespace Deprem.Quake
             // ve önde kalır. Z ekseni kilitli, arkaya kayıp görselin arkasında kaybolmaz.
             var center = new Vector3(player.transform.position.x, ceilingY - 0.1f, playerPlaneZ - debrisFrontOffset);
             SpawnDebris("Plaster", center, new Vector3(0.9f, 0.1f, 0.25f), 25f);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 6; i++)
             {
-                var offset = new Vector3(UnityEngine.Random.Range(-0.5f, 0.5f), UnityEngine.Random.Range(-0.1f, 0f), 0f);
-                float size = UnityEngine.Random.Range(0.1f, 0.22f);
+                var offset = new Vector3(UnityEngine.Random.Range(-0.6f, 0.6f), UnityEngine.Random.Range(-0.1f, 0.3f), 0f);
+                float size = UnityEngine.Random.Range(0.1f, 0.24f);
                 SpawnDebris("Chunk", center + offset, new Vector3(size, size, Mathf.Min(size, 0.2f)), 2f);
             }
             QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, 0.6f);
-            yield return new WaitForSeconds(0.9f);
+
+            // Play testi 17: ölme animasyonu kayıp ekranını beklemesin; parça başa değdiği an başlar. Beden artık
+            // çarpışmaz: parçalar başta sekmez, yere yığılan bedenin üstüne düşer ve orada kalır (DebrisSettle)
+            yield return new WaitForSeconds(debrisImpactDelay);
+            player.Die();
+            QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, 0.8f);
+            yield return new WaitForSeconds(deathLinger);
         }
 
         /// <summary>
@@ -533,6 +588,7 @@ namespace Deprem.Quake
             body.mass = mass;
             body.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
             body.linearVelocity = Vector3.down * 1.5f;
+            piece.AddComponent<DebrisSettle>();
         }
 
         private readonly Dictionary<Texture2D, Material> rubbleMaterials = new Dictionary<Texture2D, Material>();

@@ -124,6 +124,54 @@ namespace Deprem.Quake
             if (walkTime < 0f) Release();
         }
 
+        /// <summary>
+        /// Senaryolu düşüş (Play testi 17: yatan oyuncunun üstüne düşen raf içinden geçip kayboluyordu): eşya
+        /// yerinden kopar, öne kapaklanarak hedefe düşer, küçük bir sekme yapar ve orada kalır (kinematik).
+        /// Hedef, eşyanın kaplama kutusunun (collider'lar) merkezi; dönüş dünya uzayında.
+        /// </summary>
+        public System.Collections.IEnumerator DropOnto(Vector3 boundsCenter, Quaternion rotation, float duration)
+        {
+            var endPosition = DroppedPosition(boundsCenter, rotation);
+
+            for (float t = 0f; t < duration; t += Time.deltaTime)
+            {
+                float k = t / duration;
+                float fall = k * k; // yerçekimi gibi hızlanır
+                transform.SetPositionAndRotation(Vector3.Lerp(restPosition, endPosition, fall),
+                    Quaternion.Slerp(restRotation, rotation, Mathf.Sqrt(k)));
+                yield return null;
+            }
+            // Çarpınca küçük sekme
+            for (float t = 0f; t < 0.18f; t += Time.deltaTime)
+            {
+                transform.SetPositionAndRotation(endPosition + Vector3.up * Mathf.Sin(t / 0.18f * Mathf.PI) * 0.06f, rotation);
+                yield return null;
+            }
+            transform.SetPositionAndRotation(endPosition, rotation);
+        }
+
+        /// <summary>Düşmüş halini anında kurar (önizleme ve testler için)</summary>
+        public void PlaceDropped(Vector3 boundsCenter, Quaternion rotation)
+        {
+            transform.SetPositionAndRotation(DroppedPosition(boundsCenter, rotation), rotation);
+            Physics.SyncTransforms();
+        }
+
+        // Kinematik yapar, yerine oturtur; kutu merkezi hedefe gelecek pivot konumunu son dönüşte ölçer
+        private Vector3 DroppedPosition(Vector3 boundsCenter, Quaternion rotation)
+        {
+            Initialize();
+            HasToppled = true;
+            walkTime = -1f;
+            body.isKinematic = true;
+            transform.SetPositionAndRotation(restPosition, rotation);
+            Physics.SyncTransforms();
+            var position = boundsCenter - (CombinedBounds().center - transform.position);
+            transform.SetPositionAndRotation(restPosition, restRotation);
+            Physics.SyncTransforms();
+            return position;
+        }
+
         public Bounds CombinedBounds()
         {
             var colliders = GetComponentsInChildren<Collider>();

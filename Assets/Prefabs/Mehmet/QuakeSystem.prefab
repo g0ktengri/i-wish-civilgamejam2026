@@ -88,6 +88,12 @@ MonoBehaviour:
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
   rubbleInterval: {x: 0.35, y: 0.7}
   debrisFrontOffset: 0.15
+  debrisImpactDelay: 0.3
+  deathLinger: 1.6
+  shelfLandOffset: {x: -0.15, y: 0.24, z: -0.05}
+  shelfDropTime: 0.45
+  mainQuakeDecorFall: 0.7
+  aftershockDecorFall: 0.4
   devStartLoop: 0
   showDebugPrompt: 0
 --- !u!114 &2793190379505330756

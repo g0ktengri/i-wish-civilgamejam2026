@@ -62,6 +62,8 @@ namespace Deprem.Player
         public bool IsCrouching { get; private set; }
         public bool IsOnPath => path != null;
         public bool IsLying { get; private set; }
+        /// <summary>Üstüne bir şey düştü, öldü (Play testi 17: ölme animasyonu darbe anında başlar). Sahne yenilenince sıfırlanır</summary>
+        public bool IsDead { get; private set; }
         /// <summary>Kalkma animasyonu sürüyor (bu sırada IsLying hâlâ doğru)</summary>
         public bool IsGettingUp => getUpTime >= 0f;
         /// <summary>Kalkma animasyonunun zamanı 0..1 (kareler buna göre)</summary>
@@ -174,7 +176,7 @@ namespace Deprem.Player
                 StepGetUp(dt);
                 return;
             }
-            if (IsLying) return;
+            if (IsLying || IsDead) return;
 
             float move;
             bool crouchHeld;
@@ -272,6 +274,26 @@ namespace Deprem.Player
             SetCapsuleHeight(standingHeight);
             IsCrouching = false;
             MoveInput = 0f;
+        }
+
+        /// <summary>
+        /// Darbeyle ölür: girdi kapanır, gövde yerinde kalır ve çarpışmaz (düşen parçalar yere yığılan bedenin
+        /// üstüne düşsün, kafasında sekmesin). Görsel ölme karelerini oynatır.
+        /// </summary>
+        public void Die()
+        {
+            if (IsDead) return;
+            if (IsOnPath) EndPath(false);
+            CancelGetUp();
+            IsDead = true;
+            InputEnabled = false;
+            scriptedMove = 0f;
+            scriptedCrouch = false;
+            IsCrouching = false;
+            MoveInput = 0f;
+            body.linearVelocity = Vector3.zero;
+            body.isKinematic = true;
+            body.detectCollisions = false;
         }
 
         /// <summary>Yatağa yatırır: fizik dışı, girdi kapalı.</summary>

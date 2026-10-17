@@ -79,9 +79,11 @@ namespace Deprem.Player
         }
 
         // Oyuncunun kendi ölümüyle biten kayıp (yatakta ezilmede zaten yatıyor, orada oynamaz)
+        // Play testi 17: üstüne bir şey düştüğü an (PlayerController.IsDead) başlar, kayıp ekranını beklemez
         private bool Dying =>
-            deathFrames != null && deathFrames.Length > 0 && GameState.Phase == GamePhase.Failed && !player.IsLying &&
-            (GameState.LastLoseReason == LoseReason.NoDuckCoverHold || GameState.LastLoseReason == LoseReason.AftershockInjury);
+            deathFrames != null && deathFrames.Length > 0 && !player.IsLying &&
+            (player.IsDead || GameState.Phase == GamePhase.Failed &&
+             (GameState.LastLoseReason == LoseReason.NoDuckCoverHold || GameState.LastLoseReason == LoseReason.AftershockInjury));
 
         private void LateUpdate()
         {
