@@ -12,6 +12,8 @@ namespace Deprem.Quake
         public static float Intensity { get; set; }
         /// <summary>Kurtarma süresi azalırken hafif titreme (RescueTimer); ikisinden büyüğü uygulanır</summary>
         public static float AmbientIntensity { get; set; }
+        /// <summary>Ayarlar menüsü: ekran sarsıntısının gücü 0..1 (0 = kapalı). Kaydetmek ayarlar menüsünün işi</summary>
+        public static float Strength { get; set; } = 1f;
 
         [SerializeField] private float amplitude = 0.2f;
         [SerializeField] private float frequency = 9f;
@@ -20,7 +22,7 @@ namespace Deprem.Quake
         protected override void PostPipelineStageCallback(CinemachineVirtualCameraBase vcam,
             CinemachineCore.Stage stage, ref CameraState state, float deltaTime)
         {
-            float intensity = Mathf.Max(Intensity, AmbientIntensity);
+            float intensity = Mathf.Max(Intensity, AmbientIntensity) * Mathf.Clamp01(Strength);
             if (stage != CinemachineCore.Stage.Noise || intensity <= 0f) return;
 
             float t = Time.time * frequency;

@@ -661,6 +661,50 @@ Mehmet'in yorumu (özet):
 1. **Vazo:** düzeltildi. Masadaki eşyalar ana depremde hep düşüyor; masadan kayıp düşüyorlar, yere oturunca kırılıyorlar. `Tools > Deprem > Test: Dekor Düşme` fizikle deniyor: 18/19 dekor düşüyor (kitaplığın üstüne düşen fotoğraf orada kalıyor), camlı ve seramik olanların hepsi kırılıyor.
 2. **Ses:** kodla üretilen sesler yerine gerçek kayıtlar (CC0 ses paketleri). İlk iş adım sesleri, sonra deprem, cam ve UI.
 
+**Mehmet tarafı: 1–2 yapıldı** (Play'de dinlenmedi).
+- `Assets/Audio/` altında 58 CC0 kayıt (Kenney Impact, Interface ve RPG Audio; `KAYNAK.txt`), anahtar adlarıyla.
+- Senin anahtarların da değişti:
+  - `ui.move` / `ui.click` / `ui.back` artık arayüz paketinden;
+  - `minigame.screw` / `latch` / `bracket` / `pickup` / `drop` / `miss` kayıtlı;
+  - `minigame.fail`, `wish.*`, `final.check` ve müzik kodla kaldı.
+- Bizimkiler:
+  - adım sesi tahta zemin, iniş yumuşak darbe, ölüm darbesi;
+  - devrilen eşya ağır tahta, cam kırılması, düşen taş, gıcırtı, kabin kapısı, elektrik şalteri, çanta onayı.
+- Uğultu, kalp atışı, ambiyans ve müzik kodla kaldı.
+
+### Play testi 20: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- Hayaletken konuşma balonu doğrudan üstümüzde çıkıyor.
+- Hayalet bekleme animasyonu geldi.
+- Kardeşin odasının yan duvarı arka duvarla aynı olsun.
+- Tavandan düşen şeylerin düşme sesi yok; çıtırtı ve "boru" gibi sesler çok fazla ve kötü.
+- Adım sesleri zayıf, merdivende hiç yok.
+- Arkada hafif gerilimli müzik lazım; anne ve babanın durumunu gördüğümüz anlarda bir ses ya da müzik vurgusu olsun.
+- Ruh fazından dönünce karakter odanın ortasında belirmesin: ruh animasyonla bedene dönsün, beden yataktan kalksın.
+- Oyuna ayarlar menüsü lazım.
+
+**Berke'ye düşen**
+
+- **M29. Ruh balonu:** `SpiritBubble` ruhun tam üstünde, karakterin üstüne biniyor. Balon ruh görselinin başının üstünde, kuyruğu başa değecek yükseklikte olsun (ruh sprite'ının üst kenarı + ~0,25 m). Ekranın üstüne taşarsa aşağıda kalsın.
+- **M30. Ruh bekleme animasyonu:** Ekip çizimi, 8 kare: `Art/Characters/ruh_bekleme_1..8.png`. Senin ruh karelerinle aynı biçimde (1920 → 128 px en yakın komşu, ayak hizası y = 2 px); ben koydum. `SpiritVisual` dururken bu kareleri oynasın (~6 fps); hareket ederken mevcut ruh kareleri.
+- **M31. Ruh bedene dönüş:** Ruh fazı biterken, `MainQuake`'e geçmeden önce ruh, yatakta yatan bedene doğru uçsun (~0,8 sn, ease-in), bedenin üstünde küçülüp solsun, sonra faz değişsin. Beden yerinde yatıyor (`PlayerController.IsLying`); bedenin konumu oyuncunun `transform.position`'ı. Bedenin yataktan kalkmasını ben yapıyorum (kalkma animasyonu, girdi ondan sonra açılır).
+- **M32. Ayarlar menüsü** (ana menüde ve duraklatmada "Ayarlar"):
+  - ses: genel, müzik, efekt kaydırıcıları → `Deprem.Audio.Sfx.MasterVolume / MusicVolume / EffectsVolume` (0..1; şimdiden pushlandı, ses sistemi her kare okuyor);
+  - ekran sarsıntısı kaydırıcısı → `Deprem.Quake.QuakeCameraShake.Strength` (0..1, 0 = kapalı);
+  - tam ekran / pencere, çözünürlük, dil (TR / EN), kontroller listesi.
+  - Değerleri PlayerPrefs'e kaydetmek ve oyun açılınca yüklemek ayarlar menüsünün işi; ben sadece okuyorum.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. Kardeşin odasının yan duvarı, arka duvarın dokusundan.
+2. Ses:
+   - tavandan düşen her parça yere değince düşme sesi;
+   - rastgele çıtırtı ve gıcırtı spam'i azalır (deprem başına birkaç, kısık);
+   - adımlar daha güçlü, merdivende de duyulur.
+3. Müzik: kurtarma fazında arkada hafif gerilimli müzik (ruh fazında ve menüde değil). Bir aile üyesinin durumu ilk görüldüğünde (yaralı baba, sıkışmış anne, kardeş) kısa bir vurgu sesi; kurtarılınca rahatlatan kısa ezgi.
+4. Ruh fazından dönüşte beden yataktan kalkma animasyonuyla kalkar (odanın ortasında belirmez); senin M31 animasyonun bitince faz değişince.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

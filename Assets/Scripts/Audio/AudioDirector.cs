@@ -342,7 +342,7 @@ namespace Deprem.Audio
             if (entry == null) return null;
             var source = FreeSource(pool);
             source.clip = entry.clips[Random.Range(0, entry.clips.Length)];
-            source.volume = Mathf.Clamp01(entry.volume * volume * masterVolume);
+            source.volume = Mathf.Clamp01(entry.volume * volume * masterVolume * Sfx.MasterVolume * Sfx.EffectsVolume);
             source.pitch = Random.Range(entry.pitch.x, entry.pitch.y);
             return source;
         }
@@ -409,7 +409,7 @@ namespace Deprem.Audio
             foreach (var loop in loops.Values)
             {
                 var s = loop.source;
-                s.volume = Mathf.MoveTowards(s.volume, loop.target, loop.speed * dt);
+                s.volume = Mathf.MoveTowards(s.volume, loop.target * Sfx.MasterVolume * Sfx.EffectsVolume, loop.speed * dt);
                 if (s.volume <= 0f && loop.target <= 0f && s.isPlaying) s.Stop();
             }
         }
@@ -433,7 +433,7 @@ namespace Deprem.Audio
         private void UpdateMusic(float dt)
         {
             var entry = musicKey != null && bank != null ? bank.Find(musicKey) : null;
-            float target = entry != null ? entry.volume * musicVolume * masterVolume : 0f;
+            float target = entry != null ? entry.volume * musicVolume * masterVolume * Sfx.MasterVolume * Sfx.MusicVolume : 0f;
             musicA.volume = Mathf.MoveTowards(musicA.volume, target, musicFadeSpeed * dt);
             musicB.volume = Mathf.MoveTowards(musicB.volume, 0f, musicFadeSpeed * dt);
             if (musicB.isPlaying && musicB.volume <= 0f) musicB.Stop();

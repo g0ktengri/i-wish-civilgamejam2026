@@ -9,6 +9,13 @@ namespace Deprem.Audio
     /// </summary>
     public static class Sfx
     {
+        /// <summary>Ayarlar menüsü: genel ses düzeyi 0..1. Kaydetmek (PlayerPrefs) ayarlar menüsünün işi</summary>
+        public static float MasterVolume { get; set; } = 1f;
+        /// <summary>Ayarlar menüsü: müzik ve gerilim müziği 0..1</summary>
+        public static float MusicVolume { get; set; } = 1f;
+        /// <summary>Ayarlar menüsü: efektler, ortam sesleri ve adımlar 0..1</summary>
+        public static float EffectsVolume { get; set; } = 1f;
+
         /// <summary>Ses sistemi (AudioDirector) kurulunca kendini buraya bağlar</summary>
         internal static ISoundBackend Backend;
 
