@@ -37,6 +37,9 @@ namespace Deprem.Bag
         [SerializeField] float supplySize = 0.3f;  // 32 px ≈ 0,5 m; okunurluk için biraz küçük
         [SerializeField] Vector3 bagSize = new Vector3(0.6f, 0.6f, 0.35f); // 48 px ≈ 0,75 m
         [SerializeField] Color bagColor = new Color(0.9f, 0.45f, 0.15f);
+        [Tooltip("M23: Mehmet'in çanta modeli (Prefabs/Mehmet/BagItems/EarthquakeBag, pivot taban, sarı kontur). " +
+                 "Prefab gelince kendiliğinden bağlanır; yoksa deprem_cantasi sprite'ı ya da küp")]
+        [SerializeField] GameObject bagModel;
         [SerializeField] float interactRange = 1.2f;
         [SerializeField] Vector3 carryOffset = new Vector3(0.35f, -0.25f, 0f);
 
@@ -104,7 +107,7 @@ namespace Deprem.Bag
             }
 
             var bagMarker = GameObject.Find(bagMarkerName);
-            if (bagMarker) BagDropPoint.Create(this, bagMarker.transform.position, bagSize, bagColor, bagSprite);
+            if (bagMarker) BagDropPoint.Create(this, bagMarker.transform.position, bagSize, bagColor, bagSprite, bagModel);
             else Debug.LogWarning($"[Bag] İşaret noktası yok: {bagMarkerName}");
         }
 

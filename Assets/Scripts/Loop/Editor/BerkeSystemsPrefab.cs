@@ -106,11 +106,29 @@ namespace Deprem.Loop.EditorTools
         }
 
         // M20: Mehmet'in çanta malzemesi modelleri (HouseBuilder.BuildMainSceneBatch üretir). Yoksa ikon / küp kalır.
-        const string BagModelFolder = "Assets/Prefabs/Mehmet/BagItems";
+        // M23: kabinin önündeki çanta EarthquakeBag.prefab. BagModelBinder bu klasöre bir prefab gelince
+        // BerkeSystems prefab'ında ikisini de kendiliğinden yeniden bağlar.
+        internal const string BagModelFolder = "Assets/Prefabs/Mehmet/BagItems";
+        internal const string EarthquakeBagPath = BagModelFolder + "/EarthquakeBag.prefab";
 
-        static void BindBagModels(BagSystem bag)
+        /// <summary>Kayıtlı BerkeSystems prefab'ındaki çanta modellerini yeniler; bir şey değiştiyse true</summary>
+        internal static bool RebindBagModelsInPrefab()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            var bag = prefab ? prefab.GetComponent<BagSystem>() : null;
+            if (!bag) return false;
+            if (!BindBagModels(bag)) return false;
+            EditorUtility.SetDirty(prefab);
+            AssetDatabase.SaveAssetIfDirty(prefab);
+            Debug.Log($"[BerkeSystemsPrefab] Çanta modelleri yeniden bağlandı: {PrefabPath}");
+            return true;
+        }
+
+        static bool BindBagModels(BagSystem bag)
         {
             var so = new SerializedObject(bag);
+            var bagModel = so.FindProperty("bagModel");
+            bagModel.objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>(EarthquakeBagPath);
             var supplies = so.FindProperty("supplies");
             for (int i = 0; i < supplies.arraySize; i++)
             {
@@ -121,7 +139,7 @@ namespace Deprem.Loop.EditorTools
                 def.FindPropertyRelative("model").objectReferenceValue = model;
                 if (!model) Debug.LogWarning($"[BerkeSystemsPrefab] Çanta modeli yok: BagItem_{id} (ikon / küp kullanılır)");
             }
-            so.ApplyModifiedPropertiesWithoutUndo();
+            return so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void BindArt(GameObject root)
