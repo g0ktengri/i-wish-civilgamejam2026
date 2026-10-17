@@ -47,6 +47,7 @@ namespace Deprem.Family
                 Physics.simulationMode = SimulationMode.Script;
                 BagLessons.Clear();
                 FatherHitByBookcase();
+                SiblingLyingFrame();
                 FatherWithoutFirstAid();
                 Check(BagLessons.IsLearned(BagItemId.FirstAidKit) && BagLessons.IsLearned(BagItemId.Flashlight),
                     "Baba vedasından sonra ilk yardım ve el feneri birlikte öğrenildi (M54)");
@@ -85,6 +86,43 @@ namespace Deprem.Family
             TickMembers(5f); // failDelay 5,5 sn (Berke'nin play testi)
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.FamilyHitByItem
                   && GameState.LastLoseItem == ItemId.Bookcase, $"Döngü 3: salona girince 'Keşke kitaplığı sabitleseydim' ({GameState.LastLoseReason}, {GameState.LastLoseItem})");
+        }
+
+        // Berke'nin isteği: ezilen kardeş ve anne döndürülmüş ayakta kare değil, yerde yatan çizimle (kardes_olu,
+        // anne_olu) ve gövdesi devrilen eşyanın altında görünür
+        private static void SiblingLyingFrame()
+        {
+            LyingFrame(FamilyMemberId.Sibling, "kardes_olu", ItemId.ToyShelf, "Kardeş");
+            LyingFrame(FamilyMemberId.Mother, "anne_olu", ItemId.Wardrobe, "Anne");
+            LyingFrame(FamilyMemberId.Father, "baba_olu", ItemId.Bookcase, "Baba");
+        }
+
+        private static void LyingFrame(FamilyMemberId id, string frameName, ItemId danger, string label)
+        {
+            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            StartAttempt(3, new BagItemId[0], danger);
+            var member = FamilyMember.Find(id);
+            var lyingFrame = typeof(FamilyMember).GetField("lyingFrame", flags).GetValue(member) as Texture2D;
+            Check(lyingFrame != null && lyingFrame.name == frameName, $"{label}: ölü karesi bağlı ({(lyingFrame != null ? lyingFrame.name : "yok")})");
+            if (lyingFrame == null) return;
+            Check(member.State == FamilyState.Hit, $"{label}: eşyası devrilince ezildi");
+            // Batch modda OnEnable çağrılmıyor, SecurableItem kaydı boş: eşya geçici kaydedilip PinUnder yeniden çağrılır
+            var item = Object.FindObjectsByType<SecurableItem>(FindObjectsSortMode.None).First(i => i.Id == danger);
+            bool registered = SecurableItem.Find(danger) == null;
+            if (registered) typeof(SecurableItem).GetMethod("OnEnable", flags).Invoke(item, null);
+            try { typeof(FamilyMember).GetMethod("PinUnder", flags).Invoke(member, new object[] { danger }); }
+            finally { if (registered) typeof(SecurableItem).GetMethod("OnDisable", flags).Invoke(item, null); }
+            typeof(FamilyMember).GetMethod("LateUpdate", flags).Invoke(member, null);
+            var visual = (Transform)typeof(FamilyMember).GetField("visual", flags).GetValue(member);
+            var body = (Renderer)typeof(FamilyMember).GetField("body", flags).GetValue(member);
+            var block = new MaterialPropertyBlock();
+            body.GetPropertyBlock(block);
+            Check(Quaternion.Angle(visual.localRotation, Quaternion.identity) < 0.1f && block.GetTexture("_BaseMap") == lyingFrame,
+                $"{label}: yerde yatan çizimle, döndürülmeden gösteriliyor");
+            float center = (float)typeof(FamilyMember).GetField("lyingFrameCenter", flags).GetValue(member);
+            float bodyX = member.transform.position.x + center * member.Facing;
+            var bounds = item.GetComponent<Collider>().bounds;
+            Check(Mathf.Abs(bodyX - bounds.center.x) < 0.05f, $"{label}: gövde eşyanın altında ortalı (gövde {bodyX:F2}, eşya {bounds.center.x:F2})");
         }
 
         // Berke'nin play testi: kaya çantasız kalkar; kan kaybı kabinde ortaya çıkar. İlk yardım yoksa baba kabin

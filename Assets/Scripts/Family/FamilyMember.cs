@@ -207,7 +207,9 @@ namespace Deprem.Family
             var p = transform.position;
             // Eşyanın ön kenarının hemen önünde yatar: karanlıkta ve kameradan eşyanın altında kaybolmasın
             float frontZ = collider != null ? collider.bounds.min.z - 0.08f : p.z;
-            transform.position = new Vector3(centerX + lyingHalfLength, p.y, Mathf.Min(p.z, frontZ));
+            // Yatan çizimde gövde pivotun yanında (bakış yönüne göre); döndürülen ayakta karede pivotun solunda
+            float offset = UsesLyingFrame ? -lyingFrameCenter * Facing : lyingHalfLength;
+            transform.position = new Vector3(centerX + offset, p.y, Mathf.Min(p.z, frontZ));
         }
 
         public void OnItemToppled(ItemId item)
@@ -626,7 +628,8 @@ namespace Deprem.Family
             if (State != FamilyState.InCabin && visual.gameObject.activeSelf == Hidden) visual.gameObject.SetActive(!Hidden);
             bool lying = State == FamilyState.Injured || State == FamilyState.Hit || State == FamilyState.Bleeding;
             bool ducking = State == FamilyState.Ducking;
-            visual.localRotation = lying ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
+            bool lyingFrameShown = lying && UsesLyingFrame;
+            visual.localRotation = lying && !lyingFrameShown ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
             visual.localScale = new Vector3(Facing, ducking ? 0.6f : 1f, 1f);
             // Kabine yürüyen yaralı baba aksar: adımlarda hafif iniş ve yana yatma
             if (State == FamilyState.WalkingToCabin)
@@ -656,7 +659,14 @@ namespace Deprem.Family
         [SerializeField] private float idleFps = 5f;
         [Tooltip("Hareket durduktan sonra yürüme karelerinin sürdüğü süre (sn); takipte kare kare duraklama titremesin")]
         [SerializeField] private float walkHoldTime = 0.25f;
+        [Tooltip("Ezilince (Hit) gösterilen yerde yatan kare (ör. kardes_olu.png, baş sağda); boşsa ayakta kare 90° döner")]
+        [SerializeField] private Texture2D lyingFrame;
+        [Tooltip("Yatan karede gövde ortasının pivottan sağa uzaklığı (m, sağa bakarken); FamilySetup çizimden hesaplar")]
+        [SerializeField] private float lyingFrameCenter;
         private float moveHold;
+
+        /// <summary>Ezilmiş ve yatan çizimi var: döndürme yerine o kare gösterilir</summary>
+        private bool UsesLyingFrame => lyingFrame != null && State == FamilyState.Hit;
 
         private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
         private MaterialPropertyBlock block;
@@ -676,7 +686,8 @@ namespace Deprem.Family
             if (speed > 0.2f) moveHold = walkHoldTime;
             else moveHold -= dt;
             Texture2D frame;
-            if (!still && moveHold > 0f)
+            if (UsesLyingFrame) frame = lyingFrame; // ezilmiş: yerde yatan çizim
+            else if (!still && moveHold > 0f)
             {
                 frameTime += dt * (State == FamilyState.WalkingToCabin ? limpFps : walkFps);
                 frame = walkFrames[Mathf.FloorToInt(frameTime) % walkFrames.Length];

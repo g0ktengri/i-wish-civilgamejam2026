@@ -1614,6 +1614,28 @@ Mehmet'in yorumu (özet):
 - **Anne:** kurtarma ışığı 0,8 → 0,3 (`FamilySetup.MemberDef.Glow`).
 - **Baba (`bubble.father_freed`):** "…Ben topallaya topallaya kabine giderim…"
 
+### Kardeşin ölü karesi bağlandı (Mehmet, senin isteğinle)
+
+- **`FamilyMember`:**
+  - Yeni `lyingFrame` alanı: ezilince (`Hit`) ayakta karenin 90° döndürülmesi yerine bu kare gösteriliyor.
+  - Gövdenin pivottan uzaklığı da yeni bir alanda, `lyingFrameCenter`. `PinUnder` gövdeyi devrik eşyanın ortasına buna göre koyuyor (bakış yönüne göre).
+  - Yaralı ya da kanayan üyeler eskisi gibi döndürülüyor.
+- **`FamilySetup`:**
+  - `{baba|anne|kardes}_olu.png` varsa kendiliğinden bağlanıyor.
+  - Gövde ortası çizimin saydam olmayan piksellerinden hesaplanıyor (kardeş: 0,18 m).
+  - Babanın ya da annenin ölü karesi gelirse aynı adla koymanız yeterli.
+- **Annenin ölü karesi de geldi:** ekibin `anne death.png`'si (1920 px, 15 px'lik ekip pikseli) senin yöntemle 128 px'e indirildi (her bloğun ortası; karışık blok yok) → `Assets/Art/Characters/anne_olu.png`. Kendiliğinden bağlandı.
+- **Babanın ölü karesi de geldi:** `Baba death.png` aynı yöntemle `baba_olu.png` oldu. En alt pikseli 123. satırdaydı, ayak çizgisine (125) 2 px indirildi.
+- **Test:** aile testinde ezilen kardeş, anne ve baba ölü kareleriyle, döndürülmeden; gövdeleri devrilen eşyanın (oyuncak rafı, gardırop, kitaplık) altında ortalı.
+
+### Logo: kırmızı yarık yerine deprem çatlağı (Mehmet)
+
+- `Assets/Art/UI/logo.png` değişti (aynı GUID, prefab'a dokunulmadı).
+- Kırmızı yarık yok. Harfler bütün, üzerlerinde duvardaki gibi kılcal çatlaklar:
+  - kelime boyunca uzanan iki ince ana çatlak (dal ve köşe çatlakları Mehmet'in isteğiyle çıkarıldı);
+  - Ş'de küçük örümcek ağı;
+  - harften çıktığı yerde minik çentik, altında birkaç toz zerresi.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

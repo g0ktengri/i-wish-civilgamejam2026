@@ -177,6 +177,11 @@ namespace Deprem.Family
             var idle = so.FindProperty("idleFrames");
             idle.arraySize = idleFrames.Length;
             for (int i = 0; i < idleFrames.Length; i++) idle.GetArrayElementAtIndex(i).objectReferenceValue = idleFrames[i];
+            // Ezilince yerde yatan kare (Berke'nin isteği: kardes_olu.png); yoksa ayakta kare 90° döner
+            var lyingFrame = frames.Length > 0 ? LoadSingle(DeadName(def.Id)) : null;
+            so.FindProperty("lyingFrame").objectReferenceValue = lyingFrame;
+            so.FindProperty("lyingFrameCenter").floatValue =
+                lyingFrame != null ? BodyCenter(lyingFrame, (def.Frame > 0f ? def.Frame : FrameSize) / 128f) : 0f;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -196,6 +201,41 @@ namespace Deprem.Family
             FamilyMemberId.Sibling => "kardes_yurume",
             _ => null,
         };
+
+        // Ezilince yatan tek kare: Assets/Art/Characters/{ad}.png
+        private static string DeadName(FamilyMemberId id) => id switch
+        {
+            FamilyMemberId.Father => "baba_olu",
+            FamilyMemberId.Mother => "anne_olu",
+            FamilyMemberId.Sibling => "kardes_olu",
+            _ => null,
+        };
+
+        private static Texture2D LoadSingle(string name) =>
+            name == null ? null : AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/Art/Characters/{name}.png");
+
+        /// <summary>
+        /// Yatan çizimde gövdenin (saydam olmayan piksellerin) yatay ortasının pivottan uzaklığı (m). Kare, ayakta
+        /// karelerle aynı kurulumda: pivot x ≈ 61,5 px.
+        /// </summary>
+        private static float BodyCenter(Texture2D frame, float metersPerPixel)
+        {
+            var copy = new Texture2D(2, 2);
+            copy.LoadImage(File.ReadAllBytes(AssetDatabase.GetAssetPath(frame)));
+            var pixels = copy.GetPixels32();
+            int min = copy.width, max = -1;
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                if (pixels[i].a < 10) continue;
+                int x = i % copy.width;
+                if (x < min) min = x;
+                if (x > max) max = x;
+            }
+            float center = max < 0 ? 61.5f : (min + max + 1) * 0.5f;
+            float scale = 128f / copy.width;
+            Object.DestroyImmediate(copy);
+            return (center * scale - 61.5f) * metersPerPixel;
+        }
 
         private static Texture2D[] LoadFrames(string prefix)
         {
