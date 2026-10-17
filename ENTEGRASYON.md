@@ -1168,6 +1168,38 @@ Mehmet'in yorumu (özet):
 
 **Mehmet tarafı (Play testi 27): 1–4 yapıldı.** Dört test geçiyor; Play'de denenmedi. `ElektrikKesik` Volume'undaki mavi renk filtresi ve vinyet de nötrlendi.
 
+### Play testi 28: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- El feneri olmadan kardeşin odasına girince ok ona göstermeye devam etmesin.
+- Oyuncu el fenerini ve ilk yardım çantasını, o yüzden bir kez ölmeden bulamasın.
+- İlk ruh çıkışının süresi daha kısa olsun, öldükçe biraz artsın.
+- Düşen taş sesleri çok kötü; sallanma iyi, bazıları iyi. Seslerin hepsi ayrıntılı denetlenecek, Mehmet tek tek revize edecek.
+
+**Berke'ye düşen**
+
+- **M53. Kardeşe giden ok:**
+  - Oyuncu fenersiz kardeşin odasına girince kardeşin oku kaybolsun.
+  - Okuyacağın bayrak: `FamilyMember.BeingSearched` (oyuncu kardeşin odasında, kardeş saklanıyor, fener yok). Bu true iken o üyenin okunu gösterme. Kardeş bulununca (`Hidden` false) ok her zamanki gibi.
+- **M54. El feneri ve ilk yardım ancak eksikliğinden bir kez ölünce bulunur:**
+  - Ortak sınıf benden: `Deprem.Family.BagLessons`.
+    - `IsLearned(BagItemId)`.
+    - `Learn(BagItemId)`: ben çağırıyorum. Kardeş fenersiz bulunamayıp artçıda ölününce `Flashlight`; baba vedasında `FirstAidKit`.
+    - `Clear()`.
+    - Kayıt PlayerPrefs'te (`lesson.Flashlight`, `lesson.FirstAidKit`), "Devam et"te kalır.
+  - `BagSystem` / `BagSupply`: `IsLearned` false olan malzeme evde hiç görünmesin (bedende de ruhta da); ruh vurgusu da olmasın.
+  - "Yeni oyun" `BagLessons.Clear()` çağırsın.
+- **M55. Ruh fazı süresi:**
+  - İlk ruh çıkışı kısa olsun (öneri 35 sn). Her kayıpta biraz artsın (öneri +5 sn, `GameState.FailedAttempts`), en fazla 60 sn.
+  - Sayaç çubuğu buna göre ölçeklensin.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. `FamilyMember.BeingSearched` ve `BagLessons` (yukarıda).
+2. **Ses denetimi:** bütün ses anahtarları (nerede çaldığı, kaynağı ve lisansı, şimdiki ses) tek sayfada dinlenebilir olacak. Mehmet her biri için "kalsın / değişsin / şununla" diye karar verecek, ben ona göre revize edeceğim.
+   - Düşen taş ve sıva sesi için birkaç alternatif de sayfada olacak.
+   - Ses değişikliklerini bu karara kadar yapmıyorum.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
