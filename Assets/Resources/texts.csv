@@ -196,7 +196,7 @@ hud.rescue_time,ZAMAN,TIME
 bubble.injured,"Ah! Bacağım... Dayan, devam et.","Argh! My leg... Hold on, keep going."
 bubble.rescue_start,"Nasıl böyle bir şey olabilir... Annem, babam, kardeşim! Onları kabine götürmeliyim!","How can this be happening... Mom, Dad, my sibling! I have to get them to the shelter!"
 bubble.family_call.father,"Oğlum! Ayağım taşın altında kaldı... Kımıldayamıyorum!","Son! My leg is pinned under the rock... I can't move!"
-bubble.father_freed,"Oğlum, ayağım fena yaralı... Ben kabine sürünürüm. Sen anneni, kardeşini kurtar, ne olur!","Son, my leg is badly hurt... I'll drag myself to the shelter. Save your mom and your sibling, please!"
+bubble.father_freed,"Oğlum, ayağım fena yaralı... Ben topallaya topallaya kabine giderim. Sen anneni, kardeşini kurtar, ne olur!","Son, my leg is badly hurt... I'll limp to the shelter. Save your mom and your sibling, please!"
 bubble.family_bleeding.father,"Bacağım... Kan durmuyor, oğlum...","My leg... It won't stop bleeding, son..."
 bubble.family_treated.father,"Çantada ilk yardım varmış... Sardım, iyiyim. Aferin sana oğlum.","There was a first aid kit in the bag... It's bandaged, I'm okay. Well done, son."
 bubble.family_farewell.father,"Kan durmuyor oğlum... Sarabileceğimiz bir şey yok. Annene, kardeşine iyi bak... Elveda.","It won't stop, son... There's nothing to bandage it with. Look after your mom and your sibling... Goodbye."

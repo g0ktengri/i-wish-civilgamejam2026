@@ -1568,6 +1568,14 @@ Mehmet'in yorumu (özet):
 2. Baba metni: "kabine sürünürüm" → "topallaya topallaya kabine giderim" (`bubble.father_freed`) (5).
 3. Annenin ışığı kısılsın (6).
 
+**Mehmet tarafı (Play testi 32): yapıldı.** Dört test geçiyor; Play'de denenmedi.
+
+- **Portmanto (`EntranceBlocker`):** kodda dolabı geri kaldıran bir yer bulamadım, iki koruma koydum.
+  - Devrildikten sonra açısı her karede yerinde tutuluyor. Başka bir şey değiştirirse Console'a bir kez uyarı düşüyor: "Devrik dolabın açısını başka bir şey değiştirdi".
+  - Kurtarma fazı başladığında henüz devrilmemişse hemen devrik konuyor.
+- **Anne:** kurtarma ışığı 0,8 → 0,3 (`FamilySetup.MemberDef.Glow`).
+- **Baba (`bubble.father_freed`):** "…Ben topallaya topallaya kabine giderim…"
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

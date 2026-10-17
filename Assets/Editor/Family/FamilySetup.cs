@@ -35,6 +35,8 @@ namespace Deprem.Family
             public Color Color;
             /// <summary>Ekip çizimi karesinin dünya boyu (m); 0 ise FrameSize</summary>
             public float Frame;
+            /// <summary>Kurtarma fazında üyeyi karanlıkta gösteren sıcak ışığın şiddeti; 0 ise 0,8</summary>
+            public float Glow;
         }
 
         // GDD "Artçılar ve kurtarma" ve "Sabitlenebilir eşyalar"
@@ -46,7 +48,8 @@ namespace Deprem.Family
                 Bag = BagItemId.None, CabinBag = BagItemId.FirstAidKit, Injured = true, Height = 1.85f, Color = new Color(0.35f, 0.5f, 0.85f),
                 Frame = 2.05f },
             new MemberDef { Name = "Mother", Id = FamilyMemberId.Mother, Marker = "Marker_Mother", Danger = ItemId.Wardrobe,
-                Bag = BagItemId.None, Injured = false, Height = 1.5f, Color = new Color(0.85f, 0.4f, 0.45f) },
+                // Play testi 32: beyaz elbisesi ışığı çok yansıtıyordu, annede çok ışık vardı
+                Bag = BagItemId.None, Injured = false, Height = 1.5f, Color = new Color(0.85f, 0.4f, 0.45f), Glow = 0.3f },
             new MemberDef { Name = "Sibling", Id = FamilyMemberId.Sibling, Marker = "Marker_Sibling", Danger = ItemId.ToyShelf,
                 Bag = BagItemId.Flashlight, Injured = false, Hides = true, Height = 1.0f, Color = new Color(0.45f, 0.8f, 0.45f) },
         };
@@ -137,7 +140,7 @@ namespace Deprem.Family
             var glow = glowGo.AddComponent<Light>();
             glow.type = LightType.Point;
             glow.color = new Color(1f, 0.85f, 0.65f);
-            glow.intensity = 0.8f;
+            glow.intensity = def.Glow > 0f ? def.Glow : 0.8f;
             glow.range = 1.8f;
             glow.shadows = LightShadows.None;
             glow.enabled = false;
