@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Deprem.Bag;
 using Deprem.Core;
@@ -59,6 +60,69 @@ namespace Deprem.Loop.EditorTools
                 Call(bag, "Awake"); // Awake çantadaki malzemelerle kurar
                 Get<CanvasGroup>(bag, "group").alpha = 1f;
             });
+        }
+
+        // Ruh (ruh_N) ve ölmenin son karesi (oyuncu_olme_N), oyundaki ölçek ve pivotla: Logs/character_preview.png
+        [MenuItem("Tools/Deprem/Berke: Ruh ve Ölüm Önizlemesi")]
+        public static void RenderCharacters()
+        {
+            Texture2D[] Load(string prefix) => AssetDatabase.FindAssets(prefix + "_ t:Texture2D", new[] { "Assets/Art/Characters" })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileNameWithoutExtension(path), "^" + prefix + "_\\d+$"))
+                .OrderBy(path => int.Parse(Path.GetFileNameWithoutExtension(path).Substring(prefix.Length + 1)))
+                .Select(AssetDatabase.LoadAssetAtPath<Texture2D>).ToArray();
+
+            const int Width = 1280, Height = 720;
+            var root = new GameObject("CharacterPreview");
+            var camera = new GameObject("PreviewCamera").AddComponent<Camera>();
+            var target = new RenderTexture(Width, Height, 24);
+            try
+            {
+                camera.clearFlags = CameraClearFlags.SolidColor;
+                camera.backgroundColor = new Color(0.16f, 0.15f, 0.18f);
+                camera.orthographic = true;
+                camera.orthographicSize = 1.3f;
+                camera.transform.position = new Vector3(0f, 1.1f, -5f);
+                camera.targetTexture = target;
+
+                var spiritFrames = Load("ruh");
+                Debug.Log("[HudPreview] Ruh kareleri: " + string.Join(", ", spiritFrames.Select(t => t.name)));
+                var spirit = Deprem.Spirit.SpiritVisual.Create(root.transform, spiritFrames);
+                spirit.transform.position = new Vector3(-1.4f, 1.1f, 0f);
+
+                var death = Load("oyuncu_olme");
+                if (death.Length > 0)
+                {
+                    // Oyuncu kökü x = 1,2; görsel ölme kaydırmasıyla (PlayerVisual.deathOffsetX), kare 2 x 2 m
+                    var last = death[death.Length - 1];
+                    var sprite = Sprite.Create(last, new Rect(0, 0, last.width, last.height), new Vector2((64f - 9f) / 128f, 2f / 128f), 64f, 0, SpriteMeshType.FullRect);
+                    var go = new GameObject("Death");
+                    go.transform.SetParent(root.transform, false);
+                    go.transform.position = new Vector3(1.2f - 34f / 64f, 0f, 0f);
+                    go.AddComponent<SpriteRenderer>().sprite = sprite;
+                }
+                var floor = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                floor.transform.SetParent(root.transform, false);
+                floor.transform.position = new Vector3(0f, -0.03f, 0.1f);
+                floor.transform.localScale = new Vector3(8f, 0.06f, 1f);
+
+                camera.Render();
+                RenderTexture.active = target;
+                var output = new Texture2D(Width, Height, TextureFormat.RGB24, false);
+                output.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
+                output.Apply();
+                RenderTexture.active = null;
+                File.WriteAllBytes("Logs/character_preview.png", output.EncodeToPNG());
+                Object.DestroyImmediate(output);
+                Debug.Log("[HudPreview] Kaydedildi: Logs/character_preview.png");
+            }
+            finally
+            {
+                camera.targetTexture = null;
+                Object.DestroyImmediate(target);
+                Object.DestroyImmediate(camera.gameObject);
+                Object.DestroyImmediate(root);
+            }
         }
 
         static void RenderScene(string name, System.Action<GameObject> build)

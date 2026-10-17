@@ -21,6 +21,8 @@ namespace Deprem.Spirit
         [Header("Ruh")]
         [Tooltip("Boşsa geçici bir ruh (parlayan küre) kurulur")]
         [SerializeField] SpiritController spiritPrefab;
+        [Tooltip("Ekip çizimi ruh_N.png (prefab kurulurken Art/Characters'tan bağlanır); yoksa parlayan küre")]
+        [SerializeField] Texture2D[] spiritFrames;
         [SerializeField] Color glowColor = new Color(0.55f, 0.8f, 1f);
         [SerializeField] float glowIntensity = 3f;
         [SerializeField] float glowRange = 3f;
@@ -118,14 +120,22 @@ namespace Deprem.Spirit
             var root = new GameObject("Spirit");
             root.SetActive(false);
 
-            // Geçici görünüm: oyuncu sprite'ı + ruh shader'ı gelene kadar parlayan küre
-            var body = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            body.name = "Visual";
-            Destroy(body.GetComponent<Collider>());
-            body.transform.SetParent(root.transform, false);
-            body.transform.localScale = Vector3.one * 0.35f;
-            var bodyRenderer = body.GetComponent<Renderer>();
-            bodyRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            // Ruh çizimi (bacakları dağılan koşu); yoksa geçici parlayan küre
+            Transform body;
+            if (spiritFrames != null && spiritFrames.Length > 0)
+            {
+                body = SpiritVisual.Create(root.transform, spiritFrames).transform;
+            }
+            else
+            {
+                var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.name = "Visual";
+                Destroy(sphere.GetComponent<Collider>());
+                sphere.transform.SetParent(root.transform, false);
+                sphere.transform.localScale = Vector3.one * 0.35f;
+                sphere.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                body = sphere.transform;
+            }
 
             var glow = new GameObject("Glow").AddComponent<Light>();
             glow.transform.SetParent(root.transform, false);
@@ -136,7 +146,7 @@ namespace Deprem.Spirit
             glow.shadows = LightShadows.None;
 
             var controller = root.AddComponent<SpiritController>();
-            controller.SetVisual(body.transform);
+            controller.SetVisual(body);
             root.AddComponent<SpiritInteractor>();
             return controller;
         }

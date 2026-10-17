@@ -141,6 +141,15 @@ MonoBehaviour:
   spawnMarkerName: Marker_PlayerBed
   spawnOffset: {x: 0, y: 1, z: 0}
   spiritPrefab: {fileID: 0}
+  spiritFrames:
+  - {fileID: 2800000, guid: 7468175b27cf3bb4fbdb7ddb57e31f2d, type: 3}
+  - {fileID: 2800000, guid: d35ceeb541df7a64083cc94960fdcadf, type: 3}
+  - {fileID: 2800000, guid: e1d82d73c2fcc7148817fd069834301e, type: 3}
+  - {fileID: 2800000, guid: bd00061dd1e0f9a429241c9a9b52d9be, type: 3}
+  - {fileID: 2800000, guid: ff4e18f21782b8143a97c9487a244b31, type: 3}
+  - {fileID: 2800000, guid: e81bbb7997b1cc3449213d3737201804, type: 3}
+  - {fileID: 2800000, guid: faeceb899535db2489c4a974c70d93e9, type: 3}
+  - {fileID: 2800000, guid: dfe74b6c4ac683d4d9828e0bb1b91f04, type: 3}
   glowColor: {r: 0.55, g: 0.8, b: 1, a: 1}
   glowIntensity: 3
   glowRange: 3

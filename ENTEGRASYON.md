@@ -41,6 +41,14 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Ekip çizimi: ölme ve ruh animasyonu (Berke, senin klasörlerinde izinle)
+
+- **Kareler:** `Art/Characters/oyuncu_olme_1..5` ve `Art/Characters/ruh_1..8` (1920 px → 128 px, en yakın komşu; ayak hizası diğer karelerle aynı, y = 2 px).
+- **Ölme (`PlayerVisual.deathFrames`, `PlayerSetup` bağlıyor):** `GameState.Phase == Failed` ve sebep `NoDuckCoverHold` ya da `AftershockInjury` ise bir kez 8 fps oynar, yerde yatan son karede kalır. Keşke ekranı kararırken görünür. Yatakta ezilmede (`IgnoredForeshock`) oyuncu zaten yatıyor, oynamaz. Çizimde karakter karenin 34 px sağında: ölürken görsel `deathOffsetX` (-0,53 m, yöne göre aynalı) kadar kaydırılıyor ki yerinden sıçramasın. `HitByDebris`'ten önce başlatmak istersen `Dying` koşuluna kendi bayrağını ekleyebilirsin.
+- **Ruh (`Spirit/SpiritVisual`, yeni):** parlayan kürenin yerine sprite. Hareket ederken 10 fps, dururken 4 fps; gittiği yöne döner; soğuk ton, hafif saydam; pivot gövde ortası (etkileşim noktası aynı). `SpiritPhase.spiritFrames` prefab kurulurken bağlanıyor.
+- **Not (sprite batch'leme):** Çalışma anında `Sprite.Create` ile üretilen iki sprite aynı varsayılan materyali paylaşınca aynı çizimde birleşip birinin dokusunu alabiliyor (önizlemede ruh, ölme karesiyle çizildi). Ruha kendi materyal kopyası verildi. Sen de çalışma anında sprite üretirsen aynısını yap ya da `FullRect` + ayrı materyal kullan.
+- **Önizleme:** `HudPreview.RenderCharacters` (Tools > Deprem > Berke: Ruh ve Ölüm Önizlemesi) → `Logs/character_preview.png`.
+
 ### Play testi 13: M25 ses çağrıları (Berke)
 
 Bütün çağrılar `Deprem.Audio.Sfx` üzerinden; AudioDirector gelene kadar sessiz. Tablodaki anahtarların hepsi bağlandı:

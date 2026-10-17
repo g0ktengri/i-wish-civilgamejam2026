@@ -97,6 +97,7 @@ namespace Deprem.Player
             // Ekip çizimleri: bekleme (2 kare) ve çömelme (5 kare; eğilme ve çök-kapan-tutun)
             SetFrames(so, "idleFrames", LoadFrames("oyuncu_bekleme"));
             SetFrames(so, "crouchFrames", LoadFrames("oyuncu_egilme"));
+            SetFrames(so, "deathFrames", LoadFrames("oyuncu_olme")); // kendi ölümüyle kaybedince
             var flashlightFrames = LoadFrames("oyuncu_fenerle_kosma");
             SetFrames(so, "flashlightRunFrames", flashlightFrames); // kurtarma fazında fener yanarken
             // Huzme her karede fenerin ucundan çıksın: uç çizimden bulunur

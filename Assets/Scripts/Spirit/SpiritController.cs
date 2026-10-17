@@ -33,6 +33,9 @@ namespace Deprem.Spirit
 
         public void SetVisual(Transform target) => visual = target;
 
+        /// <summary>Anlık hız (SpiritVisual yönü ve animasyon hızı için)</summary>
+        public Vector2 Velocity => velocity;
+
         void OnEnable() => velocity = Vector2.zero;
 
         void Update()

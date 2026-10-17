@@ -306,6 +306,14 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 8f0357eb355c9d243abda63196b41938, type: 3}
   - {fileID: 2800000, guid: 8deeb1207b621ca4888e33c845afc215, type: 3}
   crouchFps: 14
+  deathFrames:
+  - {fileID: 2800000, guid: 3c9cf10dda58bc24a8226ab1d68f9c85, type: 3}
+  - {fileID: 2800000, guid: 29f08a8929d06b249a802e6b28ef8435, type: 3}
+  - {fileID: 2800000, guid: 5a7aa60c86a999342a87275ac07c6670, type: 3}
+  - {fileID: 2800000, guid: f68ddf81ec04ca345ac0dbc39882636b, type: 3}
+  - {fileID: 2800000, guid: 70e2cc916c67796428a1380a0a6200f7, type: 3}
+  deathFps: 8
+  deathOffsetX: -0.53125
   crouchedScale: {x: 0.95, y: 0.72}
   moveThreshold: 0.2
 --- !u!114 &3980672761434934324

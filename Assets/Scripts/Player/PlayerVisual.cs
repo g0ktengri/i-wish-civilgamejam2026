@@ -1,3 +1,4 @@
+using Deprem.Core;
 using UnityEngine;
 
 namespace Deprem.Player
@@ -34,6 +35,12 @@ namespace Deprem.Player
         [Tooltip("Ayaktan çömelmeye; bir kez oynar, son karede kalır")]
         [SerializeField] private Texture2D[] crouchFrames;
         [SerializeField] private float crouchFps = 14f;
+        [Tooltip("Ölme (oyuncu_olme_N): oyuncu çök-kapan yapmadığı ya da artçıda yaralandığı için kaybedince bir kez " +
+                 "oynar, yerde yatan son karede kalır (keşke ekranı kararırken)")]
+        [SerializeField] private Texture2D[] deathFrames;
+        [SerializeField] private float deathFps = 8f;
+        [Tooltip("Ölme çiziminde karakter karenin 34 px sağında: görsel bu kadar kaydırılır ki yerinden sıçramasın (m)")]
+        [SerializeField] private float deathOffsetX = -34f / 64f;
         [Tooltip("Çömelme çiziminin son karedeki ölçeği (en, boy). Çizim ~1,3 m; masalar 0,78 m. Play testi 7: masanın " +
                  "çok üstünde kalıyordu; play testi 8: 0,82 × 0,58 cüce gibiydi. 0,72 ile ~0,92 m, masanın arkasından baş görünür")]
         [SerializeField] private Vector2 crouchedScale = new Vector2(0.95f, 0.72f);
@@ -47,6 +54,7 @@ namespace Deprem.Player
         private float frameTime;
         private float idleTime;
         private float crouchTime;
+        private float deathTime;
         private Texture2D shownTexture;
 
         /// <summary>Gösterilen fenerli karede fenerin ucu var mı (PlayerFlashlight huzmeyi oradan çıkarır)</summary>
@@ -60,9 +68,24 @@ namespace Deprem.Player
             flashlight = GetComponent<PlayerFlashlight>();
         }
 
+        // Oyuncunun kendi ölümüyle biten kayıp (yatakta ezilmede zaten yatıyor, orada oynamaz)
+        private bool Dying =>
+            deathFrames != null && deathFrames.Length > 0 && GameState.Phase == GamePhase.Failed && !player.IsLying &&
+            (GameState.LastLoseReason == LoseReason.NoDuckCoverHold || GameState.LastLoseReason == LoseReason.AftershockInjury);
+
         private void LateUpdate()
         {
             if (visual == null) return;
+            if (Dying)
+            {
+                visual.localScale = new Vector3(player.Facing, 1f, 1f);
+                visual.localRotation = Quaternion.identity;
+                visual.localPosition = new Vector3(deathOffsetX * player.Facing, 0f, 0f);
+                deathTime += Time.deltaTime;
+                ShowTexture(deathFrames[Mathf.Min(Mathf.FloorToInt(deathTime * deathFps), deathFrames.Length - 1)]);
+                return;
+            }
+            deathTime = 0f;
             // Çömelme çizimi varsa görsel alçaltılmaz, kareler çömelir
             bool hasCrouchArt = crouchFrames != null && crouchFrames.Length > 0;
             float height = player.IsCrouching && !hasCrouchArt ? player.CrouchHeight / player.StandingHeight : 1f;
@@ -138,7 +161,12 @@ namespace Deprem.Player
             }
             UpdateFlashlightTip(flashlightIndex, texture);
 
-            if (texture == null || texture == shownTexture) return;
+            ShowTexture(texture);
+        }
+
+        private void ShowTexture(Texture2D texture)
+        {
+            if (texture == null || texture == shownTexture || body == null) return;
             shownTexture = texture;
             block ??= new MaterialPropertyBlock();
             body.GetPropertyBlock(block);

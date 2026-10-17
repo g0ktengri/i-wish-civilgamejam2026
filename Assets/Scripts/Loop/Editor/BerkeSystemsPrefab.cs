@@ -94,6 +94,7 @@ namespace Deprem.Loop.EditorTools
                 root.AddComponent<PixelScreen>();
 
                 BindArt(root);
+                BindSpiritFrames(root.GetComponent<SpiritPhase>());
 
                 PrefabUtility.SaveAsPrefabAsset(root, PrefabPath, out bool success);
                 if (!success) throw new IOException($"Prefab kaydedilemedi: {PrefabPath}");
@@ -141,6 +142,26 @@ namespace Deprem.Loop.EditorTools
                 if (!model) Debug.LogWarning($"[BerkeSystemsPrefab] Çanta modeli yok: BagItem_{id} (ikon / küp kullanılır)");
             }
             return so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Ruh animasyonu: Assets/Art/Characters/ruh_1..N.png (ekip çizimi, 128 x 128)
+        static void BindSpiritFrames(SpiritPhase phase)
+        {
+            const string folder = "Assets/Art/Characters";
+            var frames = AssetDatabase.FindAssets("ruh_ t:Texture2D", new[] { folder })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(path => (path, name: Path.GetFileNameWithoutExtension(path)))
+                .Where(p => p.name.StartsWith("ruh_") && int.TryParse(p.name.Substring(4), out _))
+                .OrderBy(p => int.Parse(p.name.Substring(4)))
+                .Select(p => AssetDatabase.LoadAssetAtPath<Texture2D>(p.path))
+                .Where(t => t)
+                .ToArray();
+            var so = new SerializedObject(phase);
+            var property = so.FindProperty("spiritFrames");
+            property.arraySize = frames.Length;
+            for (int i = 0; i < frames.Length; i++) property.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+            so.ApplyModifiedPropertiesWithoutUndo();
+            Debug.Log($"[BerkeSystemsPrefab] Ruh kareleri: {frames.Length}");
         }
 
         static void BindArt(GameObject root)
