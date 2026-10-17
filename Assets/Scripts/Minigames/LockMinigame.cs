@@ -54,8 +54,7 @@ namespace Deprem.Minigames
             barWidth = PanelSize.x * 0.78f;
             speed = startSpeed;
             zoneWidth = startZoneWidth;
-            var panelTex = TexSize(PanelSize);
-            CreateBackground(Art.lockBackground, MinigamePixels.CabinetDoor(panelTex.x, panelTex.y));
+            CreateBackground(Art.lockBackground, MinigamePixels.Ground((int)PanelSize.x, (int)PanelSize.y, "door"));
 
             // Mandal: sağda karşılık, solda kapanan sürgü (sanatçı arka planı varsa sadece ışıklar ve ray)
             if (!Art.lockBackground)

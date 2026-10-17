@@ -24,14 +24,27 @@ namespace Deprem.Loop.EditorTools
         {
             RenderScene("rescue", root =>
             {
+                // M27 okları için sahte hedefler: baba sağda ekran dışı, anne sol üstte ekran dışı, kardeş ekranda
+                foreach (var (name, position) in new[] { ("Marker_Father", new Vector3(14f, 1f, 10f)),
+                             ("Marker_Mother", new Vector3(-7f, 9f, 10f)), ("Marker_Sibling", new Vector3(-3f, -2f, 10f)) })
+                {
+                    var marker = new GameObject(name);
+                    marker.transform.SetParent(root.transform, false);
+                    marker.transform.position = position;
+                }
+                var sibling = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                sibling.name = "Sibling";
+                sibling.transform.SetParent(root.transform, false);
+                sibling.transform.position = new Vector3(-3f, -2.4f, 10f);
+                sibling.transform.localScale = new Vector3(0.6f, 1.1f, 1f);
+
                 var prompt = root.AddComponent<PromptHud>();
                 Call(prompt, "Awake");
                 Call(prompt, "HandlePromptChanged", "prompt.duck_cover");
 
                 var objective = root.AddComponent<ObjectiveHud>();
                 Call(objective, "Awake");
-                Get<CanvasGroup>(objective, "group").alpha = 1f;
-                Call(objective, "Refresh");
+                Call(objective, "HandlePhaseChanged", GamePhase.Rescue);
 
                 GameState.AddBagItem(BagItemId.FirstAidKit);
                 GameState.AddBagItem(BagItemId.Flashlight);
@@ -43,6 +56,12 @@ namespace Deprem.Loop.EditorTools
                     $"<color={UiBuilder.Hex(UiBuilder.HudAccent)}>{Deprem.Localization.Texts.Get("bag.Flashlight")}</color>");
                 ((RectTransform)toast.rectTransform.parent).sizeDelta = new Vector2(toast.preferredWidth + 32f, 36f);
                 Get<CanvasGroup>(bag, "toastGroup").alpha = 1f;
+            }, (root, camera) =>
+            {
+                var objective = root.GetComponent<ObjectiveHud>();
+                var arrows = (System.Collections.IList)typeof(ObjectiveHud).GetField("arrows", Flags).GetValue(objective);
+                var update = typeof(ObjectiveHud).GetMethod("UpdateArrow", Flags);
+                foreach (var arrow in arrows) update.Invoke(objective, new[] { arrow, camera, (object)true, (object)0.3f });
             });
 
             // Kayıp anı dairesi (ışık 3D sahnede, burada yok): oyuncu odasındaki masanın yanına
@@ -85,7 +104,7 @@ namespace Deprem.Loop.EditorTools
                         Graphics.Blit(texture, blur);
                         var snapshot = Get<RawImage>(host, "snapshot");
                         snapshot.texture = blur;
-                        snapshot.color = new Color(0.42f, 0.56f, 0.82f);
+                        snapshot.color = new Color(0.34f, 0.45f, 0.68f);
                         snapshot.enabled = true;
                     }
                 });
@@ -182,6 +201,12 @@ namespace Deprem.Loop.EditorTools
 
         static void RenderScene(string name, System.Action<GameObject> build)
         {
+            RenderScene(name, build, null);
+        }
+
+        // afterLayout: canvas'lar önizleme kamerasına bağlandıktan sonra (ekran konumu hesaplayanlar için)
+        static void RenderScene(string name, System.Action<GameObject> build, System.Action<GameObject, Camera> afterLayout)
+        {
             const int Width = 1920, Height = 1080;
             GameState.ResetAll();
             var root = new GameObject("HudPreview");
@@ -216,6 +241,11 @@ namespace Deprem.Loop.EditorTools
                     canvas.planeDistance = 1f + canvas.sortingOrder * -0.001f;
                 }
                 Canvas.ForceUpdateCanvases();
+                if (afterLayout != null)
+                {
+                    afterLayout(root, camera);
+                    Canvas.ForceUpdateCanvases();
+                }
                 camera.Render();
 
                 RenderTexture.active = target;

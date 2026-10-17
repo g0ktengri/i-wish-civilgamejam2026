@@ -41,6 +41,20 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Play testi 19: M27 aile okları, M28 minigame teması (Berke)
+
+- **M27 (`ObjectiveHud`):**
+  - Hedef ekran dışındaysa ekran kenarına yapışık, kalın, konturlu pixel ok (16×16 doku, 36 px; `UiStyle.arrow` gelirse o). Nabız gibi atar (×1,12) ve hedefe doğru 6 px "iter".
+  - Üye başına renk: baba sarı (HUD vurgu), anne sıcak gül, kardeş yeşil, kabin krem. Okun arkasında HUD panelinde baş harf rozeti (B / A / K; İngilizcede D / M / S), kurtarılınca ok söner.
+  - Oyuncudan uzaklaştıkça ok küçülür (4 m'den 18 m'ye ×0,7).
+  - Hedef ekrandaysa üyenin görselinin tepesinde aşağı bakan, sallanan küçük işaret. Aile objelerini adla buluyor (`Father` / `Mother` / `Sibling`); yürüyen baba da izleniyor.
+- **M28 (minigame teması):**
+  - Zeminler sade: koyu, iki tonlu, büyük pikselli (`MinigamePixels.Ground`, 1 doku pikseli = 2 referans pikseli), gürültü yok. Vida: koyu ahşap, seyrek tahta araları. Kilit: tek iç panel çizgisi. Taşı-yerleştir: soğuk koyu duvar, altta zemin bandı. Tuğla yerine düz koyu blok (`Block`). Detaylı tahta / oda / tuğla / kapı üreticileri silindi.
+  - Eşyalar, levha, vidalar, mandal ve ibre detaylı kaldı; öne onlar çıkıyor.
+  - Tek, sade çerçeve: başlık ayrı etiket değil, aynı HUD panelinin içinde üst şeritte, krem renkte, altında ince ayırıcı (`headerHeight` 26). İpucu kutusu ve [Esc] aynı panel ailesinden.
+  - Arkadaki bulanık oda daha koyu (`snapshotTint` 0,34 / 0,45 / 0,68, üstünde 0,66 karartma).
+- Önizleme: `Logs/hud_preview_rescue.png` (sahte hedeflerle oklar), `Logs/hud_preview_minigame_*.png`. Dört test geçiyor.
+
 ### Play testi 17: M26 minigame görünüşü (Berke)
 
 - **Daha ince çizim:** `MinigamePixels` çözünürlüğü iki katı (1 doku pikseli = 1 referans pikseli). Her parça konturlu ve en az üç tonlu (ışık / ana / gölge), sahneler kenarda ortam gölgeli.

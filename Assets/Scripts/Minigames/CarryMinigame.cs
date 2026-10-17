@@ -58,8 +58,7 @@ namespace Deprem.Minigames
 
         protected override void OnBuild()
         {
-            var panelTex = TexSize(PanelSize);
-            CreateBackground(Art.carryBackground, MinigamePixels.Room(panelTex.x, panelTex.y));
+            CreateBackground(Art.carryBackground, MinigamePixels.Ground((int)PanelSize.x, (int)PanelSize.y, "room"));
             ItemSize = (Vector2)MinigamePixels.CarrySize(Variant.CarryKind) * MinigamePixels.Scale;
 
             // Eşya bir yanda, güvenli alan diğer yanda
@@ -132,7 +131,7 @@ namespace Deprem.Minigames
             piece.SetParent(Panel, false);
             piece.anchorMin = piece.anchorMax = new Vector2(0.5f, 0.5f);
             var size = new Vector2(WallWidth, PanelSize.y);
-            var bricks = CreatePixel("Bricks", Vector2.zero, size, Art.carryWall, MinigamePixels.Bricks(TexSize(size).x, TexSize(size).y), piece);
+            var bricks = CreatePixel("Bricks", Vector2.zero, size, Art.carryWall, MinigamePixels.Block((int)size.x, (int)size.y), piece);
             if (Art.carryWall)
             {
                 bricks.type = Image.Type.Tiled;

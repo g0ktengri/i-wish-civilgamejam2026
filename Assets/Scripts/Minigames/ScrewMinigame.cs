@@ -110,8 +110,7 @@ namespace Deprem.Minigames
 
         protected override void OnBuild()
         {
-            var panelTex = TexSize(PanelSize);
-            CreateBackground(Art.screwBackground, MinigamePixels.Boards(panelTex.x, panelTex.y, Variant.Seed % 5));
+            CreateBackground(Art.screwBackground, MinigamePixels.Ground((int)PanelSize.x, (int)PanelSize.y, "wood"));
 
             var (plateSize, layout) = LayoutFor(Variant.Screws);
             bool mirror = Random.NextDouble() < 0.5;

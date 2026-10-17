@@ -24,10 +24,12 @@ namespace Deprem.Minigames
         [SerializeField] Vector2 panelSize = new Vector2(256f, 256f); // GDD yakın çekim boyutu
         [Tooltip("Çerçevenin içerikten payı (referans pikseli)")]
         [SerializeField] float framePadding = 8f;
-        [Tooltip("Bulanık oda görüntüsünün üstündeki karartma")]
-        [SerializeField] Color overlayColor = new Color(0.02f, 0.03f, 0.08f, 0.5f);
+        [Tooltip("Başlık şeridinin yüksekliği: başlık çerçevenin içinde, içeriğin üstünde (M28: tek, sade çerçeve)")]
+        [SerializeField] float headerHeight = 26f;
+        [Tooltip("Bulanık oda görüntüsünün üstündeki karartma (M28: biraz daha koyu)")]
+        [SerializeField] Color overlayColor = new Color(0.02f, 0.03f, 0.07f, 0.66f);
         [Tooltip("Arkadaki bulanık oda görüntüsünün rengi (ruh fazının soğuk mavisi)")]
-        [SerializeField] Color snapshotTint = new Color(0.42f, 0.56f, 0.82f);
+        [SerializeField] Color snapshotTint = new Color(0.34f, 0.45f, 0.68f);
         [Tooltip("Bulanıklık: oda görüntüsü bu çözünürlüğe küçültülür (küçük = daha bulanık)")]
         [SerializeField] Vector2Int snapshotSize = new Vector2Int(96, 54);
         [Tooltip("Minigame'in kendi arka planına hafif soğuk ton")]
@@ -186,9 +188,8 @@ namespace Deprem.Minigames
             TakeSnapshot();
 
             titleText.text = Capitalize(title);
-            titleText.color = UiBuilder.HudAccent;
+            titleText.color = UiBuilder.HudText;
             titlePanel.gameObject.SetActive(!string.IsNullOrEmpty(title));
-            titlePanel.sizeDelta = new Vector2(Mathf.Max(120f, titleText.preferredWidth + 28f), 32f);
             hint.Set(type == MinigameType.Lock
                 ? Texts.Format(HintKey(type), lockRequiredHits)
                 : Texts.Get(HintKey(type)));
@@ -362,30 +363,40 @@ namespace Deprem.Minigames
             panel = UiBuilder.CreatePanel(canvas.transform, "Panel");
             var panelRect = panel.rectTransform;
             panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = panelSize + Vector2.one * framePadding * 2f;
-            panelRect.anchoredPosition = new Vector2(0f, 14f);
+            panelRect.sizeDelta = panelSize + Vector2.one * framePadding * 2f + new Vector2(0f, headerHeight);
+            panelRect.anchoredPosition = new Vector2(0f, 14f + headerHeight * 0.5f);
 
             content = new GameObject("Content", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
             content.SetParent(panel.transform, false);
             UiBuilder.Stretch(content, Vector2.zero, Vector2.one);
             content.offsetMin = Vector2.one * framePadding;
-            content.offsetMax = -Vector2.one * framePadding;
+            content.offsetMax = -new Vector2(framePadding, framePadding + headerHeight);
 
             // İçeriğin dışında (OpenPanel içeriği her açılışta temizler), içeriğin üstünde
             successFlash = UiBuilder.CreateImage(panel.transform, "SuccessFlash", successColor);
             UiBuilder.Stretch(successFlash.rectTransform, Vector2.zero, Vector2.one);
             successFlash.rectTransform.offsetMin = Vector2.one * framePadding;
-            successFlash.rectTransform.offsetMax = -Vector2.one * framePadding;
+            successFlash.rectTransform.offsetMax = -new Vector2(framePadding, framePadding + headerHeight);
             successFlash.enabled = false;
 
-            // Başlık: panelin üst kenarına binen küçük panel ("Kitaplığı sabitle")
-            titlePanel = UiBuilder.CreatePanel(panel.transform, "Title").rectTransform;
-            titlePanel.anchorMin = titlePanel.anchorMax = new Vector2(0.5f, 1f);
-            titlePanel.pivot = new Vector2(0.5f, 0.5f);
-            titlePanel.anchoredPosition = new Vector2(0f, 4f);
-            titleText = UiBuilder.CreateText(titlePanel, "Text", font, UiBuilder.HudFontSize, UiBuilder.HudAccent);
+            // Başlık: aynı çerçevenin içinde, üstte şerit ve altında ince ayırıcı ("Kitaplığı sabitle");
+            // ayrı etiket paneli ve altın şerit yok (M28)
+            titlePanel = new GameObject("Title", typeof(RectTransform)).GetComponent<RectTransform>();
+            titlePanel.SetParent(panel.transform, false);
+            titlePanel.anchorMin = new Vector2(0f, 1f);
+            titlePanel.anchorMax = new Vector2(1f, 1f);
+            titlePanel.pivot = new Vector2(0.5f, 1f);
+            titlePanel.sizeDelta = new Vector2(-framePadding * 2f, headerHeight);
+            titlePanel.anchoredPosition = new Vector2(0f, -framePadding * 0.5f);
+            titleText = UiBuilder.CreateText(titlePanel, "Text", font, UiBuilder.HudFontSize, UiBuilder.HudText);
             UiBuilder.Stretch(titleText.rectTransform, Vector2.zero, Vector2.one);
             titleText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            var separator = UiBuilder.CreateImage(titlePanel, "Separator", new Color(1f, 1f, 1f, 0.12f));
+            separator.rectTransform.anchorMin = Vector2.zero;
+            separator.rectTransform.anchorMax = new Vector2(1f, 0f);
+            separator.rectTransform.pivot = new Vector2(0.5f, 0f);
+            separator.rectTransform.sizeDelta = new Vector2(0f, 2f);
+            separator.rectTransform.anchoredPosition = new Vector2(0f, 2f);
 
             hint = UiPrompt.Create(canvas.transform, "Hint", font, 14);
             hint.Rect.anchorMin = hint.Rect.anchorMax = new Vector2(0.5f, 0.5f);

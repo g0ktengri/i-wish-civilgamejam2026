@@ -6,6 +6,7 @@ namespace Deprem.Minigames
     // Minigame'lerin kodla çizilen pixel art parçaları (sanatçı görseli yokken). Oyunun paleti: sıcak ahşap, bej sıva,
     // gri metal, koyu kontur. M26 (Mehmet'in play testi 17: "low-poly ve çirkin"): çözünürlük iki katı
     // (1 doku pikseli = 1 referans pikseli), her parça konturlu, en az üç tonlu (ışık / ana / gölge), ortam gölgeli.
+    // M28: zeminler ve engeller tersine sade (Ground / Block, büyük pikseller); detay sadece eşyalarda ve mekanizmada.
     // Çağıran, Image boyutunu doku boyutunda verir (Minigame.TexSize). Aynı istek önbellekten döner.
     public static class MinigamePixels
     {
@@ -136,115 +137,50 @@ namespace Deprem.Minigames
 
         // ------------------------------------------------------------------ Arka planlar
 
-        // Dolabın arkası: tahtalar (ara çizgisi + ışık), üç tonlu damar, budak, çivi; kenarlarda ortam gölgesi
-        public static Sprite Boards(int w, int h, int seed) => Make($"boards_{w}x{h}_{seed}", w, h, c =>
-        {
-            const int plank = 22;
-            for (int y = 0; y < c.H; y++)
-            {
-                int row = y / plank;
-                var tone = Shade(Wood, 0.9f + (row * 37 % 5) * 0.045f);
-                int local = y % plank;
-                for (int x = 0; x < c.W; x++)
-                    c.Set(x, y, local == 0 ? WoodDark : local == 1 ? Shade(tone, 1.15f) : local == plank - 1 ? Shade(tone, 0.85f) : tone);
-            }
-            // Damarlar: uzun, dalgalı, iki tonlu
-            for (int y = 4; y < c.H; y += c.R.Next(3, 6))
-            {
-                if (y % plank < 2) continue;
-                int x = c.R.Next(0, c.W), length = c.R.Next(c.W / 6, c.W / 2);
-                float wave = (float)c.R.NextDouble() * 6f;
-                for (int i = 0; i < length; i++)
-                {
-                    int gy = y + (int)(Mathf.Sin((x + i) * 0.05f + wave) * 1.2f);
-                    if (gy % plank < 2) continue;
-                    c.Set((x + i) % c.W, gy, Shade(c.Get((x + i) % c.W, gy), i % 9 < 6 ? 0.8f : 0.88f));
-                }
-            }
-            // Budaklar
-            for (int k = 0; k < c.W * c.H / 9000 + 1; k++)
-            {
-                int kx = c.R.Next(8, c.W - 8), ky = c.R.Next(0, c.H / plank) * plank + plank / 2;
-                for (int y = -3; y <= 3; y++) for (int x = -5; x <= 5; x++)
-                {
-                    float d = x * x / 25f + y * y / 9f;
-                    if (d <= 1f) c.Set(kx + x, ky + y, Shade(Wood, d < 0.35f ? 0.55f : d < 0.7f ? 0.72f : 0.85f));
-                }
-            }
-            // Tahta uçlarında çiviler
-            for (int y = plank / 2; y < c.H; y += plank)
-                foreach (int x in new[] { 6, c.W - 7 })
-                {
-                    c.Set(x, y, Shade(Steel, 0.6f)); c.Set(x + 1, y, Shade(Steel, 0.9f));
-                    c.Set(x, y + 1, Shade(Steel, 1.1f)); c.Set(x + 1, y + 1, Shade(Steel, 0.75f));
-                }
-            c.Noise(0.05f);
-            c.Vignette(0.35f);
-        }, seed);
+        // M28 (Mehmet'in play testi 19: zeminler çok detaylı ve renkliydi, oyundan kopuktu): sade, koyu, iki tonlu düzlük,
+        // büyük net pikseller (1 doku pikseli = BigPixel referans pikseli), gürültü yok. Eşya ve hedef öne çıkar.
+        public const int BigPixel = 2;
 
-        // Taşı-yerleştir: çizgili duvar kağıdı, tavan pervazı, ahşap lambri (panelli), süpürgelik ve döşeme
-        public static Sprite Room(int w, int h) => Make($"room_{w}x{h}", w, h, c =>
+        // kind: "wood" (vida: dolabın arkası, seyrek tahta araları), "door" (kilit: tek iç panel çizgisi ve topuz),
+        // "room" (taşı-yerleştir: soğuk koyu duvar, altta zemin bandı). w, h referans pikseli
+        public static Sprite Ground(int w, int h, string kind) => Make($"ground_{kind}_{w}x{h}", Mathf.Max(2, w / BigPixel), Mathf.Max(2, h / BigPixel), c =>
         {
-            var paper = new Color(0.78f, 0.71f, 0.58f);
-            int floor = 10, wainscot = c.H / 4 + floor, crown = c.H - 8;
-            for (int y = 0; y < c.H; y++)
-            for (int x = 0; x < c.W; x++)
+            Color baseColor, line;
+            switch (kind)
             {
-                Color col;
-                if (y < floor) col = (x / 24 + (y < 5 ? 1 : 0)) % 2 == 0 ? Shade(Wood, 0.8f) : Shade(Wood, 0.72f); // döşeme
-                else if (y < floor + 4) col = y == floor + 3 ? Shade(WoodDark, 1.3f) : WoodDark;                  // süpürgelik
-                else if (y < wainscot) col = Shade(Wood, 1.02f);                                                    // lambri
-                else if (y < wainscot + 3) col = y == wainscot + 2 ? Shade(Wood, 1.25f) : WoodDark;                 // lambri başlığı
-                else if (y < crown) col = (x / 6) % 2 == 0 ? paper : Shade(paper, 0.94f);                          // duvar kağıdı
-                else col = y == crown ? Shade(WoodDark, 0.9f) : Shade(Wood, 1.15f);                                // pervaz
-                c.Set(x, y, col);
+                case "room": baseColor = new Color(0.13f, 0.14f, 0.18f); line = new Color(0.17f, 0.18f, 0.23f); break;
+                default: baseColor = new Color(0.2f, 0.15f, 0.12f); line = new Color(0.25f, 0.19f, 0.15f); break;
             }
-            // Lambri panelleri
-            for (int x0 = 4; x0 + 30 < c.W; x0 += 34)
+            c.Rect(0, 0, c.W - 1, c.H - 1, baseColor);
+            switch (kind)
             {
-                int y0 = floor + 7, y1 = wainscot - 4;
-                c.Frame(x0, y0, x0 + 28, y1, Shade(Wood, 0.75f));
-                for (int x = x0 + 1; x < x0 + 28; x++) c.Set(x, y1 - 1, Shade(Wood, 1.2f));
+                case "wood":
+                    for (int y = 12; y < c.H; y += 14) for (int x = 0; x < c.W; x++) c.Set(x, y, line);
+                    break;
+                case "door":
+                    c.Frame(8, 8, c.W - 9, c.H - 9, line);
+                    c.Rect(c.W - 7, c.H / 2 - 1, c.W - 6, c.H / 2, new Color(0.45f, 0.37f, 0.22f));
+                    break;
+                case "room":
+                    int floor = Mathf.Max(4, c.H / 9);
+                    c.Rect(0, 0, c.W - 1, floor - 1, new Color(0.17f, 0.15f, 0.14f));
+                    for (int x = 0; x < c.W; x++) c.Set(x, floor, line);
+                    break;
             }
-            // Duvar kağıdında çiçek motifleri
-            for (int y = wainscot + 12; y < crown - 6; y += 18)
-            for (int x = (y / 18 % 2) * 9 + 4; x < c.W - 3; x += 18)
-            {
-                c.Set(x, y, Shade(paper, 0.8f)); c.Set(x - 1, y, Shade(paper, 0.88f)); c.Set(x + 1, y, Shade(paper, 0.88f));
-                c.Set(x, y - 1, Shade(paper, 0.88f)); c.Set(x, y + 1, Shade(paper, 0.88f));
-            }
-            // Deprem: sıvada ince çatlaklar
-            for (int k = 0; k < 3; k++)
-            {
-                int x = c.R.Next(20, c.W - 20), y = c.R.Next(wainscot + 10, crown - 10);
-                for (int i = 0; i < 24; i++)
-                {
-                    c.Set(x, y, Shade(paper, 0.62f));
-                    x += c.R.Next(-1, 2); y -= 1;
-                }
-            }
-            c.Noise(0.05f, 0.04f);
-            c.Vignette(0.4f);
         });
 
-        // Tuğla engel: 12 x 6 tuğlalar, harç, her tuğlada üstte ışık altta gölge, üç ton
-        public static Sprite Bricks(int w, int h) => Make($"bricks_{w}x{h}", w, h, c =>
+        // Taşı-yerleştir engeli: düz koyu gri blok, solda bir büyük piksel ışık, sağda gölge, konturlu (w, h referans pikseli)
+        public static Sprite Block(int w, int h) => Make($"block_{w}x{h}", Mathf.Max(2, w / BigPixel), Mathf.Max(2, h / BigPixel), c =>
         {
-            var brick = new Color(0.62f, 0.34f, 0.26f);
-            var mortar = new Color(0.7f, 0.64f, 0.56f);
-            const int bw = 12, bh = 6;
+            var stone = new Color(0.36f, 0.34f, 0.38f);
+            c.Rect(0, 0, c.W - 1, c.H - 1, stone);
             for (int y = 0; y < c.H; y++)
-            for (int x = 0; x < c.W; x++)
             {
-                int row = y / bh, off = row % 2 == 0 ? 0 : bw / 2;
-                int lx = (x + off) % bw, ly = y % bh;
-                int id = row * 7 + (x + off) / bw * 13;
-                var tone = Shade(brick, 0.86f + id % 4 * 0.06f);
-                Color col = lx == 0 || ly == 0 ? mortar : ly == bh - 1 ? Shade(tone, 1.18f) : ly == 1 ? Shade(tone, 0.8f) : tone;
-                c.Set(x, y, col);
+                c.Set(1, y, Shade(stone, 1.25f));
+                c.Set(c.W - 2, y, Shade(stone, 0.7f));
+                c.Set(0, y, Outline);
+                c.Set(c.W - 1, y, Outline);
             }
-            c.Noise(0.06f);
-            for (int y = 0; y < c.H; y++) { c.Set(0, y, Outline); c.Set(c.W - 1, y, Outline); c.Set(1, y, Shade(c.Get(1, y), 1.15f)); c.Set(c.W - 2, y, Shade(c.Get(c.W - 2, y), 0.7f)); }
         });
 
         // ------------------------------------------------------------------ Vida
@@ -338,22 +274,6 @@ namespace Deprem.Minigames
             c.Cylinder(0, 1, c.W - 1, c.H - 2, Steel, true);
             int k = Mathf.RoundToInt(c.W * 0.18f);
             c.Box(k, 0, k + 6, c.H - 1, Accent, 1);
-        });
-
-        // Dolap kapağı: tahta + kabartma panel (ışıklı / gölgeli pah), menteşeler, topuz
-        public static Sprite CabinetDoor(int w, int h) => Make($"door_{w}x{h}", w, h, c =>
-        {
-            var boards = Boards(c.W, c.H, 7).texture.GetPixels();
-            System.Array.Copy(boards, c.P, c.P.Length);
-            int i = 16;
-            for (int b = 0; b < 4; b++)
-            {
-                for (int x = i + b; x < c.W - i - b; x++) { c.Set(x, c.H - i - 1 - b, Shade(Wood, 1.28f - b * 0.05f)); c.Set(x, i + b, Shade(Wood, 0.6f + b * 0.05f)); }
-                for (int y = i + b; y < c.H - i - b; y++) { c.Set(i + b, y, Shade(Wood, 1.18f - b * 0.04f)); c.Set(c.W - i - 1 - b, y, Shade(Wood, 0.68f + b * 0.04f)); }
-            }
-            c.Frame(i - 1, i - 1, c.W - i, c.H - i, WoodDark);
-            foreach (int y in new[] { 26, c.H - 34 }) c.Box(1, y, 7, y + 8, Shade(Steel, 0.85f), 1);          // menteşeler
-            c.Disc(c.W - 12, c.H * 0.5f, 5f, new Color(0.72f, 0.58f, 0.3f));                                  // topuz
         });
 
         // ------------------------------------------------------------------ Taşı-yerleştir
