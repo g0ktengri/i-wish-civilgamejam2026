@@ -21,6 +21,11 @@ namespace Deprem.HouseBuilder
         Books,
         /// <summary>Yastık kılıfı: kırık beyaz (şilte bejinden ayrılsın)</summary>
         Linen,
+        /// <summary>Oyuncak renkleri (pastel; ahşap mobilyalardan ayrı, Play testi 11: oyuncak dolabı belli olmuyordu)</summary>
+        ToyRed,
+        ToyBlue,
+        ToyYellow,
+        ToyGreen,
     }
 
     /// <summary>Şeklin bir kutu parçası: eşyanın sol-alt-ön köşesine göre metre</summary>
@@ -118,20 +123,51 @@ namespace Deprem.HouseBuilder
                     break;
                 }
 
-                case "oyuncak_rafi": // iki sütunlu bölmeli raf ve oyuncaklar
+                case "oyuncak_rafi": // iki sütunlu, renkli arkalıklı bölmeler ve oyuncaklar (Play testi 11)
+                {
                     OpenCase(s, size, 0.05f, 0.08f, new[] { 0.5f, 0.97f }, 0.04f);
                     s.Add(w * 0.5f - 0.02f, 0.08f, 0f, w * 0.5f + 0.02f, h - 0.05f, d - 0.02f);
-                    s.Add(0.12f, 0.12f, 0.08f, 0.34f, 0.34f, 0.3f, PartTone.AccentA);  // top
-                    s.Add(0.58f, 0.12f, 0.08f, 0.72f, 0.26f, 0.24f, PartTone.AccentB); // küpler
-                    s.Add(0.74f, 0.12f, 0.1f, 0.86f, 0.18f, 0.22f, PartTone.AccentC);
-                    s.Add(0.75f, 0.18f, 0.1f, 0.85f, 0.28f, 0.22f, PartTone.AccentA);
-                    s.Add(0.1f, 0.54f, 0.08f, 0.36f, 0.8f, 0.3f, PartTone.Soft);       // ayıcık
-                    s.Add(0.15f, 0.8f, 0.1f, 0.31f, 0.92f, 0.28f, PartTone.Soft);
-                    s.Add(0.6f, 0.54f, 0.06f, 0.68f, 0.84f, 0.3f, PartTone.AccentB);   // masal kitapları
-                    s.Add(0.69f, 0.54f, 0.06f, 0.76f, 0.8f, 0.3f, PartTone.AccentC);
-                    s.Add(0.1f, 1.01f, 0.08f, 0.4f, 1.11f, 0.28f, PartTone.AccentA);   // araba
-                    s.Add(0.6f, 1.01f, 0.06f, 0.88f, 1.25f, 0.3f, PartTone.AccentC);   // oyuncak kutusu
+                    // Bölmelerin arkası pastel renkli: dolap uzaktan "çocuk rafı" diye okunsun
+                    var backs = new[] { PartTone.ToyBlue, PartTone.ToyYellow, PartTone.ToyGreen, PartTone.ToyRed, PartTone.ToyYellow, PartTone.ToyBlue };
+                    float[] rowBottom = { 0.12f, 0.54f, 1.01f }, rowTop = { 0.5f, 0.97f, 1.45f };
+                    for (int row = 0; row < 3; row++)
+                    for (int col = 0; col < 2; col++)
+                    {
+                        float x0 = col == 0 ? 0.05f : w * 0.5f + 0.02f, x1 = col == 0 ? w * 0.5f - 0.02f : w - 0.05f;
+                        s.Add(x0, rowBottom[row], d - 0.05f, x1, rowTop[row], d - 0.03f, backs[row * 2 + col]);
+                    }
+                    // Alt sol: kırmızı top (basamaklı daire)
+                    s.Add(0.17f, 0.12f, 0.1f, 0.35f, 0.34f, 0.28f, PartTone.ToyRed);
+                    s.Add(0.14f, 0.15f, 0.1f, 0.38f, 0.31f, 0.28f, PartTone.ToyRed);
+                    s.Add(0.14f, 0.21f, 0.09f, 0.38f, 0.24f, 0.29f, PartTone.Linen);   // topun beyaz şeridi
+                    // Alt sağ: üst üste renkli küpler
+                    s.Add(0.57f, 0.12f, 0.08f, 0.69f, 0.24f, 0.22f, PartTone.ToyBlue);
+                    s.Add(0.71f, 0.12f, 0.08f, 0.83f, 0.24f, 0.22f, PartTone.ToyYellow);
+                    s.Add(0.64f, 0.24f, 0.08f, 0.76f, 0.36f, 0.22f, PartTone.ToyGreen);
+                    // Orta sol: oturan ayıcık (gövde, baş, kulaklar, kollar, burun)
+                    s.Add(0.15f, 0.54f, 0.1f, 0.35f, 0.74f, 0.28f, PartTone.AccentC);
+                    s.Add(0.18f, 0.74f, 0.1f, 0.32f, 0.87f, 0.27f, PartTone.AccentC);
+                    s.Add(0.16f, 0.85f, 0.12f, 0.2f, 0.9f, 0.24f, PartTone.AccentC);
+                    s.Add(0.3f, 0.85f, 0.12f, 0.34f, 0.9f, 0.24f, PartTone.AccentC);
+                    s.Add(0.11f, 0.6f, 0.12f, 0.15f, 0.7f, 0.24f, PartTone.AccentC);
+                    s.Add(0.35f, 0.6f, 0.12f, 0.39f, 0.7f, 0.24f, PartTone.AccentC);
+                    s.Add(0.23f, 0.77f, 0.08f, 0.27f, 0.8f, 0.1f, PartTone.Dark);      // burun
+                    // Orta sağ: araba (gövde, kabin, cam, tekerlekler)
+                    s.Add(0.57f, 0.58f, 0.1f, 0.91f, 0.67f, 0.26f, PartTone.ToyRed);
+                    s.Add(0.63f, 0.67f, 0.1f, 0.83f, 0.76f, 0.26f, PartTone.ToyRed);
+                    s.Add(0.66f, 0.68f, 0.09f, 0.8f, 0.74f, 0.1f, PartTone.Glass);
+                    s.Add(0.61f, 0.54f, 0.09f, 0.68f, 0.6f, 0.27f, PartTone.Dark);
+                    s.Add(0.8f, 0.54f, 0.09f, 0.87f, 0.6f, 0.27f, PartTone.Dark);
+                    // Üst sol: kapaklı oyuncak kutusu
+                    s.Add(0.1f, 1.01f, 0.08f, 0.43f, 1.21f, 0.3f, PartTone.ToyYellow);
+                    s.Add(0.08f, 1.21f, 0.07f, 0.45f, 1.26f, 0.31f, PartTone.ToyBlue);
+                    // Üst sağ: renkli masal kitapları ve küçük top
+                    s.Add(0.57f, 1.01f, 0.06f, 0.63f, 1.29f, 0.3f, PartTone.ToyGreen);
+                    s.Add(0.64f, 1.01f, 0.06f, 0.69f, 1.25f, 0.3f, PartTone.ToyRed);
+                    s.Add(0.7f, 1.01f, 0.06f, 0.76f, 1.31f, 0.3f, PartTone.ToyBlue);
+                    s.Add(0.8f, 1.01f, 0.1f, 0.91f, 1.12f, 0.26f, PartTone.ToyYellow);
                     break;
+                }
 
                 case "gardirop": // ayaklar, gövde, taç, iki kapak, kulplar
                     Legs(s, size, 0.1f, 0.08f, 0.05f, 0.06f);

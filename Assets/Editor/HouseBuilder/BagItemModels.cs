@@ -45,17 +45,23 @@ namespace Deprem.HouseBuilder
             { "mavi", new Color(0.42f, 0.62f, 0.82f) },
             { "koyu_mavi", new Color(0.18f, 0.28f, 0.5f) },
             { "turuncu", new Color(0.9f, 0.48f, 0.15f) },
+            { "koyu_turuncu", new Color(0.62f, 0.3f, 0.1f) },
+            { "reflektor", new Color(0.8f, 0.82f, 0.8f) },
         };
+
+        /// <summary>Kabinin önündeki deprem çantası (Berke'nin BagDropPoint'i kullanır, ENTEGRASYON M23)</summary>
+        public const string EarthquakeBagPath = PrefabFolder + "/EarthquakeBag.prefab";
 
         [MenuItem("Tools/Deprem/Çanta Malzemesi Modellerini Üret")]
         public static void Generate()
         {
             EnsureFolder(PrefabFolder);
             EnsureFolder(MaterialFolder);
-            Build(BagItemId.FirstAidKit, FirstAidKit());
-            Build(BagItemId.Flashlight, Flashlight());
-            Build(BagItemId.Water, Water());
-            Build(BagItemId.Whistle, Whistle());
+            Build("BagItem_" + BagItemId.FirstAidKit, FirstAidKit(), PrefabPath(BagItemId.FirstAidKit));
+            Build("BagItem_" + BagItemId.Flashlight, Flashlight(), PrefabPath(BagItemId.Flashlight));
+            Build("BagItem_" + BagItemId.Water, Water(), PrefabPath(BagItemId.Water));
+            Build("BagItem_" + BagItemId.Whistle, Whistle(), PrefabPath(BagItemId.Whistle));
+            Build("EarthquakeBag", EarthquakeBag(), EarthquakeBagPath);
             AssetDatabase.SaveAssets();
             Debug.Log("[BagItemModels] Çanta malzemesi modelleri üretildi: " + PrefabFolder);
         }
@@ -110,9 +116,32 @@ namespace Deprem.HouseBuilder
             new Part(-0.12f, 0.02f, -0.006f, -0.08f, 0.065f, 0.006f, "metal"),     // halka
         };
 
+        /// <summary>
+        /// Deprem çantası (Play testi 11: "hiç çanta gibi değil"): turuncu acil durum sırt çantası; ön cep ve kapağı,
+        /// fermuar, reflektör şerit, yan askılar, üst tutamak, cepte ilk yardım işareti
+        /// </summary>
+        private static List<Part> EarthquakeBag() => new List<Part>
+        {
+            new Part(-0.23f, 0f, -0.13f, 0.23f, 0.04f, 0.15f, "siyah"),            // taban
+            new Part(-0.22f, 0.04f, -0.12f, 0.22f, 0.52f, 0.14f, "turuncu"),       // gövde
+            new Part(-0.18f, 0.52f, -0.1f, 0.18f, 0.58f, 0.12f, "turuncu"),        // yuvarlak üst
+            new Part(-0.2f, 0.47f, -0.125f, 0.2f, 0.48f, -0.12f, "koyu_turuncu"),  // fermuar
+            new Part(-0.225f, 0.36f, -0.125f, 0.225f, 0.39f, 0.145f, "reflektor"), // reflektör şerit
+            new Part(-0.16f, 0.08f, -0.17f, 0.16f, 0.3f, -0.12f, "turuncu"),       // ön cep
+            new Part(-0.17f, 0.27f, -0.18f, 0.17f, 0.32f, -0.12f, "koyu_turuncu"), // cep kapağı
+            new Part(-0.05f, 0.13f, -0.18f, 0.05f, 0.23f, -0.17f, "beyaz"),        // ilk yardım işareti
+            new Part(-0.012f, 0.145f, -0.185f, 0.012f, 0.215f, -0.18f, "kirmizi"),
+            new Part(-0.035f, 0.168f, -0.185f, 0.035f, 0.192f, -0.18f, "kirmizi"),
+            new Part(-0.235f, 0.05f, -0.02f, -0.22f, 0.5f, 0.02f, "siyah"),        // yan askılar
+            new Part(0.22f, 0.05f, -0.02f, 0.235f, 0.5f, 0.02f, "siyah"),
+            new Part(-0.06f, 0.58f, -0.012f, -0.04f, 0.64f, 0.012f, "siyah"),      // tutamak
+            new Part(0.04f, 0.58f, -0.012f, 0.06f, 0.64f, 0.012f, "siyah"),
+            new Part(-0.06f, 0.63f, -0.015f, 0.06f, 0.66f, 0.015f, "siyah"),
+        };
+
         // ------------------------------------------------------------------ Kurulum
 
-        private static void Build(BagItemId id, List<Part> parts)
+        private static void Build(string name, List<Part> parts, string prefabPath)
         {
             var colors = parts.Select(p => p.Color).Distinct().ToList();
             var boxes = parts.Select(p => (p.Min, p.Max)).ToList();
@@ -122,11 +151,11 @@ namespace Deprem.HouseBuilder
                 bounds.Encapsulate(min);
                 bounds.Encapsulate(max);
             }
-            var mesh = BoxMeshBuilder.BuildParts("BagItem_" + id, Vector3.zero, boxes,
+            var mesh = BoxMeshBuilder.BuildParts(name, Vector3.zero, boxes,
                 BoxMeshBuilder.FitUv(bounds.min, bounds.max), (box, face) => colors.IndexOf(parts[box].Color), colors.Count);
-            mesh = SaveMesh(mesh, $"{MaterialFolder}/BagItem_{id}_mesh.asset");
+            mesh = SaveMesh(mesh, $"{MaterialFolder}/{name}_mesh.asset");
 
-            var root = new GameObject("BagItem_" + id);
+            var root = new GameObject(name);
             var model = new GameObject("Model");
             model.transform.SetParent(root.transform, false);
             model.AddComponent<MeshFilter>().sharedMesh = mesh;
@@ -143,7 +172,7 @@ namespace Deprem.HouseBuilder
             outlineRenderer.enabled = false;
 
             root.AddComponent<Deprem.Visual.PickupHighlight>().Configure(new Renderer[] { modelRenderer }, new Renderer[] { outlineRenderer });
-            PrefabUtility.SaveAsPrefabAsset(root, PrefabPath(id));
+            PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             Object.DestroyImmediate(root);
         }
 

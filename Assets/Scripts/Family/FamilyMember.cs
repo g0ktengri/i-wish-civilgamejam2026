@@ -222,6 +222,9 @@ namespace Deprem.Family
         {
             if (State != FamilyState.Waiting && State != FamilyState.Injured) return;
             if (IsNear(player.transform.position, callQuietRange)) return;
+            // Play testi 11: kardeş odaya girmeden konuşuyordu; odası örtülüyken seslenmez
+            var visibility = Deprem.Visual.RoomVisibility.Instance;
+            if (visibility != null && !visibility.IsVisibleAt(transform.position)) return;
             callTimer -= dt;
             if (callTimer > 0f) return;
             callTimer = Random.Range(callInterval.x, callInterval.y);

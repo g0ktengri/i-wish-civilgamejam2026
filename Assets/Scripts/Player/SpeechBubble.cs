@@ -15,22 +15,56 @@ namespace Deprem.Player
         [SerializeField] private float headHeight = 2.1f;
         [Tooltip("Yatarken balonun yüksekliği (yatakta 2,1 m çok yukarıda kalıyordu)")]
         [SerializeField] private float lyingHeadHeight = 1.15f;
-        [SerializeField] private int fontSize = 14;
-        [SerializeField] private float maxTextWidth = 220f;
+        [Tooltip("Play testi 11: 14 çok küçüktü, okunmuyordu")]
+        [SerializeField] private int fontSize = 18;
+        [SerializeField] private float maxTextWidth = 260f;
+
+        [Header("Giriş animasyonu (Play testi 11: yazı bir anda geliyordu)")]
+        [Tooltip("Daktilo hızı (harf / sn)")]
+        [SerializeField] private float charsPerSecond = 45f;
+        [Tooltip("Balon küçükten büyür (sn)")]
+        [SerializeField] private float popTime = 0.18f;
+        [Tooltip("Yazı bittikten sonra en az bu kadar ekranda kalır (sn)")]
+        [SerializeField] private float minReadTime = 1.2f;
 
         private Canvas canvas;
         private UiBubble bubble;
         private float hideAt;
+        private float shownAt;
+        private string fullText = "";
+        private int typedChars = -1;
 
         public bool IsShowing => bubble != null && bubble.gameObject.activeSelf;
 
         public void Say(string key, float seconds)
         {
             EnsureUi();
-            bubble.SetText(Texts.Get(key), maxTextWidth);
+            fullText = Texts.Get(key);
+            bubble.SetText(fullText, maxTextWidth); // boyut tam metne göre; yazı sonra harf harf gelir
             bubble.gameObject.SetActive(true);
-            hideAt = Time.time + seconds;
+            shownAt = Time.time;
+            typedChars = -1;
+            float typeTime = fullText.Length / Mathf.Max(1f, charsPerSecond);
+            hideAt = Time.time + Mathf.Max(seconds, typeTime + minReadTime);
             LateUpdate();
+        }
+
+        /// <summary>Harf harf yazı ve küçükten büyüyen balon</summary>
+        private void Animate()
+        {
+            float t = Time.time - shownAt;
+            float pop = popTime > 0f ? Mathf.Clamp01(t / popTime) : 1f;
+            // Hafif taşma: 0,6 -> 1,08 -> 1
+            float scale = pop < 1f ? Mathf.Lerp(0.6f, 1.08f, pop) : Mathf.Lerp(1.08f, 1f, Mathf.Clamp01((t - popTime) / 0.08f));
+            bubble.Root.localScale = Vector3.one * scale;
+
+            int chars = Mathf.Clamp(Mathf.FloorToInt(t * charsPerSecond), 0, fullText.Length);
+            if (chars == typedChars) return;
+            typedChars = chars;
+            // Yazılmamış kısım saydam: satırlar ve balon boyu yazarken kaymaz
+            bubble.Label.text = chars >= fullText.Length
+                ? fullText
+                : fullText.Substring(0, chars) + "<color=#00000000>" + fullText.Substring(chars) + "</color>";
         }
 
         public void Hide()
@@ -46,6 +80,7 @@ namespace Deprem.Player
                 Hide();
                 return;
             }
+            Animate();
 
             var cam = Camera.main;
             if (cam == null) return;

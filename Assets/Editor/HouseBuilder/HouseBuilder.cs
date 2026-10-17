@@ -142,7 +142,14 @@ namespace Deprem.HouseBuilder
                 foreach (var r in go.GetComponentsInChildren<Renderer>(true)) r.enabled = true;
                 placed.Add(go);
             }
-            HousePreview.Render("Logs/bag_items_preview.png", null, new Vector3(21.3f, 0.6f, -3.2f), 1280, 720);
+            var bagPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(BagItemModels.EarthquakeBagPath);
+            if (bagPrefab != null)
+            {
+                var bag = (GameObject)Object.Instantiate(bagPrefab, new Vector3(20.2f + ids.Length * 0.75f, 0f, 0.6f), Quaternion.identity);
+                foreach (var r in bag.GetComponentsInChildren<Renderer>(true)) r.enabled = true;
+                placed.Add(bag);
+            }
+            HousePreview.Render("Logs/bag_items_preview.png", null, new Vector3(21.7f, 0.6f, -3.6f), 1280, 720);
             foreach (var go in placed) Object.DestroyImmediate(go);
         }
 
@@ -638,6 +645,15 @@ namespace Deprem.HouseBuilder
                 bed.size = new Vector3(decor.Size.x, 0.66f, decor.Size.z); // şilte üstü (FurnitureShapes)
                 bed.center = new Vector3(0f, 0.33f - decor.Size.y * 0.5f, 0f);
             }
+            // Güvenli masanın tablası çarpışır ki çök-kapan sırasında düşen taşlar üstünde kalsın (Play testi 11).
+            // Sadece tablanın ön kısmı (Z 0,15–0,6): karakter düzlemindeki kapsül (Z ≥ ~0,7) takılmaz.
+            if (Mathf.Approximately(decor.Z0, HouseLayout.SafeTableZ))
+            {
+                var top = go.AddComponent<BoxCollider>();
+                float depth = Mathf.Min(decor.Size.z, 0.6f - decor.Z0);
+                top.size = new Vector3(decor.Size.x, 0.05f, depth);
+                top.center = new Vector3(0f, decor.Size.y * 0.5f - 0.025f, -decor.Size.z * 0.5f + depth * 0.5f);
+            }
         }
 
         /// <summary>
@@ -787,6 +803,11 @@ namespace Deprem.HouseBuilder
             ("detay_renk_c", new Color(0.46f, 0.34f, 0.24f)),
             ("detay_kitap", new Color(0.55f, 0.45f, 0.36f)), // eşyaya özel kitap sırtı dokusu (BooksMaterial)
             ("detay_yastik", new Color(0.86f, 0.84f, 0.79f)), // yastık kılıfı (PartTone.Linen)
+            // Oyuncaklar (PartTone.Toy*): pastel ama seçilir; sadece oyuncak dolabında
+            ("oyuncak_kirmizi", new Color(0.78f, 0.36f, 0.3f)),
+            ("oyuncak_mavi", new Color(0.36f, 0.52f, 0.75f)),
+            ("oyuncak_sari", new Color(0.9f, 0.74f, 0.32f)),
+            ("oyuncak_yesil", new Color(0.45f, 0.66f, 0.4f)),
         };
 
         /// <summary>

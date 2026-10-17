@@ -90,6 +90,8 @@ namespace Deprem.Quake
         [Header("Tavandan düşen parça")]
         [Tooltip("Sıva parçası materyali (QuakeSetup atar)")]
         [SerializeField] private Material debrisMaterial;
+        [Tooltip("Çök-kapan sırasında tavandan taş düşme aralığı (sn, rastgele)")]
+        [SerializeField] private Vector2 rubbleInterval = new Vector2(0.35f, 0.7f);
         [Tooltip("Parça karakter düzleminin bu kadar önünde düşer (m)")]
         [SerializeField] private float debrisFrontOffset = 0.15f;
 
@@ -140,6 +142,8 @@ namespace Deprem.Quake
             switch (phase)
             {
                 case GamePhase.Foreshock:
+                    // Döngü 1–2: çök-kapan-tutun henüz bilinmiyor, eğilme kapalı (Play testi 11); döngü 3+ açık
+                    if (player != null) player.CrouchEnabled = GameState.StandUpUnlocked;
                     Restart(ForeshockRoutine());
                     break;
                 case GamePhase.Spirit:
@@ -364,11 +368,18 @@ namespace Deprem.Quake
             SafeSpot.ShowAll(true);
             var check = new DuckCoverHoldCheck(grace, duckCoverTolerance);
             bool warnedNotSafe = false;
+            float nextRubble = rubbleInterval.x;
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
                 bool pressing = Held(duckCoverKey) || Held(altDuckCoverKey);
                 bool inSafeSpot = SafeSpot.AnyContains(player.transform.position);
                 bool holding = pressing && inSafeSpot;
+                // Play testi 11: çök-kapan sırasında yukarıdan taş, sıva yağsın (masanın üstüne ve iki yana)
+                if (t >= nextRubble && t < duration - 0.8f)
+                {
+                    DropRubbleAround(holding);
+                    nextRubble = t + UnityEngine.Random.Range(rubbleInterval.x, rubbleInterval.y);
+                }
                 // Güvenli masanın dışında C işe yaramaz: oyuncu bunu görsün (ipucu değişir, masa daha çok parlar, bir kez konuşur)
                 bool wrongPlace = pressing && !inSafeSpot;
                 QuakePrompts.Set(wrongPlace ? QuakePrompts.DuckCoverFind : QuakePrompts.DuckCover);
@@ -392,6 +403,36 @@ namespace Deprem.Quake
             player.SetScriptedInput(0f);
             player.InputEnabled = true;
             result(!check.Failed);
+        }
+
+        /// <summary>
+        /// Çök-kapan sırasında oyuncunun çevresine tavandan taş ve sıva düşer; oyuncuya değmez (ölümdeki darbe değil).
+        /// Masanın altındaysa bir kısmı masanın üstüne düşer (güvenli masaların tablasında ince çarpışma var).
+        /// </summary>
+        private void DropRubbleAround(bool underTable)
+        {
+            var p = player.transform.position;
+            float ceilingY = p.y + 3f;
+            foreach (var hit in Physics.RaycastAll(p + Vector3.up * player.StandingHeight, Vector3.up, 4f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.rigidbody == player.Body || (hit.rigidbody != null && !hit.rigidbody.isKinematic)) continue;
+                ceilingY = Mathf.Min(ceilingY, hit.point.y);
+            }
+
+            int count = UnityEngine.Random.Range(2, 4);
+            for (int i = 0; i < count; i++)
+            {
+                bool onTable = underTable && UnityEngine.Random.value < 0.45f;
+                float x = onTable
+                    ? p.x + UnityEngine.Random.Range(-0.5f, 0.5f)
+                    : p.x + Mathf.Sign(UnityEngine.Random.value - 0.5f) * UnityEngine.Random.Range(0.55f, 1.8f);
+                // Masanın tablası Z 0,15–0,6'da (HouseBuilder): üstüne düşecekler oraya, diğerleri karakterin önüne
+                float z = onTable ? UnityEngine.Random.Range(0.3f, 0.5f) : playerPlaneZ - debrisFrontOffset;
+                float size = UnityEngine.Random.Range(0.08f, 0.22f);
+                var position = new Vector3(x, ceilingY - 0.1f - UnityEngine.Random.Range(0f, 0.2f), z);
+                SpawnDebris("Rubble", position, new Vector3(size, size * UnityEngine.Random.Range(0.6f, 1f), Mathf.Min(size, 0.18f)), 4f);
+            }
+            QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, 0.75f);
         }
 
         /// <summary>Sarsıntı: kamera, lambalar ve eşyaların tıkırdaması. Başta yükselir, sonda söner.</summary>

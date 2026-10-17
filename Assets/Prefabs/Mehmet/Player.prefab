@@ -244,8 +244,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.SpeechBubble
   headHeight: 2.1
   lyingHeadHeight: 1.15
-  fontSize: 14
-  maxTextWidth: 220
+  fontSize: 18
+  maxTextWidth: 260
+  charsPerSecond: 45
+  popTime: 0.18
+  minReadTime: 1.2
 --- !u!114 &8684074246600651156
 MonoBehaviour:
   m_ObjectHideFlags: 0

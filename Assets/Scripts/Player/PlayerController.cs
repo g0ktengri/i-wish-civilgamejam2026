@@ -46,6 +46,8 @@ namespace Deprem.Player
         public float SpeedMultiplier { get; set; } = 1f;
         /// <summary>Sarsıntıda kapalı (ENTEGRASYON B11: sallanırken zıplayınca karakter takılıyordu; depremde zıplanmaz)</summary>
         public bool JumpEnabled { get; set; } = true;
+        /// <summary>Döngü 2'de kapalı: o döngünün dersi çök-kapan-tutunu bilmemek, oyuncu çömelememeli (Play testi 11)</summary>
+        public bool CrouchEnabled { get; set; } = true;
         public bool IsGrounded { get; private set; }
         public bool IsCrouching { get; private set; }
         public bool IsOnPath => path != null;
@@ -146,7 +148,7 @@ namespace Deprem.Player
                 {
                     if (keyboard[leftKey].isPressed) move -= 1f;
                     if (keyboard[rightKey].isPressed) move += 1f;
-                    crouchHeld = keyboard[crouchKey].isPressed;
+                    crouchHeld = CrouchEnabled && keyboard[crouchKey].isPressed;
                 }
             }
             else

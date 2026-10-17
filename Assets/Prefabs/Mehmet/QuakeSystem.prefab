@@ -85,6 +85,7 @@ MonoBehaviour:
   altDuckCoverKey: 33
   shelfImpactShake: 0.85
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
+  rubbleInterval: {x: 0.35, y: 0.7}
   debrisFrontOffset: 0.15
   devStartLoop: 0
   showDebugPrompt: 0

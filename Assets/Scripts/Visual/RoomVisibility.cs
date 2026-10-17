@@ -66,6 +66,17 @@ namespace Deprem.Visual
             doors = houseDoors;
         }
 
+        /// <summary>Sahnedeki örtü (yoksa null): başka sistemler bir noktanın görünüp görünmediğini sorar</summary>
+        public static RoomVisibility Instance { get; private set; }
+
+        /// <summary>Bu nokta açık (örtüsüz) bir odada mı; odası bulunamazsa true</summary>
+        public bool IsVisibleAt(Vector3 position)
+        {
+            if (revealed == null) return true;
+            int i = AreaAt(position);
+            return i < 0 || Visible(i);
+        }
+
         /// <summary>Oda şu an açık mı (beden gördüyse; ruh fazında ruh gördüyse de)</summary>
         public bool IsRevealed(string key)
         {
@@ -83,7 +94,16 @@ namespace Deprem.Visual
             if (!on) System.Array.Clear(spiritSeen, 0, spiritSeen.Length);
         }
 
-        private void Awake() => Initialize();
+        private void Awake()
+        {
+            Instance = this;
+            Initialize();
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
 
         /// <summary>Örtüleri kapatır, hiçbir oda açık değil. Awake'te çağrılır; testlerde elle çağrılabilir.</summary>
         public void Initialize()

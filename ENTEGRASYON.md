@@ -411,6 +411,12 @@ Mehmet: "İlk yardım ve el fenerinin 3D'de ne olduğu anlaşılmıyor; pixel'e 
 5. **Oyuncak dolabı oyuncak dolabı gibi değil:** şekil ve renkler baştan: renkli bölmeler, top, ayıcık, küpler, araba, oyuncak kutusu.
 6. **Deprem çantası modeli:** M23 için prefab.
 
+**Mehmet tarafı: 1–6 yapıldı** (Play'de son kontrol bekliyor).
+- `EarthquakeBag.prefab` hazır (`BagItemModels.EarthquakeBagPath`), önizleme `Logs/bag_items_preview.png`.
+- Güvenli masaların tablasının ön kısmında ince çarpışma var (çök-kapan taşları üstünde kalsın; karakter düzlemine değmez).
+- `PlayerController.CrouchEnabled`: döngü 1–2'de false (`QuakeDirector` öncüde ayarlar).
+- `RoomVisibility.Instance.IsVisibleAt(pos)`: bir nokta açık odada mı (aile seslenmesi bunu kullanıyor; senin ok / HUD'un da kullanabilir).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
