@@ -110,6 +110,14 @@ namespace Deprem.Core
             rescuedFamily.Clear();
         }
 
+        // Kayıttan devam (M42): ilerlemeyi geri yükler, event tetiklemez. Ardından BeginAttempt(loop) çağrılır.
+        public static void RestoreProgress(int loop, int failedAttempts)
+        {
+            ResetAll();
+            CurrentLoop = Mathf.Clamp(loop, 1, GameConstants.LoopCount);
+            FailedAttempts = Mathf.Max(0, failedAttempts);
+        }
+
         // Domain reload kapalıyken Play'e girişte statik durum temizlensin
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetOnPlay() => ResetAll();
