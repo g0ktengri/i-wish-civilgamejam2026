@@ -442,6 +442,10 @@ namespace Deprem.Loop.EditorTools
             foreach (var key in new[] { "wish.prefix", "wish.rewind", "prompt.continue", "minigame.lock.hint",
                          "minigame.carry.hint", "minigame.screw.hint" })
                 Need(key);
+            // Play testi 32: öğretici devam ipucu (M67), bitiş damgası (M70), çantaya götür (M71)
+            foreach (var key in new[] { "minigame.tutorial.continue", "minigame.stamp.secured", "minigame.stamp.taken",
+                         "spirit.carry_to_bag" })
+                Need(key);
             Check(missing.Count == 0, $"Metinler ({language}): dinamik anahtarlar tam" +
                                       (missing.Count > 0 ? " — eksik: " + string.Join(", ", missing) : ""));
         }

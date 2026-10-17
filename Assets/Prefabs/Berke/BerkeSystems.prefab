@@ -209,6 +209,11 @@ MonoBehaviour:
   frontOffset: 0.4
   importantColor: {r: 1, g: 0.5, b: 0.38, a: 1}
   optionalIntensityScale: 0.4
+  markColor: {r: 1, g: 0.3, b: 0.24, a: 1}
+  markHeight: 0.32
+  markBob: 0.05
+  markBobSpeed: 4
+  markPixelsPerUnit: 36
 --- !u!114 &6448518412914014748
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,6 +237,11 @@ MonoBehaviour:
   worldLift: 10
   screenMargin: 12
   sortingOrder: 50
+  bagArrowSize: 24
+  bagMarkerLift: 12
+  bagEdgeMargin: 40
+  bagSafeTop: 110
+  bagSafeBottom: 70
 --- !u!114 &5672897155684826516
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,8 +266,12 @@ MonoBehaviour:
   snapshotTint: {r: 0.34, g: 0.45, b: 0.68, a: 1}
   snapshotSize: {x: 96, y: 54}
   contentTint: {r: 0.9, g: 0.94, b: 1, a: 1}
-  successColor: {r: 0.5, g: 0.86, b: 0.52, a: 0.35}
-  successHold: 0.5
+  successFlashColor: {r: 1, g: 1, b: 1, a: 0.55}
+  successFlashSeconds: 0.18
+  successSeconds: 0.6
+  stampColor: {r: 0.56, g: 0.92, b: 0.5, a: 1}
+  stampAngle: -8
+  stampPopSeconds: 0.14
   screwTurnsPerScrew: 1.5
   screwMaxTurnsPerSecond: 0
   screwReversePenalty: 1
@@ -385,13 +399,16 @@ MonoBehaviour:
   safeTop: 80
   safeBottom: 110
   safeBagZone: {x: 340, y: 200}
-  arrowSize: 44
-  pulseScale: 0.12
+  arrowSize: 24
+  badgeSize: 20
+  badgeFontSize: 13
+  pulseScale: 0.06
   pulseSpeed: 5
   pushDistance: 6
   nearDistance: 4
   farDistance: 18
-  farScale: 0.7
+  farScale: 0.8
+  farAlpha: 0.5
   markerLift: 0.35
   sortingOrder: 55
 --- !u!114 &4821030744705693417

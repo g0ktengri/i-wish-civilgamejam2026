@@ -129,6 +129,7 @@ namespace Deprem.Loop.EditorTools
                          ("minigame_bedshelf", Deprem.Core.MinigameType.CarryAndPlace, ItemId.BedShelf),
                          ("minigame_tutorial_carry", Deprem.Core.MinigameType.CarryAndPlace, ItemId.BedFrame),
                          ("minigame_tutorial_screw", Deprem.Core.MinigameType.ScrewTighten, ItemId.TvUnit),
+                         ("minigame_success", Deprem.Core.MinigameType.ScrewTighten, ItemId.ToyShelf),
                      })
             {
                 RenderScene(name, root =>
@@ -151,6 +152,15 @@ namespace Deprem.Loop.EditorTools
                             : parameters[i].HasDefaultValue ? parameters[i].DefaultValue
                             : parameters[i].ParameterType.IsValueType ? System.Activator.CreateInstance(parameters[i].ParameterType) : null;
                     openPanel.Invoke(host, args);
+                    if (name == "minigame_success")
+                    {
+                        // M70: damga basıldıktan sonraki an (parlama sönmüş)
+                        var stamp = Get<RectTransform>(host, "stamp");
+                        Get<Text>(host, "stampText").text = Deprem.Localization.Texts.Get("minigame.stamp.secured");
+                        stamp.gameObject.SetActive(true);
+                        stamp.localRotation = Quaternion.Euler(0f, 0f, -8f);
+                        Get<CanvasGroup>(host, "stampGroup").alpha = 1f;
+                    }
                     // Önizlemede ana kamera yok: bulanık oda görüntüsünü ev önizlemesinden taklit et
                     const string house = "Logs/house_preview_game.png";
                     if (File.Exists(house))

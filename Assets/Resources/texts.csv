@@ -129,6 +129,10 @@ menu.hint.back,Esc: Geri,Esc: Back
 menu.hint.change,A/D: Değiştir,A/D: Change
 menu.subtitle,Bir deprem hikâyesi,An earthquake story
 menu.jam,Civil Game Jam 2026,Civil Game Jam 2026
+minigame.tutorial.continue,F: Devam,F: Next
+minigame.stamp.secured,SABİTLENDİ,SECURED
+minigame.stamp.taken,ALINDI,TAKEN
+spirit.carry_to_bag,Çantaya götür,Take it to the bag
 minigame.tutorial.next,"F ya da tık: devam","F or click: next"
 minigame.tutorial.carry_grab,Eşyayı fareyle tut ve sürükle,Hold the item with the mouse and drag it
 minigame.tutorial.carry_gap,Duvara değmeden boşluktan geçir; değersen başa döner,Pass it through the gap without touching the wall; if you touch it you start over

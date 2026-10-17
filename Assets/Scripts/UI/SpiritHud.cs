@@ -12,6 +12,9 @@ namespace Deprem.UI
     // sağ üstte taşınan çanta malzemesi (ikon + ad). Canvas'ı kendisi kurar; sadece ruh fazında görünür.
     // Berke'nin play testi: etkileşim ipucu hedefin (eşya, malzeme, çanta) üstünde ve daha küçük çıkar
     // (SpiritInteractor.PromptAnchor); konum yoksa eski yerinde, altta. Ekran kenarına taşmaz.
+    // M71 (Mehmet'in play testi 32: malzemeyi nereye koyacağı belli değildi): malzeme taşınırken taşınan panelinin altında
+    // "Çantaya götür"; çanta ekrandaysa üstünde sallanan işaret, değilse ekran kenarında çantaya giden ok. Çantanın
+    // yanında ikisi de kalkar, "F: Çantaya koy" ipucu kalır.
     public class SpiritHud : MonoBehaviour
     {
         [SerializeField] Font font;
@@ -32,6 +35,15 @@ namespace Deprem.UI
         [SerializeField] float screenMargin = 12f;
         [SerializeField] int sortingOrder = 50;
 
+        [Header("M71: çantaya yönlendirme")]
+        [SerializeField] float bagArrowSize = 24f;
+        [Tooltip("Çantanın tepesinden yukarı pay (referans pikseli)")]
+        [SerializeField] float bagMarkerLift = 12f;
+        [Tooltip("Kenar okunun güvenli alanı: yanlardan, üstten (sayaç ve öncelik yazısı) ve alttan (uçma ipucu)")]
+        [SerializeField] float bagEdgeMargin = 40f;
+        [SerializeField] float bagSafeTop = 110f;
+        [SerializeField] float bagSafeBottom = 70f;
+
         CanvasGroup group;
         RectTransform timerPanel;
         Text timerText;
@@ -44,6 +56,9 @@ namespace Deprem.UI
         RectTransform carryPanel;
         Text carryText;
         Image carryIcon;
+        Text carryHint;
+        Image bagArrow;
+        Image bagMarker;
         int shownSeconds = -1;
         string shownPrompt;
         BagItemId shownCarry = (BagItemId)(-1);
@@ -110,12 +125,85 @@ namespace Deprem.UI
             carryText.supportRichText = true;
             carryPanel.gameObject.SetActive(false);
 
+            carryHint = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "CarryHint", font, hintFontSize,
+                UiBuilder.HudAccent, TextAnchor.MiddleRight));
+            var hintRect = carryHint.rectTransform;
+            hintRect.anchorMin = hintRect.anchorMax = Vector2.one;
+            hintRect.pivot = Vector2.one;
+            hintRect.sizeDelta = new Vector2(300f, 24f);
+            hintRect.anchoredPosition = new Vector2(-margin - 4f, -margin - 54f);
+            carryHint.horizontalOverflow = HorizontalWrapMode.Overflow;
+            carryHint.gameObject.SetActive(false);
+
+            bagArrow = UiBuilder.CreateImage(canvas.transform, "BagArrow", UiBuilder.HudAccent);
+            bagArrow.sprite = ObjectiveHud.ArrowSprite;
+            bagArrow.rectTransform.anchorMin = bagArrow.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            bagArrow.rectTransform.sizeDelta = Vector2.one * bagArrowSize;
+            bagArrow.gameObject.SetActive(false);
+
+            bagMarker = UiBuilder.CreateImage(canvas.transform, "BagMarker", UiBuilder.HudAccent);
+            bagMarker.sprite = ObjectiveHud.MarkerSprite;
+            bagMarker.rectTransform.anchorMin = bagMarker.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            bagMarker.rectTransform.pivot = new Vector2(0.5f, 0f);
+            bagMarker.rectTransform.sizeDelta = Vector2.one * 18f;
+            bagMarker.gameObject.SetActive(false);
+
             group.alpha = 0f;
         }
 
         void LateUpdate()
         {
-            if (group.alpha > 0f) PlacePrompt();
+            if (group.alpha <= 0f) return;
+            PlacePrompt();
+            PlaceBagPointer();
+        }
+
+        // M71: taşınırken çantayı gösterir; çantanın yanındayken (F ipucu çıkınca) kalkar
+        void PlaceBagPointer()
+        {
+            bool carrying = BagSystem.Carrying > BagItemId.None;
+            bool near = shownPrompt == "prompt.put_in_bag";
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 5f);
+            carryHint.gameObject.SetActive(carrying && !near);
+            if (carrying)
+            {
+                var accent = UiBuilder.HudAccent;
+                carryHint.color = new Color(accent.r, accent.g, accent.b, 0.6f + 0.4f * pulse);
+            }
+
+            var bag = carrying && !near ? BagDropPoint.Current : null;
+            var cam = Camera.main;
+            if (!bag || !cam)
+            {
+                bagArrow.gameObject.SetActive(false);
+                bagMarker.gameObject.SetActive(false);
+                return;
+            }
+            Vector3 viewport = cam.WorldToViewportPoint(bag.Top);
+            bool behind = viewport.z < 0f;
+            if (behind) viewport = new Vector3(1f - viewport.x, 1f - viewport.y, -viewport.z);
+            bool onScreen = !behind && viewport.x > 0.03f && viewport.x < 0.97f && viewport.y > 0.05f && viewport.y < 0.95f;
+            bagMarker.gameObject.SetActive(onScreen);
+            bagArrow.gameObject.SetActive(!onScreen);
+            Vector2 size = canvasRect.rect.size;
+            if (onScreen)
+            {
+                bagMarker.rectTransform.anchoredPosition = new Vector2((viewport.x - 0.5f) * size.x,
+                    (viewport.y - 0.5f) * size.y + bagMarkerLift + pulse * 4f);
+                return;
+            }
+
+            // Yönü güvenli dikdörtgenin kenarına kadar uzat (ObjectiveHud'daki aile okları gibi)
+            Vector2 direction = new Vector2(viewport.x - 0.5f, viewport.y - 0.5f);
+            if (direction.sqrMagnitude < 1e-6f) direction = Vector2.down;
+            float maxX = size.x * 0.5f - bagEdgeMargin, minX = -maxX;
+            float maxY = size.y * 0.5f - bagSafeTop, minY = -size.y * 0.5f + bagSafeBottom;
+            float scale = Mathf.Min(
+                direction.x > 0f ? maxX / direction.x : minX / Mathf.Min(direction.x, -1e-4f),
+                direction.y > 0f ? maxY / Mathf.Max(direction.y, 1e-4f) : minY / Mathf.Min(direction.y, -1e-4f));
+            Vector2 unit = direction.normalized;
+            bagArrow.rectTransform.anchoredPosition = direction * Mathf.Max(0f, scale) + unit * 5f * pulse;
+            bagArrow.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(unit.y, unit.x) * Mathf.Rad2Deg);
         }
 
         // Hedefin dünya konumu varsa küçük ipucu orada (ekrana sığacak şekilde), yoksa büyük ipucu altta
@@ -181,6 +269,7 @@ namespace Deprem.UI
             PlacePrompt();
             flyHint.Set(Texts.Get("prompt.fly"));
             priorityText.text = Texts.Get("spirit.priority");
+            carryHint.text = Texts.Get("spirit.carry_to_bag");
 
 
             bool carrying = shownCarry > BagItemId.None;

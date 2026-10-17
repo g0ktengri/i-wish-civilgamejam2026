@@ -232,12 +232,20 @@ namespace Deprem.UI
         {
             if (reason != LoseReason.FamilyHitByItem && reason != LoseReason.MissingBagItem) return null;
             var player = GameObject.Find("Player");
+            // M72 (Mehmet'in play testi 32): oyuncu öldüyse ekran zaten ölüm karartmasıyla siyah; odaklanmak ~4 sn boş
+            // siyah ekran bırakıyordu (kardeş aramasında tavan çöküyor). Odak atlanır.
+            var controller = player ? player.GetComponent<Player.PlayerController>() : null;
+            if (controller && controller.IsDead) return null;
             Transform best = null;
             float bestDistance = float.MaxValue;
             foreach (var name in new[] { "Father", "Mother", "Sibling" })
             {
                 var member = GameObject.Find(name);
                 if (!member) continue;
+                // Karanlıkta saklanan (görünmeyen) üyeye odaklanılmaz
+                var family = member.GetComponent<Family.FamilyMember>();
+                if (family && family.Hidden) continue;
+
                 float distance = player ? Vector3.Distance(player.transform.position, member.transform.position) : 0f;
                 if (distance < bestDistance)
                 {

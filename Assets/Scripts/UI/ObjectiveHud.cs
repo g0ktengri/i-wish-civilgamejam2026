@@ -23,7 +23,7 @@ namespace Deprem.UI
             (FamilyMemberId.Sibling, "Marker_Sibling", "Sibling"),
         };
         const string CabinMarker = "Marker_CabinEntrance";
-        const int ArrowTexture = 16; // pixel ok dokusu (16 x 16), 2 referans pikseli
+        const int ArrowTexture = 12; // M69: ince pixel ok dokusu (12 x 12), 2 referans pikseli
         const int MarkerTexture = 9;
 
         [SerializeField] Font font;
@@ -42,15 +42,20 @@ namespace Deprem.UI
         [SerializeField] float safeBottom = 110f;
         [Tooltip("Sol alttaki çanta panelinin kapladığı alan (sol kenardan en, alt kenardan boy)")]
         [SerializeField] Vector2 safeBagZone = new Vector2(340f, 200f);
-        [SerializeField] float arrowSize = 44f;
+        [Tooltip("M69 (Mehmet'in play testi 32: oklar çok kabaydı): ince, küçük ok; doku pikselinin tam katı")]
+        [SerializeField] float arrowSize = 24f;
+        [SerializeField] float badgeSize = 20f;
+        [SerializeField] int badgeFontSize = 13;
         [Tooltip("Nabız: büyüme oranı ve hızı; it: hedefe doğru kayma (referans pikseli)")]
-        [SerializeField] float pulseScale = 0.12f;
+        [SerializeField] float pulseScale = 0.06f;
         [SerializeField] float pulseSpeed = 5f;
         [SerializeField] float pushDistance = 6f;
         [Tooltip("Oyuncuya bu uzaklıktan (m) sonra ok küçülmeye başlar; en uzakta bu orana iner")]
         [SerializeField] float nearDistance = 4f;
         [SerializeField] float farDistance = 18f;
-        [SerializeField] float farScale = 0.7f;
+        [SerializeField] float farScale = 0.8f;
+        [Tooltip("M69: en uzaktaki okun ve işaretin saydamlığı (yakında 1)")]
+        [SerializeField] float farAlpha = 0.5f;
         [Tooltip("Ekrandaki hedefin başının üstündeki işaretin yüksekliği (m, görselin tepesinden)")]
         [SerializeField] float markerLift = 0.35f;
         [SerializeField] int sortingOrder = 55;
@@ -66,6 +71,8 @@ namespace Deprem.UI
             public RectTransform Badge;
             public Text BadgeText;
             public RectTransform Marker;
+            public CanvasGroup Group;
+            public Image MarkerImage;
             public Color Color;
             public string LabelKey;
         }
@@ -193,12 +200,23 @@ namespace Deprem.UI
             arrow.Root.gameObject.SetActive(!onScreen);
             arrow.Marker.gameObject.SetActive(onScreen);
 
+            // M69: uzaklıkla küçülür ve hafifçe solar
+            if (!player)
+            {
+                var playerObject = GameObject.Find("Player");
+                if (playerObject) player = playerObject.transform;
+            }
+            float distance = player ? Vector2.Distance(player.position, arrow.Target.position) : nearDistance;
+            float farness = Mathf.InverseLerp(nearDistance, farDistance, distance);
+            float alpha = Mathf.Lerp(1f, farAlpha, farness);
+
             if (onScreen)
             {
                 // Başın üstünde aşağı bakan işaret, aşağı yukarı sallanır
                 Vector3 head = HeadPosition(focus) + Vector3.up * markerLift;
                 var v = cam.WorldToViewportPoint(head);
                 arrow.Marker.anchoredPosition = new Vector2((v.x - 0.5f) * size.x, (v.y - 0.5f) * size.y + pulse * 4f);
+                arrow.MarkerImage.color = new Color(arrow.Color.r, arrow.Color.g, arrow.Color.b, alpha);
                 return;
             }
 
@@ -222,16 +240,11 @@ namespace Deprem.UI
             arrow.Root.anchoredPosition = edge + unit * pushDistance * pulse; // hedefe doğru "it"
             arrow.Head.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(unit.y, unit.x) * Mathf.Rad2Deg);
             // Rozet okun arkasında (kenardan içeride)
-            arrow.Badge.anchoredPosition = -unit * arrowSize * 0.85f;
+            arrow.Badge.anchoredPosition = -unit * (arrowSize + badgeSize) * 0.5f;
 
-            if (!player)
-            {
-                var playerObject = GameObject.Find("Player");
-                if (playerObject) player = playerObject.transform;
-            }
-            float distance = player ? Vector2.Distance(player.position, arrow.Target.position) : nearDistance;
-            float far = Mathf.Lerp(1f, farScale, Mathf.InverseLerp(nearDistance, farDistance, distance));
+            float far = Mathf.Lerp(1f, farScale, farness);
             arrow.Root.localScale = Vector3.one * far * (1f + pulseScale * pulse);
+            arrow.Group.alpha = alpha;
         }
 
         // Görselin tepesi (yoksa nokta + 1,8 m)
@@ -264,12 +277,12 @@ namespace Deprem.UI
 
         Arrow CreateArrow(FamilyMemberId id, Transform target, Transform member, string labelKey, Color tint)
         {
-            var root = new GameObject($"Arrow_{labelKey}", typeof(RectTransform)).GetComponent<RectTransform>();
+            var root = new GameObject($"Arrow_{labelKey}", typeof(RectTransform), typeof(CanvasGroup)).GetComponent<RectTransform>();
             root.SetParent(canvasRect, false);
             root.anchorMin = root.anchorMax = new Vector2(0.5f, 0.5f);
             root.sizeDelta = Vector2.one * arrowSize;
 
-            // Ok: görseli UiStyle.arrow (sağa bakan, beyaz) ya da kodla çizilen kalın pixel ok; renk üyeden
+            // Ok: görseli UiStyle.arrow (sağa bakan, beyaz) ya da kodla çizilen ince pixel ok; renk üyeden
             var head = new GameObject("Head", typeof(RectTransform)).GetComponent<RectTransform>();
             head.SetParent(root, false);
             head.sizeDelta = Vector2.one * arrowSize;
@@ -281,8 +294,8 @@ namespace Deprem.UI
 
             // Rozet: üyenin baş harfi (Baba → B), kabin için ev işareti yerine "K"/"S" (Kabin/Shelter)
             var badge = UiBuilder.CreatePanel(root, "Badge").rectTransform;
-            badge.sizeDelta = new Vector2(30f, 30f);
-            var badgeText = UiBuilder.CreateText(badge, "Letter", font, 18, tint);
+            badge.sizeDelta = Vector2.one * badgeSize;
+            var badgeText = UiBuilder.Outlined(UiBuilder.CreateText(badge, "Letter", font, badgeFontSize, tint));
             UiBuilder.Stretch(badgeText.rectTransform, Vector2.zero, Vector2.one);
             badgeText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
@@ -291,7 +304,7 @@ namespace Deprem.UI
             marker.sprite = MarkerSprite;
             marker.rectTransform.anchorMin = marker.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             marker.rectTransform.pivot = new Vector2(0.5f, 0f);
-            marker.rectTransform.sizeDelta = Vector2.one * MarkerTexture * 3f;
+            marker.rectTransform.sizeDelta = Vector2.one * MarkerTexture * 2f; // M69: daha küçük
 
             root.gameObject.SetActive(false);
             marker.gameObject.SetActive(false);
@@ -299,11 +312,13 @@ namespace Deprem.UI
             {
                 Id = id, Target = target, Member = member, Root = root, Head = head, HeadImage = headImage,
                 Badge = badge, BadgeText = badgeText, Marker = marker.rectTransform, Color = tint, LabelKey = labelKey,
+                Group = root.GetComponent<CanvasGroup>(), MarkerImage = marker,
             };
         }
 
-        // 16 x 16, sağa bakan kalın ok: beyaz gövde (renk Image.color'dan), 1 px koyu kontur, üstte ışık, altta gölge
-        static Sprite ArrowSprite
+        // M69: 12 x 12, sağa bakan ince ok: 2 piksellik gövde ve sivri uç, beyaz (renk Image.color'dan); koyu kontur
+        // şeklin dışında (ince gövde konturda kaybolmasın), ucun alt yarısı biraz gölgeli
+        internal static Sprite ArrowSprite // M71: SpiritHud'un çanta oku da kullanır
         {
             get
             {
@@ -311,25 +326,23 @@ namespace Deprem.UI
                 const int n = ArrowTexture;
                 bool Inside(int x, int y)
                 {
+                    if (x < 0 || y < 0 || x >= n || y >= n) return false;
                     float cy = (n - 1) * 0.5f;
-                    if (x >= 7) return Mathf.Abs(y - cy) <= (n - 1 - x) * 0.95f + 0.5f; // uç (üçgen)
-                    return x >= 2 && Mathf.Abs(y - cy) <= 2.5f;                          // gövde
+                    if (x >= 6) return Mathf.Abs(y - cy) <= (n - 2 - x) * 0.85f + 0.5f; // uç (üçgen)
+                    return x >= 1 && Mathf.Abs(y - cy) <= 0.5f;                         // ince gövde
                 }
                 arrowSprite = PixelSprite(n, n, "UiArrow", (x, y) =>
                 {
-                    if (!Inside(x, y)) return Color.clear;
-                    bool edge = !Inside(x - 1, y) || !Inside(x + 1, y) || !Inside(x, y - 1) || !Inside(x, y + 1);
-                    if (edge) return new Color(0.08f, 0.06f, 0.05f);
-                    if (!Inside(x, y + 2)) return new Color(1f, 1f, 1f);       // üst kenarda ışık
-                    if (!Inside(x, y - 2)) return new Color(0.68f, 0.68f, 0.68f); // alt kenarda gölge
-                    return new Color(0.9f, 0.9f, 0.9f);
+                    if (Inside(x, y)) return y < (n - 1) * 0.5f && x >= 6 ? new Color(0.78f, 0.78f, 0.78f) : Color.white;
+                    bool edge = Inside(x - 1, y) || Inside(x + 1, y) || Inside(x, y - 1) || Inside(x, y + 1);
+                    return edge ? new Color(0.08f, 0.06f, 0.05f, 0.9f) : Color.clear;
                 });
                 return arrowSprite;
             }
         }
 
         // 9 x 9, aşağı bakan küçük ok (başın üstündeki işaret)
-        static Sprite MarkerSprite
+        internal static Sprite MarkerSprite
         {
             get
             {

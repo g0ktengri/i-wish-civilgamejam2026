@@ -39,8 +39,16 @@ namespace Deprem.Minigames
         [SerializeField] Vector2Int snapshotSize = new Vector2Int(96, 54);
         [Tooltip("Minigame'in kendi arka planına hafif soğuk ton")]
         [SerializeField] Color contentTint = new Color(0.9f, 0.94f, 1f);
-        [SerializeField] Color successColor = new Color(0.5f, 0.86f, 0.52f, 0.35f);
-        [SerializeField] float successHold = 0.5f;
+
+        [Header("M70: bitiş geri bildirimi (Mehmet'in play testi 32)")]
+        [Tooltip("Parça oturunca içeriğin üstündeki kısa parlama")]
+        [SerializeField] Color successFlashColor = new Color(1f, 1f, 1f, 0.55f);
+        [SerializeField] float successFlashSeconds = 0.18f;
+        [Tooltip("Damga basıldıktan sonra panel bu kadar sonra kapanır")]
+        [SerializeField] float successSeconds = 0.6f;
+        [SerializeField] Color stampColor = new Color(0.56f, 0.92f, 0.5f);
+        [SerializeField] float stampAngle = -8f;
+        [SerializeField] float stampPopSeconds = 0.14f;
 
         // GDD: 60 sn'de 5-6 eşya (yol dahil); her minigame yaklaşık 5-7 sn sürmeli
 
@@ -80,6 +88,9 @@ namespace Deprem.Minigames
         Image panel;
         RectTransform content;
         Image successFlash;
+        RectTransform stamp;
+        CanvasGroup stampGroup;
+        Text stampText;
         Text titleText;
         RectTransform titlePanel;
         Text hintText;
@@ -113,6 +124,7 @@ namespace Deprem.Minigames
         RectTransform tutorialRoot;
         readonly Image[] tutorialDims = new Image[4];
         readonly Image[] tutorialFrame = new Image[4];
+        UiPrompt tutorialNext; // M67: "[F] Devam", panelin sağ altında
 
         /// <summary>"Yeni oyun": bütün minigame öğreticileri yeniden gösterilir</summary>
         public static void ClearTutorials()
@@ -165,10 +177,23 @@ namespace Deprem.Minigames
             Place(tutorialFrame[3], x1, y0, x1 + t, y1);
 
             string count = $"({tutorialStep + 1}/{tutorialSteps.Count}) ";
-            hintText.text = count + Texts.Get(tutorialSteps[tutorialStep].key) + "\n" + Texts.Get("minigame.tutorial.next");
+            hintText.text = Balanced(count + Texts.Get(tutorialSteps[tutorialStep].key));
+            tutorialNext.Set(Texts.Get("minigame.tutorial.continue"));
         }
 
-        static void Place(Image image, float x0, float y0, float x1, float y1)
+        // M67: sığmayan adım metni ortaya en yakın boşluktan iki dengeli satıra bölünür (tek kelime alta düşmesin)
+        string Balanced(string text)
+        {
+            hintText.text = text;
+            float width = hintText.rectTransform.rect.width;
+            if (width <= 0f || hintText.preferredWidth <= width) return text;
+            int middle = text.Length / 2, best = -1;
+            for (int i = 0; i < text.Length; i++)
+                if (text[i] == ' ' && (best < 0 || Mathf.Abs(i - middle) < Mathf.Abs(best - middle))) best = i;
+            return best < 0 ? text : text.Substring(0, best) + "\n" + text.Substring(best + 1);
+        }
+
+        static void Place(Graphic image, float x0, float y0, float x1, float y1)
         {
             var rect = image.rectTransform;
             rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -204,6 +229,7 @@ namespace Deprem.Minigames
             if (tutorialRoot) Destroy(tutorialRoot.gameObject);
             tutorialRoot = null;
             if (hintText) hintText.text = tutorialSavedHint;
+            if (tutorialNext) tutorialNext.Set(null);
             if (seen)
             {
                 PlayerPrefs.SetInt(TutorialPrefix + currentType, 1);
@@ -315,7 +341,7 @@ namespace Deprem.Minigames
                 Destroy(child.gameObject);
             }
             if (art.panel) UiBuilder.ApplyHudSprite(panel, art.panel);
-            successFlash.enabled = false;
+            HideSuccess();
             current.Build(content, art, variant);
             var background = content.Find("Background");
             var backgroundImage = background ? background.GetComponent<Image>() : null;
@@ -443,24 +469,41 @@ namespace Deprem.Minigames
             if (current.Tick(ReadInput())) StartCoroutine(Succeed());
         }
 
+        // M70 (Mehmet'in play testi 32: bütün paneli kaplayan yeşil filtre kötüydü): parça oturur ("tık", kısa beyaz
+        // parlama), panelin ortasına eğik "SABİTLENDİ" damgası ve onay işareti basılır, panel successSeconds sonra kapanır
         IEnumerator Succeed()
         {
             finishing = true;
+            Audio.Sfx.Play("minigame.latch");
+            stampText.text = Texts.Get(doneKey == "minigame.taken" ? "minigame.stamp.taken" : "minigame.stamp.secured");
             successFlash.enabled = true;
-            successFlash.color = successColor;
-            if (titlePanel.gameObject.activeSelf)
+            stamp.gameObject.SetActive(true);
+            stamp.localRotation = Quaternion.Euler(0f, 0f, stampAngle);
+            for (float t = 0f; t < successSeconds; t += Time.deltaTime)
             {
-                titleText.text = Texts.Get(doneKey ?? "minigame.done");
-                titleText.color = new Color(successColor.r, successColor.g, successColor.b, 1f);
+                float flash = 1f - Mathf.Clamp01(t / successFlashSeconds);
+                successFlash.color = new Color(successFlashColor.r, successFlashColor.g, successFlashColor.b,
+                    successFlashColor.a * flash);
+                float k = Mathf.Clamp01(t / stampPopSeconds);
+                float ease = 1f - (1f - k) * (1f - k);
+                stamp.localScale = Vector3.one * Mathf.Lerp(1.8f, 1f, ease); // yukarıdan basılır
+                stampGroup.alpha = k;
+                yield return null;
             }
-            yield return new WaitForSeconds(successHold);
             Close(true);
+        }
+
+        void HideSuccess()
+        {
+            successFlash.enabled = false;
+            stamp.gameObject.SetActive(false);
         }
 
         void Close(bool success)
         {
             StopAllCoroutines();
             EndTutorial(false);
+            HideSuccess();
             if (!success && current != null) Audio.Sfx.Play("minigame.fail"); // vazgeçildi ya da süre bitti
             var callback = onDone;
             current = null;
@@ -575,11 +618,12 @@ namespace Deprem.Minigames
             content.offsetMax = -new Vector2(framePadding, framePadding + headerHeight);
 
             // İçeriğin dışında (OpenPanel içeriği her açılışta temizler), içeriğin üstünde
-            successFlash = UiBuilder.CreateImage(panel.transform, "SuccessFlash", successColor);
+            successFlash = UiBuilder.CreateImage(panel.transform, "SuccessFlash", successFlashColor);
             UiBuilder.Stretch(successFlash.rectTransform, Vector2.zero, Vector2.one);
             successFlash.rectTransform.offsetMin = new Vector2(framePadding, framePadding + footerHeight);
             successFlash.rectTransform.offsetMax = -new Vector2(framePadding, framePadding + headerHeight);
             successFlash.enabled = false;
+            BuildStamp();
 
             // Başlık: aynı çerçevenin içinde, üstte şerit ve altında ince ayırıcı ("Kitaplığı sabitle");
             // ayrı etiket paneli ve altın şerit yok (M28)
@@ -622,6 +666,73 @@ namespace Deprem.Minigames
             cancel.Rect.anchorMin = cancel.Rect.anchorMax = Vector2.right;
             cancel.Rect.pivot = Vector2.right;
             cancel.Rect.anchoredPosition = new Vector2(-UiBuilder.HudMargin, UiBuilder.HudMargin);
+
+            // M67: öğretici devam ipucu HUD ipuçları gibi tuş kapaklı, panelin sağ alt köşesinin hemen altında;
+            // öğretici F'yi sabit okuduğu için tuş ataması uygulanmaz
+            tutorialNext = UiPrompt.Create(panel.transform, "TutorialNext", font, 14);
+            tutorialNext.RemapKeys = false;
+            tutorialNext.Rect.anchorMin = tutorialNext.Rect.anchorMax = Vector2.right;
+            tutorialNext.Rect.pivot = Vector2.one;
+            tutorialNext.Rect.anchoredPosition = new Vector2(0f, -6f);
+        }
+
+        // M70: içeriğin ortasında koyu zeminli, kalın çerçeveli damga; solda pixel onay işareti
+        void BuildStamp()
+        {
+            stamp = new GameObject("Stamp", typeof(RectTransform), typeof(CanvasGroup)).GetComponent<RectTransform>();
+            stamp.SetParent(panel.transform, false);
+            stamp.anchorMin = stamp.anchorMax = new Vector2(0.5f, 0.5f);
+            stamp.sizeDelta = new Vector2(236f, 64f);
+            stamp.anchoredPosition = new Vector2(0f, (footerHeight - headerHeight) * 0.5f); // içeriğin ortası
+            stampGroup = stamp.GetComponent<CanvasGroup>();
+            stampGroup.blocksRaycasts = false;
+
+            var fill = UiBuilder.CreateImage(stamp, "Fill", new Color(0.03f, 0.05f, 0.04f, 0.82f));
+            UiBuilder.Stretch(fill.rectTransform, Vector2.zero, Vector2.one);
+            const float border = 4f;
+            Place(UiBuilder.CreateImage(stamp, "Border", stampColor), -118f, 32f - border, 118f, 32f);
+            Place(UiBuilder.CreateImage(stamp, "Border", stampColor), -118f, -32f, 118f, -32f + border);
+            Place(UiBuilder.CreateImage(stamp, "Border", stampColor), -118f, -32f, -118f + border, 32f);
+            Place(UiBuilder.CreateImage(stamp, "Border", stampColor), 118f - border, -32f, 118f, 32f);
+
+            var check = UiBuilder.CreateImage(stamp, "Check", stampColor);
+            check.sprite = CheckSprite;
+            Place(check, -102f, -16f, -62f, 16f); // 10x8 piksel, 4 kat
+
+            stampText = UiBuilder.Outlined(UiBuilder.CreateText(stamp, "Text", font, 26, stampColor));
+            Place(stampText, -54f, -28f, 110f, 28f);
+            stampText.resizeTextForBestFit = true;
+            stampText.resizeTextMinSize = 14;
+            stampText.resizeTextMaxSize = 26;
+            stamp.gameObject.SetActive(false);
+        }
+
+        static Sprite checkSprite;
+
+        static Sprite CheckSprite
+        {
+            get
+            {
+                if (checkSprite) return checkSprite;
+                string[] rows =
+                {
+                    "........##",
+                    ".......###",
+                    "......###.",
+                    "##...###..",
+                    "###.###...",
+                    ".#####....",
+                    "..###.....",
+                    "...#......",
+                };
+                var texture = new Texture2D(10, 8) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+                for (int y = 0; y < 8; y++)
+                for (int x = 0; x < 10; x++)
+                    texture.SetPixel(x, 7 - y, rows[y][x] == '#' ? Color.white : Color.clear);
+                texture.Apply();
+                checkSprite = Sprite.Create(texture, new Rect(0f, 0f, 10f, 8f), new Vector2(0.5f, 0.5f), 1f);
+                return checkSprite;
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

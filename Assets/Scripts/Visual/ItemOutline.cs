@@ -17,11 +17,22 @@ namespace Deprem.Visual
         [Tooltip("M62 (Berke): ailenin ya da oyuncunun üstüne düşecek eşya: kırmızımsı kontur")]
         [SerializeField] private Color importantColor = new Color(1f, 0.42f, 0.32f);
         [Tooltip("M62 (Berke): isteğe bağlı eşya (ayna, çerçeve): soluk kontur")]
-        [SerializeField] private Color optionalColor = new Color(0.55f, 0.75f, 0.95f, 0.45f);
+        [SerializeField] private Color optionalColor = new Color(0.55f, 0.75f, 0.95f, 0.3f);
+        [Tooltip("M68 (Berke, Mehmet'in play testi 32: önemli eşyalar tam belli olmuyordu): kalınlık (m) ve nabız; " +
+                 "önemli eşya kalın ve hızlı nabızlı, isteğe bağlı olan ince ve nabızsız. Normal değerler shader'ınkiyle aynı")]
+        [SerializeField] private float normalWidth = 0.035f;
+        [SerializeField] private float importantWidth = 0.075f;
+        [SerializeField] private float optionalWidth = 0.025f;
+        [SerializeField] private float importantPulseSpeed = 6f;
+        [SerializeField, Range(0f, 1f)] private float importantPulseAmount = 0.65f;
         private Color baseColor;
+        private bool isImportant;
         private bool hasPriority;
 
         private static readonly int ColorId = Shader.PropertyToID("_OutlineColor");
+        private static readonly int WidthId = Shader.PropertyToID("_OutlineWidth");
+        private static readonly int PulseSpeedId = Shader.PropertyToID("_PulseSpeed");
+        private static readonly int PulseAmountId = Shader.PropertyToID("_PulseAmount");
 
         private SecurableItem item;
         private MaterialPropertyBlock block;
@@ -75,7 +86,9 @@ namespace Deprem.Visual
         public void SetPriority(bool important)
         {
             hasPriority = true;
-            baseColor = important ? importantColor : optionalColor;
+            isImportant = important;
+            // Shader alfayı kullanmıyor: soluk renk, rengin alfayla karartılmasıyla
+            baseColor = important ? importantColor : optionalColor * optionalColor.a;
             SetEmphasis(false);
         }
 
@@ -84,6 +97,10 @@ namespace Deprem.Visual
             if (outlineRenderers == null) return;
             block ??= new MaterialPropertyBlock();
             block.SetColor(ColorId, emphasized ? emphasisColor : hasPriority ? baseColor : normalColor);
+            bool loud = hasPriority && isImportant;
+            block.SetFloat(WidthId, !hasPriority ? normalWidth : isImportant ? importantWidth : optionalWidth);
+            block.SetFloat(PulseSpeedId, loud ? importantPulseSpeed : 3f);
+            block.SetFloat(PulseAmountId, loud ? importantPulseAmount : hasPriority && !emphasized ? 0f : 0.35f);
 
             foreach (var r in outlineRenderers)
                 if (r != null) r.SetPropertyBlock(block);

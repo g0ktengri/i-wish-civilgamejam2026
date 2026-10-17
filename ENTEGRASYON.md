@@ -52,6 +52,32 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Play testi 32: M67–M72 (Berke)
+
+Play'de denenmedi; dört test geçiyor.
+
+- **M67 (`MinigameHost`):** öğreticideki devam satırı kalktı.
+  - Yerine HUD ipuçları gibi tuş kapaklı "[F] Devam", panelin sağ alt köşesinin hemen altında küçük ve ayrı (`minigame.tutorial.continue`). Tık, Boşluk ve Enter yine çalışıyor.
+  - Sığmayan adım metni ortaya en yakın boşluktan iki dengeli satıra bölünüyor.
+- **M68, önemli eşyalar:**
+  - Senin `ItemOutline`'ına genişlik ve nabız eklendi (`_OutlineWidth`, `_PulseSpeed`, `_PulseAmount`, `MaterialPropertyBlock` ile). Önemli eşyalar kalın (0,075) ve hızlı nabızlı; isteğe bağlılar ince (0,025), nabızsız ve daha soluk.
+  - Shader alfayı kullanmadığı için solukluk rengin alfayla karartılmasıyla yapılıyor. Ruh fazı dışındaki varsayılanlar shader'ınkiyle aynı.
+  - `SpiritHighlighter`: önemli ve sabitlenmemiş eşyanın üstünde sallanan kırmızı pixel "!" var. Tavana çarparsa eşyanın önüne iniyor; ruh yanına gelince (F ipucu çıkınca) gizleniyor, sabitlenince kalkıyor.
+- **M69 (`ObjectiveHud`):** ok 16 px kalın oktan 12 px'lik ince oka indi (2 px gövde, sivri uç, dışta kontur). Ekranda 24 px.
+  - Baş harf rozeti küçüldü (20 px).
+  - Uzaklıkla küçülüyor ve %50'ye kadar soluyor; baş üstü işareti de küçüldü ve soluyor.
+- **M70 (`MinigameHost`):** yeşil filtre kalktı. Bitişte:
+  - "tık" sesi (`minigame.latch`) ve içerikte 0,18 sn'lik beyaz parlama.
+  - Ortada yukarıdan basılan eğik "SABİTLENDİ" damgası ve pixel onay işareti; çanta malzemesinde "ALINDI".
+  - Panel 0,6 sn sonra kapanıyor.
+  - Önizleme: `Logs/hud_preview_minigame_success.png`.
+- **M71, malzemeyi çantaya götürme:**
+  - Ruh malzeme taşırken taşınan panelinin altında nabızlı "Çantaya götür" yazısı (`spirit.carry_to_bag`).
+  - Çanta ekrandaysa üstünde sallanan işaret, değilse ekran kenarında çantaya giden ok (`SpiritHud`).
+  - Çantanın yanında ikisi de kalkıyor, "F: Çantaya koy" kalıyor.
+  - Çantanın nabzı iki katına çıktı; ışığı da nabız gibi atıyor (`BagDropPoint`).
+- **M72 (`WishScreen`):** oyuncu öldüyse (`PlayerController.IsDead`) ya da üye gizliyse (`FamilyMember.Hidden`) kayıp üyeye odaklanma atlanıyor, doğrudan siyaha geçiliyor.
+
 ### Kız kardeş çizimleri bağlandı (Berke, senin klasöründe izinle)
 
 - **Ekip çizimi:** `Kızkardeş koşma.zip` (8 kare). Anne gibi 1920 px'ten 15 px'lik ekip pikseliyle 128 px'e indirildi; zip repoya konmadı.

@@ -13,14 +13,23 @@ namespace Deprem.Bag
         const float FlashSeconds = 0.6f;
 
         [Tooltip("Malzeme taşınırken çanta hafifçe nabız gibi büyür (M23: daha belirgin)")]
-        [SerializeField] float carryPulseScale = 0.06f;
+        // M71 (Mehmet'in play testi 32: malzemeyi nereye koyacağı belli değildi): nabız ve ışık daha belirgin
+        [SerializeField] float carryPulseScale = 0.12f;
         [SerializeField] float carryPulseSpeed = 5f;
+        [SerializeField] float beaconMinIntensity = 0.8f;
+        [SerializeField] float beaconMaxIntensity = 2.6f;
 
         BagSystem system;
         Light flash;
         Light beacon;
         PickupHighlight pickup;
         Vector3 baseScale;
+        float topHeight = 0.6f;
+
+        /// <summary>M71: sahnedeki çanta (SpiritHud'un çanta oku)</summary>
+        public static BagDropPoint Current { get; private set; }
+        /// <summary>Çanta görselinin tepesi (ok ve işaret burayı gösterir)</summary>
+        public Vector3 Top => transform.position + Vector3.up * topHeight;
 
         public Vector3 Point => transform.position;
         public float Range => system ? system.InteractRange : 1.2f;
@@ -75,7 +84,7 @@ namespace Deprem.Bag
             beacon.transform.localPosition = new Vector3(0f, lightHeight, -0.5f);
             beacon.type = LightType.Point;
             beacon.color = new Color(1f, 0.85f, 0.3f);
-            beacon.range = 1.6f;
+            beacon.range = 2.2f;
             beacon.intensity = 1.2f;
             beacon.shadows = LightShadows.None;
             beacon.enabled = false;
@@ -86,6 +95,9 @@ namespace Deprem.Bag
             drop.beacon = beacon;
             drop.pickup = go.GetComponent<PickupHighlight>();
             drop.baseScale = go.transform.localScale;
+            float top = float.MinValue;
+            foreach (var r in go.GetComponentsInChildren<Renderer>()) top = Mathf.Max(top, r.bounds.max.y);
+            drop.topHeight = (top > float.MinValue ? top : floorPosition.y + size.y) - go.transform.position.y;
             return drop;
         }
 
@@ -94,19 +106,22 @@ namespace Deprem.Bag
         {
             bool carrying = GameState.Phase == GamePhase.Spirit && BagSystem.Carrying != BagItemId.None;
             if (beacon && beacon.enabled != carrying) beacon.enabled = carrying;
-            float pulse = carrying ? (Mathf.Sin(Time.time * carryPulseSpeed) * 0.5f + 0.5f) * carryPulseScale : 0f;
-            transform.localScale = baseScale * (1f + pulse);
+            float wave = Mathf.Sin(Time.time * carryPulseSpeed) * 0.5f + 0.5f;
+            if (beacon && carrying) beacon.intensity = Mathf.Lerp(beaconMinIntensity, beaconMaxIntensity, wave);
+            transform.localScale = baseScale * (1f + (carrying ? wave * carryPulseScale : 0f));
         }
 
         void OnEnable()
         {
             SpiritTargets.Register(this);
+            Current = this;
             GameEvents.BagItemCollected += HandleBagItemCollected;
         }
 
         void OnDisable()
         {
             SpiritTargets.Unregister(this);
+            if (Current == this) Current = null;
             GameEvents.BagItemCollected -= HandleBagItemCollected;
         }
 
