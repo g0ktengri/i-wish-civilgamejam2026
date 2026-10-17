@@ -129,6 +129,17 @@ menu.hint.back,Esc: Geri,Esc: Back
 menu.hint.change,A/D: Değiştir,A/D: Change
 menu.subtitle,Bir deprem hikâyesi,An earthquake story
 menu.jam,Civil Game Jam 2026,Civil Game Jam 2026
+minigame.tutorial.next,"F ya da tık: devam","F or click: next"
+minigame.tutorial.carry_grab,Eşyayı fareyle tut ve sürükle,Hold the item with the mouse and drag it
+minigame.tutorial.carry_gap,Duvara değmeden boşluktan geçir; değersen başa döner,Pass it through the gap without touching the wall; if you touch it you start over
+minigame.tutorial.carry_drop,Yeşil alana bırak,Drop it on the green area
+minigame.tutorial.screw_grab,Tornavidanın ucunu vidaya getir ve fareyi basılı tut,Bring the screwdriver tip to a screw and hold the mouse button
+minigame.tutorial.screw_turn,Fareyi vidanın çevresinde saat yönünde çevir,Circle the mouse clockwise around the screw
+minigame.tutorial.screw_bar,Bütün vidaları sık; çubuk dolunca eşya sabitlenir,Tighten every screw; the item is secured when the bar fills
+spirit.priority,Önce kırmızı konturlu eşyaları sabitle: onlar ailenin üstüne düşecek,"Secure the red-outlined items first: they will fall on your family"
+wish.continue,Devam etmek için bir tuşa bas,Press any key to continue
+info.missing_flashlight,"Kardeşini karanlıkta bulamadın; el fenerin yoktu. Deprem çantanda el feneri olsun.","You couldn't find your sibling in the dark; you had no flashlight. Keep a flashlight in your emergency bag."
+info.missing_firstaid,"Babanın yarasını saramadın; ilk yardım malzemen yoktu. Deprem çantanda ilk yardım çantası olsun.","You couldn't bandage your father's wound; you had no first aid supplies. Keep a first aid kit in your emergency bag."
 cinematic.skip,Boşluk (basılı tut): Geç,Space (hold): Skip
 advice.ignored_foreshock,Sarsıntıyı ciddiye al.,Take the tremor seriously.
 advice.duck_cover,"Çök, kapan, tutun.","Drop, cover, hold on."

@@ -108,7 +108,23 @@ namespace Deprem.Minigames
             }
         }
 
+        // M61: ucu vidaya getir ve tut, saat yönünde çevir, çubuk dolunca biter
+        public override List<(string key, Rect area)> TutorialSteps()
+        {
+            if (screws.Count == 0) return null;
+            var first = screws[0].Position;
+            var steps = new List<(string key, Rect area)>
+            {
+                ("minigame.tutorial.screw_grab", Around(first, Vector2.one * (ScrewSize + 16f))),
+                ("minigame.tutorial.screw_turn", Around(first, Vector2.one * (ScrewSize * 2.6f))),
+            };
+            if (fill) steps.Add(("minigame.tutorial.screw_bar", Around(new Vector2(0f, fill.anchoredPosition.y),
+                new Vector2(barWidth + 20f, 24f))));
+            return steps;
+        }
+
         protected override void OnBuild()
+
         {
             CreateBackground(Art.screwBackground, MinigamePixels.Ground((int)PanelSize.x, (int)PanelSize.y, "wood"));
             float barY = -PanelSize.y * 0.4f;

@@ -52,6 +52,31 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Play testi 31: M59–M66 (Berke)
+
+Play'de denenmedi; dört test geçiyor.
+
+- **M59 (`WishScreen`):** keşke ekranı herhangi bir tuş ya da fare tıkıyla geçiliyor; Esc hariç (duraklatma). İpucu "Devam etmek için bir tuşa bas" (`wish.continue`).
+- **M60:** aynı keşke ikinci kez gelirse ekran 2,5 kat hızlı akıyor (`repeatPace`). Yazı, beklemeler, odak, çatlak ve geri sarma birlikte hızlanıyor. Geçmiş `WishLines.WasShown`'dan.
+- **M61, minigame öğreticisi (`MinigameHost`, `Minigame.TutorialSteps`):**
+  - Her türe ilk girişte adım adım öğretici: vurgulanan alanın dışı kararıyor, çevresinde nabız atan sarı çerçeve; adım metni ipucu şeridinde. F, Boşluk, Enter ya da tıkla sonraki adım.
+  - Taşı-yerleştir: eşyayı tut → boşluktan geçir (değersen başa döner) → yeşil alana bırak.
+  - Vida: ucu vidaya getir ve tut → saat yönünde çevir → çubuk dolunca sabitlenir.
+  - Öğretici sürerken minigame oynanmıyor ve **ruh sayacı akmıyor** (`MinigameHost.TutorialActive`, `SpiritPhase`).
+  - Kayıt PlayerPrefs'te (`tutorial.minigame.<tür>`); "Yeni oyun" siliyor. Esc ile kapatılırsa bir dahaki girişte yine gösteriliyor.
+  - Önizleme: `Logs/hud_preview_minigame_tutorial_*.png`.
+- **M62, önemli eşyalar:**
+  - Ruh fazında yatak rafı ve her üyenin `DangerItem`'ı kırmızımsı konturlu (yedek ışıkta da kırmızımsı ve parlak); diğerleri soluk mavi.
+  - Senin `ItemOutline`'ına küçük ek: `SetPriority(bool)` (`importantColor`, `optionalColor`).
+  - Sayacın altında: "Önce kırmızı konturlu eşyaları sabitle: onlar ailenin üstüne düşecek" (`spirit.priority`).
+  - Ayna kayan boşluk yerine tek duvar (`VariantFor`).
+- **M63:** ruh süresi 50 sn başlangıç, kayıp başına +5, en fazla 75.
+- **M64 (`BagSupply`):** ruhken çantaya konmayan, öğrenilmiş malzeme kurtarma fazında yerinde. Bedenle yanına gelip F ile alınıyor ve çantaya ekleniyor (`IInteractable`, `IPromptSource`: "F: Al").
+- **M65 (`WishLines.Info`):** `MissingBagItem`'da `BagLessons.LastMissingItem`'a göre bilgi satırı:
+  - El feneri: "Kardeşini karanlıkta bulamadın; el fenerin yoktu…"
+  - İlk yardım: "Babanın yarasını saramadın; ilk yardım malzemen yoktu…"
+- **M66:** bizde `KitchenCabinets`'e bağlı olan tek yer `HudPreview`'daki kilitleme önizlemesiydi, kaldırıldı. Hedef paneli, final ve testler eşya sayısına bakmıyor. `AudioDirector`'daki cam sesi listesinde duruyor; zararsız.
+
 ### Teknik borç ve ruh ipuçları (Berke)
 
 Dört test geçiyor; ipucu kontrolleri Berke testinde.

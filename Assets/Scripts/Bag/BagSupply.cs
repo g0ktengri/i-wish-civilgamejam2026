@@ -9,7 +9,9 @@ namespace Deprem.Bag
     // Evdeki bir çanta malzemesi. Ruh fazında F → taşı-yerleştir minigame'i → ruh taşır.
     // Taşınırken ruhun yanında durur; taşıma iptal olursa yerine döner.
     // M54: el feneri ve ilk yardım, dersi öğrenilmeden (BagLessonGate) evde görünmez, ışığı ve vurgusu yok, alınamaz.
-    public class BagSupply : MonoBehaviour, ISpiritTarget
+    // M64 (Mehmet'in play testi 31): ruhken çantaya konmadıysa kurtarma fazında yerinde durur; oyuncu bedenle yanına
+    // gelip F ile alabilir (Mehmet'in PlayerInteractor'ı IInteractable'ı gösterir), malzeme çantaya eklenir.
+    public class BagSupply : MonoBehaviour, ISpiritTarget, Player.IInteractable, Player.IPromptSource
     {
         const string SpiritObjectName = "Spirit"; // Kararlar: ruh objesinin adı sabit
 
@@ -87,8 +89,37 @@ namespace Deprem.Bag
             return supply;
         }
 
-        void OnEnable() => SpiritTargets.Register(this);
-        void OnDisable() => SpiritTargets.Unregister(this);
+        void OnEnable()
+        {
+            SpiritTargets.Register(this);
+            Player.Interactables.Register(this);
+        }
+
+        void OnDisable()
+        {
+            SpiritTargets.Unregister(this);
+            Player.Interactables.Unregister(this);
+        }
+
+        // M64: bedenle alma (kurtarma fazı)
+        public Vector3 InteractionPoint => transform.position;
+        public float InteractionRange => Range;
+
+        // Ruhun CanInteract özelliğiyle ad çakışmasın diye açık arayüz uygulaması
+        bool Player.IInteractable.CanInteract(Player.PlayerController player) => CanPickUpWithBody;
+
+        bool CanPickUpWithBody =>
+            GameState.Phase == GamePhase.Rescue && BagSystem.Carrying != id && !GameState.HasBagItem(id) &&
+            BagLessonGate.IsAvailable(id);
+
+        void Player.IInteractable.Interact(Player.PlayerController player)
+        {
+            if (!CanPickUpWithBody) return;
+
+            Audio.Sfx.Play("ui.click");
+            GameState.AddBagItem(id); // BagHud "eklendi" der; aile kontrolleri çantaya bakar
+        }
+
 
         public void Interact()
         {

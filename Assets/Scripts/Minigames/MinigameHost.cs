@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Deprem.Core;
 using Deprem.Localization;
 using Deprem.UI;
@@ -93,6 +94,124 @@ namespace Deprem.Minigames
         public bool IsOpen => current != null;
         // Sahnede açık bir minigame paneli var mı (başarı beklemesi dahil, panel kapanınca false)
         public static bool AnyOpen => Instance && Instance.IsOpen;
+
+        // ------------------------------------------------------------------ M61: ilk giriş öğreticisi
+
+        [Header("M61: ilk giriş öğreticisi (Mehmet'in play testi 31)")]
+        [Tooltip("Vurgulanan alanın dışındaki karartma")]
+        [SerializeField] Color tutorialDim = new Color(0f, 0f, 0.02f, 0.62f);
+        [SerializeField] Color tutorialFrameColor = new Color(1f, 0.82f, 0.4f);
+
+        /// <summary>Öğretici ekranda mı: ruh sayacı bu sırada akmaz (SpiritPhase)</summary>
+        public static bool TutorialActive { get; private set; }
+
+        const string TutorialPrefix = "tutorial.minigame.";
+        List<(string key, Rect area)> tutorialSteps;
+        int tutorialStep;
+        int tutorialStartFrame;
+        string tutorialSavedHint;
+        RectTransform tutorialRoot;
+        readonly Image[] tutorialDims = new Image[4];
+        readonly Image[] tutorialFrame = new Image[4];
+
+        /// <summary>"Yeni oyun": bütün minigame öğreticileri yeniden gösterilir</summary>
+        public static void ClearTutorials()
+        {
+            foreach (MinigameType type in Enum.GetValues(typeof(MinigameType)))
+                PlayerPrefs.DeleteKey(TutorialPrefix + type);
+            PlayerPrefs.Save();
+        }
+
+        // Bu türe ilk girişse adım adım öğretici: vurgulanan alanın dışı kararır, çevresinde sarı çerçeve, adım metni
+        // ipucu şeridinde; F / Boşluk / Enter / tık ile sonraki adım. Bu sırada minigame oynanmaz.
+        void StartTutorial(MinigameType type)
+        {
+            if (PlayerPrefs.GetInt(TutorialPrefix + type, 0) == 1) return;
+            tutorialSteps = current.TutorialSteps();
+            if (tutorialSteps == null || tutorialSteps.Count == 0) return;
+            TutorialActive = true;
+            tutorialStep = 0;
+            tutorialStartFrame = Time.frameCount;
+            tutorialSavedHint = hintText.text;
+
+            tutorialRoot = new GameObject("Tutorial", typeof(RectTransform)).GetComponent<RectTransform>();
+            tutorialRoot.SetParent(content, false);
+            UiBuilder.Stretch(tutorialRoot, Vector2.zero, Vector2.one);
+            for (int i = 0; i < 4; i++)
+            {
+                tutorialDims[i] = UiBuilder.CreateImage(tutorialRoot, "Dim", tutorialDim);
+                tutorialFrame[i] = UiBuilder.CreateImage(tutorialRoot, "Frame", tutorialFrameColor);
+                tutorialFrame[i].gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1f, -1f);
+            }
+            ShowTutorialStep();
+        }
+
+        void ShowTutorialStep()
+        {
+            var size = content.rect.size;
+            var half = size * 0.5f;
+            var area = tutorialSteps[tutorialStep].area;
+            float x0 = Mathf.Clamp(area.xMin, -half.x, half.x), x1 = Mathf.Clamp(area.xMax, -half.x, half.x);
+            float y0 = Mathf.Clamp(area.yMin, -half.y, half.y), y1 = Mathf.Clamp(area.yMax, -half.y, half.y);
+            // Vurgunun çevresinde dört karartma parçası (alanın kendisi açık kalır)
+            Place(tutorialDims[0], -half.x, y1, half.x, half.y);
+            Place(tutorialDims[1], -half.x, -half.y, half.x, y0);
+            Place(tutorialDims[2], -half.x, y0, x0, y1);
+            Place(tutorialDims[3], x1, y0, half.x, y1);
+            const float t = 3f;
+            Place(tutorialFrame[0], x0 - t, y1, x1 + t, y1 + t);
+            Place(tutorialFrame[1], x0 - t, y0 - t, x1 + t, y0);
+            Place(tutorialFrame[2], x0 - t, y0, x0, y1);
+            Place(tutorialFrame[3], x1, y0, x1 + t, y1);
+
+            string count = $"({tutorialStep + 1}/{tutorialSteps.Count}) ";
+            hintText.text = count + Texts.Get(tutorialSteps[tutorialStep].key) + "\n" + Texts.Get("minigame.tutorial.next");
+        }
+
+        static void Place(Image image, float x0, float y0, float x1, float y1)
+        {
+            var rect = image.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = new Vector2(Mathf.Max(0f, x1 - x0), Mathf.Max(0f, y1 - y0));
+            rect.anchoredPosition = new Vector2((x0 + x1) * 0.5f, (y0 + y1) * 0.5f);
+        }
+
+        // Öğretici sürerken her kare: çerçeve nabız gibi parlar, tuş ya da tıkla sonraki adım
+        void TickTutorial()
+        {
+            float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 6f);
+            foreach (var frame in tutorialFrame)
+                if (frame) frame.color = new Color(tutorialFrameColor.r, tutorialFrameColor.g, tutorialFrameColor.b, pulse);
+            if (Time.frameCount == tutorialStartFrame) return; // minigame'i açan tuş adımı geçmesin
+            var keyboard = Keyboard.current;
+            var mouse = Mouse.current;
+            bool next = (keyboard != null && (keyboard.fKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame ||
+                                              keyboard.enterKey.wasPressedThisFrame))
+                        || (mouse != null && mouse.leftButton.wasPressedThisFrame);
+            if (!next) return;
+            Audio.Sfx.Play("ui.move");
+            tutorialStep++;
+            if (tutorialStep < tutorialSteps.Count) ShowTutorialStep();
+            else EndTutorial(true);
+        }
+
+        // seen: öğretici bitti (bir daha gösterilmez); Esc ile kapanırsa bir dahaki girişte yine gösterilir
+        void EndTutorial(bool seen)
+        {
+            if (!TutorialActive) return;
+            TutorialActive = false;
+            if (tutorialRoot) Destroy(tutorialRoot.gameObject);
+            tutorialRoot = null;
+            if (hintText) hintText.text = tutorialSavedHint;
+            if (seen)
+            {
+                PlayerPrefs.SetInt(TutorialPrefix + currentType, 1);
+                PlayerPrefs.Save();
+            }
+        }
+
+        MinigameType currentType;
 
         void Awake()
         {
@@ -211,6 +330,8 @@ namespace Deprem.Minigames
                 ? Texts.Format(HintKey(type), lockRequiredHits)
                 : Texts.Get(HintKey(type));
             cancel.Set(Texts.Get("prompt.cancel"));
+            currentType = type;
+            StartTutorial(type); // M61: bu türe ilk girişse öğretici
             group.alpha = 1f;
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -313,6 +434,12 @@ namespace Deprem.Minigames
                 return;
             }
 
+            if (TutorialActive)
+            {
+                TickTutorial();
+                return;
+            }
+
             if (current.Tick(ReadInput())) StartCoroutine(Succeed());
         }
 
@@ -333,6 +460,7 @@ namespace Deprem.Minigames
         void Close(bool success)
         {
             StopAllCoroutines();
+            EndTutorial(false);
             if (!success && current != null) Audio.Sfx.Play("minigame.fail"); // vazgeçildi ya da süre bitti
             var callback = onDone;
             current = null;
@@ -376,7 +504,7 @@ namespace Deprem.Minigames
                 case ItemId.ToyShelf: variant.Screws = ScrewLayout.Vertical2; break;
                 case ItemId.ShoeRack: variant.Screws = ScrewLayout.Diagonal2; break;
                 case ItemId.BedShelf: variant.Carry = CarryMode.Double; variant.CarryKind = "shelf"; break;
-                case ItemId.StairMirror: variant.Carry = CarryMode.Moving; variant.CarryKind = "mirror"; break;
+                case ItemId.StairMirror: variant.Carry = CarryMode.Single; variant.CarryKind = "mirror"; break; // M62: isteğe bağlı eşya, kayan boşluk yerine tek duvar
                 case ItemId.BedFrame: variant.Carry = CarryMode.Single; variant.CarryKind = "frame"; break;
             }
             ApplyTuning(variant);
@@ -497,6 +625,11 @@ namespace Deprem.Minigames
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetOnPlay() => Instance = null;
+        static void ResetOnPlay()
+        {
+            Instance = null;
+            TutorialActive = false;
+        }
+
     }
 }

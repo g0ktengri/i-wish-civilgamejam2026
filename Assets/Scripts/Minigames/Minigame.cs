@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -51,6 +52,15 @@ namespace Deprem.Minigames
 
         // Bitince true döner
         public abstract bool Tick(MinigameInput input);
+
+        /// <summary>
+        /// M61 (Mehmet'in play testi 31): bu türe ilk girişte öğretici adımları: texts.csv anahtarı ve vurgulanacak alan
+        /// (panelin ortasına göre, referans pikseli). Öğreticisi olmayan tür null döner.
+        /// </summary>
+        public virtual List<(string key, Rect area)> TutorialSteps() => null;
+
+        protected static Rect Around(Vector2 center, Vector2 size) => new Rect(center - size * 0.5f, size);
+
 
         // Panelin ortasına göre konumlanan dikdörtgen görüntü: sprite varsa o, yoksa düz renk
         protected Image CreateRect(string name, Vector2 position, Vector2 size, Color color,

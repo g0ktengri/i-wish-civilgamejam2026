@@ -118,17 +118,24 @@ namespace Deprem.Loop.EditorTools
                 focus.rectTransform.anchoredPosition = new Vector2(-150f, -110f);
             });
 
-            // Minigame'ler: eşyanın kendi kurulumuyla (MinigameHost.VariantFor), gerçek kodla
+            // Minigame'ler: eşyanın kendi kurulumuyla (MinigameHost.VariantFor), gerçek kodla. M66: mutfak dolapları
+            // artık sabitlenemiyor (kilitleme önizlemesi kalktı). M61: öğretici yalnızca "_tutorial" önizlemelerinde
+            foreach (Deprem.Core.MinigameType kind in System.Enum.GetValues(typeof(Deprem.Core.MinigameType)))
+                PlayerPrefs.SetInt("tutorial.minigame." + kind, 1);
             foreach (var (name, type, id) in new[]
                      {
                          ("minigame_bookcase", Deprem.Core.MinigameType.ScrewTighten, ItemId.Bookcase),
-                         ("minigame_kitchen", Deprem.Core.MinigameType.Lock, ItemId.KitchenCabinets),
                          ("minigame_mirror", Deprem.Core.MinigameType.CarryAndPlace, ItemId.StairMirror),
                          ("minigame_bedshelf", Deprem.Core.MinigameType.CarryAndPlace, ItemId.BedShelf),
+                         ("minigame_tutorial_carry", Deprem.Core.MinigameType.CarryAndPlace, ItemId.BedFrame),
+                         ("minigame_tutorial_screw", Deprem.Core.MinigameType.ScrewTighten, ItemId.TvUnit),
                      })
             {
                 RenderScene(name, root =>
                 {
+                    if (name.Contains("tutorial")) PlayerPrefs.DeleteKey("tutorial.minigame." + type);
+                    else PlayerPrefs.SetInt("tutorial.minigame." + type, 1);
+
                     var host = root.AddComponent<Deprem.Minigames.MinigameHost>();
                     UsePrefabArt(host);
                     Call(host, "Awake");
@@ -159,6 +166,9 @@ namespace Deprem.Loop.EditorTools
                     }
                 });
             }
+
+            // Önizlemeler editörün PlayerPrefs'ine öğretici kaydı bırakmasın (Play'de öğretici yine görünsün)
+            Deprem.Minigames.MinigameHost.ClearTutorials();
 
             // Çanta malzemesi: el feneri (ince uzun çizim ve çarpışma, kayan boşluk)
             RenderScene("minigame_flashlight", root =>

@@ -98,6 +98,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.WishScreen
   fadeToBlack: 1.6
+  repeatPace: 2.5
   blackTakeover: 0.5
   contentFadeIn: 0.7
   focusInSeconds: 0.7
@@ -150,9 +151,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec33bfa992b1d5740ae086db755ca236, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Spirit.SpiritPhase
-  duration: 35
+  duration: 50
   durationPerLoss: 5
-  maxDuration: 60
+  maxDuration: 75
   spawnPoint: {fileID: 0}
   spawnMarkerName: Marker_PlayerBed
   spawnOffset: {x: 0, y: 0.1, z: 0}
@@ -206,6 +207,8 @@ MonoBehaviour:
   nearestIntensity: 2.5
   range: 1.8
   frontOffset: 0.4
+  importantColor: {r: 1, g: 0.5, b: 0.38, a: 1}
+  optionalIntensityScale: 0.4
 --- !u!114 &6448518412914014748
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -222,6 +225,7 @@ MonoBehaviour:
   timerFontSize: 34
   promptFontSize: 0
   hintFontSize: 18
+  priorityFontSize: 16
   warningSeconds: 10
   promptBottomOffset: 60
   worldPromptFontSize: 16
@@ -286,6 +290,8 @@ MonoBehaviour:
   lockShrinkPerHit: 0.8
   lockSpeedUpPerHit: 1.15
   lockDriftPerHit: 0.16
+  tutorialDim: {r: 0, g: 0, b: 0.02, a: 0.62}
+  tutorialFrameColor: {r: 1, g: 0.82, b: 0.4, a: 1}
   closeUpPixel: 2
   closeUpMargin: 1.9
   closeUpTint: {r: 0.62, g: 0.64, b: 0.72, a: 1}

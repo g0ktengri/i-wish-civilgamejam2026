@@ -67,6 +67,13 @@ namespace Deprem.UI
 
         public static void ClearHistory() => history.Clear();
 
+        /// <summary>M60: bu keşke daha önce gösterildi mi (Record'dan önce sorulur)</summary>
+        public static bool WasShown(LoseReason reason, ItemId item)
+        {
+            if (reason != LoseReason.FamilyHitByItem && reason != LoseReason.RescueTimeout) item = ItemId.None;
+            return history.Contains((reason, item));
+        }
+
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetOnPlay() => history.Clear();
 
@@ -76,12 +83,25 @@ namespace Deprem.UI
             {
                 case LoseReason.IgnoredForeshock: return Texts.Get("info.ignored_foreshock");
                 case LoseReason.NoDuckCoverHold: return Texts.Get("info.duck_cover");
-                case LoseReason.MissingBagItem: return Texts.Get("info.bag");
+                case LoseReason.MissingBagItem: return MissingInfo();
                 case LoseReason.AftershockInjury: return Texts.Get("info.aftershock");
                 case LoseReason.FamilyHitByItem:
                 case LoseReason.RescueTimeout: return Texts.Get("info.secure_items");
                 default: return string.Empty;
             }
         }
+
+        // M65 (Mehmet'in play testi 31): eksik malzeme yüzünden kaybedildiyse bilgi satırı neyin eksik olduğunu açıkça
+        // söyler (kardeş: el feneri, baba: ilk yardım); Mehmet'in BagLessons.LastMissingItem / LastMissingMember'ı
+        static string MissingInfo()
+        {
+            switch (Family.BagLessons.LastMissingItem)
+            {
+                case BagItemId.Flashlight: return Texts.Get("info.missing_flashlight");
+                case BagItemId.FirstAidKit: return Texts.Get("info.missing_firstaid");
+                default: return Texts.Get("info.bag");
+            }
+        }
     }
+
 }

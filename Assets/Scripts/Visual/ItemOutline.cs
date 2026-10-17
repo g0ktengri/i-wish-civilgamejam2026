@@ -14,6 +14,12 @@ namespace Deprem.Visual
         [SerializeField] private Renderer[] outlineRenderers;
         [SerializeField] private Color normalColor = new Color(0.55f, 0.85f, 1f);
         [SerializeField] private Color emphasisColor = new Color(1f, 0.92f, 0.55f);
+        [Tooltip("M62 (Berke): ailenin ya da oyuncunun üstüne düşecek eşya: kırmızımsı kontur")]
+        [SerializeField] private Color importantColor = new Color(1f, 0.42f, 0.32f);
+        [Tooltip("M62 (Berke): isteğe bağlı eşya (ayna, çerçeve): soluk kontur")]
+        [SerializeField] private Color optionalColor = new Color(0.55f, 0.75f, 0.95f, 0.45f);
+        private Color baseColor;
+        private bool hasPriority;
 
         private static readonly int ColorId = Shader.PropertyToID("_OutlineColor");
 
@@ -65,11 +71,20 @@ namespace Deprem.Visual
                 if (r != null) r.enabled = visible;
         }
 
+        /// <summary>M62 (Berke): ruh fazında önemli eşya kırmızımsı, isteğe bağlı olan soluk konturlu</summary>
+        public void SetPriority(bool important)
+        {
+            hasPriority = true;
+            baseColor = important ? importantColor : optionalColor;
+            SetEmphasis(false);
+        }
+
         public void SetEmphasis(bool emphasized)
         {
             if (outlineRenderers == null) return;
             block ??= new MaterialPropertyBlock();
-            block.SetColor(ColorId, emphasized ? emphasisColor : normalColor);
+            block.SetColor(ColorId, emphasized ? emphasisColor : hasPriority ? baseColor : normalColor);
+
             foreach (var r in outlineRenderers)
                 if (r != null) r.SetPropertyBlock(block);
         }

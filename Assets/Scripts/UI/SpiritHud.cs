@@ -19,6 +19,8 @@ namespace Deprem.UI
         [Tooltip("0: UiStyle.hudFontSize")]
         [SerializeField] int promptFontSize;
         [SerializeField] int hintFontSize = 18;
+        [Tooltip("M62: sayacın altındaki öncelik ipucunun yazı boyu")]
+        [SerializeField] int priorityFontSize = 16;
         [Tooltip("Son kaç saniyede sayaç kırmızıya döner ve atar")]
         [SerializeField] float warningSeconds = 10f;
         [SerializeField] float promptBottomOffset = 60f;
@@ -33,6 +35,7 @@ namespace Deprem.UI
         CanvasGroup group;
         RectTransform timerPanel;
         Text timerText;
+        Text priorityText;
         UiPrompt prompt;
         UiPrompt worldPrompt;
         RectTransform canvasRect;
@@ -59,6 +62,16 @@ namespace Deprem.UI
             timerPanel.sizeDelta = new Vector2(116f, 52f);
             timerText = UiBuilder.Outlined(UiBuilder.CreateText(timerPanel, "Text", font, timerFontSize, UiBuilder.HudText));
             UiBuilder.Stretch(timerText.rectTransform, Vector2.zero, Vector2.one);
+
+            // M62: sayacın altında öncelik ipucu (kırmızı konturlu eşyalar önce)
+            priorityText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Priority", font, priorityFontSize,
+                new Color(1f, 0.62f, 0.5f)));
+            var priorityRect = priorityText.rectTransform;
+            priorityRect.anchorMin = priorityRect.anchorMax = new Vector2(0.5f, 1f);
+            priorityRect.pivot = new Vector2(0.5f, 1f);
+            priorityRect.sizeDelta = new Vector2(600f, 24f);
+            priorityRect.anchoredPosition = new Vector2(0f, -margin - 58f);
+            priorityText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             prompt = UiPrompt.Create(canvas.transform, "Prompt", font, promptFontSize);
             prompt.Rect.anchorMin = prompt.Rect.anchorMax = new Vector2(0.5f, 0f);
@@ -167,6 +180,8 @@ namespace Deprem.UI
             promptText = string.IsNullOrEmpty(shownPrompt) ? string.Empty : Texts.Get(shownPrompt);
             PlacePrompt();
             flyHint.Set(Texts.Get("prompt.fly"));
+            priorityText.text = Texts.Get("spirit.priority");
+
 
             bool carrying = shownCarry > BagItemId.None;
             carryPanel.gameObject.SetActive(carrying);

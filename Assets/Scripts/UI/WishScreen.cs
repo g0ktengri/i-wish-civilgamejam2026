@@ -29,6 +29,8 @@ namespace Deprem.UI
         [Header("Kayıp anı")]
         [Tooltip("Ekranın kararma süresi (gerçek sn)")]
         [SerializeField] float fadeToBlack = 1.6f;
+        [Tooltip("M60: aynı keşke ikinci kez geliyorsa yazı, bekleme, çatlak ve geri sarma bu kadar kat hızlı")]
+        [SerializeField] float repeatPace = 2.5f;
         [Tooltip("M52: ölüm siyahının üstüne keşke ekranının siyahı bu sürede gelir (ekran zaten kararmışsa fark edilmez)")]
         [SerializeField] float blackTakeover = 0.5f;
         [Tooltip("M52: yazılar ve çatlak siyahın içinden bu sürede belirir")]
@@ -111,6 +113,8 @@ namespace Deprem.UI
 
         CanvasGroup group;
         CanvasGroup content;
+        float pace = 1f;
+
         Image background;
         Image focus;
         Light focusLight;
@@ -175,6 +179,8 @@ namespace Deprem.UI
         void HandleLoopFailed(LoseReason reason, ItemId item)
         {
             StopAllCoroutines();
+            // M60 (Mehmet'in play testi 31): aynı keşke daha önce gösterildiyse ekran hızlı akar
+            pace = WishLines.WasShown(reason, item) ? Mathf.Max(1f, repeatPace) : 1f;
             WishLines.Record(reason, item); // M47: final ekranı için
             StartCoroutine(Show(WishLines.Wish(reason, item), WishLines.Info(reason)));
         }
@@ -192,7 +198,7 @@ namespace Deprem.UI
                 background.color = new Color(0f, 0f, 0f, 0f);
                 group.alpha = 1f;
                 yield return FocusOn(lost);
-                yield return FadeBackground(fadeToBlack);
+                yield return FadeBackground(fadeToBlack / pace);
                 EndFocus();
             }
             // M52 (Mehmet'in play testi 27): ölümde ekran zaten yavaşça siyaha iniyor; keşke ekranı onun üstüne kısa
@@ -202,7 +208,7 @@ namespace Deprem.UI
             SplitWish(wish, out string head, out string rest);
             content.alpha = 0f;
             StartCoroutine(FadeContent(contentFadeIn));
-            yield return new WaitForSecondsRealtime(wishDelay);
+            yield return new WaitForSecondsRealtime(wishDelay / pace);
             Sfx.Play("wish.note");
             if (!string.IsNullOrEmpty(head))
             {
@@ -212,10 +218,10 @@ namespace Deprem.UI
             }
             yield return TypeWish(rest);
             yield return Crack();
-            yield return new WaitForSecondsRealtime(infoDelay);
-            yield return Type(infoText, info, infoCharsPerSecond);
-            yield return new WaitForSecondsRealtime(hintDelay);
-            hintText.text = Texts.Get("prompt.continue");
+            yield return new WaitForSecondsRealtime(infoDelay / pace);
+            yield return Type(infoText, info, infoCharsPerSecond * pace);
+            yield return new WaitForSecondsRealtime(hintDelay / pace);
+            hintText.text = Texts.Get("wish.continue"); // M59: herhangi bir tuş
             hintText.enabled = true;
             canContinue = true;
         }
@@ -264,12 +270,12 @@ namespace Deprem.UI
             focusLight.intensity = 0f;
 
             focus.enabled = true;
-            float total = focusInSeconds + focusHold;
+            float total = (focusInSeconds + focusHold) / pace;
             for (float t = 0f; t < total; t += Time.unscaledDeltaTime)
             {
                 if (member) center = VisualCenter(member);
                 focusLight.transform.position = center + new Vector3(0f, 0.8f, -1.2f);
-                float k = Mathf.Clamp01(t / focusInSeconds);
+                float k = Mathf.Clamp01(t * pace / focusInSeconds);
                 k = k * k * (3f - 2f * k);
                 focusLight.intensity = focusLightIntensity * k;
                 focus.color = new Color(0f, 0f, 0f, focusDarkness * k);
@@ -350,7 +356,7 @@ namespace Deprem.UI
         // Daktilo: her harf büyükten oturur (vuruş), yazı hafif sarsılır; noktalar daha yavaş
         IEnumerator TypeHead(string text)
         {
-            float interval = 1f / Mathf.Max(1f, headCharsPerSecond);
+            float interval = 1f / Mathf.Max(1f, headCharsPerSecond * pace);
             for (int i = 1; i <= text.Length; i++)
             {
                 headText.text = text.Substring(0, i);
@@ -378,7 +384,7 @@ namespace Deprem.UI
         // Tek başına, titreyerek: oyuncu sindirsin
         IEnumerator HoldHead()
         {
-            for (float t = 0f; t < headHold; t += Time.unscaledDeltaTime)
+            for (float t = 0f; t < headHold / pace; t += Time.unscaledDeltaTime)
             {
                 headRect.anchoredPosition = headHome + new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
                 if (ContinuePressed()) break;
@@ -390,9 +396,10 @@ namespace Deprem.UI
         IEnumerator MoveHead()
         {
             var end = headHome + new Vector2(0f, headEndRise);
-            for (float t = 0f; t < headMoveSeconds; t += Time.unscaledDeltaTime)
+            float moveSeconds = headMoveSeconds / pace;
+            for (float t = 0f; t < moveSeconds; t += Time.unscaledDeltaTime)
             {
-                float k = 1f - (1f - t / headMoveSeconds) * (1f - t / headMoveSeconds);
+                float k = 1f - (1f - t / moveSeconds) * (1f - t / moveSeconds);
                 headRect.anchoredPosition = Vector2.Lerp(headHome, end, k);
                 headRect.localScale = Vector3.one * Mathf.Lerp(1f, headEndScale, k);
                 yield return null;
@@ -406,7 +413,7 @@ namespace Deprem.UI
         {
             wishText.text = string.Empty;
             if (string.IsNullOrEmpty(text)) yield break;
-            float interval = 1f / Mathf.Max(1f, wishCharsPerSecond);
+            float interval = 1f / Mathf.Max(1f, wishCharsPerSecond * pace);
             for (int i = 1; i <= text.Length; i++)
             {
                 wishText.text = text.Substring(0, i);
@@ -445,7 +452,7 @@ namespace Deprem.UI
             BuildCrack(width, Mathf.Lerp(crackThicknessRange.x, crackThicknessRange.y, growth), Mathf.Lerp(0.55f, 1.5f, growth), growth);
             Sfx.Play("wish.shatter");
             var shakeHead = headRect.anchoredPosition;
-            float seconds = crackSeconds * Mathf.Lerp(0.6f, 1.25f, growth);
+            float seconds = crackSeconds * Mathf.Lerp(0.6f, 1.25f, growth) / pace;
             float shakeStrength = crackShake * Mathf.Lerp(0.35f, 1.3f, growth);
             var flash = Color.Lerp(Color.Lerp(flashColor, Color.black, 0.55f), flashColor * 1.3f, growth);
             for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
@@ -622,7 +629,7 @@ namespace Deprem.UI
             yield return Erase(infoText);
             int crackStart = crackShown;
             int wishLength = wishText.text.Length;
-            float interval = 1f / Mathf.Max(1f, rewindCharsPerSecond);
+            float interval = 1f / Mathf.Max(1f, rewindCharsPerSecond * pace);
             for (int i = wishLength; i >= 0; i--)
             {
                 wishText.text = wishText.text.Substring(0, i);
@@ -640,7 +647,7 @@ namespace Deprem.UI
 
         IEnumerator Erase(Text target)
         {
-            float interval = 1f / Mathf.Max(1f, rewindCharsPerSecond * 2f);
+            float interval = 1f / Mathf.Max(1f, rewindCharsPerSecond * 2f * pace);
             for (int i = target.text.Length; i >= 0; i--)
             {
                 target.text = target.text.Substring(0, i);
@@ -704,14 +711,14 @@ namespace Deprem.UI
             hintText.enabled = false;
         }
 
+        // M59 (Mehmet'in play testi 31): herhangi bir tuş ya da fare tıkı geçer; Esc hariç (duraklatma)
         static bool ContinuePressed()
         {
             var keyboard = Keyboard.current;
-            if (keyboard != null && (keyboard.fKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame
-                                     || keyboard.enterKey.wasPressedThisFrame))
+            if (keyboard != null && keyboard.anyKey.wasPressedThisFrame && !keyboard.escapeKey.wasPressedThisFrame)
                 return true;
             var mouse = Mouse.current;
-            return mouse != null && mouse.leftButton.wasPressedThisFrame;
+            return mouse != null && (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
         }
 
         void BuildCanvas()

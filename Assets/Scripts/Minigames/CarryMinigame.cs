@@ -198,7 +198,25 @@ namespace Deprem.Minigames
             bricks.anchoredPosition = new Vector2(0f, -center);
         }
 
+        // M61: eşyayı tut, ilk duvarın boşluğundan geçir, yeşil alana bırak
+        public override List<(string key, Rect area)> TutorialSteps()
+        {
+            var steps = new List<(string key, Rect area)>
+            {
+                ("minigame.tutorial.carry_grab", Around(item.anchoredPosition, ItemSize + Vector2.one * 14f)),
+            };
+            if (walls.Count > 0)
+            {
+                var wall = walls[0];
+                steps.Add(("minigame.tutorial.carry_gap", Around(new Vector2(wall.X, wall.GapY),
+                    new Vector2(WallWidth + 28f, wall.GapHeight + 8f))));
+            }
+            steps.Add(("minigame.tutorial.carry_drop", Around(target.anchoredPosition, TargetSize + Vector2.one * 14f)));
+            return steps;
+        }
+
         public override bool Tick(MinigameInput input)
+
         {
             time += input.DeltaTime;
             foreach (var wall in walls)

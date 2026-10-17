@@ -318,6 +318,7 @@ namespace Deprem.UI
         {
             SaveGame.Clear();
             Bag.BagLessonGate.Clear(); // M54: el feneri ve ilk yardım dersleri baştan
+            Minigames.MinigameHost.ClearTutorials(); // M61: minigame öğreticileri yeniden
             WishLines.ClearHistory();
             StartLoop(1);
         }
