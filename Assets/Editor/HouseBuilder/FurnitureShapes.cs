@@ -217,14 +217,15 @@ namespace Deprem.HouseBuilder
                     break;
                 }
 
-                case "portmanto": // intro: giriş kapısının yanındaki uzun dolap; iki kapak, kulplar, taç ve baza
+                case "portmanto": // intro: giriş kapısının yanındaki uzun dolap; taç ve baza. Play testi: sola, mutfağa
+                                  // baksın: iki kapak ve kulplar sol yüzde (X = 0), kameraya yan yüzü döner
                     s.Add(0f, 0f, 0f, w, 0.08f, d, PartTone.Dark);
-                    s.Add(0.02f, 0.08f, 0.02f, w - 0.02f, h - 0.1f, d);
+                    s.Add(0.02f, 0.08f, 0.01f, w, h - 0.1f, d - 0.01f);
                     s.Add(0f, h - 0.1f, 0f, w, h, d, PartTone.AccentC);
-                    s.Add(0.05f, 0.14f, 0f, w * 0.5f - 0.01f, h - 0.16f, 0.02f, PartTone.AccentA);
-                    s.Add(w * 0.5f + 0.01f, 0.14f, 0f, w - 0.05f, h - 0.16f, 0.02f, PartTone.AccentA);
-                    s.Add(w * 0.5f - 0.06f, h * 0.5f - 0.08f, -0.0f, w * 0.5f - 0.035f, h * 0.5f + 0.08f, 0.01f, PartTone.Metal);
-                    s.Add(w * 0.5f + 0.035f, h * 0.5f - 0.08f, -0.0f, w * 0.5f + 0.06f, h * 0.5f + 0.08f, 0.01f, PartTone.Metal);
+                    s.Add(0f, 0.14f, 0.05f, 0.02f, h - 0.16f, d * 0.5f - 0.01f, PartTone.AccentA);
+                    s.Add(0f, 0.14f, d * 0.5f + 0.01f, 0.02f, h - 0.16f, d - 0.05f, PartTone.AccentA);
+                    s.Add(-0.012f, h * 0.5f - 0.08f, d * 0.5f - 0.06f, 0f, h * 0.5f + 0.08f, d * 0.5f - 0.035f, PartTone.Metal);
+                    s.Add(-0.012f, h * 0.5f - 0.08f, d * 0.5f + 0.035f, 0f, h * 0.5f + 0.08f, d * 0.5f + 0.06f, PartTone.Metal);
                     break;
 
                 case "kapi": // kapalıyken kameraya yan döner; açılınca X yüzü (_yan) görünür. Kulplar serbest kenarda (Z = 0)

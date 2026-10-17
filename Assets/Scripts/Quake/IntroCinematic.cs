@@ -35,8 +35,24 @@ namespace Deprem.Quake
         [SerializeField] private float stairsViewFov = 1.6f;
         [Tooltip("Merdiven görüntüsünün yüksekliği: üst kattaki annenin yüksekliğinin oranı (annenin balonu bandın altında kalmasın)")]
         [SerializeField] private float stairsViewHeight = 0.7f;
-        [Tooltip("Açılış: kapı açılmadan önceki bekleme (sn)")]
+        [Tooltip("Açılış: kararma açıldıktan sonra oyuncu dışarıda yürümeye başlamadan önceki bekleme (sn)")]
         [SerializeField] private float enterDelay = 0.6f;
+
+        [Header("Dışarıdan giriş")]
+        [Tooltip("Oyuncunun başladığı yer: dış duvarın dış yüzünden ne kadar sağda, karanlıkta (m)")]
+        [SerializeField] private float outsideStartDistance = 2.6f;
+        [Tooltip("Kapıyı açmak için durduğu yer: dış duvarın dış yüzünden ne kadar sağda (m)")]
+        [SerializeField] private float doorstepDistance = 0.3f;
+        [Tooltip("İçeri girince kapının eşiğinden ne kadar solda durup kapıyı kapattığı (m)")]
+        [SerializeField] private float insideStopDistance = 1.1f;
+        [Tooltip("Dışarıdan girerken yürüme hızı (m/sn; yorgun yürüyüşle aynı olsun)")]
+        [SerializeField] private float enterWalkSpeed = 1.75f;
+        [Tooltip("Dış duvarın kalınlığı (m; HouseDims.Thickness)")]
+        [SerializeField] private float wallThickness = 0.25f;
+        [Tooltip("Kapının önünde, açmadan önce durma (sn)")]
+        [SerializeField] private float doorstepPause = 0.35f;
+        [Tooltip("Dışarıda, karanlıkta oyuncunun aydınlığı (0..1); kapıdan geçerken normale açılır")]
+        [SerializeField] private float outsideShade = 0.3f;
 
         [Header("Kararma")]
         [SerializeField] private float fadeInTime = 1.8f;
@@ -72,7 +88,8 @@ namespace Deprem.Quake
                 player.SpeedMultiplier = walkSpeedMultiplier;
             }
             yield return Run(Scene());
-            SetPlayerVisible(true); // "Geç" kapı açılmadan basıldıysa
+            if (player != null) player.PathPaused = false; // "Geç" kapının önünde basıldıysa: yatağa yatırılınca yol biter
+            SetShade(1f);
 
             // Bitiş (ya da "Geç"): karar, gece olur; aile odalarına geçer
             player?.SetScriptedInput(0f);
@@ -102,13 +119,20 @@ namespace Deprem.Quake
             var sibling = FamilyMember.Find(FamilyMemberId.Sibling);
             var door = EntranceDoor.Instance;
 
-            // Kurulum, ekran siyahken: oyuncu giriş kapısının eşiğinde (henüz dışarıda: görünmez), giriş kapısı
-            // kapalı, iç kapılar açık, aile akşam yerlerinde. Berke'nin play testi: kapı kapalı başlasın, oyuncu açıp girsin.
+            // Kurulum, ekran siyahken: oyuncu evin dışında, karanlıkta; giriş kapısı kapalı, iç kapılar açık, aile akşam
+            // yerlerinde. Play testi: kapı kapalı başlasın; oyuncu içeride belirmesin, dışarıdan yürüyüp kapıyı açıp girsin.
+            // Dışarıda zemin ve ev sınırı yok: oyuncu fizikten çıkmış, yol boyunca (FollowPath) yürür.
             var start = door != null ? door.Threshold : new Vector3(31.9f, 0f, 1f);
-            player.Teleport(start);
+            float outerWall = door != null ? door.transform.position.x + wallThickness : start.x + 0.7f;
+            var outside = new Vector3(outerWall + outsideStartDistance, start.y, start.z);
+            var doorstep = new Vector3(outerWall + doorstepDistance, start.y, start.z);
+            var inside = new Vector3(start.x - insideStopDistance, start.y, start.z);
+            player.Teleport(outside);
+            player.FollowPath(new[] { doorstep, inside }, enterWalkSpeed);
+            player.PathPaused = true;
             player.Face(-1);
+            SetShade(outsideShade);
             if (door != null) door.SetOpenImmediate(false);
-            SetPlayerVisible(false);
             var visibility = Deprem.Visual.RoomVisibility.Instance;
             if (visibility != null) visibility.Tick(start + Vector3.left * 1.5f, 1f); // mutfak açılışta görünsün
             foreach (var houseDoor in FindObjectsByType<HouseDoor>(FindObjectsSortMode.None))
@@ -131,13 +155,27 @@ namespace Deprem.Quake
 
             yield return Fade(1f, 0f, fadeInTime);
             yield return Wait(enterDelay);
+            // Karanlıkta kapıya yürür, önünde durup açar, içeri girer; kapı arkasından kapanır
+            player.PathPaused = false;
+            while (player.IsOnPath && player.transform.position.x > doorstep.x + 0.02f)
+            {
+                ShadeOutside(outerWall, start.x);
+                yield return null;
+            }
+            player.PathPaused = true;
+            yield return Wait(doorstepPause);
             if (door != null)
             {
                 Audio.Sfx.PlayAt("cabin.door", door.transform.position, 0.4f);
                 yield return door.Swing(true);
             }
-            SetPlayerVisible(true); // kapı açıldı: oyuncu dışarıdan içeri adım atar
-            yield return WalkTo(start.x - 1.1f);
+            player.PathPaused = false;
+            while (player.IsOnPath)
+            {
+                ShadeOutside(outerWall, start.x);
+                yield return null;
+            }
+            SetShade(1f);
             if (door != null) StartCoroutine(door.Swing(false));
 
             // Salon: baba
@@ -223,30 +261,21 @@ namespace Deprem.Quake
             for (float t = 0f; t < seconds; t += Time.deltaTime) yield return null;
         }
 
-        // Oyuncunun görselleri (açılışta kapının arkasında, dışarıda: görünmez). Kapalı olanlar (el feneri vb.) dokunulmaz.
-        private readonly List<Renderer> hiddenRenderers = new List<Renderer>();
-
-        private void SetPlayerVisible(bool visible)
+        /// <summary>Dışarıda koyu; kapıdan geçerken (dış duvar → eşik) mutfağın ışığına açılır</summary>
+        private void ShadeOutside(float outerWallX, float thresholdX)
         {
             if (player == null) return;
-            if (!visible)
-            {
-                hiddenRenderers.Clear();
-                foreach (var r in player.GetComponentsInChildren<Renderer>())
-                    if (r.enabled)
-                    {
-                        r.enabled = false;
-                        hiddenRenderers.Add(r);
-                    }
-                return;
-            }
-            foreach (var r in hiddenRenderers)
-                if (r != null) r.enabled = true;
-            hiddenRenderers.Clear();
+            float k = Mathf.InverseLerp(outerWallX + 0.4f, thresholdX, player.transform.position.x);
+            SetShade(Mathf.Lerp(outsideShade, 1f, k));
+        }
+
+        private void SetShade(float value)
+        {
+            var visual = player != null ? player.GetComponentInChildren<PlayerVisual>() : null;
+            if (visual != null) visual.Shade = value;
         }
 
         // ------------------------------------------------------------------ Karartma
-
 
         private IEnumerator Fade(float from, float to, float seconds)
         {

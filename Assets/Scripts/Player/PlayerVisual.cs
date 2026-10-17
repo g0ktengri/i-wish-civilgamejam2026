@@ -56,7 +56,27 @@ namespace Deprem.Player
         [SerializeField] private float moveThreshold = 0.2f;
 
         private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
+        private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
         private PlayerController player;
+        private float shade = 1f;
+
+        /// <summary>Gövdenin aydınlığı 0..1 (1 = normal). Intro: evin dışında, karanlıkta koyu yürür, içeri girince açılır</summary>
+        public float Shade
+        {
+            get => shade;
+            set
+            {
+                value = Mathf.Clamp01(value);
+                if (Mathf.Approximately(value, shade) || body == null) return;
+                shade = value;
+                block ??= new MaterialPropertyBlock();
+                body.GetPropertyBlock(block);
+                var baseColor = body.sharedMaterial != null && body.sharedMaterial.HasProperty(BaseColor)
+                    ? body.sharedMaterial.GetColor(BaseColor) : Color.white;
+                block.SetColor(BaseColor, new Color(baseColor.r * shade, baseColor.g * shade, baseColor.b * shade, baseColor.a));
+                body.SetPropertyBlock(block);
+            }
+        }
         private PlayerFlashlight flashlight;
         private MaterialPropertyBlock block;
         private float frameTime;
@@ -135,7 +155,8 @@ namespace Deprem.Player
             if (body == null || runFrames == null || runFrames.Length == 0) return;
 
             float speed = player.Body != null ? Mathf.Abs(player.Body.linearVelocity.x) : 0f;
-            bool moving = (speed > moveThreshold || player.IsOnPath) && !player.IsLying && !player.IsCrouching;
+            bool moving = (speed > moveThreshold || (player.IsOnPath && !player.PathPaused)) && !player.IsLying &&
+                          !player.IsCrouching;
             crouchTime = player.IsCrouching ? crouchTime + dt : 0f;
 
             // Fener yanarken ayaktaki her duruşta fenerli kareler (dururken / havadayken de): normal koşuya geçip

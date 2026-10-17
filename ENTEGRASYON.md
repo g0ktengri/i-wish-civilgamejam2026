@@ -52,6 +52,22 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Intro: dışarıdan giriş ve portmanto yönü (Mehmet)
+
+Dört test geçiyor; Play'de denenmedi.
+
+- **Oyuncu dışarıdan geliyor (`IntroCinematic`):** Berke'nin "eşikte görünmez başla" çözümünün yerine geçti, `SetPlayerVisible` kalktı.
+  - Oyuncu evin sağında, karanlıkta başlıyor ve koyu görünüyor.
+  - Kapının önüne yürüyüp duruyor, kapıyı açıyor, içeri giriyor. Kapıdan geçerken mutfağın ışığına açılıyor.
+  - Dışarıda ev sınırı ve zemin çarpışması yok; bu yüzden oyuncu yol boyunca (`FollowPath`) yürüyor.
+- **`PlayerController` ve `PlayerVisual`:**
+  - Yolda bekletme için yeni `PathPaused` (kapının önünde durur).
+  - Gövdeyi koyulaştırmak için yeni `PlayerVisual.Shade` (0..1).
+- **`HouseBuilder`:**
+  - Evin sağına karanlık bir zemin ve gece arka planı eklendi.
+  - Portmantonun kapakları artık sola, mutfağa bakıyor. Yine kameraya doğru devrilip kapıyı kapatıyor.
+  - Yeni önizlemeler: `Logs/house_preview_giris_dis.png`, `_giris_portmanto.png`.
+
 ### Intro: Berke'nin play testi düzeltmeleri (senin klasörlerinde izinle)
 
 Dört test geçiyor; Play'de son hali denenmedi.

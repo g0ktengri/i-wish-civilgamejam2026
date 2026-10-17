@@ -61,6 +61,8 @@ namespace Deprem.Player
         public bool IsGrounded { get; private set; }
         public bool IsCrouching { get; private set; }
         public bool IsOnPath => path != null;
+        /// <summary>Yolda yerinde bekletir; fizikten çıkmış kalır (intro: evin dışında, kapıyı açarken durur)</summary>
+        public bool PathPaused { get; set; }
         public bool IsLying { get; private set; }
         /// <summary>Üstüne bir şey düştü, öldü (Play testi 17: ölme animasyonu darbe anında başlar). Sahne yenilenince sıfırlanır</summary>
         public bool IsDead { get; private set; }
@@ -268,6 +270,7 @@ namespace Deprem.Player
             pathIndex = 0;
             pathSpeed = speed;
             pathDone = onDone;
+            PathPaused = false;
             body.linearVelocity = Vector3.zero;
             body.constraints = RigidbodyConstraints.FreezeRotation;
             body.isKinematic = true;
@@ -379,6 +382,11 @@ namespace Deprem.Player
 
         private void StepPath(float dt)
         {
+            if (PathPaused)
+            {
+                MoveInput = 0f;
+                return;
+            }
             var current = body.position;
             var target = path[pathIndex];
             var next = Vector3.MoveTowards(current, target, pathSpeed * dt);
@@ -400,6 +408,7 @@ namespace Deprem.Player
             var done = pathDone;
             path = null;
             pathDone = null;
+            PathPaused = false;
             MoveInput = 0f;
             body.isKinematic = false;
             body.position = end;
