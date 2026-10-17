@@ -1255,6 +1255,43 @@ Dört test geçiyor; Play'de denenmedi.
   - Adım 1 → 0,35, müzikler 0,55–0,6, ortam 0,4–0,45, minigame ve ruh sesleri biraz kısık.
   - `bubble.blip` 0,6 → 0,4, `ui.*` aynı.
 - **Cam sesi seyreldi:** çatlayan çerçeve, saat ve aynalarda %30 olasılıkla çalıyor; bütün dekorlarda iki cam sesi arası en az 1,2 sn.
+### Intro sinematiği: görev dağılımı
+
+Mehmet'in isteği (özet):
+- Oyun direkt yataktan başlamasın; siyahtan açılsın.
+- Mutfağın sağındaki ana giriş kapısından oyuncu eve girer (okuldan gelmiş).
+- Salonda babasının yanından geçer, laf atışırlar.
+- Merdivenin oradan annesi ve kardeşi seslenir; oyuncu "odama geçiyorum, yatacağım" der, odasına yürüyüp yatar. Sonra deprem akışı başlar.
+- Sinematik: oyuncu yönlendiremez, hiçbir tuş ipucu (merdivendeki "Yukarı çık" dahil) görünmez.
+- Deprem olunca kamera giriş kapısına yaklaşır, büyük bir dolap devrilip kapıyı kapatır (eve neden kapanıldığı anlaşılsın).
+
+**Ortak sözleşme (benden, ilk commit'te gelecek):** `Deprem.Quake.Cinematic`
+- `static bool IsPlaying`: intro ya da kapı yakın çekimi sürüyor.
+- `static bool CanSkip`: sadece intro geçilebilir.
+- `static void Skip()`.
+- `static event Action Changed`: başlayınca ve bitince.
+
+**Berke'ye düşen**
+
+- **M56. Sinematik arayüzü:** `Cinematic.IsPlaying` true iken:
+  - Üstte ve altta siyah sinema bantları (yumuşak girip çıksın).
+  - Bütün HUD gizli: hedef paneli, süre, çanta paneli, oklar, tuş ipuçları, ruh sayacı.
+  - Duraklatma (Esc) çalışabilir.
+- **M57. Introyu geç:** `Cinematic.CanSkip` true iken sağ altta küçük "Boşluk (basılı tut): Geç" ve dolan halka; basılı tutulunca `Cinematic.Skip()`. Metin `texts.csv`'de.
+- **M58. Ne zaman oynar:** intro 1. döngünün ilk denemesinde (`CurrentLoop == 1 && FailedAttempts == 0`) kendiliğinden oynar; "Yeni oyun"da yine oynar. Senden ek bir şey gerekmiyor. `LoopManager` 1. döngüde öncü faza geçerken bir sayaç işletiyorsa intro bitene kadar beklesin; bitişi `Cinematic.Changed` ile anlarsın.
+
+**Mehmet'in yapacakları**
+
+1. **Ev:** mutfağın sağ dış duvarında ana giriş kapısı. Yanında uzun bir dolap (portmanto); her ana depremde devrilip kapının önünü kapatır.
+2. **`IntroCinematic`:**
+   - Siyahtan açılış (kendi karartmam).
+   - Oyuncu kapıdan girer, senaryolu yürür. Kamera onu takip eder.
+   - Konuşmalar sırasıyla: baba salonda laf atar; anne ve kardeş üst kattan merdiven başında seslenir; oyuncu cevap verir.
+   - Oyuncu odasına girip yatar, kararır. Ardından gece olur ve aile odalarına geçer; mevcut öncü akışı başlar.
+   - Bu sırada `PlayerInteractor` ipucu göstermez (merdiven dahil).
+3. **Kapı yakın çekimi:** intro oynanan denemede ana depremin başında kamera kapıya kayıp yaklaşır, dolap devrilir, sonra yatağa döner.
+4. Konuşmalar `texts.csv`'de, benim balon bölümümde (`bubble.intro.*`).
+
 ### Play testi 30: Mehmet'in düzeltmeleri (bilgi için)
 
 - **Önce onu bırak:** biri takip ederken bekleyen başka bir üyenin odasına girilemiyor; oyuncu eşikte duruyor ve `bubble.drop_first.<takip eden>` diyor. Kontrol `FamilyDirector.GuardRooms`'ta. Oda bilgisini `RoomVisibility.RoomKeyAt(pos)` veriyor (yeni).
