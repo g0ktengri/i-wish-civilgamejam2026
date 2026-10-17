@@ -5,17 +5,17 @@ using UnityEngine.InputSystem;
 namespace Deprem.Spirit
 {
     // Ruhun yanındaki en yakın etkileşimi bulur: sabitlenmemiş eşya ya da ISpiritTarget (çanta vb.).
-    // M48 (M45'te ruh yukarı alınınca yerdeki çantaya ve eşyalara yetişemiyordu): uzaklık ruhun merkezinden değil,
-    // merkezden ayak hizasına uzanan dikey "erişim çizgisinden" ölçülür; ruh süzülürken yerdekilere de uzanır.
+    // M48: uzaklık tek bir noktadan değil, ruhun boyunca uzanan dikey "erişim çizgisinden" ölçülür; ruh yerdekilere
+    // de uzanır. M50'den beri ruhun kökü ayak hizasında: çizgi ayakların biraz altından başa kadar.
     // Eşyada F minigame'i açar (MinigameHost MinigameOpened'ı dinler, bitince Secure() ve
     // RaiseMinigameClosed çağırır). Diğer hedeflerde hedefin Interact() metodunu çağırır.
     public class SpiritInteractor : MonoBehaviour
     {
         [SerializeField] float range = 1.2f;
-        [Tooltip("M48: erişim çizgisi ruhun merkezinden bu kadar aşağı uzanır (m; SpiritController.floorClearance'tan biraz fazla)")]
-        [SerializeField] float reachDown = 1.3f;
-        [Tooltip("Erişim çizgisinin merkezden yukarı uzanması (m)")]
-        [SerializeField] float reachUp = 0.2f;
+        [Tooltip("M48/M50: erişim çizgisi ruhun kökünden (ayaklarından) bu kadar aşağı uzanır (m)")]
+        [SerializeField] float reachDown = 0.35f;
+        [Tooltip("Erişim çizgisinin kökten yukarı uzanması (m; yaklaşık baş hizası)")]
+        [SerializeField] float reachUp = 1.15f;
 
         // Ruha en yakın, menzildeki sabitlenmemiş eşya (yoksa null). Vurgu okur.
         public static SecurableItem Nearest { get; private set; }
@@ -96,7 +96,8 @@ namespace Deprem.Spirit
             return bestDistance;
         }
 
-        // X-Y düzleminde noktanın erişim çizgisine (ruhun x'inde, merkezin reachDown altından reachUp üstüne) uzaklığı
+        // X-Y düzleminde noktanın erişim çizgisine (ruhun x'inde, kökün reachDown altından reachUp üstüne) uzaklığı
+
         float ReachDistance(Vector3 position, Vector3 point)
         {
             float y = Mathf.Clamp(point.y, position.y - reachDown, position.y + reachUp);

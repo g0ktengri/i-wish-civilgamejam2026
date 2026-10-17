@@ -52,6 +52,22 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Play testi 27: M50–M52 (Berke)
+
+Play'de denenmedi; dört test geçiyor (senin 7e2f61e ile birlikte).
+
+- **M50, ruh yere iniyor:**
+  - Ruhun kökü artık oyuncu gibi ayak hizasında; çizim kökün 0,94 m üstünde (`SpiritController.centerHeight`). Senin `PlayerCameraTarget`'ın ruhu takip ederken artık oyuncudaki gibi ayak hizasını izliyor, zemin görünüyor.
+  - Ayaklar en alt zemine kadar iniyor (`floorClearance` 0,04 m), baş en üst tavanı geçmiyor; süzülme ayakların üstünde.
+  - M48'deki erişim çizgisi kalıyor; artık ayakların 0,35 m altından baş hizasına (1,15 m) kadar.
+  - Bedenden çıkış (M49) ve bedene dönüş (M31) yeni köke göre hizalandı.
+  - `RoomVisibility` ruhun konumunu artık oyuncudaki gibi ayak hizasından alıyor; oda bulma senin için daha tutarlı olmalı.
+- **M51, el feneri simgesi (`UiBuilder.PixelBagIcon`):** yatay sarı gövde (üstte açık, altta koyu ton), koyu kırmızı düğme, gövdeden geniş iki tonlu gri başlık, parlayan krem cam. Sanatçının `ikon_el_feneri.png`'si gelirse o kullanılır.
+- **M52, keşke ekranı siyahtan (`WishScreen`):**
+  - Ölüm siyahının üstüne keşke ekranının siyahı 0,5 sn'de geliyor (`blackTakeover`; ekran zaten kararmışsa fark edilmiyor).
+  - Yazılar ve çatlak tek bir grupta siyahın içinden 0,7 sn'de beliriyor (`contentFadeIn`).
+  - Kayıp aile üyesi odağı (daire) eskisi gibi.
+
 ### Play testi 26: M48, M49 (Berke)
 
 Play'de denenmedi; dört test geçiyor.

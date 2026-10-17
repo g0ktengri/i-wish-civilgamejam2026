@@ -20,7 +20,8 @@ namespace Deprem.Spirit
         [Tooltip("Boşsa aşağıdaki isimdeki işaret noktası aranır")]
         [SerializeField] Transform spawnPoint;
         [SerializeField] string spawnMarkerName = "Marker_PlayerBed";
-        [SerializeField] Vector3 spawnOffset = new Vector3(0f, 1.2f, 0f);
+        [Tooltip("M50: ruhun kökü (ayakları) işaret noktasından bu kadar uzakta; görsel kökün CenterHeight üstünde")]
+        [SerializeField] Vector3 spawnOffset = new Vector3(0f, 0.1f, 0f);
 
         [Header("Ruh")]
         [Tooltip("Boşsa geçici bir ruh (parlayan küre) kurulur")]
@@ -111,20 +112,24 @@ namespace Deprem.Spirit
 
             var player = GameObject.Find("Player");
             var start = spirit.transform.position;
-            var body = player ? player.transform.position + bodyCenterOffset : start;
+            var body = player ? player.transform.position + bodyCenterOffset : start + Vector3.up * spirit.CenterHeight;
             body.z = start.z;
             var visual = spirit.GetComponentInChildren<SpiritVisual>();
+            // M50: kök ayak hizasında; görselin merkezi bedene otursun diye kök bedenin CenterHeight × ölçek altında.
+            // Sınırlar (zemin) dönüşü bozmasın diye hareket kapalı.
+            spirit.enabled = false;
             for (float t = 0f; t < returnFlySeconds; t += Time.deltaTime)
             {
                 float k = t / returnFlySeconds;
-                spirit.transform.position = Vector3.Lerp(start, body, k * k); // ease-in
+                spirit.transform.position = Vector3.Lerp(start, body - Vector3.up * spirit.CenterHeight, k * k); // ease-in
                 yield return null;
             }
-            spirit.transform.position = body;
             for (float t = 0f; t < returnFadeSeconds; t += Time.deltaTime)
             {
                 float k = t / returnFadeSeconds;
-                spirit.transform.localScale = Vector3.one * Mathf.Lerp(1f, 0.25f, k);
+                float scale = Mathf.Lerp(1f, 0.25f, k);
+                spirit.transform.localScale = Vector3.one * scale;
+                spirit.transform.position = body - Vector3.up * spirit.CenterHeight * scale;
                 if (visual) visual.SetFade(1f - k);
                 yield return null;
             }
@@ -152,13 +157,17 @@ namespace Deprem.Spirit
         {
             var target = SpawnPosition();
             var player = GameObject.Find("Player");
-            var start = player ? player.transform.position + bodyCenterOffset : target - Vector3.up * 0.8f;
+            // Görselin merkezi bedenin ortasından başlasın (kök ayak hizasında, ölçek 0,55)
+            var start = player ? player.transform.position + bodyCenterOffset : target;
+            start -= Vector3.up * spirit.CenterHeight * 0.55f;
             start.z = target.z;
 
             // Çıkış boyunca hareket (sınırlar, süzülme) ve etkileşim kapalı
             spirit.Locked = true;
             spirit.enabled = false;
+            spirit.PlaceVisual();
             var interactor = spirit.GetComponent<SpiritInteractor>();
+
             interactor.enabled = false;
             var visual = spirit.GetComponentInChildren<SpiritVisual>();
             spirit.transform.position = start;
@@ -271,16 +280,19 @@ namespace Deprem.Spirit
                 body = sphere.transform;
             }
 
+            var controller = root.AddComponent<SpiritController>();
+            controller.SetVisual(body);
+
+            // Işık gövdenin hizasında (kök ayaklarda, M50)
             var glow = new GameObject("Glow").AddComponent<Light>();
             glow.transform.SetParent(root.transform, false);
+            glow.transform.localPosition = Vector3.up * controller.CenterHeight;
             glow.type = LightType.Point;
             glow.color = glowColor;
             glow.intensity = glowIntensity;
             glow.range = glowRange;
             glow.shadows = LightShadows.None;
 
-            var controller = root.AddComponent<SpiritController>();
-            controller.SetVisual(body);
             root.AddComponent<SpiritInteractor>();
             return controller;
         }

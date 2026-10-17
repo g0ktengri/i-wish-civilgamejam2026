@@ -22,10 +22,13 @@ namespace Deprem.Spirit
         [Header("Süzülme")]
         [SerializeField] float bobHeight = 0.12f;
         [SerializeField] float bobSpeed = 2.5f;
-        [Tooltip("M45 (hayalet çok aşağıdaydı, ayağı yere giriyordu): gövde merkezi en alt zeminin en az bu kadar üstünde, " +
-                 "en üst tavanın en az bu kadar altında (m). Görselin merkezi altından 0,94 m, tepesinden 1,06 m uzakta.")]
-        [SerializeField] float floorClearance = 1.15f;
-        [SerializeField] float ceilingClearance = 1.1f;
+        [Tooltip("M50 (ruh hâlâ çok yukarıdaydı, kamera zemini göstermiyordu): ruhun kökü oyuncu gibi ayak hizasında; " +
+                 "görsel kökün bu kadar üstünde (m, çizimin merkezi altından 0,94 m). Kamera kökü takip eder.")]
+        [SerializeField] float centerHeight = 0.94f;
+        [Tooltip("Ayaklar en alt zeminin en az bu kadar üstünde; baş en üst tavanın altında kalsın diye kök tavandan bu " +
+                 "kadar aşağıda (m)")]
+        [SerializeField] float floorClearance = 0.04f;
+        [SerializeField] float ceilingClearance = 2.05f;
 
         Transform visual;
         Vector2 velocity;
@@ -39,6 +42,16 @@ namespace Deprem.Spirit
         public bool Locked { get; set; }
 
         public void SetVisual(Transform target) => visual = target;
+
+        /// <summary>M50: görselin (gövdenin) kökten (ayaklardan) yüksekliği</summary>
+        public float CenterHeight => centerHeight;
+
+        /// <summary>Görseli süzülmeden gövde hizasına koy (hareket kapalıyken, çıkış animasyonunda)</summary>
+        public void PlaceVisual()
+        {
+            if (visual) visual.localPosition = Vector3.up * centerHeight;
+        }
+
 
         /// <summary>Anlık hız (SpiritVisual yönü ve animasyon hızı için)</summary>
         public Vector2 Velocity => velocity;
@@ -67,10 +80,11 @@ namespace Deprem.Spirit
             }
             transform.position = position;
 
-            if (visual) visual.localPosition = new Vector3(0f, Mathf.Sin(Time.time * bobSpeed) * bobHeight, 0f);
+            if (visual) visual.localPosition = new Vector3(0f, centerHeight + Mathf.Sin(Time.time * bobSpeed) * bobHeight, 0f);
         }
 
-        // M45: ruh yerde yürümez, süzülür: en alt zeminden ve en üst tavandan görselin boyu kadar uzak durur
+        // M45/M50: ruhun ayakları en alt zemine kadar iner (süzülme ayakların üstünde), başı en üst tavanı geçmez
+
         float ClampHover(float y, Player.HouseBounds houseBounds)
         {
             var floors = houseBounds.Floors;

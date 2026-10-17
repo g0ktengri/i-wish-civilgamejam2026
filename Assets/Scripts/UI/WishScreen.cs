@@ -29,6 +29,11 @@ namespace Deprem.UI
         [Header("Kayıp anı")]
         [Tooltip("Ekranın kararma süresi (gerçek sn)")]
         [SerializeField] float fadeToBlack = 1.6f;
+        [Tooltip("M52: ölüm siyahının üstüne keşke ekranının siyahı bu sürede gelir (ekran zaten kararmışsa fark edilmez)")]
+        [SerializeField] float blackTakeover = 0.5f;
+        [Tooltip("M52: yazılar ve çatlak siyahın içinden bu sürede belirir")]
+        [SerializeField] float contentFadeIn = 0.7f;
+
 
         [Header("Kayıp anı: aile üyesi")]
         [Tooltip("Dairenin dışının kararma süresi")]
@@ -103,6 +108,7 @@ namespace Deprem.UI
         [SerializeField] float typeVolume = 0.25f;
 
         CanvasGroup group;
+        CanvasGroup content;
         Image background;
         Image focus;
         Light focusLight;
@@ -187,9 +193,13 @@ namespace Deprem.UI
                 yield return FadeBackground(fadeToBlack);
                 EndFocus();
             }
-            else yield return Fade(group.alpha, 1f, fadeToBlack);
+            // M52 (Mehmet'in play testi 27): ölümde ekran zaten yavaşça siyaha iniyor; keşke ekranı onun üstüne kısa
+            // bir geçişle siyahı devralır, yazılar sonra siyahın içinden yumuşakça belirir
+            else yield return Fade(group.alpha, 1f, blackTakeover);
 
             SplitWish(wish, out string head, out string rest);
+            content.alpha = 0f;
+            StartCoroutine(FadeContent(contentFadeIn));
             yield return new WaitForSecondsRealtime(wishDelay);
             Sfx.Play("wish.note");
             if (!string.IsNullOrEmpty(head))
@@ -659,6 +669,17 @@ namespace Deprem.UI
             EndFocus();
         }
 
+        IEnumerator FadeContent(float duration)
+        {
+            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            {
+                float k = t / duration;
+                content.alpha = k * k * (3f - 2f * k);
+                yield return null;
+            }
+            content.alpha = 1f;
+        }
+
         IEnumerator Fade(float from, float to, float duration)
         {
             for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
@@ -707,26 +728,34 @@ namespace Deprem.UI
             focus.rectTransform.sizeDelta = Vector2.one * focusSize;
             focus.enabled = false;
 
+            // M52: yazılar ve çatlak tek bir grupta; siyahın üstünde yumuşakça belirir
+            var contentRoot = new GameObject("Content", typeof(RectTransform), typeof(CanvasGroup)).GetComponent<RectTransform>();
+            contentRoot.SetParent(canvas.transform, false);
+            UiBuilder.Stretch(contentRoot, Vector2.zero, Vector2.one);
+            content = contentRoot.GetComponent<CanvasGroup>();
+            content.interactable = false;
+            content.blocksRaycasts = false;
+
             // Tek başına KEŞKE ekranın ortasında; küçülünce cümlenin üstüne kayar
-            headText = UiBuilder.CreateText(canvas.transform, "WishHead", font, headFontSize, wishColor);
+            headText = UiBuilder.CreateText(contentRoot, "WishHead", font, headFontSize, wishColor);
             UiBuilder.Stretch(headText.rectTransform, new Vector2(0.04f, 0.46f), new Vector2(0.96f, 0.74f));
             headRect = headText.rectTransform;
             headHome = headRect.anchoredPosition;
 
-            wishText = UiBuilder.CreateText(canvas.transform, "Wish", font, wishFontSize, wishColor);
+            wishText = UiBuilder.CreateText(contentRoot, "Wish", font, wishFontSize, wishColor);
             UiBuilder.Stretch(wishText.rectTransform, new Vector2(0.06f, 0.5f), new Vector2(0.94f, 0.66f));
             wishRect = wishText.rectTransform;
             wishHome = wishRect.anchoredPosition;
 
             crackRoot = new GameObject("CrackRoot", typeof(RectTransform)).GetComponent<RectTransform>();
-            crackRoot.SetParent(canvas.transform, false);
+            crackRoot.SetParent(contentRoot, false);
             crackRoot.anchorMin = crackRoot.anchorMax = new Vector2(0.5f, 0.48f);
             crackRoot.sizeDelta = Vector2.zero;
 
-            infoText = UiBuilder.CreateText(canvas.transform, "Info", font, infoFontSize, infoColor);
+            infoText = UiBuilder.CreateText(contentRoot, "Info", font, infoFontSize, infoColor);
             UiBuilder.Stretch(infoText.rectTransform, new Vector2(0.2f, 0.28f), new Vector2(0.8f, 0.44f));
 
-            hintText = UiBuilder.CreateText(canvas.transform, "Hint", font, infoFontSize, infoColor);
+            hintText = UiBuilder.CreateText(contentRoot, "Hint", font, infoFontSize, infoColor);
             UiBuilder.Stretch(hintText.rectTransform, new Vector2(0.3f, 0.05f), new Vector2(0.7f, 0.12f));
         }
     }

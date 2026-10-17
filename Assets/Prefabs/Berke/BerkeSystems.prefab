@@ -97,6 +97,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.WishScreen
   fadeToBlack: 1.6
+  blackTakeover: 0.5
+  contentFadeIn: 0.7
   focusInSeconds: 0.7
   focusHold: 1.8
   focusDarkness: 1
@@ -150,7 +152,7 @@ MonoBehaviour:
   duration: 50
   spawnPoint: {fileID: 0}
   spawnMarkerName: Marker_PlayerBed
-  spawnOffset: {x: 0, y: 1.2, z: 0}
+  spawnOffset: {x: 0, y: 0.1, z: 0}
   spiritPrefab: {fileID: 0}
   spiritFrames:
   - {fileID: 2800000, guid: 7468175b27cf3bb4fbdb7ddb57e31f2d, type: 3}

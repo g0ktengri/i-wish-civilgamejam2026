@@ -369,13 +369,45 @@ namespace Deprem.UI
                     Fill(5, 6, 10, 7, Color.white);
                     break;
                 }
-                case Deprem.Core.BagItemId.Flashlight: // sarı gövde, gri kafa, parlayan cam (sağa bakar)
+                case Deprem.Core.BagItemId.Flashlight:
                 {
-                    Box(1, 5, 10, 10, new Color(0.96f, 0.76f, 0.22f));
-                    Fill(2, 9, 9, 9, new Color(1f, 0.9f, 0.5f));
-                    Fill(5, 10, 6, 11, outline); // düğme
-                    Box(10, 3, 14, 12, new Color(0.62f, 0.62f, 0.64f));
-                    Fill(14, 4, 14, 11, new Color(1f, 0.96f, 0.72f));
+                    // M51 (Mehmet'in play testi 27: simge okunmuyordu): yatay sarı gövde (üstte açık, altta koyu ton),
+                    // koyu kırmızı düğme, önde gövdeden geniş gri başlık (iki ton), parlayan krem cam (sağa bakar)
+                    string[] map =
+                    {
+                        "................",
+                        "................",
+                        "................",
+                        "..........ooooo.",
+                        "..........oHHWo.",
+                        ".oooooooooHhhLo.",
+                        ".oYYYYYYYoHhhLo.",
+                        ".oyyyBByyohhhLo.",
+                        ".oyyyyyyyohhhLo.",
+                        ".odddddddohhhLo.",
+                        ".ooooooooohhhLo.",
+                        "..........oggLo.",
+                        "..........ooooo.",
+                        "................",
+                        "................",
+                        "................",
+                    };
+                    var palette = new System.Collections.Generic.Dictionary<char, Color>
+                    {
+                        ['o'] = outline,
+                        ['Y'] = new Color(1f, 0.88f, 0.45f),
+                        ['y'] = new Color(0.95f, 0.7f, 0.18f),
+                        ['d'] = new Color(0.72f, 0.45f, 0.1f),
+                        ['B'] = new Color(0.55f, 0.15f, 0.12f),
+                        ['H'] = new Color(0.8f, 0.82f, 0.84f),
+                        ['h'] = new Color(0.56f, 0.58f, 0.62f),
+                        ['g'] = new Color(0.38f, 0.4f, 0.44f),
+                        ['L'] = new Color(1f, 0.95f, 0.66f),
+                        ['W'] = Color.white,
+                    };
+                    for (int row = 0; row < size; row++)
+                    for (int x = 0; x < size; x++)
+                        if (palette.TryGetValue(map[row][x], out var c)) texture.SetPixel(x, size - 1 - row, c);
                     break;
                 }
                 case Deprem.Core.BagItemId.Water: // mavi şişe, beyaz kapak, etiket
