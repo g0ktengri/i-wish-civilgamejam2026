@@ -44,7 +44,7 @@ namespace Deprem.Spirit
             }
 
             var keyboard = Keyboard.current;
-            if (keyboard == null || !keyboard.fKey.wasPressedThisFrame) return;
+            if (keyboard == null || !Player.KeyBindings.Pressed(Player.KeyBindings.Interact)) return;
 
             if (NearestTarget != null) NearestTarget.Interact();
             else if (Nearest) Interact(Nearest);

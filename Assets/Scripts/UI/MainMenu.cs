@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Deprem.UI
 {
-    // Ana menü: ilk açılışta içerik uyarısı, sonra Yeni oyun / Bölüm seç / Kontroller /
+    // Ana menü: ilk açılışta içerik uyarısı, sonra Devam et (M42, kayıttan) / Yeni oyun / Ayarlar / Kontroller /
     // Emeği geçenler / Dil / Çıkış. Menü açıkken oyun durur (timeScale 0).
     // Deneme başlatmak için sahne yeniden yüklendiğinde menü gizli kalır. Canvas'ı kendisi kurar.
     // Arayüz turu: arkada evin bulanık, soğuk mavi görüntüsü ve düşen toz (UiBackdrop); konturlu başlık, altında
@@ -17,7 +17,7 @@ namespace Deprem.UI
     // jam adı; her titremede arka plan da sarsılır (moloz, toz), her üçüncüsü daha güçlü.
     public class MainMenu : MonoBehaviour
     {
-        enum Screen { Hidden, Warning, Main, Chapters, Controls, Credits }
+        enum Screen { Hidden, Warning, Main, ConfirmNew, Controls, Credits }
 
         static bool warningShown;
 
@@ -56,6 +56,9 @@ namespace Deprem.UI
         MenuList menu;
         Screen screen = Screen.Hidden;
         bool musicPlaying;
+
+        // M38: ana menü ekranda mı (duraklatmanın zaman bekçisi için)
+        public static bool Visible { get; private set; }
         int tremorCycle = -1;
 
         void Awake() => BuildCanvas();
@@ -73,6 +76,7 @@ namespace Deprem.UI
             GameEvents.LoopStarted -= HandleLoopStarted;
             Texts.LanguageChanged -= Refresh;
             if (screen != Screen.Hidden) Time.timeScale = 1f;
+            Visible = false;
         }
 
         void Start()
@@ -116,6 +120,7 @@ namespace Deprem.UI
         void Show(Screen next)
         {
             screen = next;
+            Visible = next != Screen.Hidden;
             bool visible = next != Screen.Hidden;
             group.alpha = visible ? 1f : 0f;
             Time.timeScale = visible ? 0f : 1f;
@@ -134,21 +139,28 @@ namespace Deprem.UI
             }
 
             // Alt ekranlarda metin ortada, "Geri" altta
-            bool subScreen = next == Screen.Controls || next == Screen.Credits;
+            bool subScreen = next == Screen.Controls || next == Screen.Credits || next == Screen.ConfirmNew;
             UiBuilder.Stretch(items, new Vector2(0.33f, subScreen ? 0.06f : 0.08f),
-                new Vector2(0.67f, subScreen ? 0.2f : 0.64f));
+                new Vector2(0.67f, subScreen ? (next == Screen.ConfirmNew ? 0.26f : 0.2f) : 0.64f));
 
             menu.Clear();
             switch (next)
             {
                 case Screen.Main:
-                    menu.Add("menu.new_game", () => StartLoop(1));
+                    // M42: "Bölüm seç" yerine kayıtlı döngüden "Devam et" (kayıt yoksa gri, seçilemez); yeni oyun kaydı
+                    // silmeden önce sorar
+                    menu.Add("menu.continue", () => StartLoop(SaveGame.Loop), SaveGame.Loop);
                     menu.SetIcon(UiIcons.Play);
-                    menu.Add("menu.chapter_select", () => Show(Screen.Chapters));
-                    menu.SetIcon(UiIcons.Clock);
+                    menu.SetEnabled(SaveGame.Exists);
+                    menu.Add("menu.new_game", () =>
+                    {
+                        if (SaveGame.Exists) Show(Screen.ConfirmNew);
+                        else StartNewGame();
+                    });
+                    menu.SetIcon(UiIcons.House);
                     menu.Add("menu.settings", OpenSettings);
                     menu.SetIcon(UiIcons.Gear);
-                    menu.Add("menu.controls", () => Show(Screen.Controls));
+                    menu.Add("menu.controls", () => { if (SettingsMenu.Instance) SettingsMenu.Instance.OpenControls(Refresh); });
                     menu.SetIcon(UiIcons.Key);
                     menu.Add("menu.credits", () => Show(Screen.Credits));
                     menu.SetIcon(UiIcons.Heart);
@@ -157,14 +169,10 @@ namespace Deprem.UI
                     menu.Add("menu.quit", Quit);
                     menu.SetIcon(UiIcons.Door);
                     break;
-                case Screen.Chapters:
-                    for (int i = 1; i <= GameConstants.LoopCount; i++)
-                    {
-                        int loop = i;
-                        menu.Add("menu.chapter", () => StartLoop(loop), loop);
-                        menu.SetIcon(UiIcons.House);
-                    }
-                    menu.Add("menu.back", () => Show(Screen.Main));
+                case Screen.ConfirmNew:
+                    menu.Add("menu.new_confirm_yes", StartNewGame);
+                    menu.SetIcon(UiIcons.House);
+                    menu.Add("menu.cancel", () => Show(Screen.Main));
                     menu.SetIcon(UiIcons.Back);
                     break;
                 case Screen.Controls:
@@ -200,6 +208,10 @@ namespace Deprem.UI
                 case Screen.Main:
                     bodyText.text = string.Empty;
                     footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"));
+                    break;
+                case Screen.ConfirmNew:
+                    bodyText.text = Texts.Get("menu.new_confirm");
+                    footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
                     break;
                 default:
                     bodyText.text = string.Empty;
@@ -266,6 +278,12 @@ namespace Deprem.UI
             diamond.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1f, -1f);
             // Alt başlık yazısı ölçülünce yanlara itilir (Refresh)
             root.name = left ? "OrnamentLeft" : "OrnamentRight";
+        }
+
+        static void StartNewGame()
+        {
+            SaveGame.Clear();
+            StartLoop(1);
         }
 
         static void StartLoop(int loop)
@@ -374,6 +392,10 @@ namespace Deprem.UI
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetOnPlay() => warningShown = false;
+        static void ResetOnPlay()
+        {
+            warningShown = false;
+            Visible = false;
+        }
     }
 }

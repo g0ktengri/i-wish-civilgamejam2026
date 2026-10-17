@@ -31,6 +31,7 @@ namespace Deprem.UI
             {
                 var prompt = UiPrompt.Create(transform, "Prompt", font, fontSize);
                 prompt.Animate = false;
+                prompt.RemapKeys = false;
                 prompts.Add(prompt);
             }
             float total = 0f;

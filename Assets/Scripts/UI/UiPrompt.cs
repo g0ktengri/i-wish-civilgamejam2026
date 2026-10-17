@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Deprem.Player;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,6 +31,20 @@ namespace Deprem.UI
         public RectTransform Rect => (RectTransform)transform;
         /// <summary>Yeni ipucunda büyüme ve parlama (menü alt satırında kapalı)</summary>
         public bool Animate { get; set; } = true;
+        /// <summary>M40: varsayılan tuş harfleri güncel atamayla gösterilsin (menü alt satırında kapalı: menü tuşları sabit)</summary>
+        public bool RemapKeys { get; set; } = true;
+
+        void Awake() => KeyBindings.Changed += HandleBindingsChanged;
+        void OnDestroy() => KeyBindings.Changed -= HandleBindingsChanged;
+
+        // Tuş değişince aynı ipucu yeni tuşla yeniden kurulsun
+        void HandleBindingsChanged()
+        {
+            if (!RemapKeys || string.IsNullOrEmpty(shown)) return;
+            string text = shown;
+            shown = null;
+            Set(text);
+        }
 
         public static UiPrompt Create(Transform parent, string name, Font font, int fontSize = 0)
         {
@@ -72,6 +87,7 @@ namespace Deprem.UI
             if (!visible) return;
 
             Split(text, keys, out string body);
+            if (RemapKeys) Remap(keys);
             float x = padding;
             foreach (var key in keys)
             {
@@ -104,6 +120,30 @@ namespace Deprem.UI
                 pop = -1f;
                 transform.localScale = Vector3.one;
                 panel.color = Color.white;
+            }
+        }
+
+        // M40: texts.csv'deki varsayılan harfler → güncel tuşun adı. "W/A/S/D" ruh uçuşu; tek tek F etkileşim, S eğilme,
+        // Space zıplama, A / D yürüme. Diğerleri (Esc...) olduğu gibi.
+        static void Remap(List<string> keys)
+        {
+            bool fly = keys.Count == 4 && keys[0] == "W" && keys[1] == "A" && keys[2] == "S" && keys[3] == "D";
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (fly)
+                {
+                    var spirit = i == 0 ? KeyBindings.SpiritUp : i == 1 ? KeyBindings.SpiritLeft : i == 2 ? KeyBindings.SpiritDown : KeyBindings.SpiritRight;
+                    keys[i] = KeyBindings.Label(spirit);
+                    continue;
+                }
+                switch (keys[i])
+                {
+                    case "F": keys[i] = KeyBindings.Label(KeyBindings.Interact); break;
+                    case "S": keys[i] = KeyBindings.Label(KeyBindings.Crouch); break;
+                    case "Space": keys[i] = KeyBindings.Label(KeyBindings.Jump); break;
+                    case "A": keys[i] = KeyBindings.Label(KeyBindings.Left); break;
+                    case "D": keys[i] = KeyBindings.Label(KeyBindings.Right); break;
+                }
             }
         }
 

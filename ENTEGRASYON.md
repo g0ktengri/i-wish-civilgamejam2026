@@ -52,6 +52,31 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Play testi 23: M35, M38–M42 (Berke)
+
+Play'de denenmedi; dört test geçiyor.
+
+- **M39, ayar çubukları (`MenuList.AddSlider`):**
+  - A/D ve sol/sağ ok %10 azaltıp artırır; %0 ve %100'de durur.
+  - Çubuktaki bir kareye tıklamak değeri o kareye ayarlar (ilk kare zaten seçiliyse %0).
+  - ◂ ▸ oklarına tıklamak azaltıp artırır.
+- **M40, tuş değiştirme (Ayarlar > Kontroller; ana menüdeki "Kontroller" de bu ekranı açar):**
+  - Senin `KeyBindings`'in 9 eylemi listede. Satıra F ya da tık, sonra yeni tuşa bas; Esc vazgeçer. "Varsayılana dön" var.
+  - `SpiritController` (ruh hareketi) ve `SpiritInteractor` (F) artık `KeyBindings`'ten okuyor.
+  - Oyun ipuçlarındaki harfler güncel tuşla gösteriliyor (`UiPrompt.RemapKeys`): F → Interact, S → Crouch, Space → Jump, A/D → yürüme, "W/A/S/D" → ruh tuşları. Menünün alt satırındaki tuşlar sabit kaldı (menü tuşları değişmiyor).
+- **M41, emeği geçenler:** "Kod Claude Code ile…" satırı kalktı. Sanat satırı "(eklenecek)": **sanatçıların adlarını bekliyorum.**
+- **M42, kayıt (`Loop/SaveGame.cs`):**
+  - Her döngü başında döngü numarası ve keşke sayısı PlayerPrefs'e yazılıyor. Kazanınca (`GameWon`) kayıt siliniyor.
+  - Ana menüde "Bölüm seç" yerine "Devam et · Bölüm N"; kayıt yoksa soluk ve seçilemez. "Yeni oyun" kayıt varsa onay soruyor ve kaydı siliyor.
+  - Yetenekler döngü numarasından çıktığı için ayrıca kaydedilmiyor.
+  - **Core isteği:** keşke sayısı (`FailedAttempts`) kayıtta var ama geri yüklenemiyor, çünkü setter'ı `GameState`'te kapalı. Uygun görürsen Core'a küçük bir `GameState.RestoreProgress(int loop, int failedAttempts)` ekleyelim (çatlak büyüklüğü ve gizli +10 sn için).
+- **M35, oklar (`ObjectiveHud`):** okun merkezi güvenli alanın kenarında. Üst 80 px (hedef paneli, süre çubuğu), alt 110 px (ipucu), okun yarısı ve "it" payı da içeride. Sol alttaki çanta paneli (340 × 200) üstüne düşerse panelin üstüne kayıyor. Hepsi Inspector'da (`safeTop`, `safeBottom`, `safeBagZone`).
+- **M38, donma:** kendi tarafımda (menüler, keşke ekranı, ruh) kesin bir sebep bulamadım. İki önlem ekledim:
+  - **Bekçi:** duraklatma, ana menü ve ayarlar kapalıyken, oyun sürerken `timeScale` 0'da kalmışsa `PauseMenu` 1'e alıyor ve Console'a uyarı yazıyor.
+  - **Faz kaydı:** `LoopManager` her faz geçişini Console'a yazıyor (`[Loop] Faz: …, timeScale …`).
+  - Donma tekrar olursa Editor.log'daki son `[Loop] Faz` satırı hangi fazda kaldığını gösterir. Rescue değilse süre ve hareket o yüzden durmuştur.
+- **Önizleme:** `HudPreview` senin `OpenPanel`'e eklediğin parametreler yüzünden çalışmıyordu; artık varsayılan değerlerle çağırıyor. Yeni `Logs/hud_preview_settings_controls.png`.
+
 ### Arayüz turu: menüler temaya uyduruldu (Berke)
 
 - **Ana menü, duraklatma, ayarlar** yeni görünümde (Berke Play'de denedi):

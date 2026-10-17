@@ -64,6 +64,14 @@ namespace Deprem.UI
                 return;
             }
 
+            // M38 (donma: oyuncu ve süre birlikte durmuştu): oyun sürerken hiçbir menü açık değilse zaman durmuş olamaz.
+            // timeScale 0'da kalmışsa (bir menü geçişinde açık kalmış) düzelt ve Console'a yaz.
+            if (Time.timeScale == 0f && !MainMenu.Visible && !SettingsMenu.IsOpen && CanPause())
+            {
+                Debug.LogWarning($"[PauseMenu] Menü kapalıyken timeScale 0'da kalmış (faz {GameState.Phase}); 1'e alındı.");
+                Time.timeScale = 1f;
+            }
+
             if (UiInput.Back() && CanPause())
             {
                 Sfx.Play("ui.click");

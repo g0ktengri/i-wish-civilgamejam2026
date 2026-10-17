@@ -62,8 +62,21 @@ namespace Deprem.Loop
             Instance = this;
         }
 
-        void OnEnable() => GameEvents.LoopFailed += HandleLoopFailed;
-        void OnDisable() => GameEvents.LoopFailed -= HandleLoopFailed;
+        void OnEnable()
+        {
+            GameEvents.LoopFailed += HandleLoopFailed;
+            GameEvents.PhaseChanged += LogPhase;
+        }
+
+        void OnDisable()
+        {
+            GameEvents.LoopFailed -= HandleLoopFailed;
+            GameEvents.PhaseChanged -= LogPhase;
+        }
+
+        // M38 (donma): faz geçişleri Console'da / Editor.log'da görünsün; donma tekrar olursa hangi fazda kaldığı bilinsin
+        static void LogPhase(GamePhase phase) =>
+            Debug.Log($"[Loop] Faz: {phase} (döngü {GameState.CurrentLoop}, timeScale {Time.timeScale})");
 
         void OnDestroy()
         {

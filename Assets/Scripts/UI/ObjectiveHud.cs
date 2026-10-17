@@ -13,6 +13,7 @@ namespace Deprem.UI
     // - Hedef ekran dışındaysa ekran kenarına yapışık, kalın, konturlu pixel ok; nabız gibi atar ve hedefe doğru "iter".
     // - Üye başına renk ve baş harf rozeti (B / A / K), kurtarılınca söner. Uzaklık arttıkça ok biraz küçülür.
     // - Hedef ekrandaysa üyenin başının üstünde aşağı bakan küçük işaret (sallanır).
+    // M35: oklar güvenli alanda: üst ~80 px (hedef paneli, süre çubuğu), alt ~110 px (ipucu), sol alttaki çanta paneli dışı.
     public class ObjectiveHud : MonoBehaviour
     {
         static readonly (FamilyMemberId id, string marker, string member)[] Family =
@@ -36,6 +37,11 @@ namespace Deprem.UI
         [SerializeField] Color cabinColor = new Color(0.96f, 0.92f, 0.84f); // HUD krem
         [Tooltip("Okun ekran kenarından uzaklığı (referans pikseli)")]
         [SerializeField] float arrowMargin = 34f;
+        [Tooltip("M35 güvenli alan: oklar üstteki HUD şeridine (hedef paneli, süre çubuğu) ve alttakilere (ipucu) girmez (referans pikseli)")]
+        [SerializeField] float safeTop = 80f;
+        [SerializeField] float safeBottom = 110f;
+        [Tooltip("Sol alttaki çanta panelinin kapladığı alan (sol kenardan en, alt kenardan boy)")]
+        [SerializeField] Vector2 safeBagZone = new Vector2(340f, 200f);
         [SerializeField] float arrowSize = 44f;
         [Tooltip("Nabız: büyüme oranı ve hızı; it: hedefe doğru kayma (referans pikseli)")]
         [SerializeField] float pulseScale = 0.12f;
@@ -183,14 +189,24 @@ namespace Deprem.UI
                 return;
             }
 
-            Vector2 half = size * 0.5f - Vector2.one * arrowMargin;
+            // M35: ok ve rozeti HUD'ların üstüne düşmesin: okun merkezi güvenli alanın kenarında (üstte hedef paneli ve
+            // süre çubuğu, altta ipucu, sol altta çanta paneli dışında). Okun yarısı ve "it" payı da içeride kalır.
+            float inset = arrowSize * 0.5f + pushDistance;
+            float minX = -size.x * 0.5f + arrowMargin, maxX = size.x * 0.5f - arrowMargin;
+            float minY = -size.y * 0.5f + safeBottom + inset, maxY = size.y * 0.5f - safeTop - inset;
+            if (maxY < minY) minY = maxY = (minY + maxY) * 0.5f;
             Vector2 direction = new Vector2(viewport.x - 0.5f, viewport.y - 0.5f);
             if (direction.sqrMagnitude < 1e-6f) direction = Vector2.up;
-            // Yönü ekranın kenarındaki dikdörtgene kadar uzat
-            float scale = Mathf.Min(half.x / Mathf.Max(Mathf.Abs(direction.x), 1e-4f),
-                half.y / Mathf.Max(Mathf.Abs(direction.y), 1e-4f));
+            // Yönü güvenli dikdörtgenin kenarına kadar uzat (merkez dikdörtgenin içinde)
+            float scale = Mathf.Min(
+                direction.x > 0f ? maxX / direction.x : minX / Mathf.Min(direction.x, -1e-4f),
+                direction.y > 0f ? maxY / Mathf.Max(direction.y, 1e-4f) : minY / Mathf.Min(direction.y, -1e-4f));
             Vector2 unit = direction.normalized;
-            arrow.Root.anchoredPosition = direction * scale + unit * pushDistance * pulse; // hedefe doğru "it"
+            Vector2 edge = direction * Mathf.Max(0f, scale);
+            // Sol alttaki çanta panelinin üstüne düşüyorsa panelin üstüne kaydır
+            if (edge.x < -size.x * 0.5f + safeBagZone.x && edge.y < -size.y * 0.5f + safeBagZone.y + inset)
+                edge.y = -size.y * 0.5f + safeBagZone.y + inset;
+            arrow.Root.anchoredPosition = edge + unit * pushDistance * pulse; // hedefe doğru "it"
             arrow.Head.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(unit.y, unit.x) * Mathf.Rad2Deg);
             // Rozet okun arkasında (kenardan içeride)
             arrow.Badge.anchoredPosition = -unit * arrowSize * 0.85f;

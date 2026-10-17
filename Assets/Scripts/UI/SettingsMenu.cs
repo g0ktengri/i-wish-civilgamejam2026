@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Deprem.Audio;
 using Deprem.Localization;
+using Deprem.Player;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Deprem.UI
@@ -48,6 +50,8 @@ namespace Deprem.UI
     // W/S seç, A/D (ya da oklar) değiştir, F/Enter/tık değiştirir ya da açar, Esc geri.
     // Ses (genel, müzik, efekt), ekran sarsıntısı, tam ekran, çözünürlük, dil, kontroller. Canvas'ı kendisi kurar.
     // Arayüz turu 2: kabartma başlık, satır simgeleri, ses ve sarsıntı için 10 dilimli pixel çubuk, değerler sağda.
+    // M40: Kontroller = tuş değiştirme (Deprem.Player.KeyBindings): satıra F / tık, sonra yeni tuşa bas; Esc vazgeçer;
+    // "Varsayılana dön". Ana menüdeki "Kontroller" doğrudan bu ekranı açar (OpenControls).
     public class SettingsMenu : MonoBehaviour
     {
         [SerializeField] Font font;
@@ -76,7 +80,19 @@ namespace Deprem.UI
         MenuList menu;
         bool open;
         bool showingControls;
+        bool controlsOnly;
+        string listening;
+        int listenFrame;
         Action onClose;
+
+        // M40: değiştirilebilir eylemler (KeyBindings adları) ve satır metinleri
+        static readonly (string action, string key)[] Bindings =
+        {
+            ("Left", "controls.bind.left"), ("Right", "controls.bind.right"), ("Jump", "controls.bind.jump"),
+            ("Crouch", "controls.bind.crouch"), ("Interact", "controls.bind.interact"),
+            ("SpiritUp", "controls.bind.spirit_up"), ("SpiritDown", "controls.bind.spirit_down"),
+            ("SpiritLeft", "controls.bind.spirit_left"), ("SpiritRight", "controls.bind.spirit_right"),
+        };
         List<Vector2Int> resolutions;
 
         void Awake()
@@ -98,8 +114,19 @@ namespace Deprem.UI
             onClose = closed;
             open = true;
             showingControls = false;
+            controlsOnly = false;
+            listening = null;
             group.alpha = 1f;
             group.blocksRaycasts = true;
+            Rebuild();
+        }
+
+        /// <summary>M40: doğrudan tuş değiştirme ekranı (ana menüdeki "Kontroller"); Geri ayarları değil menüyü açar</summary>
+        public void OpenControls(Action closed)
+        {
+            Open(closed);
+            showingControls = true;
+            controlsOnly = true;
             Rebuild();
         }
 
@@ -118,18 +145,59 @@ namespace Deprem.UI
         void Update()
         {
             if (!open) return;
+            if (listening != null)
+            {
+                ListenForKey();
+                return;
+            }
             if (UiInput.Back())
             {
                 Audio.Sfx.Play("ui.back");
-                if (showingControls)
-                {
-                    showingControls = false;
-                    Rebuild();
-                }
-                else Close();
+                LeaveControls();
                 return;
             }
             menu.Tick();
+        }
+
+        void LeaveControls()
+        {
+            if (showingControls && !controlsOnly)
+            {
+                showingControls = false;
+                Rebuild();
+            }
+            else Close();
+        }
+
+        // M40: satır seçilince "Bir tuşa bas…"; basılan ilk tuş (Esc hariç) o eyleme atanır, Esc vazgeçer.
+        // Satırı açan tuş (F / Enter / tık) aynı karede sayılmaz.
+        void StartListening(string action)
+        {
+            listening = action;
+            listenFrame = Time.frameCount;
+            Refresh();
+        }
+
+        void ListenForKey()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard == null || Time.frameCount == listenFrame) return;
+            if (keyboard.escapeKey.wasPressedThisFrame)
+            {
+                Audio.Sfx.Play("ui.back");
+                listening = null;
+                Refresh();
+                return;
+            }
+            foreach (var control in keyboard.allKeys)
+            {
+                if (control == null || !control.wasPressedThisFrame || control.keyCode == Key.None) continue;
+                KeyBindings.Set(listening, control.keyCode);
+                Audio.Sfx.Play("ui.click");
+                listening = null;
+                Refresh();
+                return;
+            }
         }
 
         void Rebuild()
@@ -137,7 +205,21 @@ namespace Deprem.UI
             menu.Clear();
             if (showingControls)
             {
-                menu.Add("menu.back", () => { showingControls = false; Rebuild(); });
+                foreach (var (action, key) in Bindings)
+                {
+                    menu.AddValue(key, () => new object[]
+                    {
+                        listening == action ? Texts.Get("controls.press") : KeyBindings.Label(KeyBindings.Get(action)),
+                    }, () => StartListening(action));
+                    menu.SetIcon(action.StartsWith("Spirit") ? UiIcons.Heart : UiIcons.Key);
+                }
+                menu.Add("controls.reset", () =>
+                {
+                    KeyBindings.ResetDefaults();
+                    Refresh();
+                });
+                menu.SetIcon(UiIcons.Gear);
+                menu.Add("menu.back", LeaveControls);
                 menu.SetIcon(UiIcons.Back);
                 Refresh();
                 return;
@@ -160,15 +242,10 @@ namespace Deprem.UI
             Refresh();
         }
 
-        // %10 adımlarla; sağ / onay artırır (100'den sonra 0'a döner), sol azaltır
+        // %10 adımlarla (M39: %0 ve %100'de durur; çubuğa tıklamak o kareye ayarlar)
         void AddVolume(string key, Func<float> get, Action<float> set, Sprite icon)
         {
-            menu.AddSlider(key, get, direction =>
-            {
-                float value = get() + direction * 0.1f;
-                if (value > 1.001f) value = 0f;
-                set(Mathf.Clamp01(value));
-            });
+            menu.AddSlider(key, get, set);
             menu.SetIcon(icon);
         }
 
@@ -196,13 +273,14 @@ namespace Deprem.UI
         void Refresh()
         {
             if (!titleText) return;
-            titleText.Text = Texts.Get("menu.settings");
-            bodyText.text = showingControls ? Texts.Get("controls.body") : string.Empty;
-            bodyPanel.gameObject.SetActive(showingControls);
-            if (showingControls) footer.Set(Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
+            titleText.Text = Texts.Get(showingControls ? "menu.controls" : "menu.settings");
+            bodyText.text = string.Empty;
+            bodyPanel.gameObject.SetActive(false);
+            if (listening != null) footer.Set(Texts.Get("menu.hint.cancel"));
+            else if (showingControls) footer.Set(Texts.Get("menu.hint.select"), Texts.Get("controls.hint.change"), Texts.Get("menu.hint.back"));
             else footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.change"), Texts.Get("menu.hint.back"));
-            UiBuilder.Stretch(items, new Vector2(showingControls ? 0.33f : 0.22f, showingControls ? 0.06f : 0.1f),
-                new Vector2(showingControls ? 0.67f : 0.78f, showingControls ? 0.2f : 0.78f));
+            // Tuş listesi 11 satır: daha yukarıdan başlar
+            UiBuilder.Stretch(items, new Vector2(0.22f, 0.1f), new Vector2(0.78f, showingControls ? 0.82f : 0.78f));
             menu.Refresh();
         }
 

@@ -70,8 +70,8 @@ namespace Deprem.Spirit
             var keyboard = Keyboard.current;
             if (keyboard == null) return Vector2.zero;
             var input = new Vector2(
-                (keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f),
-                (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f));
+                (Player.KeyBindings.Held(Player.KeyBindings.SpiritRight) ? 1f : 0f) - (Player.KeyBindings.Held(Player.KeyBindings.SpiritLeft) ? 1f : 0f),
+                (Player.KeyBindings.Held(Player.KeyBindings.SpiritUp) ? 1f : 0f) - (Player.KeyBindings.Held(Player.KeyBindings.SpiritDown) ? 1f : 0f));
             return input.sqrMagnitude > 1f ? input.normalized : input;
         }
 

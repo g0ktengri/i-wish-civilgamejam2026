@@ -271,6 +271,9 @@ MonoBehaviour:
   lockShrinkPerHit: 0.8
   lockSpeedUpPerHit: 1.15
   lockDriftPerHit: 0.16
+  closeUpPixel: 2
+  closeUpMargin: 1.9
+  closeUpTint: {r: 0.62, g: 0.64, b: 0.72, a: 1}
 --- !u!114 &1714028265692669343
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,6 +358,9 @@ MonoBehaviour:
   siblingColor: {r: 0.58, g: 0.88, b: 0.6, a: 1}
   cabinColor: {r: 0.96, g: 0.92, b: 0.84, a: 1}
   arrowMargin: 34
+  safeTop: 80
+  safeBottom: 110
+  safeBagZone: {x: 340, y: 200}
   arrowSize: 44
   pulseScale: 0.12
   pulseSpeed: 5

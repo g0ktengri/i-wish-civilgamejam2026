@@ -35,7 +35,10 @@ namespace Deprem.UI
             public Image ArrowLeft;
             public Image ArrowRight;
             public Image[] Segments;
+            public bool Disabled;
+            public bool ShowValue;
             public Func<float> SliderValue;
+            public Action<float> SliderSet;
             public float Slide;
             public string Key;
             public object[] Args;
@@ -159,6 +162,37 @@ namespace Deprem.UI
             Layout(entry);
         }
 
+        /// <summary>M42: son eklenen satır seçilebilir mi (kapalıysa soluk, W/S ve fare atlar)</summary>
+        public void SetEnabled(bool enabled)
+        {
+            if (entries.Count == 0) return;
+            entries[entries.Count - 1].Disabled = !enabled;
+            if (entries[selected].Disabled) selected = Step(selected, 1);
+            Refresh();
+        }
+
+        // from'dan direction yönünde ilk seçilebilir satır (hepsi kapalıysa from)
+        int Step(int from, int direction)
+        {
+            for (int i = 1; i <= entries.Count; i++)
+            {
+                int index = ((from + direction * i) % entries.Count + entries.Count) % entries.Count;
+                if (!entries[index].Disabled) return index;
+            }
+            return from;
+        }
+
+        // M40: "Ad: değer" satırı, değer sağda (oksuz); onay / tık action'ı çağırır (tuş değiştirme)
+        public void AddValue(string key, Func<object[]> args, Action action)
+        {
+            Add(key, action);
+            var entry = entries[entries.Count - 1];
+            entry.ArgsProvider = args;
+            entry.ShowValue = true;
+            entry.Value.enabled = true;
+            Refresh();
+        }
+
         // args: her yenilemede metne verilecek değerler (null = düz metin); adjust(-1 / +1)
         public void AddAdjustable(string key, Func<object[]> args, Action<int> adjust)
         {
@@ -172,12 +206,15 @@ namespace Deprem.UI
             Refresh();
         }
 
-        // Ses düzeyi gibi 0-1 değerler: metindeki değer (yüzde) ve solunda 10 dilimli pixel çubuk
-        public void AddSlider(string key, Func<float> value, Action<int> adjust)
+        // Ses düzeyi gibi 0-1 değerler: metindeki değer (yüzde) ve solunda 10 dilimli pixel çubuk.
+        // M39: sol / sağ %10 azaltır / artırır, %0 ve %100'de durur (başa sarmaz); bir kareye tıklamak değeri o kareye ayarlar
+        public void AddSlider(string key, Func<float> value, Action<float> set)
         {
-            AddAdjustable(key, () => new object[] { Mathf.RoundToInt(value() * 100f) }, adjust);
+            AddAdjustable(key, () => new object[] { Mathf.RoundToInt(value() * 100f) },
+                direction => set(Mathf.Clamp01(Mathf.Round(value() * SliderSegments + direction) / SliderSegments)));
             var entry = entries[entries.Count - 1];
             entry.SliderValue = value;
+            entry.SliderSet = set;
             entry.Segments = new Image[SliderSegments];
             const float segment = 7f, gap = 2f;
             for (int i = 0; i < SliderSegments; i++)
@@ -231,6 +268,8 @@ namespace Deprem.UI
 
         public void Refresh()
         {
+            // Seçili satır kapalıysa (kapalı satırdan sonra eklenenler) ilk açık satıra geç
+            if (entries.Count > 0 && entries[selected].Disabled) selected = Step(selected, 1);
             var bar = new Color(highlight.r, highlight.g, highlight.b, 0.1f);
             var dim = new Color(normal.r * 0.35f, normal.g * 0.35f, normal.b * 0.35f, 1f);
             for (int i = 0; i < entries.Count; i++)
@@ -240,11 +279,11 @@ namespace Deprem.UI
                 string text = args != null && args.Length > 0
                     ? Texts.Format(entry.Key, args)
                     : Texts.Get(entry.Key);
-                bool on = i == selected;
-                var color = on ? highlight : normal;
+                bool on = i == selected && !entry.Disabled;
+                var color = on ? highlight : entry.Disabled ? new Color(normal.r, normal.g, normal.b, 0.35f) : normal;
 
                 // Ayarlanabilir: "Ad: < değer >" → ad solda, değer sağda (oklar pixel)
-                int colon = entry.Adjust != null ? text.IndexOf(':') : -1;
+                int colon = entry.Adjust != null || entry.ShowValue ? text.IndexOf(':') : -1;
                 if (colon >= 0)
                 {
                     entry.Label.text = text.Substring(0, colon);
@@ -295,8 +334,8 @@ namespace Deprem.UI
                 Layout(entry);
             }
 
-            if (UiInput.Up()) selected = (selected - 1 + entries.Count) % entries.Count;
-            if (UiInput.Down()) selected = (selected + 1) % entries.Count;
+            if (UiInput.Up()) selected = Step(selected, -1);
+            if (UiInput.Down()) selected = Step(selected, 1);
 
             var mouse = Mouse.current;
             int hovered = -1;
@@ -304,7 +343,7 @@ namespace Deprem.UI
             {
                 Vector2 position = mouse.position.ReadValue();
                 for (int i = 0; i < entries.Count; i++)
-                    if (RectTransformUtility.RectangleContainsScreenPoint(entries[i].Row, position, null))
+                    if (!entries[i].Disabled && RectTransformUtility.RectangleContainsScreenPoint(entries[i].Row, position, null))
                         hovered = i;
                 // Sadece fare gerçekten hareket edince seçimi değiştir, klavyeyle çakışmasın
                 if (hovered >= 0 && position != lastMouse) selected = hovered;
@@ -322,7 +361,9 @@ namespace Deprem.UI
             var current = entries[selected];
             if (current.Adjust != null)
             {
-                int direction = UiInput.Left() ? -1 : UiInput.Right() || clicked || UiInput.Confirm() ? 1 : 0;
+                int direction = UiInput.Left() ? -1 : UiInput.Right() || UiInput.Confirm() ? 1 : 0;
+                if (clicked && ClickAdjust(current, mouse.position.ReadValue())) direction = 0;
+                else if (clicked) direction = 1;
                 if (direction != 0)
                 {
                     Sfx.Play("ui.move");
@@ -336,6 +377,43 @@ namespace Deprem.UI
                 Sfx.Play("ui.click");
                 current.Action?.Invoke();
             }
+        }
+
+        // M39: satırın içindeki tıklama: ◂ azaltır, ▸ artırır, çubuğun bir karesi değeri o kareye ayarlar (ilk kare
+        // zaten seçiliyse %0). Bir şey yaptıysa true; satırın başka yerine tıklamak bir adım ileri (çağıran yapar).
+        bool ClickAdjust(Entry entry, Vector2 screen)
+        {
+            int direction = 0;
+            if (Hit(entry.ArrowLeft.rectTransform, screen, 8f)) direction = -1;
+            else if (Hit(entry.ArrowRight.rectTransform, screen, 8f)) direction = 1;
+            if (direction != 0)
+            {
+                Sfx.Play("ui.move");
+                entry.Adjust(direction);
+                Refresh();
+                return true;
+            }
+            if (entry.Segments == null) return false;
+            for (int i = 0; i < entry.Segments.Length; i++)
+            {
+                if (!Hit(entry.Segments[i].rectTransform, screen, 4f)) continue;
+                float value = (i + 1f) / SliderSegments;
+                if (i == 0 && Mathf.Approximately(entry.SliderValue(), value)) value = 0f;
+                Sfx.Play("ui.move");
+                entry.SliderSet(value);
+                Refresh();
+                return true;
+            }
+            return false;
+        }
+
+        // Ekran noktası dikdörtgenin içinde mi (pad: dört yana referans pikseli pay; satır boyunca dikeyde de geniş)
+        bool Hit(RectTransform rect, Vector2 screen, float pad)
+        {
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, screen, null, out var local)) return false;
+            var r = rect.rect;
+            float vertical = Mathf.Max(pad, (rowHeight - r.height) * 0.5f);
+            return local.x >= r.xMin - pad && local.x <= r.xMax + pad && local.y >= r.yMin - vertical && local.y <= r.yMax + vertical;
         }
 
         // 6 x 9, sağa bakan küçük pixel ok (beyaz, renk Image.color'dan), koyu kontur

@@ -92,8 +92,16 @@ namespace Deprem.Loop.EditorTools
                     Call(host, "Awake");
                     var variant = typeof(Deprem.Minigames.MinigameHost).GetMethod("VariantFor", Flags).Invoke(host, new object[] { id });
                     string title = Deprem.Localization.Texts.Format("minigame.title", Deprem.Localization.Texts.Get($"item.{id}"));
-                    typeof(Deprem.Minigames.MinigameHost).GetMethod("OpenPanel", Flags).Invoke(host,
-                        new object[] { type, null, variant, title, (System.Action<bool>)(_ => { }) });
+                    // M37'den sonra OpenPanel'e isteğe bağlı parametreler eklendi: kalanlar varsayılan değerleriyle
+                    var openPanel = typeof(Deprem.Minigames.MinigameHost).GetMethod("OpenPanel", Flags);
+                    var parameters = openPanel.GetParameters();
+                    var args = new object[parameters.Length];
+                    var given = new object[] { type, null, variant, title, (System.Action<bool>)(_ => { }) };
+                    for (int i = 0; i < args.Length; i++)
+                        args[i] = i < given.Length ? given[i]
+                            : parameters[i].HasDefaultValue ? parameters[i].DefaultValue
+                            : parameters[i].ParameterType.IsValueType ? System.Activator.CreateInstance(parameters[i].ParameterType) : null;
+                    openPanel.Invoke(host, args);
                     // Önizlemede ana kamera yok: bulanık oda görüntüsünü ev önizlemesinden taklit et
                     const string house = "Logs/house_preview_game.png";
                     if (File.Exists(house))
@@ -143,6 +151,14 @@ namespace Deprem.Loop.EditorTools
                 var settings = root.AddComponent<SettingsMenu>();
                 Call(settings, "Awake");
                 settings.Open(null);
+            });
+
+            // M40: tuş değiştirme ekranı
+            RenderScene("settings_controls", root =>
+            {
+                var settings = root.AddComponent<SettingsMenu>();
+                Call(settings, "Awake");
+                settings.OpenControls(null);
             });
 
             // Keşke çatlağı: ilk keşke (küçük) ve beşinci keşke (en büyük)

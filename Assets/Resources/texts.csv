@@ -107,13 +107,11 @@ credits.body,"Civil Game Jam 2026
 Yazılım: Mehmet, Berke
 Sanat: (eklenecek)
 
-Kod Claude Code ile yazıldı; bütün görseller el çizimi.
 Unity 6.3 LTS · URP · Cinemachine","Civil Game Jam 2026
 
 Programming: Mehmet, Berke
 Art: (to be added)
 
-Code written with Claude Code; all art is hand-drawn.
 Unity 6.3 LTS · URP · Cinemachine"
 menu.new_game,Yeni oyun,New game
 menu.chapter_select,Bölüm seç,Chapter select
@@ -131,6 +129,23 @@ menu.hint.back,Esc: Geri,Esc: Back
 menu.hint.change,A/D: Değiştir,A/D: Change
 menu.subtitle,Bir deprem hikâyesi,An earthquake story
 menu.jam,Civil Game Jam 2026,Civil Game Jam 2026
+menu.hint.cancel,Esc: Vazgeç,Esc: Cancel
+controls.hint.change,F: Tuşu değiştir,F: Change key
+controls.press,Bir tuşa bas…,Press a key…
+controls.reset,Varsayılana dön,Reset to defaults
+controls.bind.left,Sola yürü: {0},Walk left: {0}
+controls.bind.right,Sağa yürü: {0},Walk right: {0}
+controls.bind.jump,Zıpla: {0},Jump: {0}
+controls.bind.crouch,"Eğil, çök-kapan: {0}","Crouch, drop and cover: {0}"
+controls.bind.interact,Etkileşim: {0},Interact: {0}
+controls.bind.spirit_up,Ruh yukarı: {0},Spirit up: {0}
+controls.bind.spirit_down,Ruh aşağı: {0},Spirit down: {0}
+controls.bind.spirit_left,Ruh sola: {0},Spirit left: {0}
+controls.bind.spirit_right,Ruh sağa: {0},Spirit right: {0}
+menu.continue,Devam et · Bölüm {0},Continue · Chapter {0}
+menu.new_confirm,Kayıtlı ilerlemen silinecek. Baştan başlamak istiyor musun?,Your saved progress will be deleted. Do you want to start over?
+menu.new_confirm_yes,"Evet, baştan başla","Yes, start over"
+menu.cancel,Vazgeç,Cancel
 settings.master,Genel ses: < %{0} >,Master volume: < {0}% >
 settings.music,Müzik: < %{0} >,Music: < {0}% >
 settings.effects,Efektler: < %{0} >,Effects: < {0}% >
