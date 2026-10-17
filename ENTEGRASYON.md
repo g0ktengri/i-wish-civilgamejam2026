@@ -39,6 +39,8 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - Kilitleme: yeşil alan ve ibre hızı birikimliydi. Her isabette daralıp hızlanıyor, ıskalayınca isabet düşse de geri gelmiyordu; birkaç denemede imkansızlaşıyordu. Artık ikisi de o anki isabet sayısından hesaplanıyor (`LockMinigame.ApplyDifficulty`). Ayarlar yumuşadı: 0,75 tur/sn, alan 0,24, isabet başına ×0,8 alan / ×1,15 hız.
 - Çömelme: `crouchedScale` 0,95 × 0,72 (son karede ~0,92 m). Eni neredeyse tam kalıyor, cüce görünümü bundandı.
 
+- **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
+
 ### Play testi 11: M21–M23 (Berke)
 
 - **M21. Keşke girişi:** Önce tek başına, büyük (76 px) "KEŞKE..." daktilo gibi gelir: her harf büyükten oturur, hafif sarsılır. 1,2 sn titreyerek bekler, sonra küçülüp (×0,6) yukarı kayar. Cümlenin devamı ("...KİTAPLIĞI SABİTLESEYDİM") ayrıca, harf harf sarsılarak yazılır. Ön ek `texts.csv`'deki `wish.prefix`'ten (TR "Keşke", EN "I wish"); cümle onunla başlamıyorsa tek parça yazılır. Bütün süreler `WishScreen`'de `[SerializeField]`.
