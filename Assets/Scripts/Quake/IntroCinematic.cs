@@ -53,6 +53,8 @@ namespace Deprem.Quake
         [SerializeField] private float doorstepPause = 0.35f;
         [Tooltip("Dışarıda, karanlıkta oyuncunun aydınlığı (0..1); kapıdan geçerken normale açılır")]
         [SerializeField] private float outsideShade = 0.3f;
+        [Tooltip("Oyuncu dışarıdayken kameranın baktığı yer: kapı eşiğinin ne kadar solu (m); dışarısı kapalı, mutfak görünür")]
+        [SerializeField] private float kitchenViewOffset = 1.5f;
 
         [Header("Kararma")]
         [SerializeField] private float fadeInTime = 1.8f;
@@ -66,6 +68,7 @@ namespace Deprem.Quake
         public bool PlayedThisAttempt { get; private set; }
 
         private bool skipped;
+        private Transform kitchenView;
         private PlayerController player;
         private Image fade;
 
@@ -90,6 +93,7 @@ namespace Deprem.Quake
             yield return Run(Scene());
             if (player != null) player.PathPaused = false; // "Geç" kapının önünde basıldıysa: yatağa yatırılınca yol biter
             SetShade(1f);
+            if (kitchenView != null) Destroy(kitchenView.gameObject);
 
             // Bitiş (ya da "Geç"): karar, gece olur; aile odalarına geçer
             player?.SetScriptedInput(0f);
@@ -132,6 +136,10 @@ namespace Deprem.Quake
             player.PathPaused = true;
             player.Face(-1);
             SetShade(outsideShade);
+            // Kamera dışarıdaki oyuncuyu değil mutfağı gösterir (dışarısı kapalı); oyuncu kapıdan girince ona döner
+            kitchenView = new GameObject("IntroKitchenView").transform;
+            kitchenView.position = start + Vector3.left * kitchenViewOffset;
+            PlayerCameraTarget.Focus(kitchenView, 1f);
             if (door != null) door.SetOpenImmediate(false);
             var visibility = Deprem.Visual.RoomVisibility.Instance;
             if (visibility != null) visibility.Tick(start + Vector3.left * 1.5f, 1f); // mutfak açılışta görünsün
@@ -176,6 +184,8 @@ namespace Deprem.Quake
                 yield return null;
             }
             SetShade(1f);
+            PlayerCameraTarget.Release();
+            Destroy(kitchenView.gameObject);
             if (door != null) StartCoroutine(door.Swing(false));
 
             // Salon: baba

@@ -9,14 +9,15 @@ namespace Deprem.HouseBuilder
     internal static class HousePreview
     {
         /// <param name="ambient">Ortam ışığı; null = sahnenin kendi değeri (oyundaki görünüm)</param>
-        public static void Render(string path, float? ambient, Vector3 cameraPosition, int width, int height)
+        /// <param name="fov">Dikey görüş açısı; 25 = oyun kamerası</param>
+        public static void Render(string path, float? ambient, Vector3 cameraPosition, int width, int height, float fov = 25f)
         {
             var previousAmbient = RenderSettings.ambientLight;
             if (ambient.HasValue) RenderSettings.ambientLight = new Color(ambient.Value, ambient.Value, ambient.Value * 1.1f);
 
             var go = new GameObject("PreviewCamera");
             var cam = go.AddComponent<Camera>();
-            cam.fieldOfView = 25f;
+            cam.fieldOfView = fov;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.05f, 0.05f, 0.07f);
             cam.transform.position = cameraPosition;

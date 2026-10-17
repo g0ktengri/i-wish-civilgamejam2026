@@ -63,8 +63,12 @@ Dört test geçiyor; Play'de denenmedi.
 - **`PlayerController` ve `PlayerVisual`:**
   - Yolda bekletme için yeni `PathPaused` (kapının önünde durur).
   - Gövdeyi koyulaştırmak için yeni `PlayerVisual.Shade` (0..1).
+- **İkinci play testi:**
+  - Dışarısı simsiyah bir blokla (`OutsideCover`) tamamen kapalı; oyuncu dışarıdayken görünmüyor.
+  - Oyuncu dışarıdayken kamera mutfağa bakıyor, oyuncu içeri girince ona dönüyor.
+  - Kapı yakın çekimi aşağı indi (`entranceFocusOffset`, görüş açısı 0,8); dolabın devrilişi tam görünüyor. Önizlemeler: `Logs/house_preview_giris_yakin*.png`.
 - **`HouseBuilder`:**
-  - Evin sağına karanlık bir zemin ve gece arka planı eklendi.
+  - Evin sağındaki ilk denemenin karanlık zemini ve gece arka planı kaldırıldı; yerini simsiyah blok aldı.
   - Portmantonun kapakları artık sola, mutfağa bakıyor. Yine kameraya doğru devrilip kapıyı kapatıyor.
   - Yeni önizlemeler: `Logs/house_preview_giris_dis.png`, `_giris_portmanto.png`.
 

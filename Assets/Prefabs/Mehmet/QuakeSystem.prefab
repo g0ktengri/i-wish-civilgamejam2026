@@ -88,7 +88,8 @@ MonoBehaviour:
   deathLinger: 2.6
   entranceCameraTravel: 1.6
   entranceHold: 1.2
-  entranceCloseUpFov: 0.9
+  entranceCloseUpFov: 0.8
+  entranceFocusOffset: {x: -1.75, y: -0.25, z: 0}
   fatalAftershockLead: 1.2
   shelfLandOffset: {x: -0.15, y: 0.24, z: -0.05}
   shelfDropTime: 0.45

@@ -86,16 +86,30 @@ namespace Deprem.HouseBuilder
                 HousePreview.Render("Logs/house_preview_giris_kapali.png", null, entranceCamera, 1920, 1080);
                 entranceBlocker.transform.localRotation = Quaternion.identity;
             }
-            // Intro açılışı: oyuncu evin dışında, karanlıkta, kapıya yürürken
+            // Ana deprem: kapı yakın çekimi (QuakeDirector.entranceFocusOffset, görüş açısı 25 × 0,8), dolap ayakta ve devrilmiş
+            if (entranceBlocker != null && entranceDoor != null)
+            {
+                var closeUp = entranceDoor.Threshold + new Vector3(-1.75f, -0.25f, 0f) + new Vector3(0f, 1.6f, -11.5f);
+                HousePreview.Render("Logs/house_preview_giris_yakin.png", null, closeUp, 1920, 1080, 20f);
+                entranceBlocker.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+                HousePreview.Render("Logs/house_preview_giris_yakin_devrik.png", null, closeUp, 1920, 1080, 20f);
+                entranceBlocker.transform.localRotation = Quaternion.identity;
+            }
+            // Intro açılışı: kamera mutfakta; oyuncu dışarıdayken görünmez, kapıdan girerken belirir
             var introPlayer = Object.FindFirstObjectByType<Deprem.Player.PlayerController>();
             if (introPlayer != null && entranceDoor != null)
             {
                 var saved = introPlayer.transform.position;
                 var visual = introPlayer.GetComponentInChildren<Deprem.Player.PlayerVisual>();
+                var introCamera = entranceDoor.Threshold + new Vector3(-1.5f, 1.6f, -11.5f);
                 introPlayer.transform.position = new Vector3(entranceDoor.transform.position.x + HouseDims.Thickness + 1.2f,
                     mutfak.FloorY, HouseDims.PlayerPlaneZ);
                 if (visual != null) visual.Shade = 0.3f;
-                HousePreview.Render("Logs/house_preview_giris_dis.png", null, new Vector3(mutfak.X1 - 0.3f, 1.6f, -9f), 1920, 1080);
+                HousePreview.Render("Logs/house_preview_giris_dis.png", null, introCamera, 1920, 1080);
+                introPlayer.transform.position = new Vector3(entranceDoor.transform.position.x - 0.1f, mutfak.FloorY,
+                    HouseDims.PlayerPlaneZ);
+                if (visual != null) visual.Shade = 0.7f;
+                HousePreview.Render("Logs/house_preview_giris_dis_esik.png", null, introCamera, 1920, 1080);
                 if (visual != null) visual.Shade = 1f;
                 introPlayer.transform.position = saved;
                 // Portmanto ayakta, kapı kapalı, oyuncunun durduğu yerden: kapakları sola bakıyor mu
@@ -749,15 +763,17 @@ namespace Deprem.HouseBuilder
             AddDecorBox(hinge, "Knob", new Vector3(wall - 0.12f, y + 0.95f, z0 + 0.08f), new Vector3(wall - 0.075f, y + 1.01f, z0 + 0.16f), knobMat);
             root.gameObject.AddComponent<Deprem.Quake.EntranceDoor>().Configure(hinge);
 
-            // Dışarısı: evin sağında karanlık zemin ve gece arka planı. Intro'da oyuncu buradan yürüyüp gelir
-            // (Play testi: içeride belirmesin). Çarpışmasız; oyuncu dışarıda fizikten çıkmış yürür.
+            // Dışarısı tamamen kapalı: evin sağında simsiyah bir blok (Play testi: dışarısı görünmesin). Intro'da
+            // oyuncu bunun içinden yürüyüp gelir; dışarıdayken görünmez, kapıdan girerken belirir. Çarpışmasız;
+            // oyuncu dışarıda fizikten çıkmış yürür.
             float outer = kitchen.X1 + HouseDims.Thickness * 0.5f;
-            var groundMat = GetMaterial("giris_dis_zemin", null, new Color(0.05f, 0.05f, 0.065f));
-            var nightMat = GetMaterial("giris_dis_gece", null, new Color(0.035f, 0.04f, 0.06f));
-            AddDecorBox(root, "OutsideGround", new Vector3(outer, y - HouseDims.Thickness, 0f),
-                new Vector3(outer + 8f, y, kitchen.Depth), groundMat);
-            AddDecorBox(root, "OutsideNight", new Vector3(outer, y - HouseDims.Thickness, kitchen.Depth),
-                new Vector3(outer + 8f, y + 8f, kitchen.Depth + 0.1f), nightMat);
+            var coverMat = GetMaterial("giris_dis_ortu", null, Color.black);
+            coverMat.SetFloat("_Smoothness", 0f);
+            coverMat.SetFloat("_EnvironmentReflections", 0f);
+            coverMat.SetFloat("_SpecularHighlights", 0f);
+            var cover = AddDecorBox(root, "OutsideCover", new Vector3(outer + 0.002f, y - 2f, -3f),
+                new Vector3(outer + 14f, y + 10f, kitchen.Depth + 0.5f), coverMat);
+            cover.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
             // Portmanto: kapının sol önünde, devrilince karakter düzlemini ve kapının önünü kapatır. Play testi:
             // kapakları sola, mutfağa baksın (derinlik X'te, genişlik Z'de)
