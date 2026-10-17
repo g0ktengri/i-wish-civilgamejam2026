@@ -261,3 +261,5 @@ Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin
 5. Toz efektleri yavan: daha yoğun toz, iri toz topakları, yere çarpıp seken sıva parçaları, ana depremin ilk vuruşunda toz patlaması.
 6. Merdiven çirkin: yan kiriş, basamak altı, korkuluk ve küpeşte.
 7. Mobilyalar: parçalara detay renkleri (kulp, yastık, kitap, ekran); yerleşim bir kez daha kontrol edilir.
+
+**Mehmet tarafı: 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

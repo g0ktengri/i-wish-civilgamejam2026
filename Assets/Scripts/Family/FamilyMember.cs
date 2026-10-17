@@ -47,6 +47,8 @@ namespace Deprem.Family
 
         [Header("Görünüş")]
         [SerializeField] private Transform visual;
+        [Tooltip("Yatarken gövdenin yarı uzunluğu (m): ezilince gövde eşyanın ortasına gelsin")]
+        [SerializeField] private float lyingHalfLength = 0.8f;
 
         public FamilyMemberId Id => id;
         public FamilyState State { get; private set; } = FamilyState.Waiting;
@@ -120,11 +122,29 @@ namespace Deprem.Family
                     if (State == FamilyState.Waiting) State = FamilyState.Ducking;
                     break;
                 case GamePhase.Rescue:
-                    if (HitBy != ItemId.None) State = FamilyState.Hit;
+                    if (HitBy != ItemId.None)
+                    {
+                        State = FamilyState.Hit;
+                        PinUnder(HitBy);
+                    }
                     else if (State == FamilyState.Ducking || State == FamilyState.Waiting)
                         State = injuredAfterQuake ? FamilyState.Injured : FamilyState.Waiting;
                     break;
             }
+        }
+
+        /// <summary>
+        /// Play testi 4: devrilen eşya üyenin üstüne düşmüş gibi görünmüyordu. Elektrik kesilince (kurtarma fazı)
+        /// ezilen üye devrilmiş eşyanın altında yatar: yatan görsel pivotun solunda uzandığı için gövde ortası eşyanın ortasına.
+        /// </summary>
+        private void PinUnder(ItemId item)
+        {
+            var securable = SecurableItem.Find(item);
+            if (securable == null) return;
+            var collider = securable.GetComponent<Collider>();
+            float centerX = collider != null ? collider.bounds.center.x : securable.transform.position.x;
+            var p = transform.position;
+            transform.position = new Vector3(centerX + lyingHalfLength, p.y, p.z);
         }
 
         public void OnItemToppled(ItemId item)

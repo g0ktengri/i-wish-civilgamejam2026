@@ -112,9 +112,12 @@ MonoBehaviour:
     size: {x: 8.6, y: 3.5}
   dustMaterial: {fileID: 2100000, guid: 9fba79fa06ac6734687aabd9422fb93f, type: 2}
   chunkMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
-  dustRate: 70
-  dustColor: {r: 0.78, g: 0.74, b: 0.66, a: 0.8}
-  chunkRate: 5
+  dustRate: 160
+  dustColor: {r: 0.78, g: 0.74, b: 0.66, a: 0.85}
+  clumpRate: 14
+  clumpColor: {r: 0.75, g: 0.71, b: 0.64, a: 0.35}
+  chunkRate: 10
+  burstDust: 120
   puffCount: 45
   puffDelay: 0.55
   puffColor: {r: 0.72, g: 0.68, b: 0.6, a: 0.55}

@@ -204,6 +204,7 @@ namespace Deprem.HouseBuilder
                 ("UI/minigame_esya.png", 48, 48), ("UI/minigame_ibre.png", 8, 32),
                 ("UI/menu_arka_plan.png", 960, 540), ("UI/logo.png", 320, 96),
                 ("Tiles/kesit.png", 64, 64), ("Tiles/merdiven_basamak.png", 64, 64),
+                ("Tiles/merdiven_kiris.png", 64, 64), ("Tiles/korkuluk.png", 64, 64),
             };
             foreach (var (path, w, h) in sizes)
                 Save(path, w, h, transparent: !path.StartsWith("Tiles/"));

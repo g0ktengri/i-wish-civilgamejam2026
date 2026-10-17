@@ -94,11 +94,13 @@ namespace Deprem.Family
             quad.name = "Placeholder";
             Object.DestroyImmediate(quad.GetComponent<Collider>());
             quad.transform.SetParent(visual.transform, false);
+            quad.GetComponent<MeshFilter>().sharedMesh = Deprem.Player.CharacterQuadMesh.Get(); // tavan lambalarının ışığını alsın
             quad.transform.localPosition = new Vector3(0f, def.Height * 0.5f, 0f);
             quad.transform.localScale = new Vector3(0.55f * def.Height / 1.7f, def.Height, 1f);
             var renderer = quad.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = Material(def.Name.ToLowerInvariant(), def.Color);
             renderer.shadowCastingMode = ShadowCastingMode.TwoSided;
+            renderer.receiveShadows = false; // kendi gölgesi yüzüne düşmesin (lamba arkada)
 
             var member = go.AddComponent<FamilyMember>();
             var so = new SerializedObject(member);

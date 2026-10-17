@@ -27,10 +27,15 @@ namespace Deprem.Quake
 
         [Header("Tavandan toz")]
         [Tooltip("Tam şiddette oda başına saniyede toz tanesi")]
-        [SerializeField] private float dustRate = 70f;
-        [SerializeField] private Color dustColor = new Color(0.78f, 0.74f, 0.66f, 0.8f);
-        [Tooltip("Tam şiddette oda başına saniyede sıva parçası (şiddet 0,5'in üstünde başlar)")]
-        [SerializeField] private float chunkRate = 5f;
+        [SerializeField] private float dustRate = 160f;
+        [SerializeField] private Color dustColor = new Color(0.78f, 0.74f, 0.66f, 0.85f);
+        [Tooltip("Tam şiddette oda başına saniyede iri, yavaş düşen toz topağı")]
+        [SerializeField] private float clumpRate = 14f;
+        [SerializeField] private Color clumpColor = new Color(0.75f, 0.71f, 0.64f, 0.35f);
+        [Tooltip("Tam şiddette oda başına saniyede sıva parçası (şiddet 0,4'ün üstünde başlar); yere çarpıp seker")]
+        [SerializeField] private float chunkRate = 10f;
+        [Tooltip("Ana depremin ilk vuruşunda oda başına toz patlaması (tane)")]
+        [SerializeField] private int burstDust = 120;
 
         [Header("Devrilince toz bulutu")]
         [SerializeField] private int puffCount = 45;
@@ -39,6 +44,7 @@ namespace Deprem.Quake
         [SerializeField] private Color puffColor = new Color(0.72f, 0.68f, 0.6f, 0.55f);
 
         private ParticleSystem[] dust;
+        private ParticleSystem[] clumps;
         private ParticleSystem[] chunks;
         private ParticleSystem puff;
 
@@ -53,14 +59,28 @@ namespace Deprem.Quake
         {
             if (ceilings == null) ceilings = new Ceiling[0];
             dust = new ParticleSystem[ceilings.Length];
+            clumps = new ParticleSystem[ceilings.Length];
             chunks = new ParticleSystem[ceilings.Length];
             for (int i = 0; i < ceilings.Length; i++)
             {
                 var c = ceilings[i];
                 var box = new Vector3(c.size.x, 0.05f, c.size.y);
-                dust[i] = CreateSystem("Dust_" + i, dustMaterial, c.center, box, 0.02f, 0.06f, 1.6f, 0.35f, dustColor, 400);
+                dust[i] = CreateSystem("Dust_" + i, dustMaterial, c.center, box, 0.02f, 0.07f, 1.8f, 0.35f, dustColor, 900);
+                clumps[i] = CreateSystem("Clumps_" + i, dustMaterial, c.center, box, 0.18f, 0.4f, 3f, 0.08f, clumpColor, 120);
+                var grow = clumps[i].sizeOverLifetime;
+                grow.enabled = true;
+                grow.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.5f, 1f, 1.5f));
                 chunks[i] = CreateSystem("Chunks_" + i, chunkMaterial != null ? chunkMaterial : dustMaterial,
-                    c.center, box, 0.06f, 0.13f, 1.4f, 1f, Color.white, 60);
+                    c.center, box, 0.05f, 0.14f, 2.2f, 1f, Color.white, 120);
+                // Sıva parçaları zemine (ve eşyalara) çarpıp seker, sonra yerde kalıp solar
+                var collision = chunks[i].collision;
+                collision.enabled = true;
+                collision.type = ParticleSystemCollisionType.World;
+                collision.mode = ParticleSystemCollisionMode.Collision3D;
+                collision.bounce = 0.35f;
+                collision.dampen = 0.4f;
+                collision.lifetimeLoss = 0f;
+                collision.quality = ParticleSystemCollisionQuality.Medium;
             }
             puff = CreateSystem("ToppleDust", dustMaterial, transform.position, Vector3.one * 0.1f, 0.15f, 0.35f, 1.2f, -0.03f, puffColor, 400);
             var size = puff.sizeOverLifetime;
@@ -80,8 +100,22 @@ namespace Deprem.Quake
             {
                 var dustEmission = dust[i].emission;
                 dustEmission.rateOverTime = intensity * dustRate;
+                var clumpEmission = clumps[i].emission;
+                clumpEmission.rateOverTime = intensity * intensity * clumpRate;
                 var chunkEmission = chunks[i].emission;
-                chunkEmission.rateOverTime = Mathf.Max(0f, intensity - 0.5f) * 2f * chunkRate;
+                chunkEmission.rateOverTime = Mathf.Max(0f, intensity - 0.4f) / 0.6f * chunkRate;
+            }
+        }
+
+        /// <summary>Sarsıntının ilk vuruşu: her odanın tavanından bir anda toz boşalır (strength 1 = ana deprem)</summary>
+        public void Burst(float strength)
+        {
+            if (dust == null) return;
+            for (int i = 0; i < dust.Length; i++)
+            {
+                dust[i].Emit(Mathf.RoundToInt(burstDust * strength));
+                clumps[i].Emit(Mathf.RoundToInt(burstDust * 0.12f * strength));
+                chunks[i].Emit(Mathf.RoundToInt(burstDust * 0.08f * strength));
             }
         }
 

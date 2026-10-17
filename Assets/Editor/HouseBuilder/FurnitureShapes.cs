@@ -3,16 +3,34 @@ using UnityEngine;
 
 namespace Deprem.HouseBuilder
 {
+    /// <summary>
+    /// Parçanın rengi (doku yokken). Body = eşyanın kendi rengi ve dokusu; diğerleri detay: kulp, yastık, cam,
+    /// ekran, renkli kitap / oyuncak. Eşyanın sanatçı dokusu varsa hepsi Body gibi çizilir (detay çizimde).
+    /// </summary>
+    internal enum PartTone
+    {
+        Body,
+        Metal,
+        Soft,
+        Glass,
+        Dark,
+        AccentA,
+        AccentB,
+        AccentC,
+    }
+
     /// <summary>Şeklin bir kutu parçası: eşyanın sol-alt-ön köşesine göre metre</summary>
     internal readonly struct ShapePart
     {
         public readonly Vector3 Min;
         public readonly Vector3 Max;
+        public readonly PartTone Tone;
 
-        public ShapePart(Vector3 min, Vector3 max)
+        public ShapePart(Vector3 min, Vector3 max, PartTone tone)
         {
             Min = min;
             Max = max;
+            Tone = tone;
         }
     }
 
@@ -40,11 +58,11 @@ namespace Deprem.HouseBuilder
                         s.Add(x, 0.05f, d - 0.05f, x + 0.05f, 0.3f, d);
                         s.Add(x, 0.26f, 0.02f, x + 0.05f, 0.3f, d - 0.05f);
                     }
-                    s.Add(0.08f, 0.36f, 0.04f, 0.34f, 0.5f, 0.22f);  // kutu
-                    s.Add(0.46f, 0.36f, 0.06f, 0.52f, 0.5f, 0.22f);  // kitaplar
-                    s.Add(0.53f, 0.36f, 0.06f, 0.58f, 0.48f, 0.22f);
-                    s.Add(0.59f, 0.36f, 0.06f, 0.66f, 0.46f, 0.22f);
-                    s.Add(0.76f, 0.36f, 0.08f, 0.9f, 0.47f, 0.2f);   // kavanoz
+                    s.Add(0.08f, 0.36f, 0.04f, 0.34f, 0.5f, 0.22f, PartTone.AccentB);  // kutu
+                    s.Add(0.46f, 0.36f, 0.06f, 0.52f, 0.5f, 0.22f, s.NextAccent());   // kitaplar
+                    s.Add(0.53f, 0.36f, 0.06f, 0.58f, 0.48f, 0.22f, s.NextAccent());
+                    s.Add(0.59f, 0.36f, 0.06f, 0.66f, 0.46f, 0.22f, s.NextAccent());
+                    s.Add(0.76f, 0.36f, 0.08f, 0.9f, 0.47f, 0.2f, PartTone.Glass);    // kavanoz
                     break;
 
                 case "kitaplik":
@@ -62,21 +80,22 @@ namespace Deprem.HouseBuilder
                     s.Add(0f, 0.12f, 0f, 0.55f, 0.46f, d);
                     s.Add(w - 0.55f, 0.12f, 0f, w, 0.46f, d);
                     s.Add(0.55f, 0.12f, d - 0.04f, w - 0.55f, 0.46f, d);
-                    s.Add(0.62f, 0.12f, 0.1f, w - 0.62f, 0.2f, d - 0.1f); // oyun konsolu / modem
+                    s.Add(0.62f, 0.12f, 0.1f, w - 0.62f, 0.2f, d - 0.1f, PartTone.Dark); // oyun konsolu / modem
                     break;
 
                 case "tv": // ayak, boyun, ekran
-                    s.Add(0.3f, 0f, 0f, w - 0.3f, 0.02f, d);
-                    s.Add(w * 0.5f - 0.04f, 0.02f, 0.05f, w * 0.5f + 0.04f, 0.1f, 0.08f);
+                    s.Add(0.3f, 0f, 0f, w - 0.3f, 0.02f, d, PartTone.Metal);
+                    s.Add(w * 0.5f - 0.04f, 0.02f, 0.05f, w * 0.5f + 0.04f, 0.1f, 0.08f, PartTone.Metal);
                     s.Add(0f, 0.1f, 0.03f, w, h, 0.09f);
+                    s.Add(0.03f, 0.13f, 0.02f, w - 0.03f, h - 0.03f, 0.03f, PartTone.Dark); // ekran
                     break;
 
                 case "mutfak_dolabi": // gövde, iki kapak, kulplar
                     s.Add(0f, 0f, 0.05f, w, h, d);
                     s.Add(0.02f, 0.02f, 0.02f, w * 0.5f - 0.01f, h - 0.02f, 0.05f);
                     s.Add(w * 0.5f + 0.01f, 0.02f, 0.02f, w - 0.02f, h - 0.02f, 0.05f);
-                    s.Add(w * 0.5f - 0.09f, 0.08f, 0f, w * 0.5f - 0.06f, 0.24f, 0.02f);
-                    s.Add(w * 0.5f + 0.06f, 0.08f, 0f, w * 0.5f + 0.09f, 0.24f, 0.02f);
+                    s.Add(w * 0.5f - 0.09f, 0.08f, 0f, w * 0.5f - 0.06f, 0.24f, 0.02f, PartTone.Metal);
+                    s.Add(w * 0.5f + 0.06f, 0.08f, 0f, w * 0.5f + 0.09f, 0.24f, 0.02f, PartTone.Metal);
                     break;
 
                 case "ayakkabilik": // açık raf ve ayakkabılar
@@ -94,23 +113,23 @@ namespace Deprem.HouseBuilder
                     s.Add(w - f, 0f, 0f, w, h, d);
                     s.Add(f, 0f, 0f, w - f, f, d);
                     s.Add(f, h - f, 0f, w - f, h, d);
-                    s.Add(f, f, 0.025f, w - f, h - f, d);
+                    s.Add(f, f, 0.025f, w - f, h - f, d, key == "ayna" ? PartTone.Glass : PartTone.AccentB);
                     break;
                 }
 
                 case "oyuncak_rafi": // iki sütunlu bölmeli raf ve oyuncaklar
                     OpenCase(s, size, 0.05f, 0.08f, new[] { 0.5f, 0.97f }, 0.04f);
                     s.Add(w * 0.5f - 0.02f, 0.08f, 0f, w * 0.5f + 0.02f, h - 0.05f, d - 0.02f);
-                    s.Add(0.12f, 0.12f, 0.08f, 0.34f, 0.34f, 0.3f);  // top
-                    s.Add(0.58f, 0.12f, 0.08f, 0.72f, 0.26f, 0.24f); // küpler
-                    s.Add(0.74f, 0.12f, 0.1f, 0.86f, 0.18f, 0.22f);
-                    s.Add(0.75f, 0.18f, 0.1f, 0.85f, 0.28f, 0.22f);
-                    s.Add(0.1f, 0.54f, 0.08f, 0.36f, 0.8f, 0.3f);    // ayıcık
-                    s.Add(0.15f, 0.8f, 0.1f, 0.31f, 0.92f, 0.28f);
-                    s.Add(0.6f, 0.54f, 0.06f, 0.68f, 0.84f, 0.3f);   // masal kitapları
-                    s.Add(0.69f, 0.54f, 0.06f, 0.76f, 0.8f, 0.3f);
-                    s.Add(0.1f, 1.01f, 0.08f, 0.4f, 1.11f, 0.28f);   // araba
-                    s.Add(0.6f, 1.01f, 0.06f, 0.88f, 1.25f, 0.3f);   // oyuncak kutusu
+                    s.Add(0.12f, 0.12f, 0.08f, 0.34f, 0.34f, 0.3f, PartTone.AccentA);  // top
+                    s.Add(0.58f, 0.12f, 0.08f, 0.72f, 0.26f, 0.24f, PartTone.AccentB); // küpler
+                    s.Add(0.74f, 0.12f, 0.1f, 0.86f, 0.18f, 0.22f, PartTone.AccentC);
+                    s.Add(0.75f, 0.18f, 0.1f, 0.85f, 0.28f, 0.22f, PartTone.AccentA);
+                    s.Add(0.1f, 0.54f, 0.08f, 0.36f, 0.8f, 0.3f, PartTone.Soft);       // ayıcık
+                    s.Add(0.15f, 0.8f, 0.1f, 0.31f, 0.92f, 0.28f, PartTone.Soft);
+                    s.Add(0.6f, 0.54f, 0.06f, 0.68f, 0.84f, 0.3f, PartTone.AccentB);   // masal kitapları
+                    s.Add(0.69f, 0.54f, 0.06f, 0.76f, 0.8f, 0.3f, PartTone.AccentC);
+                    s.Add(0.1f, 1.01f, 0.08f, 0.4f, 1.11f, 0.28f, PartTone.AccentA);   // araba
+                    s.Add(0.6f, 1.01f, 0.06f, 0.88f, 1.25f, 0.3f, PartTone.AccentC);   // oyuncak kutusu
                     break;
 
                 case "gardirop": // ayaklar, gövde, taç, iki kapak, kulplar
@@ -120,8 +139,8 @@ namespace Deprem.HouseBuilder
                     s.Add(0f, h - 0.1f, 0f, w, h, d);
                     s.Add(0.05f, 0.18f, 0.02f, w * 0.5f - 0.005f, h - 0.12f, 0.04f);
                     s.Add(w * 0.5f + 0.005f, 0.18f, 0.02f, w - 0.05f, h - 0.12f, 0.04f);
-                    s.Add(w * 0.5f - 0.07f, 0.85f, 0f, w * 0.5f - 0.04f, 1.15f, 0.02f);
-                    s.Add(w * 0.5f + 0.04f, 0.85f, 0f, w * 0.5f + 0.07f, 1.15f, 0.02f);
+                    s.Add(w * 0.5f - 0.07f, 0.85f, 0f, w * 0.5f - 0.04f, 1.15f, 0.02f, PartTone.Metal);
+                    s.Add(w * 0.5f + 0.04f, 0.85f, 0f, w * 0.5f + 0.07f, 1.15f, 0.02f, PartTone.Metal);
                     break;
 
                 case "kabin": // çelik dikmeler, çatı, gövde, kapı ve penceresi, kulp, tabela levhası
@@ -132,15 +151,15 @@ namespace Deprem.HouseBuilder
                         s.Add(x, 0f, z, x + 0.08f, h, z + 0.08f);
                     s.Add(0.04f, 0.06f, 0.04f, w - 0.04f, h - 0.12f, d);
                     s.Add(0.3f, 0.1f, 0.02f, w - 0.3f, 1.5f, 0.04f);
-                    s.Add(0.45f, 1f, 0.01f, w - 0.45f, 1.4f, 0.02f);
-                    s.Add(w - 0.42f, 0.75f, 0f, w - 0.37f, 0.95f, 0.02f);
-                    s.Add(0.1f, 1.56f, 0.01f, w - 0.1f, h - 0.16f, 0.04f);
+                    s.Add(0.45f, 1f, 0.01f, w - 0.45f, 1.4f, 0.02f, PartTone.Glass);
+                    s.Add(w - 0.42f, 0.75f, 0f, w - 0.37f, 0.95f, 0.02f, PartTone.Metal);
+                    s.Add(0.1f, 1.56f, 0.01f, w - 0.1f, h - 0.16f, 0.04f, PartTone.Soft);
                     break;
 
                 case "kapi": // kapalıyken kameraya yan döner; açılınca X yüzü (_yan) görünür. Kulplar serbest kenarda (Z = 0)
                     s.Add(0.03f, 0f, 0f, w - 0.03f, h, d);
-                    s.Add(0f, h * 0.48f, 0.06f, 0.03f, h * 0.53f, 0.14f);
-                    s.Add(w - 0.03f, h * 0.48f, 0.06f, w, h * 0.53f, 0.14f);
+                    s.Add(0f, h * 0.48f, 0.06f, 0.03f, h * 0.53f, 0.14f, PartTone.Metal);
+                    s.Add(w - 0.03f, h * 0.48f, 0.06f, w, h * 0.53f, 0.14f, PartTone.Metal);
                     break;
 
                 // ---------------------------------------------------------- Mobilyalar (Decor)
@@ -150,17 +169,17 @@ namespace Deprem.HouseBuilder
                     bool dbl = key == "ebeveyn_yatagi";
                     Legs(s, size, 0.1f, 0.08f, 0.05f, 0.05f);
                     s.Add(0f, 0.1f, 0f, w, 0.3f, d);
-                    s.Add(0.08f, 0.3f, 0.03f, w - 0.08f, 0.5f, d - 0.03f);
+                    s.Add(0.08f, 0.3f, 0.03f, w - 0.08f, 0.5f, d - 0.03f, PartTone.AccentB); // şilte ve örtü
                     s.Add(0f, 0.1f, 0f, dbl ? 0.1f : 0.08f, h, d);
                     s.Add(w - 0.08f, 0.1f, 0f, w, 0.58f, d);
                     if (dbl)
                     {
-                        s.Add(0.14f, 0.5f, 0.1f, 0.55f, 0.62f, 0.8f);
-                        s.Add(0.14f, 0.5f, d - 0.8f, 0.55f, 0.62f, d - 0.1f);
+                        s.Add(0.14f, 0.5f, 0.1f, 0.55f, 0.62f, 0.8f, PartTone.Soft);
+                        s.Add(0.14f, 0.5f, d - 0.8f, 0.55f, 0.62f, d - 0.1f, PartTone.Soft);
                     }
                     else
                     {
-                        s.Add(0.12f, 0.5f, 0.5f, 0.55f, 0.62f, d - 0.08f);
+                        s.Add(0.12f, 0.5f, 0.5f, 0.55f, 0.62f, d - 0.08f, PartTone.Soft);
                     }
                     break;
                 }
@@ -178,14 +197,14 @@ namespace Deprem.HouseBuilder
                     s.Add(w - 0.22f, 0.08f, 0f, w, 0.62f, d);
                     s.Add(0.22f, 0.08f, 0f, w - 0.22f, 0.36f, d);
                     s.Add(0.22f, 0.36f, d - 0.28f, w - 0.22f, h, d);
-                    s.Add(0.22f, 0.36f, 0.02f, w * 0.5f, 0.48f, d - 0.28f);
-                    s.Add(w * 0.5f, 0.36f, 0.02f, w - 0.22f, 0.48f, d - 0.28f);
+                    s.Add(0.22f, 0.36f, 0.02f, w * 0.5f, 0.48f, d - 0.28f, PartTone.Soft);
+                    s.Add(w * 0.5f, 0.36f, 0.02f, w - 0.22f, 0.48f, d - 0.28f, PartTone.Soft);
                     break;
 
                 case "tezgah": // süpürgelik, dolaplar, tezgah üstü, üç kapak
                     s.Add(0f, 0f, 0.08f, w, 0.1f, d);
                     s.Add(0f, 0.1f, 0.03f, w, h - 0.04f, d);
-                    s.Add(0f, h - 0.04f, 0f, w, h, d);
+                    s.Add(0f, h - 0.04f, 0f, w, h, d, PartTone.Metal); // tezgah üstü
                     for (int i = 0; i < 3; i++)
                     {
                         float x0 = i * w / 3f;
@@ -198,8 +217,8 @@ namespace Deprem.HouseBuilder
                     s.Add(0f, 0.03f, 0.04f, w, h, d);
                     s.Add(0.01f, 1.24f, 0.01f, w - 0.01f, h - 0.01f, 0.04f);
                     s.Add(0.01f, 0.04f, 0.01f, w - 0.01f, 1.22f, 0.04f);
-                    s.Add(w - 0.13f, 1.3f, 0f, w - 0.09f, 1.5f, 0.01f);
-                    s.Add(w - 0.13f, 0.9f, 0f, w - 0.09f, 1.15f, 0.01f);
+                    s.Add(w - 0.13f, 1.3f, 0f, w - 0.09f, 1.5f, 0.01f, PartTone.Metal);
+                    s.Add(w - 0.13f, 0.9f, 0f, w - 0.09f, 1.15f, 0.01f, PartTone.Metal);
                     break;
 
                 case "masa": // tabla, kuşak, dört ayak
@@ -211,8 +230,8 @@ namespace Deprem.HouseBuilder
                 case "calisma_masasi": // sağlam çalışma masası: tabla, solda çekmeceli ayak, sağda iki ayak
                     s.Add(0f, h - 0.05f, 0f, w, h, d);
                     s.Add(0.02f, 0f, 0.02f, 0.42f, h - 0.05f, d - 0.02f);
-                    s.Add(0.05f, h - 0.25f, 0f, 0.39f, h - 0.08f, 0.02f);
-                    s.Add(0.05f, 0.08f, 0f, 0.39f, h - 0.28f, 0.02f);
+                    s.Add(0.05f, h - 0.25f, 0f, 0.39f, h - 0.08f, 0.02f, PartTone.AccentC); // çekmeceler
+                    s.Add(0.05f, 0.08f, 0f, 0.39f, h - 0.28f, 0.02f, PartTone.AccentC);
                     s.Add(w - 0.08f, 0f, 0.03f, w - 0.02f, h - 0.05f, 0.09f);
                     s.Add(w - 0.08f, 0f, d - 0.09f, w - 0.02f, h - 0.05f, d - 0.03f);
                     s.Add(0.42f, h - 0.15f, d - 0.05f, w - 0.02f, h - 0.05f, d - 0.02f); // arka kuşak
@@ -259,7 +278,7 @@ namespace Deprem.HouseBuilder
         private static void Books(Shape s, float baseY, float depth, (float x0, float x1, float height)[] blocks)
         {
             foreach (var (x0, x1, height) in blocks)
-                s.Add(x0, baseY, 0.05f, x1, baseY + height, depth - 0.06f);
+                s.Add(x0, baseY, 0.05f, x1, baseY + height, depth - 0.06f, s.NextAccent());
         }
 
         /// <summary>Dört köşede kare ayak: kenardan (inX, inZ) içeride</summary>
@@ -278,13 +297,18 @@ namespace Deprem.HouseBuilder
             public Shape(Vector3 size) => this.size = size;
 
             /// <summary>Dış kutuya kırpılmış parça; boş kalanlar atlanır</summary>
-            public void Add(float x0, float y0, float z0, float x1, float y1, float z1)
+            public void Add(float x0, float y0, float z0, float x1, float y1, float z1, PartTone tone = PartTone.Body)
             {
                 var min = Vector3.Max(Vector3.zero, new Vector3(x0, y0, z0));
                 var max = Vector3.Min(size, new Vector3(x1, y1, z1));
                 if (max.x - min.x < 0.001f || max.y - min.y < 0.001f || max.z - min.z < 0.001f) return;
-                Parts.Add(new ShapePart(min, max));
+                Parts.Add(new ShapePart(min, max, tone));
             }
+
+            private int accent;
+
+            /// <summary>Sıradaki renkli detay tonu (kitaplar, oyuncaklar, ayakkabılar sırayla farklı renk)</summary>
+            public PartTone NextAccent() => (PartTone)((int)PartTone.AccentA + accent++ % 3);
         }
     }
 }

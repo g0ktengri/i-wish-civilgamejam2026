@@ -37,15 +37,23 @@ namespace Deprem.HouseBuilder
         public static Mesh BuildParts(string name, Vector3 origin, IReadOnlyList<(Vector3 min, Vector3 max)> boxes,
             UvFunc uv, SubmeshFunc submesh, int submeshCount)
         {
+            return BuildParts(name, origin, boxes, uv, (box, face) => submesh(face), submeshCount);
+        }
+
+        /// <summary>Kutu başına submesh (detay renkli parçalar): submesh(kutu sırası, yüz)</summary>
+        public static Mesh BuildParts(string name, Vector3 origin, IReadOnlyList<(Vector3 min, Vector3 max)> boxes,
+            UvFunc uv, System.Func<int, BoxFace, int> submesh, int submeshCount)
+        {
             var vertices = new List<Vector3>(24 * boxes.Count);
             var normals = new List<Vector3>(24 * boxes.Count);
             var uvs = new List<Vector2>(24 * boxes.Count);
             var triangles = new List<int>[submeshCount];
             for (int i = 0; i < submeshCount; i++) triangles[i] = new List<int>();
 
-            foreach (var (min, max) in boxes)
+            for (int boxIndex = 0; boxIndex < boxes.Count; boxIndex++)
             for (int f = 0; f < 6; f++)
             {
+                var (min, max) = boxes[boxIndex];
                 var face = (BoxFace)f;
                 var normal = Normals[f];
                 int axis = f / 2;
@@ -73,7 +81,7 @@ namespace Deprem.HouseBuilder
 
                 // Unity'de ön yüz: (v1-v0) x (v2-v0) normal yönünü gösterir
                 var cross = Vector3.Cross(corners[1] - corners[0], corners[2] - corners[0]);
-                var list = triangles[submesh(face)];
+                var list = triangles[submesh(boxIndex, face)];
                 if (Vector3.Dot(cross, normal) >= 0f)
                     list.AddRange(new[] { start, start + 1, start + 2, start, start + 2, start + 3 });
                 else

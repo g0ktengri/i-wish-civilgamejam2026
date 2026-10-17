@@ -357,6 +357,49 @@ namespace Deprem.HouseBuilder
                 var max = new Vector3(xa + run, top, HouseDims.StairZ1);
                 AddPiece(parent, $"Step_{i:00}", min, max, BoxMeshBuilder.TileUv, mat);
             }
+            BuildStairTrim(parent, run, rise);
+        }
+
+        /// <summary>
+        /// Play testi 4: merdiven havada duran kutulara benziyordu. Kameraya bakan yan kiriş (basamakların altında
+        /// eğik bant), basamak burunları, korkuluk dikmeleri ve küpeşte; üst katta merdiven boşluğunun önünde
+        /// korkuluk. Çarpışmasız süs.
+        /// </summary>
+        private static void BuildStairTrim(Transform parent, float run, float rise)
+        {
+            var beam = GetMaterial("merdiven_kiris", "Assets/Art/Tiles/merdiven_kiris.png", new Color(0.32f, 0.24f, 0.18f));
+            var rail = GetMaterial("korkuluk", "Assets/Art/Tiles/korkuluk.png", new Color(0.22f, 0.2f, 0.19f));
+            var nose = GetMaterial("merdiven_burun", null, new Color(0.55f, 0.45f, 0.35f));
+            var trim = Child(parent, "Trim");
+            float z0 = HouseDims.StairZ0;
+            const float railHeight = 0.9f;
+            for (int i = 0; i < HouseDims.StairSteps; i++)
+            {
+                float xa = HouseDims.StairX0 + i * run;
+                float top = (i + 1) * rise;
+                // Yan kiriş: basamağın altından 0,35 m aşağı inen bant, adım adım eğik bir kiriş oluşturur
+                AddDecorBox(trim, $"Stringer_{i:00}", new Vector3(xa, Mathf.Max(0f, top - rise - 0.35f), z0 - 0.06f),
+                    new Vector3(xa + run, top - 0.02f, z0), beam);
+                // Basamak burnu: önde ince, açık renkli kenar
+                AddDecorBox(trim, $"Nose_{i:00}", new Vector3(xa - 0.02f, top - 0.04f, z0 - 0.08f),
+                    new Vector3(xa + run, top, HouseDims.StairZ1), nose);
+                // Dikme her iki basamakta bir; küpeşte her basamakta (basamaklı eğim)
+                if (i % 2 == 0)
+                    AddDecorBox(trim, $"Baluster_{i:00}", new Vector3(xa + run * 0.4f, top, z0 + 0.03f),
+                        new Vector3(xa + run * 0.4f + 0.04f, top + railHeight, z0 + 0.07f), rail);
+                AddDecorBox(trim, $"Rail_{i:00}", new Vector3(xa - 0.01f, top + railHeight - 0.03f, z0 + 0.01f),
+                    new Vector3(xa + run + 0.01f, top + railHeight + 0.03f, z0 + 0.09f), rail);
+            }
+
+            // Üst kat: merdiven boşluğunun önünde (karakterin arkasında) korkuluk
+            float up = HouseDims.UpperFloorY;
+            float hx0 = HouseDims.StairHoleX0, hx1 = HouseDims.StairHoleX1;
+            float hz = HouseDims.StairZ0 - 0.05f;
+            AddDecorBox(trim, "LandingRail", new Vector3(hx0, up + railHeight - 0.03f, hz - 0.04f),
+                new Vector3(hx1, up + railHeight + 0.03f, hz + 0.04f), rail);
+            for (float x = hx0; x <= hx1 + 0.01f; x += 0.45f)
+                AddDecorBox(trim, $"LandingBaluster_{x:F2}", new Vector3(Mathf.Min(x, hx1 - 0.04f), up, hz - 0.02f),
+                    new Vector3(Mathf.Min(x, hx1 - 0.04f) + 0.04f, up + railHeight, hz + 0.02f), rail);
         }
 
         /// <summary>Her katın iç sınırları: dış duvarların iç yüzleri arası</summary>
@@ -609,15 +652,37 @@ namespace Deprem.HouseBuilder
             return Color.HSVToRGB(number / 9f, 0.45f, 0.75f);
         }
 
+        // Detay tonları (FurnitureShapes.PartTone, Body hariç): doku yokken parçalar bu renklerle seçilir
+        private static readonly (string key, Color color)[] ToneMaterials =
+        {
+            ("detay_metal", new Color(0.55f, 0.56f, 0.6f)),
+            ("detay_kumas", new Color(0.86f, 0.83f, 0.76f)),
+            ("detay_cam", new Color(0.62f, 0.74f, 0.8f)),
+            ("detay_koyu", new Color(0.09f, 0.09f, 0.11f)),
+            ("detay_renk_a", new Color(0.62f, 0.25f, 0.22f)),
+            ("detay_renk_b", new Color(0.24f, 0.36f, 0.58f)),
+            ("detay_renk_c", new Color(0.33f, 0.52f, 0.3f)),
+        };
+
         /// <summary>
-        /// FurnitureShapes'teki parçalardan tek mesh, 3 materyal: ön, yan (arka ve yanlar), üst (üst ve alt).
-        /// Dokular dış kutuya yansıtılır (Assets/Art/{artFolder}/{textureKey}_on.png ...); çarpışma dış kutu.
+        /// FurnitureShapes'teki parçalardan tek mesh. Materyaller: ön, yan (arka ve yanlar), üst (üst ve alt),
+        /// sonra detay tonları (kulp, yastık, cam, ekran, renkli kitaplar). Dokular dış kutuya yansıtılır
+        /// (Assets/Art/{artFolder}/{textureKey}_on.png ...); doku varsa detaylar da çizimden gelir. Çarpışma dış kutu.
         /// </summary>
         private static GameObject AddShape(Transform parent, string name, Vector3 min, Vector3 max, string artFolder,
             string textureKey, Color fallback, bool plainSides, bool collider)
         {
-            var boxes = FurnitureShapes.For(textureKey, max - min).Select(p => (min + p.Min, min + p.Max)).ToList();
-            var mesh = BoxMeshBuilder.BuildParts(name, (min + max) * 0.5f, boxes, BoxMeshBuilder.FitUv(min, max), FaceToItemSubmesh, 3);
+            var parts = FurnitureShapes.For(textureKey, max - min);
+            var boxes = parts.Select(p => (min + p.Min, min + p.Max)).ToList();
+            string frontPath = $"Assets/Art/{artFolder}/{textureKey}_on.png";
+            bool hasArt = AssetDatabase.LoadAssetAtPath<Texture2D>(frontPath) != null;
+            int SubmeshFor(int box, BoxFace face)
+            {
+                var tone = parts[box].Tone;
+                return hasArt || tone == PartTone.Body ? FaceToItemSubmesh(face) : 2 + (int)tone;
+            }
+            int submeshCount = 3 + ToneMaterials.Length;
+            var mesh = BoxMeshBuilder.BuildParts(name, (min + max) * 0.5f, boxes, BoxMeshBuilder.FitUv(min, max), SubmeshFor, submeshCount);
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.transform.position = (min + max) * 0.5f;
@@ -625,13 +690,14 @@ namespace Deprem.HouseBuilder
 
             var side = fallback * 0.8f;
             side.a = 1f;
-            var mats = new[]
+            var mats = new List<Material>
             {
-                GetMaterial(textureKey + "_on", $"Assets/Art/{artFolder}/{textureKey}_on.png", fallback),
+                GetMaterial(textureKey + "_on", frontPath, fallback),
                 plainSides ? GetMaterial(textureKey + "_yan", null, side) : GetMaterial(textureKey + "_yan", $"Assets/Art/{artFolder}/{textureKey}_yan.png", side),
                 plainSides ? GetMaterial(textureKey + "_ust", null, side) : GetMaterial(textureKey + "_ust", $"Assets/Art/{artFolder}/{textureKey}_ust.png", side),
             };
-            go.AddComponent<MeshRenderer>().sharedMaterials = mats;
+            foreach (var (key, color) in ToneMaterials) mats.Add(GetMaterial(key, null, color));
+            go.AddComponent<MeshRenderer>().sharedMaterials = mats.ToArray();
             if (collider) go.AddComponent<BoxCollider>().size = max - min;
             return go;
         }

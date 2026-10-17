@@ -231,7 +231,8 @@ namespace Deprem.HouseBuilder
             new MarkerDef("Marker_Father", new Vector3(22.75f, 0f, Z)),
             new MarkerDef("Marker_Mother", new Vector3(24.45f, Up, Z)),
             new MarkerDef("Marker_Sibling", new Vector3(4.2f, Up, Z)),
-            new MarkerDef("Marker_Bag", new Vector3(HouseDims.StairX0 + 5.7f, 0f, 1.3f)),
+            // Deprem çantası kabinin önünde (Play testi 4: malzemeler doğrudan kabine)
+            new MarkerDef("Marker_Bag", new Vector3(HouseDims.CabinMin.x + 1.1f, 0f, HouseDims.CabinMin.z - 0.15f)),
             // Mutfakta önde duran masanın üstü; ilk yardım ebeveyn odasındaki komodinin üstü
             new MarkerDef("Marker_Flashlight", new Vector3(28.3f, 0.9f, 0.5f)),
             new MarkerDef("Marker_FirstAid", new Vector3(19.02f, Up + 0.62f, 4.55f)),

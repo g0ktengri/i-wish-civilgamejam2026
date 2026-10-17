@@ -232,6 +232,7 @@ namespace Deprem.Quake
 
             StartCoroutine(Shake(mainQuakeIntensity, mainQuakeDuration));
             StartCoroutine(ToppleItems());
+            if (effects != null) effects.Burst(1f);
 
             if (player.IsLying)
             {
@@ -305,6 +306,7 @@ namespace Deprem.Quake
             aftershockRunning = true;
             GameEvents.RaiseAftershockStarted();
             StartCoroutine(Shake(aftershockIntensity, aftershockDuration));
+            if (effects != null) effects.Burst(0.4f);
 
             bool survived = true;
             yield return DuckCoverHold(aftershockDuration, aftershockGrace, result => survived = result);

@@ -14,6 +14,8 @@ namespace Deprem.Player
         [SerializeField] private Light spot;
         [Tooltip("Elektrik kesikken oyuncunun çevresindeki loş ışık")]
         [SerializeField] private Light nightSight;
+        [Tooltip("El fenerinin görünen huzmesi (spotun çocuğu)")]
+        [SerializeField] private Renderer beam;
         [SerializeField] private float height = 1.3f;
         [Tooltip("Aşağı eğim (derece)")]
         [SerializeField] private float downTilt = 12f;
@@ -32,6 +34,7 @@ namespace Deprem.Player
             if (spot == null) return;
             bool on = dark && GameState.HasBagItem(BagItemId.Flashlight);
             spot.enabled = on;
+            if (beam != null) beam.enabled = on;
             if (!on) return;
             spot.transform.localPosition = new Vector3(0.2f * player.Facing, height, -0.1f);
             spot.transform.rotation = Quaternion.LookRotation(new Vector3(player.Facing, -Mathf.Tan(downTilt * Mathf.Deg2Rad), 0f));
