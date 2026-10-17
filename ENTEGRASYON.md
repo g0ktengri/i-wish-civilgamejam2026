@@ -1310,6 +1310,16 @@ Mehmet'in isteği (özet):
 3. **Kapı yakın çekimi:** intro oynanan denemede ana depremin başında kamera kapıya kayıp yaklaşır, dolap devrilir, sonra yatağa döner.
 4. Konuşmalar `texts.csv`'de, benim balon bölümümde (`bubble.intro.*`).
 
+**Mehmet tarafı (intro): yapıldı.** Dört test geçiyor; Play'de denenmedi.
+
+- **`Deprem.Quake.Cinematic` hazır** (yukarıdaki sözleşme).
+  - Intro sırasında `CanSkip` true. `Skip()` oyuncuyu hemen yatağa geçirir: kısa kararma, aile yerine, gece açılır.
+  - Kapı yakın çekimi geçilemez (`CanSkip` false).
+- **Intronun kendi karartması:** sıralama 98'lik kanvas. Sinema bantların bunun altında kalsın.
+- **Akış süreleri (yaklaşık):** açılış 1,8 sn; yürüyüş, babayla 3 replik, merdivende 3 replik, oda; toplam ~40 sn. Sonra gece 2 sn'de açılır ve normal öncü akışı başlar.
+- **Kapı yakın çekimi:** intronun oynadığı denemede ana depremin başında, ~5 sn. Diğer denemelerde portmanto yakın çekimsiz devriliyor.
+- **Kamera:** `PlayerCameraTarget.Focus(transform, fovOranı)` / `Release()` eklendi; merdivendeki konuşmada kamera iki katı gösterir.
+
 ### Play testi 30: Mehmet'in düzeltmeleri (bilgi için)
 
 - **Önce onu bırak:** biri takip ederken bekleyen başka bir üyenin odasına girilemiyor; oyuncu eşikte duruyor ve `bubble.drop_first.<takip eden>` diyor. Kontrol `FamilyDirector.GuardRooms`'ta. Oda bilgisini `RoomVisibility.RoomKeyAt(pos)` veriyor (yeni).

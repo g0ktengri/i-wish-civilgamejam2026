@@ -86,6 +86,9 @@ MonoBehaviour:
   debrisFrontOffset: 0.15
   debrisImpactDelay: 1.5
   deathLinger: 2.6
+  entranceCameraTravel: 1.6
+  entranceHold: 1.2
+  entranceCloseUpFov: 0.6
   fatalAftershockLead: 1.2
   shelfLandOffset: {x: -0.15, y: 0.24, z: -0.05}
   shelfDropTime: 0.45

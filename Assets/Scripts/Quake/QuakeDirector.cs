@@ -100,6 +100,14 @@ namespace Deprem.Quake
         [SerializeField] private float debrisImpactDelay = 1.5f;
         [Tooltip("Öldükten sonra kayıp ekranından önce sahnede kalma (sn): ölme kareleri biter, ruh yükselir, ekran kararır (Play testi 25)")]
         [SerializeField] private float deathLinger = 2.6f;
+        [Header("Intro: giriş kapısı yakın çekimi")]
+        [Tooltip("Kameranın kapıya kayma süresi (sn); dönüş bunun 0,6'sı")]
+        [SerializeField] private float entranceCameraTravel = 1.6f;
+        [Tooltip("Dolap devrildikten sonra kapıda kalma (sn)")]
+        [SerializeField] private float entranceHold = 1.2f;
+        [Tooltip("Yakın çekimde görüş açısı oranı (< 1 yaklaştırır)")]
+        [SerializeField] private float entranceCloseUpFov = 0.6f;
+
         [Tooltip("Play testi 24: kardeş bulunamayınca gelen artçıda tavanın çökmesinden önceki sarsıntı (sn)")]
         [SerializeField] private float fatalAftershockLead = 1.2f;
         [Tooltip("Döngü 1: raf yatan oyuncunun üstüne düşer; kaplama kutusunun merkezi oyuncunun kökünden bu kadar uzakta")]
@@ -240,7 +248,11 @@ namespace Deprem.Quake
 
         private IEnumerator ForeshockRoutine()
         {
+            // Intro sinematiği: 1. döngünün ilk denemesinde oyuncu okuldan gelip yatar; sonra gece açılır
+            bool intro = IntroCinematic.ShouldPlay;
+            if (intro) yield return Intro.Play();
             LieInBed();
+            if (intro) StartCoroutine(Intro.FadeIn());
             yield return new WaitForSeconds(foreshockDelay);
 
             GameEvents.RaiseForeshockStarted();
@@ -304,6 +316,16 @@ namespace Deprem.Quake
             bool spiritReturn = player.IsLying && GameState.SpiritPhaseUnlocked;
             if (spiritReturn) StartCoroutine(RiseAfterSpirit());
 
+            // Intro sinematiği: giriş kapısının önüne portmanto devrilir (her ana depremde). Intronun oynadığı
+            // denemede önce kamera kapıya kayıp yaklaşır, dolap devrilir, sonra geri döner; deprem ondan sonra işler
+            bool closeUp = Intro.PlayedThisAttempt && EntranceBlocker.Instance != null;
+            if (closeUp)
+            {
+                StartCoroutine(Shake(mainQuakeIntensity, entranceCloseUpTime));
+                yield return EntranceCloseUp();
+            }
+            else if (EntranceBlocker.Instance != null) StartCoroutine(ToppleEntranceBlocker(UnityEngine.Random.Range(0.6f, 1.4f)));
+
             StartCoroutine(Shake(mainQuakeIntensity, mainQuakeDuration));
             StartCoroutine(ToppleItems());
             StartCoroutine(DropDecor(mainQuakeDecorFall, toppleWindow.x * 0.5f, toppleWindow.y + 1.5f));
@@ -357,6 +379,37 @@ namespace Deprem.Quake
             yield return new WaitForSeconds(1f);
             GameState.SetPhase(GamePhase.Rescue);
         }
+
+        private IEnumerator ToppleEntranceBlocker(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (EntranceBlocker.Instance != null) EntranceBlocker.Instance.Topple();
+        }
+
+        /// <summary>
+        /// Intro sinematiği: ana deprem başlarken kamera giriş kapısına kayıp yaklaşır, portmanto devrilip kapının
+        /// önünü kapatır, kamera geri döner. Oyuncu bu sırada yönlendiremez (Cinematic).
+        /// </summary>
+        private IEnumerator EntranceCloseUp()
+        {
+            var blocker = EntranceBlocker.Instance;
+            var door = EntranceDoor.Instance;
+            var focus = new GameObject("EntranceCloseUp").transform;
+            var at = door != null ? door.Threshold : blocker.transform.position;
+            focus.position = new Vector3(at.x - 0.6f, at.y + 1.1f, at.z);
+            Cinematic.Begin(false);
+            PlayerCameraTarget.Focus(focus, entranceCloseUpFov);
+            yield return new WaitForSeconds(entranceCameraTravel);
+            blocker.Topple();
+            while (blocker.IsFalling) yield return null;
+            yield return new WaitForSeconds(entranceHold);
+            PlayerCameraTarget.Release();
+            Destroy(focus.gameObject);
+            yield return new WaitForSeconds(entranceCameraTravel * 0.6f);
+            Cinematic.End();
+        }
+
+        private float entranceCloseUpTime => entranceCameraTravel * 1.6f + 1.6f + entranceHold;
 
         private IEnumerator ToppleItems()
         {
@@ -719,6 +772,17 @@ namespace Deprem.Quake
         }
 
         private HitFeedback feedback;
+        private IntroCinematic intro;
+
+        private IntroCinematic Intro
+        {
+            get
+            {
+                if (intro == null) intro = GetComponent<IntroCinematic>();
+                if (intro == null) intro = gameObject.AddComponent<IntroCinematic>();
+                return intro;
+            }
+        }
 
         /// <summary>Darbe geri bildirimi (Play testi 23); prefab'da yoksa eklenir</summary>
         private HitFeedback Feedback

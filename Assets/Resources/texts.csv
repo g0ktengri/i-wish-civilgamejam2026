@@ -196,6 +196,13 @@ bubble.family_rescued.sibling,"Abi! Geldin! Ne olur beni bırakma...","Big bro! 
 bubble.drop_first.mother,"Önce annemi kabine bırakmalıyım. Kardeşim, dayan, geliyorum!","I have to get Mom to the shelter first. Hang on, I'm coming!"
 bubble.drop_first.sibling,"Önce kardeşimi kabine götürmeliyim. Anne, biraz daha dayan!","I have to get my sibling to the shelter first. Mom, hold on a little longer!"
 bubble.drop_first.father,"Önce onu kabine bırakmalıyım!","I have to get him to the shelter first!"
+bubble.intro.father_1,"Hoş geldin aslanım! Okul nasıldı bakalım?","Welcome home, champ! So how was school?"
+bubble.intro.player_1,"Sorma baba... Matematikçi yine bana taktı.","Don't ask, Dad... The math teacher picked on me again."
+bubble.intro.father_2,"Boş ver, ben de senin yaşında berbattım. Hadi git biraz dinlen.","Forget it, I was terrible at your age too. Go get some rest."
+bubble.intro.mother,"Oğlum, sen mi geldin? Yemeğin ocakta, ısıtayım mı?","Son, is that you? Your dinner's on the stove, shall I heat it up?"
+bubble.intro.sibling,"Abiii! Gel benimle oyun oynasana!","Big bro! Come play with me!"
+bubble.intro.player_2,"Sonra yerim anne! Çok yorgunum, odama geçiyorum. Yarın oynarız ufaklık!","Later, Mom! I'm beat, I'm heading to my room. We'll play tomorrow, kiddo!"
+bubble.intro.player_3,"Of... Biraz uzanayım.","Ugh... Let me lie down for a bit."
 
 # Mehmet: F ipuçları (kapı, merdiven, aile, kabin)
 prompt.open_door,F: Kapıyı aç,F: Open the door

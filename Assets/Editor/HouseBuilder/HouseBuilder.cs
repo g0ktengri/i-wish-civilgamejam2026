@@ -72,6 +72,21 @@ namespace Deprem.HouseBuilder
             var salonCamera = new Vector3((salon.X0 + salon.X1) * 0.5f, 1.9f, -12f);
             HousePreview.Render("Logs/house_preview_salon.png", null, salonCamera, 1920, 1080);
 
+            // Intro: giriş kapısı açık ve portmanto ayakta; sonra portmanto devrilmiş (sahne kaydedildikten sonra)
+            var mutfak = HouseLayout.Room("mutfak");
+            var entranceCamera = new Vector3(mutfak.X1 - 2.6f, 1.6f, -9f);
+            var entranceDoor = Object.FindFirstObjectByType<Deprem.Quake.EntranceDoor>();
+            var entranceBlocker = Object.FindFirstObjectByType<Deprem.Quake.EntranceBlocker>();
+            if (entranceDoor != null) entranceDoor.SetOpenImmediate(true);
+            HousePreview.Render("Logs/house_preview_giris.png", null, entranceCamera, 1920, 1080);
+            if (entranceDoor != null) entranceDoor.SetOpenImmediate(false);
+            if (entranceBlocker != null)
+            {
+                entranceBlocker.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+                HousePreview.Render("Logs/house_preview_giris_kapali.png", null, entranceCamera, 1920, 1080);
+                entranceBlocker.transform.localRotation = Quaternion.identity;
+            }
+
             // Elektrik kesik hali (ana depremden sonra): ışıklar ve Volume
             var houseLights = Object.FindFirstObjectByType<Deprem.Quake.HouseLights>();
             if (houseLights != null)
@@ -206,6 +221,7 @@ namespace Deprem.HouseBuilder
             BuildStairs(stairs);
             stairs.gameObject.AddComponent<Deprem.Player.StairPath>().Configure(StairRoute());
             BuildCabin(root.transform);
+            BuildEntrance(root.transform); // intro sinematiği: ana giriş kapısı ve devrilecek portmanto
             BuildWindow(root.transform);
             BuildFrontBarrier(Child(root.transform, "FrontBarrier"));
 
@@ -682,6 +698,50 @@ namespace Deprem.HouseBuilder
             beacon.enabled = false;
 
             go.AddComponent<Deprem.Family.CabinBeacon>().Configure(sign, beacon, renderer, 0);
+        }
+
+        /// <summary>
+        /// Intro sinematiği: mutfağın sağ dış duvarında evin ana giriş kapısı (yan duvarın iç yüzünde, odaya bakar;
+        /// açılınca arkasında loş dış görünür) ve kapının sol önünde uzun portmanto. Portmanto karakter düzleminin
+        /// arkasında durur; her ana depremde kameraya doğru devrilip kapının önünü kapatır (EntranceBlocker).
+        /// </summary>
+        private static void BuildEntrance(Transform parent)
+        {
+            var kitchen = HouseLayout.Room("mutfak");
+            float wall = kitchen.X1 - HouseDims.Thickness * 0.5f;
+            const float z0 = 0.45f, z1 = 1.5f, height = 2.05f;
+            var root = new GameObject("Entrance").transform;
+            root.SetParent(parent, false);
+            root.position = new Vector3(wall, kitchen.FloorY, (z0 + z1) * 0.5f);
+            float y = kitchen.FloorY;
+
+            var outside = GetMaterial("giris_dis", null, new Color(0.13f, 0.14f, 0.19f));
+            var frame = GetMaterial("giris_kasa", null, new Color(0.3f, 0.2f, 0.13f));
+            var leafMat = GetMaterial("giris_kapi", null, new Color(0.46f, 0.3f, 0.18f));
+            var knobMat = GetMaterial("giris_kulp", null, new Color(0.72f, 0.66f, 0.5f));
+            AddDecorBox(root, "Outside", new Vector3(wall - 0.01f, y, z0), new Vector3(wall, y + height, z1), outside);
+            AddDecorBox(root, "FrameTop", new Vector3(wall - 0.06f, y + height, z0 - 0.08f), new Vector3(wall, y + height + 0.1f, z1 + 0.08f), frame);
+            AddDecorBox(root, "FrameBack", new Vector3(wall - 0.06f, y, z1), new Vector3(wall, y + height, z1 + 0.08f), frame);
+            AddDecorBox(root, "FrameFront", new Vector3(wall - 0.06f, y, z0 - 0.08f), new Vector3(wall, y + height, z0), frame);
+
+            // Kanat: menteşe arka kenarda (z1), kanat öne uzanır; iki göz paneli ve kulp
+            var hinge = new GameObject("Hinge").transform;
+            hinge.SetParent(root, false);
+            hinge.position = new Vector3(wall - 0.035f, y, z1);
+            AddDecorBox(hinge, "Leaf", new Vector3(wall - 0.06f, y, z0), new Vector3(wall - 0.015f, y + height - 0.02f, z1), leafMat);
+            AddDecorBox(hinge, "PanelTop", new Vector3(wall - 0.075f, y + 1.15f, z0 + 0.15f), new Vector3(wall - 0.06f, y + 1.85f, z1 - 0.15f), frame);
+            AddDecorBox(hinge, "PanelBottom", new Vector3(wall - 0.075f, y + 0.2f, z0 + 0.15f), new Vector3(wall - 0.06f, y + 0.9f, z1 - 0.15f), frame);
+            AddDecorBox(hinge, "Knob", new Vector3(wall - 0.12f, y + 0.95f, z0 + 0.08f), new Vector3(wall - 0.075f, y + 1.01f, z0 + 0.16f), knobMat);
+            root.gameObject.AddComponent<Deprem.Quake.EntranceDoor>().Configure(hinge);
+
+            // Portmanto: kapının sol önünde, devrilince karakter düzlemini ve kapının önünü kapatır
+            float cx0 = wall - 0.75f, cx1 = wall - 0.1f, cz0 = 1.65f, cz1 = 2.15f, ch = 1.8f;
+            var pivot = new GameObject("EntranceBlocker").transform;
+            pivot.SetParent(parent, false);
+            pivot.position = new Vector3((cx0 + cx1) * 0.5f, y, cz0);
+            AddShape(pivot, "Portmanto", new Vector3(cx0, y, cz0), new Vector3(cx1, y + ch, cz1), "Decor", "portmanto",
+                new Color(0.42f, 0.28f, 0.18f), false, true);
+            pivot.gameObject.AddComponent<Deprem.Quake.EntranceBlocker>();
         }
 
         private static void BuildWindow(Transform parent)

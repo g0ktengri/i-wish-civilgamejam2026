@@ -538,6 +538,9 @@ namespace Deprem.Family
             }
         }
 
+        /// <summary>Sinematik: bir yöne döner (1 sağ, -1 sol)</summary>
+        public void Face(int direction) => Facing = direction >= 0 ? 1 : -1;
+
         /// <summary>Kabine yürürken FamilyDirector çağırır (aksayarak; Facing yöne göre)</summary>
         public void WalkTo(Vector3 position) => SetFollowPosition(position);
 

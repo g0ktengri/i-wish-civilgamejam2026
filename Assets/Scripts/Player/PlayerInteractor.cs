@@ -35,7 +35,9 @@ namespace Deprem.Player
 
         private void Update()
         {
-            Current = player.InputEnabled && !player.IsOnPath ? Interactables.FindNearest(player) : null;
+            // Intro sinematiği: oyuncu yönlendiremez, hiçbir tuş ipucu görünmez (merdivendeki "Yukarı çık" dahil)
+            bool cinematic = Deprem.Quake.Cinematic.IsPlaying;
+            Current = player.InputEnabled && !player.IsOnPath && !cinematic ? Interactables.FindNearest(player) : null;
             var keyboard = Keyboard.current;
             if (Current != null && keyboard != null && keyboard[interactKey].wasPressedThisFrame)
             {

@@ -217,6 +217,16 @@ namespace Deprem.HouseBuilder
                     break;
                 }
 
+                case "portmanto": // intro: giriş kapısının yanındaki uzun dolap; iki kapak, kulplar, taç ve baza
+                    s.Add(0f, 0f, 0f, w, 0.08f, d, PartTone.Dark);
+                    s.Add(0.02f, 0.08f, 0.02f, w - 0.02f, h - 0.1f, d);
+                    s.Add(0f, h - 0.1f, 0f, w, h, d, PartTone.AccentC);
+                    s.Add(0.05f, 0.14f, 0f, w * 0.5f - 0.01f, h - 0.16f, 0.02f, PartTone.AccentA);
+                    s.Add(w * 0.5f + 0.01f, 0.14f, 0f, w - 0.05f, h - 0.16f, 0.02f, PartTone.AccentA);
+                    s.Add(w * 0.5f - 0.06f, h * 0.5f - 0.08f, -0.0f, w * 0.5f - 0.035f, h * 0.5f + 0.08f, 0.01f, PartTone.Metal);
+                    s.Add(w * 0.5f + 0.035f, h * 0.5f - 0.08f, -0.0f, w * 0.5f + 0.06f, h * 0.5f + 0.08f, 0.01f, PartTone.Metal);
+                    break;
+
                 case "kapi": // kapalıyken kameraya yan döner; açılınca X yüzü (_yan) görünür. Kulplar serbest kenarda (Z = 0)
                     s.Add(0.03f, 0f, 0f, w - 0.03f, h, d);
                     s.Add(0f, h * 0.48f, 0.06f, 0.03f, h * 0.53f, 0.14f, PartTone.Metal);
