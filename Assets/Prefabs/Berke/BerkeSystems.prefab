@@ -96,6 +96,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.WishScreen
   fadeToBlack: 1.6
+  focusInSeconds: 0.7
+  focusHold: 1.8
+  focusDarkness: 1
+  focusRadius: 120
+  focusLightColor: {r: 1, g: 0.9, b: 0.78, a: 1}
+  focusLightIntensity: 4
+  focusLightRange: 3.5
   wishDelay: 0.9
   headCharsPerSecond: 6
   headHold: 1.2
@@ -207,16 +214,16 @@ MonoBehaviour:
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   sortingOrder: 80
   panelSize: {x: 256, y: 256}
-  overlayColor: {r: 0.02, g: 0.04, b: 0.1, a: 0.6}
-  panelColor: {r: 0.1, g: 0.12, b: 0.16, a: 0.95}
-  successColor: {r: 0.2, g: 0.4, b: 0.25, a: 0.95}
-  successHold: 0.4
-  screwCount: 1
-  screwTurnsPerScrew: 2
+  framePadding: 8
+  overlayColor: {r: 0.02, g: 0.03, b: 0.06, a: 0.88}
+  successColor: {r: 0.5, g: 0.86, b: 0.52, a: 0.35}
+  successHold: 0.5
+  screwTurnsPerScrew: 1.5
+  screwMaxTurnsPerSecond: 0
   screwReversePenalty: 1
   screwMinRadius: 18
   carrySnapRadius: 14
-  carryGapHeight: 70
+  carryGapHeight: 64
   art:
     panel: {fileID: 0}
     screwBackground: {fileID: 0}
@@ -238,6 +245,7 @@ MonoBehaviour:
   lockRequiredHits: 3
   lockShrinkPerHit: 0.8
   lockSpeedUpPerHit: 1.15
+  lockDriftPerHit: 0.16
 --- !u!114 &1714028265692669343
 MonoBehaviour:
   m_ObjectHideFlags: 0

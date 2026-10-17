@@ -96,11 +96,12 @@ namespace Deprem.Bag
                 PickUp();
                 return;
             }
+            // Başlık malzemenin adı; el feneri kayan boşluklu, diğerleri tek duvar (MinigameHost.Open)
             opening = host.Open(MinigameType.CarryAndPlace, success =>
             {
                 opening = false;
                 if (success && GameState.Phase == GamePhase.Spirit) PickUp();
-            }, icon);
+            }, icon, Localization.Texts.Get($"bag.{id}"), id == BagItemId.Flashlight ? "flashlight" : "box");
         }
 
         void PickUp() => BagSystem.SetCarrying(id);

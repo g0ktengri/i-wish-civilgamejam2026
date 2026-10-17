@@ -128,6 +128,9 @@ namespace Deprem.Family
             so.FindProperty("dangerItem").enumValueIndex = (int)def.Danger;
             so.FindProperty("requiredBagItem").enumValueIndex = (int)def.Bag;
             so.FindProperty("injuredAfterQuake").boolValue = def.Injured;
+            // Yaralıyken ayağındaki kaya: deprem molozunun materyali (QuakeSetup üretir), doku çalışma anında
+            so.FindProperty("rockMaterial").objectReferenceValue =
+                def.Injured ? AssetDatabase.LoadAssetAtPath<Material>("Assets/Generated/Quake/siva.mat") : null;
             so.FindProperty("visual").objectReferenceValue = visual.transform;
             so.ApplyModifiedPropertiesWithoutUndo();
         }

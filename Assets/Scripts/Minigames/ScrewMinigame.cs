@@ -4,17 +4,18 @@ using UnityEngine.UI;
 
 namespace Deprem.Minigames
 {
-    // Vida sıkma: L demiri levhası vidalanır (1 vida ortada ya da 4 vida köşelerde; MinigameHost.screwCount).
-    // Fare tornavidanın sapını tutar; ucu bir vidanın üstüne getirip basılı tut: uç vidaya oturur.
-    // Sapı vidanın etrafında saat yönünde çevir; ters yönde çevirmek gevşetir. Bırakınca tornavida kalkar,
-    // o vidanın ilerlemesi kalır. Bütün vidalar sıkılınca biter.
+    // Vida sıkma: L demiri levhası dolabın arkasına vidalanır. Vida sayısı ve düzeni eşyaya göre (MinigameVariant.Screws:
+    // ağır kitaplık / gardırop üç vida, TV ünitesi yatay, oyuncak rafı dikey, ayakkabılık çapraz); her açılışta biraz oynar.
+    // Fare tornavidanın sapını tutar; ucu bir vidanın üstüne getirip basılı tut: uç vidaya oturur. Sapı vidanın
+    // etrafında saat yönünde çevir; ters yönde çevirmek gevşetir. maxTurnsPerSecond > 0 ise çok hızlı çevirince uç
+    // vidadan kayar (play testi 16'dan beri kapalı). Tornavida sabit boydadır: fare uzaklaşınca uzamaz, sadece döner.
+    // Bırakınca tornavida kalkar, o vidanın ilerlemesi kalır. Bütün vidalar sıkılınca biter.
     public class ScrewMinigame : Minigame
     {
-        static readonly Vector2 PlateCenter = new Vector2(0f, 12f);
-        static readonly Vector2 PlateSize = new Vector2(168f, 112f);
+        static readonly Vector2 PlateCenter = new Vector2(0f, 14f);
         const float ScrewSize = 32f;
-        const float CornerInset = 24f;
         const float GrabRadius = 20f;
+        const float SlipFlashTime = 0.3f;
 
         // Tornavida parçaları (uçtan sapa, +x yönünde)
         const float TipLength = 8f;
@@ -23,23 +24,19 @@ namespace Deprem.Minigames
         const float HandleLength = 40f;
         const float HandleThickness = 16f;
         const float IdleShaft = 46f;
-        const float MinShaft = 18f;
-        const float MaxShaft = 130f;
         const float IdleAngle = 35f;
         static readonly Vector2 ShadowOffset = new Vector2(3f, -4f);
         // Görsel (minigame_tornavida.png) varsa: 96 x 16, ucu solda; sap ortası uçtan bu kadar uzakta
         static readonly Vector2 ArtDriverSize = new Vector2(96f, 16f);
         const float ArtHandleCenter = 76f;
 
-        static readonly Color PlateColor = new Color(0.55f, 0.57f, 0.6f);
-        static readonly Color ScrewLoose = new Color(0.78f, 0.79f, 0.82f);
-        static readonly Color ScrewTight = new Color(0.45f, 0.85f, 0.5f);
-        static readonly Color SlotColor = new Color(0.25f, 0.26f, 0.28f);
-        static readonly Color TipColor = new Color(0.32f, 0.33f, 0.36f);
-        static readonly Color ShaftColor = new Color(0.78f, 0.8f, 0.84f);
-        static readonly Color FerruleColor = new Color(0.62f, 0.64f, 0.68f);
-        static readonly Color HandleColor = new Color(0.86f, 0.3f, 0.18f);
-        static readonly Color GripColor = new Color(0.2f, 0.16f, 0.14f);
+        static readonly Color ScrewLoose = Color.white;
+        static readonly Color ScrewTight = new Color(0.72f, 1f, 0.72f);
+        static readonly Color TipColor = new Color(0.3f, 0.3f, 0.33f);
+        static readonly Color ShaftColor = new Color(0.8f, 0.81f, 0.84f);
+        static readonly Color FerruleColor = new Color(0.6f, 0.61f, 0.64f);
+        static readonly Color HandleColor = new Color(0.78f, 0.3f, 0.2f);
+        static readonly Color GripColor = new Color(0.22f, 0.15f, 0.12f);
         static readonly Color ShadowColor = new Color(0f, 0f, 0f, 0.35f);
 
         class Screw
@@ -48,6 +45,7 @@ namespace Deprem.Minigames
             public RectTransform Head;
             public Image Image;
             public float Progress;
+            public float Slip;
             public bool Done => Progress >= 1f;
         }
 
@@ -76,7 +74,7 @@ namespace Deprem.Minigames
         readonly float turnsPerScrew;
         readonly float reversePenalty;
         readonly float minRadius;
-        readonly int screwCount;
+        readonly float maxTurnsPerSecond;
 
         readonly List<Screw> screws = new List<Screw>();
         Driver driver;
@@ -88,41 +86,63 @@ namespace Deprem.Minigames
         float lastAngle;
         bool hasAngle;
 
-        public ScrewMinigame(float turnsPerScrew, float reversePenalty, float minRadius, int screwCount = 1)
+        // maxTurnsPerSecond: bundan hızlı çevirince uç kayar (0 = kapalı)
+        public ScrewMinigame(float turnsPerScrew, float reversePenalty, float minRadius, float maxTurnsPerSecond = 0f)
         {
             this.turnsPerScrew = Mathf.Max(0.25f, turnsPerScrew);
             this.reversePenalty = Mathf.Max(0f, reversePenalty);
             this.minRadius = minRadius;
-            this.screwCount = screwCount >= 4 ? 4 : 1;
+            this.maxTurnsPerSecond = maxTurnsPerSecond;
+        }
+
+        // Düzene göre levha boyutu ve vida konumları (levha merkezine göre, referans pikseli)
+        static (Vector2 plate, Vector2[] screws) LayoutFor(ScrewLayout layout)
+        {
+            switch (layout)
+            {
+                case ScrewLayout.Center1: return (new Vector2(120f, 80f), new[] { Vector2.zero });
+                case ScrewLayout.Vertical2: return (new Vector2(84f, 160f), new[] { new Vector2(0f, 46f), new Vector2(0f, -46f) });
+                case ScrewLayout.Diagonal2: return (new Vector2(176f, 104f), new[] { new Vector2(-58f, 24f), new Vector2(58f, -24f) });
+                case ScrewLayout.Triangle3: return (new Vector2(176f, 120f), new[] { new Vector2(-60f, -30f), new Vector2(60f, -30f), new Vector2(0f, 32f) });
+                default: return (new Vector2(176f, 84f), new[] { new Vector2(-58f, 0f), new Vector2(58f, 0f) });
+            }
         }
 
         protected override void OnBuild()
         {
-            CreateBackground(Art.screwBackground);
-            CreateRect("Plate", PlateCenter, PlateSize, PlateColor, null, Art.screwPlate);
+            var panelTex = TexSize(PanelSize);
+            CreateBackground(Art.screwBackground, MinigamePixels.Boards(panelTex.x, panelTex.y, Variant.Seed % 5));
 
-            Vector2 half = PlateSize * 0.5f - Vector2.one * CornerInset;
-            var layout = screwCount == 1
-                ? new[] { Vector2.zero }
-                : new[] { new Vector2(-1, 1), new Vector2(1, 1), new Vector2(-1, -1), new Vector2(1, -1) };
-            foreach (var corner in layout)
+            var (plateSize, layout) = LayoutFor(Variant.Screws);
+            bool mirror = Random.NextDouble() < 0.5;
+            var holes = new List<Vector2Int>();
+            var positions = new List<Vector2>();
+            foreach (var p in layout)
             {
-                var position = PlateCenter + Vector2.Scale(half, corner);
-                var image = CreateRect("Screw", position, Vector2.one * ScrewSize, ScrewLoose, null,
-                    Art.screwHead ? Art.screwHead : UI.UiBuilder.CircleSprite);
-                if (!Art.screwHead)
-                {
-                    image.color = ScrewLoose; // kodla üretilen beyaz daire renklendirilir
-                    CreateRect("Slot", Vector2.zero, new Vector2(ScrewSize * 0.75f, 4f), SlotColor, image.rectTransform);
-                }
+                // Her açılışta vida yerleri biraz oynar; çapraz düzen yarı yarıya aynalanır
+                var local = new Vector2(mirror && Variant.Screws == ScrewLayout.Diagonal2 ? -p.x : p.x, p.y)
+                            + new Vector2(Range(-6f, 6f), Range(-5f, 5f));
+                local = new Vector2(Mathf.Round(local.x / 2f) * 2f, Mathf.Round(local.y / 2f) * 2f);
+                positions.Add(local);
+                holes.Add(new Vector2Int(Mathf.RoundToInt(local.x / 2f), Mathf.RoundToInt(local.y / 2f)));
+            }
+            var tex = TexSize(plateSize);
+            CreatePixel("Plate", PlateCenter, plateSize, Art.screwPlate,
+                MinigamePixels.Plate(tex.x, tex.y, holes, string.Join("_", holes)));
+
+            foreach (var local in positions)
+            {
+                var position = PlateCenter + local;
+                var image = CreatePixel("Screw", position, Vector2.one * ScrewSize, Art.screwHead, MinigamePixels.ScrewHead());
+                image.color = ScrewLoose;
                 screws.Add(new Screw { Position = position, Head = image.rectTransform, Image = image });
             }
 
-            barWidth = PanelSize.x * 0.75f;
-            float barY = -PanelSize.y * 0.42f;
-            CreateRect("BarBack", new Vector2(0f, barY), new Vector2(barWidth, 10f), new Color(0.15f, 0.15f, 0.18f));
-            fill = CreateRect("BarFill", new Vector2(-barWidth * 0.5f, barY), new Vector2(0f, 10f),
-                new Color(0.45f, 0.85f, 0.5f)).rectTransform;
+            barWidth = PanelSize.x * 0.72f;
+            float barY = -PanelSize.y * 0.4f;
+            var trackSize = new Vector2(barWidth + 8f, 16f);
+            CreatePixel("BarBack", new Vector2(0f, barY), trackSize, null, MinigamePixels.Track(TexSize(trackSize).x, TexSize(trackSize).y));
+            fill = CreateRect("BarFill", new Vector2(-barWidth * 0.5f, barY), new Vector2(0f, 8f), MinigamePixels.Accent).rectTransform;
             fill.pivot = new Vector2(0f, 0.5f);
 
             // Tornavida en üstte; gölgesi hemen altında
@@ -144,7 +164,7 @@ namespace Deprem.Minigames
             if (input.Pressed) engaged = ScrewAt(IdleTip(input.Pointer));
             if (!input.Held) engaged = null;
 
-            if (engaged != null) Turn(engaged, input.Pointer);
+            if (engaged != null) Turn(engaged, input.Pointer, input.DeltaTime);
             else
             {
                 PlaceIdle(input.Pointer);
@@ -152,7 +172,15 @@ namespace Deprem.Minigames
             }
 
             float total = 0f;
-            foreach (var screw in screws) total += screw.Progress;
+            foreach (var screw in screws)
+            {
+                total += screw.Progress;
+                if (screw.Slip > 0f)
+                {
+                    screw.Slip -= input.DeltaTime;
+                    screw.Image.color = screw.Slip > 0f ? MinigamePixels.Danger : screw.Done ? ScrewTight : ScrewLoose;
+                }
+            }
             fill.sizeDelta = new Vector2(barWidth * total / screws.Count, fill.sizeDelta.y);
 
             if (total < screws.Count) return false;
@@ -163,14 +191,13 @@ namespace Deprem.Minigames
             return true;
         }
 
-        void Turn(Screw screw, Vector2 pointer)
+        void Turn(Screw screw, Vector2 pointer, float dt)
         {
             Vector2 offset = pointer - screw.Position;
             float angle = Mathf.Atan2(offset.y, offset.x) * Mathf.Rad2Deg;
 
-            // Uç vidada, sap farede: şaft aradaki mesafeye göre uzar
-            float shaft = Mathf.Clamp(offset.magnitude - TipLength - FerruleLength - HandleLength * 0.5f, MinShaft, MaxShaft);
-            PlaceDriver(screw.Position, angle, shaft);
+            // Uç vidada, sap fareye doğru; boy sabit (play testi 16: çekiştirince tornavida uzuyordu)
+            PlaceDriver(screw.Position, angle, IdleShaft);
 
             if (offset.magnitude < minRadius)
             {
@@ -182,16 +209,29 @@ namespace Deprem.Minigames
             {
                 // Saat yönü = açının azalması (y yukarı)
                 float delta = -Mathf.DeltaAngle(lastAngle, angle) / 360f;
+
+                // Çok hızlı çevirince uç vidadan kayar: oyuncu kontrollü çevirmeli
+                if (maxTurnsPerSecond > 0f && dt > 0f && Mathf.Abs(delta) / dt > maxTurnsPerSecond)
+                {
+                    screw.Slip = SlipFlashTime;
+                    screw.Image.color = MinigamePixels.Danger;
+                    Audio.Sfx.Play("minigame.miss");
+                    engaged = null;
+                    hasAngle = false;
+                    return;
+                }
+
                 float turned = delta >= 0f ? delta : delta * reversePenalty;
                 int quarters = Mathf.FloorToInt(screw.Progress * turnsPerScrew * 4f);
                 screw.Progress = Mathf.Clamp01(screw.Progress + turned / turnsPerScrew);
                 // M25: her çeyrek turda tıkırtı
                 if (Mathf.FloorToInt(screw.Progress * turnsPerScrew * 4f) > quarters) Audio.Sfx.Play("minigame.screw");
                 screw.Head.localRotation = Quaternion.Euler(0f, 0f, -screw.Progress * turnsPerScrew * 360f);
-                if (!Art.screwHead || screw.Done)
-                    screw.Image.color = screw.Done ? ScrewTight : Color.Lerp(ScrewLoose, Color.white, screw.Progress * 0.3f);
+                // Sıkıldıkça vida başı hafifçe küçülür (levhaya gömülür)
+                screw.Head.localScale = Vector3.one * Mathf.Lerp(1f, 0.82f, screw.Progress);
                 if (screw.Done)
                 {
+                    screw.Image.color = ScrewTight;
                     engaged = null;
                     hasAngle = false;
                     return;

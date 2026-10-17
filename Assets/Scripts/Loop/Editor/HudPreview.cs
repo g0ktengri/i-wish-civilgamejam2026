@@ -45,6 +45,39 @@ namespace Deprem.Loop.EditorTools
                 Get<CanvasGroup>(bag, "toastGroup").alpha = 1f;
             });
 
+            // Kayıp anı dairesi (ışık 3D sahnede, burada yok): oyuncu odasındaki masanın yanına
+            RenderScene("wish_focus", root =>
+            {
+                var wish = root.AddComponent<WishScreen>();
+                Call(wish, "Awake");
+                Get<CanvasGroup>(wish, "group").alpha = 1f;
+                Get<Image>(wish, "background").color = Color.clear;
+                var focus = Get<Image>(wish, "focus");
+                focus.enabled = true;
+                focus.color = new Color(0f, 0f, 0f, 1f);
+                focus.rectTransform.anchoredPosition = new Vector2(-150f, -110f);
+            });
+
+            // Minigame'ler: eşyanın kendi kurulumuyla (MinigameHost.VariantFor), gerçek kodla
+            foreach (var (name, type, id) in new[]
+                     {
+                         ("minigame_bookcase", Deprem.Core.MinigameType.ScrewTighten, ItemId.Bookcase),
+                         ("minigame_kitchen", Deprem.Core.MinigameType.Lock, ItemId.KitchenCabinets),
+                         ("minigame_mirror", Deprem.Core.MinigameType.CarryAndPlace, ItemId.StairMirror),
+                         ("minigame_bedshelf", Deprem.Core.MinigameType.CarryAndPlace, ItemId.BedShelf),
+                     })
+            {
+                RenderScene(name, root =>
+                {
+                    var host = root.AddComponent<Deprem.Minigames.MinigameHost>();
+                    Call(host, "Awake");
+                    var variant = typeof(Deprem.Minigames.MinigameHost).GetMethod("VariantFor", Flags).Invoke(host, new object[] { id });
+                    string title = Deprem.Localization.Texts.Format("minigame.title", Deprem.Localization.Texts.Get($"item.{id}"));
+                    typeof(Deprem.Minigames.MinigameHost).GetMethod("OpenPanel", Flags).Invoke(host,
+                        new object[] { type, null, variant, title, (System.Action<bool>)(_ => { }) });
+                });
+            }
+
             RenderScene("spirit", root =>
             {
                 var spirit = root.AddComponent<SpiritHud>();

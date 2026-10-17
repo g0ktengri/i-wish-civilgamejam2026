@@ -126,13 +126,14 @@ namespace Deprem.Player
             var sightGo = new GameObject("NightSight");
             sightGo.transform.SetParent(root.transform, false);
             // Play testi 4: çok ışıklıydı; artık küçük ve önde, sadece karakteri hafifçe seçtirir
-            sightGo.transform.localPosition = new Vector3(0f, 1.1f, -0.5f);
+            // Berke'nin play testi (son): karanlıkta ilerlerken çok yakın çevre görünmüyordu. Biraz daha alçakta ve
+            // önde, menzil ~1,8 m: ayağın altı, yakın duvar ve eşya seçilir; oda yine karanlık kalır
+            sightGo.transform.localPosition = new Vector3(0f, 0.9f, -0.6f);
             var sight = sightGo.AddComponent<Light>();
             sight.type = LightType.Point;
-            sight.color = new Color(0.7f, 0.78f, 1f);
-            // Berke'nin play testi: hâlâ çok parlaktı
-            sight.intensity = 0.22f;
-            sight.range = 1.1f;
+            sight.color = new Color(0.78f, 0.84f, 1f);
+            sight.intensity = 0.55f;
+            sight.range = 1.8f;
             sight.shadows = LightShadows.None;
             sight.enabled = false;
 

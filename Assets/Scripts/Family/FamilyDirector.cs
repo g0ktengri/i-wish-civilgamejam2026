@@ -25,6 +25,8 @@ namespace Deprem.Family
         [SerializeField] private float cabinRange = 1.2f;
         [Tooltip("Kabine girenlerin konulduğu nokta (kabinin içi, girişe göre)")]
         [SerializeField] private Vector3 cabinInsideOffset = new Vector3(0f, 0.2f, 1.75f);
+        [Tooltip("Kayası kaldırılan babanın kabine yürüme hızı (aksayarak, m/s; Berke'nin play testi 16)")]
+        [SerializeField] private float limpSpeed = 1f;
 
         private readonly List<Vector3> trail = new List<Vector3>();
         private readonly List<FamilyMember> followers = new List<FamilyMember>();
@@ -69,7 +71,8 @@ namespace Deprem.Family
         public void OnMemberRescued(FamilyMemberId id)
         {
             var member = FamilyMember.Find(id);
-            if (member != null && !followers.Contains(member)) followers.Add(member);
+            // Kabine kendisi yürüyen (baba) takibe alınmaz
+            if (member != null && member.State == FamilyState.Following && !followers.Contains(member)) followers.Add(member);
         }
 
         private void Update()
@@ -94,6 +97,25 @@ namespace Deprem.Family
                 var target = PointBehind((i + 1) * spacing) + Vector3.forward * depthOffset * (i + 1);
                 var member = followers[i];
                 member.SetFollowPosition(Vector3.MoveTowards(member.transform.position, target, catchUpSpeed * dt));
+            }
+
+            WalkToCabin(dt);
+        }
+
+        // Kabine kendisi yürüyen üye: aynı katta giriş X'ine doğru yürür, varınca girer
+        private void WalkToCabin(float dt)
+        {
+            foreach (var member in FamilyMember.All)
+            {
+                if (member.State != FamilyState.WalkingToCabin) continue;
+                var p = member.transform.position;
+                var goal = new Vector3(cabin.InteractionPoint.x, p.y, p.z);
+                if (Mathf.Abs(p.x - goal.x) <= 0.05f)
+                {
+                    member.EnterCabin(cabin.InteractionPoint + cabinInsideOffset);
+                    continue;
+                }
+                member.WalkTo(Vector3.MoveTowards(p, goal, limpSpeed * dt));
             }
         }
 

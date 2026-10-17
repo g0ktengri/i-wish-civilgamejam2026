@@ -30,9 +30,12 @@ family.Sibling,Kardeş,Sibling
 family.cabin,Kabin,Shelter
 
 # Minigame'ler
-minigame.screw.hint,"Tornavidanın ucunu vidaya getir, basılı tut ve sapı saat yönünde çevir","Put the screwdriver tip on the screw, hold and turn the handle clockwise"
-minigame.carry.hint,Eşyayı duvardaki boşluktan geçirip güvenli yere bırak,Drag the item through the gap in the wall to the safe spot
-minigame.lock.hint,İbre yeşil alandayken tıkla; {0} kez tuttur,Click when the needle is in the green zone; hit it {0} times
+minigame.screw.hint,"Ucu vidaya getir, basılı tut ve saat yönünde çevir","Put the tip on a screw, hold and turn clockwise"
+minigame.carry.hint,"Duvara değdirmeden boşluktan geçir, yeşil alana bırak","Get it through the gap without touching the wall, drop it on the green spot"
+minigame.lock.hint,İbre yeşildeyken tıkla ({0} kez); alan her seferinde kayar,Click when the needle is in the green ({0} times); the zone moves each time
+minigame.title,{0} sabitle,Secure the {0}
+minigame.done,Sabitlendi!,Secured!
+minigame.taken,Alındı!,Got it!
 
 # Keşke ekranları: wish = cümle, info = altındaki bilgi, final = final listesindeki hali
 wish.ignored_foreshock,Keşke dikkate alsaydım,I wish I had taken it seriously
@@ -139,7 +142,8 @@ cabin.sign,DEPREM KABİNİ,EARTHQUAKE SHELTER
 hud.rescue_time,ZAMAN,TIME
 bubble.injured,"Ah, bacağım! Zor yürüyorum...","Ow, my leg! I can barely walk..."
 bubble.rescue_start,"Annem, babam, kardeşim... Onları bulup kabine götürmeliyim!","Mom, Dad, my sibling... I have to find them and get them to the shelter!"
-bubble.family_call.father,"İmdat! Yaralandım, kalkamıyorum!","Help! I'm hurt, I can't get up!"
+bubble.family_call.father,"İmdat! Ayağım kayanın altında, kalkamıyorum!","Help! My leg is stuck under a rock!"
+bubble.father_freed,"Sağ ol! Kanamayı sardım, kabine gidiyorum. Sen diğerlerine bak!","Thank you! I've bandaged it, I'll get to the shelter. Go help the others!"
 bubble.family_call.mother,Kimse yok mu? Yardım edin!,Is anyone there? Help!
 bubble.family_call.sibling,"Abi! Neredesin, çok korkuyorum!","Where are you? I'm so scared!"
 
@@ -148,6 +152,7 @@ prompt.open_door,F: Kapıyı aç,F: Open the door
 prompt.stairs_up,F: Yukarı çık,F: Go upstairs
 prompt.stairs_down,F: Aşağı in,F: Go downstairs
 prompt.treat,F (basılı tut): Yarayı sar,F (hold): Treat the wound
+prompt.lift_rock,F (basılı tut): Kayayı kaldır,F (hold): Lift the rock
 prompt.take_along,F: Yanına al,F: Take along
 prompt.cabin_family,F: Kabine yerleştir,F: Get them into the shelter
 prompt.cabin_enter,F: Kabine gir,F: Enter the shelter

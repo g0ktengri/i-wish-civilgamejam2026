@@ -41,6 +41,34 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Berke'nin play testi 16: vida kolaylaştı, baba senaryosu değişti (senin klasörlerinde izinle)
+
+- **Vida:** uç artık vidadan kopmuyor (`screwMaxTurnsPerSecond` 0; özellik duruyor, istersen açılır). Vida başına tur 1,25 → 1,5. Tornavida çekiştirince uzamıyor: boy sabit, sadece fareye doğru dönüyor.
+- **Baba senaryosu (`FamilyMember`, `FamilyDirector`, `FamilySetup`, `FamilySmokeTest`):**
+  - Ana depremden sonra babanın ayağının üstünde pixel bir kaya var (`rockMaterial` = `Generated/Quake/siva.mat` kopyası, doku `PixelRubble.Chunk`; senin `DressAsPixelRubble` ile aynı alfa kesme). Seslenmesi: "İmdat! Ayağım kayanın altında, kalkamıyorum!"
+  - İlk yardım çantası şartı duruyor (kan kaybı): çanta yoksa eskisi gibi `MissingBagItem`. Varsa ipucu "F (basılı tut): Kayayı kaldır" (`prompt.lift_rock`), 3 sn (`treatHoldTime`).
+  - Kaya yana devrilip kaybolur, baba "Sağ ol! Kanamayı sardım, kabine gidiyorum. Sen diğerlerine bak!" der (`bubble.father_freed`) ve yeni `FamilyState.WalkingToCabin` durumuna geçer. Takipçi olmaz; `FamilyDirector.WalkToCabin` onu aynı katta kabin girişine aksayarak (`limpSpeed` 1 m/sn, görselde iniş ve yana yatma) yürütür, varınca `EnterCabin`. Salondan ~10 sn.
+  - Yürürken kapı ve devrilen eşyaların içinden geçer (fizik yok). TV ünitesi koridor kapısını kapatmışsa bile geçiyor; istersen o durumda beklesin diye ekleyebilirsin.
+  - `FamilySmokeTest`: baba adımı yeni akışa göre güncellendi (kaya kaldırma 3 sn, yürüme, kabine kendi girişi); tam kurtarma ve kazanma testi geçiyor.
+
+### Berke'nin play testi 15: minigame'ler zorlaştı, her eşya farklı, pixel görünüm
+
+- **Eşyaya göre kurulum (`MinigameHost.VariantFor`, her açılışta yeni Seed):**
+  - Vida: kitaplık ve gardırop 3 vida (üçgen), TV ünitesi yatay 2, oyuncak rafı dikey 2, ayakkabılık çapraz 2. Vida yerleri her açılışta biraz oynar; vida başına 1,25 tur.
+  - Taşı-yerleştir: yatak rafı iki duvarlı zikzak, ayna yukarı aşağı kayan boşluk, çerçeve tek duvar (boşluk 64, eşya 48). Çanta malzemesi: el feneri kayan boşluk, diğerleri tek duvar.
+  - Kilit: her isabetten sonra yeşil alan kaymaya başlar, isabet başına daha hızlı (`lockDriftPerHit` 0,16).
+- **Yeni beceri:** tornavidayı çok hızlı çevirirsen (> 2,8 tur/sn, `screwMaxTurnsPerSecond`) uç vidadan kayar, vida kırmızı yanar, yeniden tutmak gerekir.
+- **Görünüş:** çerçeve HUD'un pixel paneli; üstte başlık ("Kitaplığı sabitle", `minigame.title`), altta ipucu paneli, sağ altta [Esc] Vazgeç; başarıda yeşil parlama ve "Sabitlendi!" / "Alındı!". İçerik kodla çizilen pixel art (`Minigames/MinigamePixels`): ahşap dolap arkası, fırçalanmış metal L demiri, yıldız başlı vidalar, dolap kapağı ve her isabette kapanan sürgülü mandal, sıva duvar ve tuğla engeller, eşyaya özel küçük çizimler (raf, ayna, çerçeve). Sanatçı görseli (`Art/UI/minigame_*`) gelirse o parça onunkiyle değişir.
+- **Test:** Berke testi her vida düzenini, hızlı çevirince kaymayı, taşı-yerleştir'in üç çeşidini (30'ar rastgele yerleşim, kayan boşluk dahil) ve kayan alanlı kilidi deniyor; hepsi geçiyor. Kusursuz oyuncu: vida 2,6–4 sn, kilit ~3 sn, taşı ~1–2 sn.
+- Önizleme: `Logs/hud_preview_minigame_{bookcase,kitchen,mirror,bedshelf}.png`.
+
+### Berke'nin play testi 14: ruh duvar arkasında, ölü aile üyesi görünmüyor, karanlıkta yakın çevre
+
+- **Ruh duvarların arkasında kalıyordu:** ruh duvar ve döşeme kutularının içinden geçerken sprite onların içinde kalıyordu. `SpiritVisual` sprite'ı her karede kameradan geçen aynı ışın üzerinde evin önüne (z -0,1; oda örtüleri -0,03) çekip aynı oranda küçültüyor; ekrandaki yeri ve boyu değişmiyor, hiçbir duvarın arkasında kalmıyor. Ruh, açılmamış odaların siyah örtüsünün de önünde görünür (bilerek).
+- **Ölü bulunan anne / baba görünmüyordu:** `WishScreen`, kayıp `FamilyHitByItem` ya da `MissingBagItem` ise kararmadan önce oyuncuya en yakın üyeyi (`Father` / `Mother` / `Sibling` objeleri, ad ile) gösteriyor. Ekran üyenin görsel merkezinin çevresindeki daire (yarıçap 120 referans pikseli) dışında tamamen kararıyor, üyeye 0,7 sn'de güçlü sıcak bir nokta ışığı vuruyor (4, menzil 3,5), 1,8 sn öyle kalıyor, sonra siyaha geçiliyor. Senin `failDelay` ve kayıp balonun bundan önce oynuyor. Üye objelerinin adlarını değiştirirsen haber ver (`WishScreen.LostFamilyMember`).
+- **Karanlıkta yakın çevre:** `PlayerSetup` NightSight 0,22 / 1,1 m → 0,55 / 1,8 m, biraz alçakta ve önde (0, 0,9, -0,6), renk biraz daha nötr (0,78, 0,84, 1). Ayağın altı, yakın duvar ve eşya seçiliyor; oda yine karanlık. Fazla gelirse yalnızca bu iki değer.
+- Önizleme: `Logs/hud_preview_wish_focus.png` (daire; ışık 3D sahnede olduğu için önizlemede yok).
+
 ### Ekip çizimi: ölme ve ruh animasyonu (Berke, senin klasörlerinde izinle)
 
 - **Kareler:** `Art/Characters/oyuncu_olme_1..5` ve `Art/Characters/ruh_1..8` (1920 px → 128 px, en yakın komşu; ayak hizası diğer karelerle aynı, y = 2 px).

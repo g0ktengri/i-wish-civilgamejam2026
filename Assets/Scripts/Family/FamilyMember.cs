@@ -10,10 +10,11 @@ namespace Deprem.Family
     {
         Waiting,   // kendi odasında, sağ
         Ducking,   // ana depremde çök-kapan-tutun
-        Injured,   // yaralı, tedavi bekliyor (baba: pencere camı)
+        Injured,   // yaralı, tedavi bekliyor (baba: ayağının üstünde kaya, kan kaybı)
         Hit,       // üstüne eşya devrildi
         Following, // oyuncuyu takip ediyor
         InCabin,
+        WalkingToCabin, // Berke'nin play testi 16: kayası kaldırılan baba kabine kendisi, yavaşça yürür
     }
 
     /// <summary>
@@ -21,6 +22,8 @@ namespace Deprem.Family
     ///   - dangerItem sabitlenmeden devrilirse üstüne düşer; oyuncu yanına gelince FamilyHitByItem.
     ///   - requiredBagItem çantada yoksa oyuncu yanına gelince MissingBagItem (baba: ilk yardım, kardeş: el feneri).
     ///   - Yaralıysa F basılı tutularak tedavi edilir, değilse F ile toplanır; sonra takip eder.
+    ///   - Berke'nin play testi 16: babanın ayağına kaya düşmüş (kan kaybı da var: ilk yardım çantası yine şart).
+    ///     F 3 sn basılı tutulunca kaya kalkar, baba teşekkür eder ve kabine kendisi aksayarak yürür (FamilyDirector).
     /// Takip ve kabin FamilyDirector'da.
     /// </summary>
     public sealed class FamilyMember : MonoBehaviour, IInteractable, IPromptSource
@@ -38,6 +41,10 @@ namespace Deprem.Family
         [SerializeField] private bool injuredAfterQuake;
 
         [SerializeField] private float treatHoldTime = 3f;
+        [Tooltip("Yaralıyken ayağının üstündeki kayanın materyali (siva.mat kopyası, doku PixelRubble); boşsa kaya yok")]
+        [SerializeField] private Material rockMaterial;
+        [SerializeField] private Vector3 rockOffset = new Vector3(-0.22f, 0.2f, -0.25f);
+        [SerializeField] private Vector2 rockSize = new Vector2(0.7f, 0.55f);
         [Tooltip("Oyuncu bu kadar yaklaşınca durumu fark eder (aynı kat, X ekseninde)")]
         [SerializeField] private float discoverRange = 3.5f;
         [SerializeField] private float interactRange = 1.2f;
@@ -78,6 +85,7 @@ namespace Deprem.Family
         private SpeechBubble bubble;
         private PlayerController player;
         private bool registered;
+        private GameObject rock;
 
         public static FamilyMember Find(FamilyMemberId memberId)
         {
@@ -143,7 +151,10 @@ namespace Deprem.Family
                         PinUnder(HitBy);
                     }
                     else if (State == FamilyState.Ducking || State == FamilyState.Waiting)
+                    {
                         State = injuredAfterQuake ? FamilyState.Injured : FamilyState.Waiting;
+                        if (State == FamilyState.Injured) SpawnRock();
+                    }
                     break;
             }
         }
@@ -273,7 +284,7 @@ namespace Deprem.Family
 
         public Vector3 InteractionPoint => transform.position;
         public float InteractionRange => interactRange;
-        public string PromptKey => State == FamilyState.Injured ? "prompt.treat" : "prompt.take_along";
+        public string PromptKey => State == FamilyState.Injured ? (rock != null ? "prompt.lift_rock" : "prompt.treat") : "prompt.take_along";
 
         public bool CanInteract(PlayerController who)
         {
@@ -299,9 +310,65 @@ namespace Deprem.Family
         private void Rescue()
         {
             IsTreating = false;
-            State = FamilyState.Following;
-            GameState.MarkRescued(id); // FamilyDirector FamilyMemberRescued'i dinleyip takibe alır
+            if (State == FamilyState.Injured && rock != null)
+            {
+                // Kaya kalkar; baba kabine kendisi yürür (FamilyDirector takibe almaz, yürütür)
+                StartCoroutine(LiftRock());
+                State = FamilyState.WalkingToCabin;
+                if (bubble == null) bubble = GetComponent<SpeechBubble>();
+                if (bubble != null) bubble.Say("bubble.father_freed", 3f);
+            }
+            else
+            {
+                State = FamilyState.Following;
+            }
+            GameState.MarkRescued(id); // FamilyDirector FamilyMemberRescued'i dinleyip takibe alır (yürüyen hariç)
         }
+
+        // ------------------------------------------------------------------ Kaya (baba)
+
+        private void SpawnRock()
+        {
+            if (rock != null || rockMaterial == null) return;
+            rock = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            rock.name = "Rock";
+            var collider = rock.GetComponent<Collider>();
+            if (Application.isPlaying) Destroy(collider); else DestroyImmediate(collider);
+            rock.transform.SetParent(transform, false);
+            rock.transform.localPosition = rockOffset;
+            rock.transform.localScale = new Vector3(rockSize.x, rockSize.y, 1f);
+
+            // QuakeDirector.DressAsPixelRubble ile aynı: pixel moloz dokusu, alfa kesme
+            var material = new Material(rockMaterial) { name = "Rock" };
+            material.SetTexture("_BaseMap", Deprem.Quake.PixelRubble.Chunk(Random.Range(0, Deprem.Quake.PixelRubble.AtlasTiles)));
+            material.SetColor("_BaseColor", new Color(0.82f, 0.78f, 0.74f));
+            material.SetFloat("_AlphaClip", 1f);
+            material.SetFloat("_Cutoff", 0.5f);
+            material.EnableKeyword("_ALPHATEST_ON");
+            var renderer = rock.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+        }
+
+        // Kaya yana devrilip düşer ve kaybolur
+        private System.Collections.IEnumerator LiftRock()
+        {
+            var r = rock;
+            rock = null;
+            if (r == null) yield break;
+            var start = r.transform.localPosition;
+            for (float t = 0f; t < 0.6f && r != null; t += Time.deltaTime)
+            {
+                float k = t / 0.6f;
+                r.transform.localPosition = start + new Vector3(0.55f * k, 0.45f * Mathf.Sin(k * Mathf.PI), 0f);
+                r.transform.localRotation = Quaternion.Euler(0f, 0f, -120f * k);
+                yield return null;
+            }
+            if (r != null) Destroy(r);
+        }
+
+        /// <summary>Kabine yürürken FamilyDirector çağırır (aksayarak; Facing yöne göre)</summary>
+        public void WalkTo(Vector3 position) => SetFollowPosition(position);
 
         // ------------------------------------------------------------------ Takip ve kabin (FamilyDirector çağırır)
 
@@ -337,6 +404,14 @@ namespace Deprem.Family
             bool ducking = State == FamilyState.Ducking;
             visual.localRotation = lying ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
             visual.localScale = new Vector3(Facing, ducking ? 0.6f : 1f, 1f);
+            // Kabine yürüyen yaralı baba aksar: adımlarda hafif iniş ve yana yatma
+            if (State == FamilyState.WalkingToCabin)
+            {
+                float step = Mathf.Abs(Mathf.Sin(Time.time * 5f));
+                visual.localPosition = new Vector3(0f, -0.04f * step, 0f);
+                visual.localRotation = Quaternion.Euler(0f, 0f, 4f * step * Facing);
+            }
+            else visual.localPosition = Vector3.zero;
         }
     }
 }

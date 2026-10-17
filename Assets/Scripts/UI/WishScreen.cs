@@ -12,6 +12,9 @@ namespace Deprem.UI
 {
     // Keşke ekranı (Berke'nin play testi: etkili ve çarpıcı olsun, oyuncu sindirsin):
     //   1. Kayıp anında ekran yavaşça kararır (iris ve cam kırılması denendi, beğenilmedi).
+    //      Aile üyesi kaybedildiyse (ezilme, eksik malzeme) önce o gösterilir: ekran üyenin çevresindeki daire dışında
+    //      kararır, üyeye güçlü sıcak bir ışık vurur, kısa bir an öyle kalır (play testi: karanlıkta ölü bulunan
+    //      anne / baba görünmüyordu).
     //   2. M21: önce tek başına, büyük "KEŞKE..." daktilo gibi gelir (her harfte vuruş), titreyerek bekler,
     //      küçülüp yukarı kayar; sonra cümlenin devamı ("...KİTAPLIĞI SABİTLESEYDİM") ayrıca, sarsılarak yazılır.
     //   3. M22: altında kırmızı bir çatlak ortadan iki yana yarılır (ekran kısa kırmızı parlar ve sarsılır),
@@ -26,6 +29,19 @@ namespace Deprem.UI
         [Header("Kayıp anı")]
         [Tooltip("Ekranın kararma süresi (gerçek sn)")]
         [SerializeField] float fadeToBlack = 1.6f;
+
+        [Header("Kayıp anı: aile üyesi")]
+        [Tooltip("Dairenin dışının kararma süresi")]
+        [SerializeField] float focusInSeconds = 0.7f;
+        [Tooltip("Üye ışıkta gösterilirken bekleme")]
+        [SerializeField] float focusHold = 1.8f;
+        [Tooltip("Dairenin dışındaki karartma (0-1; doğrusal renk uzayında 0,96 bile gri kalıyordu, 1 = tam siyah)")]
+        [SerializeField] float focusDarkness = 1f;
+        [Tooltip("Dairenin yarıçapı (referans pikseli; yumuşak kenar bunun ~1,5 katına kadar)")]
+        [SerializeField] float focusRadius = 120f;
+        [SerializeField] Color focusLightColor = new Color(1f, 0.9f, 0.78f);
+        [SerializeField] float focusLightIntensity = 4f;
+        [SerializeField] float focusLightRange = 3.5f;
 
         [Header("KEŞKE... (sn)")]
         [SerializeField] float wishDelay = 0.9f;
@@ -82,6 +98,8 @@ namespace Deprem.UI
 
         CanvasGroup group;
         Image background;
+        Image focus;
+        Light focusLight;
         Text headText;
         Text wishText;
         Text infoText;
@@ -152,7 +170,17 @@ namespace Deprem.UI
             rewinding = false;
             ClearTexts();
             background.enabled = true;
-            yield return Fade(group.alpha, 1f, fadeToBlack);
+            var lost = LostFamilyMember(GameState.LastLoseReason);
+            if (lost)
+            {
+                // Önce kaybedilen üye: arka plan saydam başlar, daire dışı kararır, sonra siyaha geçilir
+                background.color = new Color(0f, 0f, 0f, 0f);
+                group.alpha = 1f;
+                yield return FocusOn(lost);
+                yield return FadeBackground(fadeToBlack);
+                EndFocus();
+            }
+            else yield return Fade(group.alpha, 1f, fadeToBlack);
 
             SplitWish(wish, out string head, out string rest);
             yield return new WaitForSecondsRealtime(wishDelay);
@@ -171,6 +199,118 @@ namespace Deprem.UI
             hintText.text = Texts.Get("prompt.continue");
             hintText.enabled = true;
             canContinue = true;
+        }
+
+        // Kayıp bir aile üyesiyse oyuncuya en yakın üye (Family sistemi: Father / Mother / Sibling objeleri);
+        // oyuncu kayıp anında onun yanındadır. Başka sebeplerde null.
+        static Transform LostFamilyMember(LoseReason reason)
+        {
+            if (reason != LoseReason.FamilyHitByItem && reason != LoseReason.MissingBagItem) return null;
+            var player = GameObject.Find("Player");
+            Transform best = null;
+            float bestDistance = float.MaxValue;
+            foreach (var name in new[] { "Father", "Mother", "Sibling" })
+            {
+                var member = GameObject.Find(name);
+                if (!member) continue;
+                float distance = player ? Vector3.Distance(player.transform.position, member.transform.position) : 0f;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = member.transform;
+                }
+            }
+            return best;
+        }
+
+        // Üyenin görsel merkezi (yatan görsel pivotun yanında uzanır)
+        static Vector3 VisualCenter(Transform member)
+        {
+            var renderers = member.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return member.position + Vector3.up * 0.4f;
+            var bounds = renderers[0].bounds;
+            foreach (var r in renderers)
+                if (!(r is ParticleSystemRenderer)) bounds.Encapsulate(r.bounds);
+            return bounds.center;
+        }
+
+        IEnumerator FocusOn(Transform member)
+        {
+            var center = VisualCenter(member);
+            focusLight = new GameObject("WishFocusLight").AddComponent<Light>();
+            focusLight.type = LightType.Point;
+            focusLight.color = focusLightColor;
+            focusLight.range = focusLightRange;
+            focusLight.shadows = LightShadows.None;
+            focusLight.intensity = 0f;
+
+            focus.enabled = true;
+            float total = focusInSeconds + focusHold;
+            for (float t = 0f; t < total; t += Time.unscaledDeltaTime)
+            {
+                if (member) center = VisualCenter(member);
+                focusLight.transform.position = center + new Vector3(0f, 0.8f, -1.2f);
+                float k = Mathf.Clamp01(t / focusInSeconds);
+                k = k * k * (3f - 2f * k);
+                focusLight.intensity = focusLightIntensity * k;
+                focus.color = new Color(0f, 0f, 0f, focusDarkness * k);
+                PlaceFocus(center);
+                yield return null;
+            }
+        }
+
+        void PlaceFocus(Vector3 world)
+        {
+            var cam = Camera.main;
+            if (!cam) return;
+            var viewport = cam.WorldToViewportPoint(world);
+            var canvasRect = (RectTransform)focus.canvas.transform;
+            focus.rectTransform.anchoredPosition = new Vector2((viewport.x - 0.5f) * canvasRect.rect.width,
+                (viewport.y - 0.5f) * canvasRect.rect.height);
+        }
+
+        // Daire karartması kalır, arka plan siyaha gelir
+        IEnumerator FadeBackground(float duration)
+        {
+            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            {
+                background.color = new Color(0f, 0f, 0f, t / duration);
+                yield return null;
+            }
+            background.color = Color.black;
+        }
+
+        void EndFocus()
+        {
+            if (focus) focus.enabled = false;
+            if (focusLight) Destroy(focusLight.gameObject);
+            focusLight = null;
+        }
+
+        // Ortası saydam, kenara doğru yumuşakça kararan daire; dışı siyah. Image çok büyük çizilir ki daire ekranın
+        // neresinde olursa olsun ekranın kalanını örtsün.
+        Sprite FocusSprite(float imageSize)
+        {
+            const int size = 256;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp,
+                name = "WishFocus",
+            };
+            float inner = focusRadius / imageSize * size;
+            float outer = inner * 1.5f;
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(size * 0.5f, size * 0.5f));
+                float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(inner, outer, d));
+                pixels[y * size + x] = new Color32(255, 255, 255, (byte)(a * 255f));
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
         }
 
         // "Keşke kitaplığı sabitleseydim" → "KEŞKE..." + "...KİTAPLIĞI SABİTLESEYDİM". Ön ek wish.prefix'ten
@@ -491,6 +631,7 @@ namespace Deprem.UI
             background.color = Color.black;
             crackRoot.localScale = Vector3.one;
             ClearCrack();
+            EndFocus();
         }
 
         IEnumerator Fade(float from, float to, float duration)
@@ -532,6 +673,14 @@ namespace Deprem.UI
 
             background = UiBuilder.CreateImage(canvas.transform, "Background", Color.black);
             UiBuilder.Stretch(background.rectTransform, Vector2.zero, Vector2.one);
+
+            // Kayıp anı dairesi: ekranın iki katından büyük, siyah dışı ekranın kalanını örter
+            const float focusSize = 2400f;
+            focus = UiBuilder.CreateImage(canvas.transform, "Focus", Color.clear);
+            focus.sprite = FocusSprite(focusSize);
+            focus.rectTransform.anchorMin = focus.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            focus.rectTransform.sizeDelta = Vector2.one * focusSize;
+            focus.enabled = false;
 
             // Tek başına KEŞKE ekranın ortasında; küçülünce cümlenin üstüne kayar
             headText = UiBuilder.CreateText(canvas.transform, "WishHead", font, headFontSize, wishColor);

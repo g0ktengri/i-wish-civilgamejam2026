@@ -97,8 +97,8 @@ namespace Deprem.Loop.EditorTools
         static MinigameInput Input(Vector2 pointer, bool held, bool pressed = false, bool released = false) =>
             new MinigameInput { Pointer = pointer, Held = held, Pressed = pressed, Released = released, DeltaTime = Dt };
 
-        // Kilit: iğne yeşil alandayken tıklayan oyuncu bitirebilmeli. Play testi 8 hatası: ıskalayınca alan ve hız
-        // geri gelmiyordu; isabet + ıskalama sonrası alan baştaki genişlikte olmalı.
+        // Kilit: iğne yeşil alandayken tıklayan oyuncu bitirebilmeli (alan isabetten sonra kayar). Play testi 8 hatası:
+        // ıskalayınca alan ve hız geri gelmiyordu; isabet + ıskalama sonrası alan baştaki genişlikte olmalı.
         static void TestLock(SerializedObject host, Vector2 panelSize)
         {
             float speed = host.FindProperty("lockCyclesPerSecond").floatValue;
@@ -106,13 +106,13 @@ namespace Deprem.Loop.EditorTools
             int hits = host.FindProperty("lockRequiredHits").intValue;
             float shrink = host.FindProperty("lockShrinkPerHit").floatValue;
             float speedUp = host.FindProperty("lockSpeedUpPerHit").floatValue;
+            var variant = new MinigameVariant { Seed = 7, LockDrift = host.FindProperty("lockDriftPerHit").floatValue };
 
-            // 1. Kusursuz oyuncu
             var panel = CreatePanel(panelSize, out var root);
             try
             {
                 var game = new LockMinigame(speed, zone, hits, shrink, speedUp);
-                game.Build(panel, null);
+                game.Build(panel, null, variant);
                 var zoneRect = (RectTransform)panel.Find("Bar/Zone");
                 var needle = (RectTransform)panel.Find("Bar/Needle");
                 float startWidth = zoneRect.sizeDelta.x;
@@ -126,26 +126,22 @@ namespace Deprem.Loop.EditorTools
                     float dx = Mathf.Abs(needle.anchoredPosition.x - zoneRect.anchoredPosition.x);
                     bool inside = dx < zoneRect.sizeDelta.x * 0.35f;
                     bool farAway = dx > zoneRect.sizeDelta.x * 1.5f;
-                    bool press;
-                    if (!hitOnce) { press = inside; }
-                    else if (!missedAfterHit) { press = farAway; }
-                    else { press = inside; }
+                    bool press = !hitOnce ? inside : !missedAfterHit ? farAway : inside;
                     done = game.Tick(Input(Vector2.zero, press, press));
                     if (press && !hitOnce) hitOnce = true;
-                    else if (press && hitOnce && !missedAfterHit)
+                    else if (press && !missedAfterHit)
                     {
                         missedAfterHit = true;
                         widthAfterMiss = zoneRect.sizeDelta.x;
                     }
-                    // Bir kare sonra iğne hâlâ alandaysa ikinci tıklama sayılmasın
-                    if (press) game.Tick(Input(Vector2.zero, false));
+                    if (press) game.Tick(Input(Vector2.zero, false)); // aynı kareye ikinci tık sayılmasın
                 }
                 Check(Mathf.Abs(widthAfterMiss - startWidth) < 0.5f,
                     $"Kilit: isabet + ıskalama sonrası alan baştaki gibi ({widthAfterMiss:F1} / {startWidth:F1} px)");
-                Check(done, $"Kilit: yeşilde tıklayan oyuncu bitiriyor ({t:F1} sn, ıskalama dahil)");
+                Check(done, $"Kilit: yeşilde tıklayan oyuncu kayan alanla da bitiriyor ({t:F1} sn, ıskalama dahil)");
 
                 // Son isabetin zaman penceresi insan için yeterli mi (~0,12 sn üstü)
-                float barWidth = panelSize.x * 0.8f;
+                float barWidth = panelSize.x * 0.78f;
                 float lastZone = zone * Mathf.Pow(shrink, hits - 1) * barWidth;
                 float lastSpeed = speed * Mathf.Pow(speedUp, hits - 1) * barWidth; // px/sn
                 float window = lastZone / lastSpeed;
@@ -157,68 +153,65 @@ namespace Deprem.Loop.EditorTools
             }
         }
 
-        // Vida: tornavidanın ucunu vidaya getirip saat yönünde çeviren oyuncu bitirebilmeli
+        // Vida: her düzen insan hızında (1,5 tur/sn) bitirilebilmeli; çok hızlı çevirmek (5 tur/sn) uç kaydığı için
+        // bitirmemeli; ters yönde çevirmek ilerletmemeli
         static void TestScrew(SerializedObject host, Vector2 panelSize)
+        {
+            float turns = host.FindProperty("screwTurnsPerScrew").floatValue;
+            float reverse = host.FindProperty("screwReversePenalty").floatValue;
+            float minRadius = host.FindProperty("screwMinRadius").floatValue;
+            float maxSpeed = host.FindProperty("screwMaxTurnsPerSecond").floatValue;
+
+            foreach (ScrewLayout layout in Enum.GetValues(typeof(ScrewLayout)))
+            {
+                var variant = new MinigameVariant { Seed = 11 + (int)layout, Screws = layout };
+                bool done = PlayScrew(panelSize, turns, reverse, minRadius, maxSpeed, variant, 9f, out int count, out float seconds);
+                Check(done, $"Vida ({layout}, {count} vida): saat yönünde düzgün çeviren bitiriyor ({seconds:F1} sn)");
+            }
+            var fast = new MinigameVariant { Seed = 3, Screws = ScrewLayout.Horizontal2 };
+            bool fastDone = PlayScrew(panelSize, turns, reverse, minRadius, maxSpeed, fast, 30f, out _, out _);
+            if (maxSpeed > 0f) Check(!fastDone, $"Vida: çok hızlı çevirince (5 tur/sn > {maxSpeed:F1}) uç kayıyor, bitmiyor");
+            else Check(fastDone, "Vida: kayma kapalı, hızlı çevirince de uç kopmuyor (play testi 16)");
+            bool reverseDone = PlayScrew(panelSize, turns, reverse, minRadius, maxSpeed, fast, -9f, out _, out _);
+            Check(!reverseDone, "Vida: ters yönde çevirmek bitirmiyor");
+        }
+
+        // degreesPerFrame > 0 saat yönü. Her vida için yetecek kadar kare çevirir, bırakır, sonrakine geçer.
+        static bool PlayScrew(Vector2 panelSize, float turns, float reverse, float minRadius, float maxSpeed,
+            MinigameVariant variant, float degreesPerFrame, out int count, out float seconds)
         {
             var panel = CreatePanel(panelSize, out var root);
             try
             {
-                var game = new ScrewMinigame(host.FindProperty("screwTurnsPerScrew").floatValue,
-                    host.FindProperty("screwReversePenalty").floatValue, host.FindProperty("screwMinRadius").floatValue,
-                    host.FindProperty("screwCount").intValue);
-                game.Build(panel, null);
+                var game = new ScrewMinigame(turns, reverse, minRadius, maxSpeed);
+                game.Build(panel, null, variant);
                 var screws = new List<Vector2>();
                 foreach (Transform child in panel)
                     if (child.name == "Screw") screws.Add(((RectTransform)child).anchoredPosition);
+                count = screws.Count;
                 var driver = (RectTransform)panel.Find("Screwdriver");
 
                 // Boştaki uç ile fare arasındaki fark
                 game.Tick(Input(Vector2.zero, false));
                 Vector2 offset = -driver.anchoredPosition;
+                int framesPerScrew = Mathf.CeilToInt(turns * 360f / Mathf.Abs(degreesPerFrame)) + 10;
 
                 bool done = false;
-                float t = 0f;
+                seconds = 0f;
                 foreach (var screw in screws)
                 {
                     Vector2 grab = screw + offset;
                     game.Tick(Input(grab, true, true));
-                    float radius = offset.magnitude;
                     float angle = Mathf.Atan2(offset.y, offset.x);
-                    for (int frame = 0; frame < 900 && !done; frame++, t += Dt)
+                    for (int frame = 0; frame < framesPerScrew && !done; frame++, seconds += Dt)
                     {
-                        angle -= 9f * Mathf.Deg2Rad; // saat yönü, karede 9° (~1,5 tur/sn)
-                        var pointer = screw + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-                        done = game.Tick(Input(pointer, true));
+                        angle -= degreesPerFrame * Mathf.Deg2Rad;
+                        done = game.Tick(Input(screw + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * offset.magnitude, true));
                     }
-                    game.Tick(Input(grab, false, false, true));
+                    if (!done) game.Tick(Input(grab, false, false, true));
+                    seconds += 0.4f; // sonraki vidaya gitme payı
                 }
-                Check(screws.Count > 0, $"Vida: {screws.Count} vida var");
-                Check(done, $"Vida: saat yönünde çeviren oyuncu bitiriyor ({t:F1} sn)");
-
-                // Ters yönde çevirmek ilerletmemeli
-                var reverse = new ScrewMinigame(host.FindProperty("screwTurnsPerScrew").floatValue, 1f, 18f, 1);
-                var panel2 = CreatePanel(panelSize, out var root2);
-                try
-                {
-                    reverse.Build(panel2, null);
-                    var driver2 = (RectTransform)panel2.Find("Screwdriver");
-                    var screw = ((RectTransform)panel2.Find("Screw")).anchoredPosition;
-                    reverse.Tick(Input(Vector2.zero, false));
-                    Vector2 off = -driver2.anchoredPosition;
-                    reverse.Tick(Input(screw + off, true, true));
-                    float a = Mathf.Atan2(off.y, off.x);
-                    bool reverseDone = false;
-                    for (int frame = 0; frame < 600 && !reverseDone; frame++)
-                    {
-                        a += 9f * Mathf.Deg2Rad;
-                        reverseDone = reverse.Tick(Input(screw + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * off.magnitude, true));
-                    }
-                    Check(!reverseDone, "Vida: ters yönde çevirmek bitirmiyor");
-                }
-                finally
-                {
-                    Object.DestroyImmediate(root2);
-                }
+                return done;
             }
             finally
             {
@@ -226,67 +219,95 @@ namespace Deprem.Loop.EditorTools
             }
         }
 
-        // Taşı-yerleştir: eşyayı duvardaki boşluktan geçirip güvenli alana bırakan oyuncu bitirebilmeli.
-        // Yerleşim her açılışta rastgele: 40 farklı yerleşim denenir. Duvardan geçmeye çalışan bitirememeli.
+        // Taşı-yerleştir: üç çeşit (tek duvar, kayan boşluk, iki duvar) her rastgele yerleşimde boşluklardan geçen
+        // oyuncuyla bitmeli. Tek duvarda, düz çizgisi duvara çarpan yerleşimde dümdüz giden bitirememeli.
         static void TestCarry(SerializedObject host, Vector2 panelSize)
         {
             float snap = host.FindProperty("carrySnapRadius").floatValue;
             float gap = host.FindProperty("carryGapHeight").floatValue;
-            int passed = 0, cheated = 0, blocked = 0;
-            const int Runs = 40;
+            const int Runs = 30;
             var state = UnityEngine.Random.state;
-            for (int run = 0; run < Runs; run++)
+            foreach (CarryMode mode in Enum.GetValues(typeof(CarryMode)))
             {
-                UnityEngine.Random.InitState(1000 + run);
-                if (PlayCarry(panelSize, snap, gap, true, out _)) passed++;
-                UnityEngine.Random.InitState(1000 + run);
-                bool straightDone = PlayCarry(panelSize, snap, gap, false, out bool straightBlocked);
-                if (straightBlocked)
+                int passed = 0, cheated = 0, blocked = 0;
+                float slowest = 0f;
+                for (int run = 0; run < Runs; run++)
                 {
+                    var variant = new MinigameVariant { Seed = 1000 + run, Carry = mode };
+                    if (PlayCarry(panelSize, snap, gap, variant, true, out _, out float seconds)) passed++;
+                    slowest = Mathf.Max(slowest, seconds);
+                    if (mode != CarryMode.Single) continue;
+                    bool straightDone = PlayCarry(panelSize, snap, gap, variant, false, out bool straightBlocked, out _);
+                    if (!straightBlocked) continue;
                     blocked++;
                     if (straightDone) cheated++;
                 }
+                Check(passed == Runs, $"Taşı-yerleştir ({mode}): boşluktan geçen her yerleşimde bitiriyor ({passed}/{Runs}, en uzun {slowest:F1} sn)");
+                if (mode == CarryMode.Single)
+                    Check(blocked > 0 && cheated == 0, $"Taşı-yerleştir: duvarın içinden düz giden bitiremiyor ({cheated}/{blocked} duvara çarpan yerleşim)");
             }
             UnityEngine.Random.state = state;
-            Check(passed == Runs, $"Taşı-yerleştir: boşluktan geçen oyuncu her yerleşimde bitiriyor ({passed}/{Runs})");
-            // Düz çizgisi zaten boşluktan geçen yerleşimler sayılmaz (meşru yol)
-            Check(blocked > 0 && cheated == 0, $"Taşı-yerleştir: duvarın içinden düz giden bitiremiyor ({cheated}/{blocked} duvara çarpan yerleşim)");
         }
 
-        static bool PlayCarry(Vector2 panelSize, float snap, float gap, bool throughGap, out bool straightBlocked)
+        static bool PlayCarry(Vector2 panelSize, float snap, float gap, MinigameVariant variant, bool throughGap,
+            out bool straightBlocked, out float seconds)
         {
             straightBlocked = false;
+            seconds = 0f;
             var panel = CreatePanel(panelSize, out var root);
             try
             {
                 var game = new CarryMinigame(snap, gap, null);
-                game.Build(panel, null);
+                game.Build(panel, null, variant);
                 var item = ((RectTransform)panel.Find("Item")).anchoredPosition;
                 var target = ((RectTransform)panel.Find("SafeSpot")).anchoredPosition;
-                var top = (RectTransform)panel.Find("WallTop");
-                var bottom = (RectTransform)panel.Find("WallBottom");
-                float gapY = ((top.anchoredPosition.y - top.sizeDelta.y * 0.5f) + (bottom.anchoredPosition.y + bottom.sizeDelta.y * 0.5f)) * 0.5f;
-                float nearX = 8f + 24f + 6f;
-                float crossY = Mathf.Lerp(item.y, target.y, Mathf.InverseLerp(item.x, target.x, 0f));
-                straightBlocked = Mathf.Abs(crossY - gapY) > (gap - 48f) * 0.5f;
+                var walls = new List<(RectTransform top, RectTransform bottom)>();
+                for (int i = 0; panel.Find($"Wall{i}Top"); i++)
+                    walls.Add(((RectTransform)panel.Find($"Wall{i}Top"), (RectTransform)panel.Find($"Wall{i}Bottom")));
+                float GapY(int i) => ((walls[i].top.anchoredPosition.y - walls[i].top.sizeDelta.y * 0.5f) +
+                                      (walls[i].bottom.anchoredPosition.y + walls[i].bottom.sizeDelta.y * 0.5f)) * 0.5f;
+                float WallX(int i) => walls[i].top.anchoredPosition.x;
+                const float Clearance = 8f + 24f + 6f;
 
-                var path = throughGap
-                    ? new[] { item, new Vector2(Mathf.Sign(item.x) * nearX, gapY), new Vector2(Mathf.Sign(target.x) * nearX, gapY), target }
-                    : new[] { item, target };
+                if (!throughGap)
+                {
+                    float crossY = Mathf.Lerp(item.y, target.y, Mathf.InverseLerp(item.x, target.x, WallX(0)));
+                    straightBlocked = Mathf.Abs(crossY - GapY(0)) > (gap - 48f) * 0.5f;
+                }
 
                 Vector2 pointer = item;
-                game.Tick(Input(pointer, true, true));
-                bool done = false;
-                for (int i = 1; i < path.Length && !done; i++)
+                float elapsed = 0f;
+                bool done = game.Tick(Input(pointer, true, true));
+                bool Step(Vector2 to, float speed)
                 {
-                    while (Vector2.Distance(pointer, path[i]) > 0.01f)
+                    pointer = Vector2.MoveTowards(pointer, to, speed);
+                    elapsed += Dt;
+                    return done = game.Tick(Input(pointer, true));
+                }
+
+                if (throughGap)
+                {
+                    // Duvarları eşyanın tarafından hedefe doğru sırayla geç
+                    var order = new List<int>();
+                    for (int i = 0; i < walls.Count; i++) order.Add(i);
+                    order.Sort((a, b) => (WallX(a) * Mathf.Sign(item.x)).CompareTo(WallX(b) * Mathf.Sign(item.x)) * -1);
+                    foreach (int i in order)
                     {
-                        pointer = Vector2.MoveTowards(pointer, path[i], 4f);
-                        done = game.Tick(Input(pointer, true));
-                        if (done) break;
+                        float side = Mathf.Sign(pointer.x - WallX(i));
+                        // Duvarın önüne gel, boşluğa hizalan (kayan boşluğu takip eder), sonra boşluktan geç
+                        while (!done && Mathf.Abs(pointer.x - (WallX(i) + side * Clearance)) > 0.01f)
+                            Step(new Vector2(WallX(i) + side * Clearance, pointer.y), 4f);
+                        for (int guard = 0; !done && guard < 600 && Mathf.Abs(pointer.y - GapY(i)) > 1.5f; guard++)
+                            Step(new Vector2(pointer.x, GapY(i)), 4f);
+                        float exitX = WallX(i) - side * Clearance;
+                        for (int guard = 0; !done && guard < 200 && Mathf.Abs(pointer.x - exitX) > 0.01f; guard++)
+                            Step(new Vector2(exitX, GapY(i)), 8f);
                     }
                 }
+                for (int guard = 0; !done && guard < 600 && Vector2.Distance(pointer, target) > 0.01f; guard++)
+                    Step(target, 4f);
                 if (!done) done = game.Tick(Input(pointer, false, false, true));
+                seconds = elapsed;
                 return done;
             }
             finally

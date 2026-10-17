@@ -77,7 +77,7 @@ namespace Deprem.Family
         private static void FatherWithoutFirstAid()
         {
             StartAttempt(4, new BagItemId[0]);
-            Check(father.State == FamilyState.Injured, "Döngü 4: baba camla yaralı");
+            Check(father.State == FamilyState.Injured, "Döngü 4: baba yaralı (ayağında kaya)");
             player.Teleport(new Vector3(19.5f, 0f, 1f));
             TickMembers(6f);
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.MissingBagItem,
@@ -88,29 +88,28 @@ namespace Deprem.Family
         {
             StartAttempt(5, new[] { BagItemId.FirstAidKit, BagItemId.Flashlight });
 
-            // Baba: F basılı tutularak tedavi
+            // Baba: F basılı tutularak kaya kaldırılır, baba kabine kendisi yürür (Berke'nin play testi 16)
             player.Teleport(new Vector3(22.2f, 0f, 1f));
             TickMembers(2f);
             Check(GameState.Phase == GamePhase.Rescue, "Döngü 5: ilk yardım varken babanın yanında kaybedilmedi");
             var target = Interactables.FindNearest(player);
             Check(ReferenceEquals(target, father), "Babanın yanında F ile etkileşilebilir");
             target?.Interact(player);
-            Check(father.IsTreating, "F'ye basınca tedavi başladı");
+            Check(father.IsTreating, "F'ye basınca kaya kaldırma başladı");
+            Check(father.PromptKey == "prompt.lift_rock", $"İpucu 'Kayayı kaldır' ({father.PromptKey})");
             TickMembers(1f, held: true);
-            Check(father.State == FamilyState.Injured, "Tedavi 3 sn sürüyor (1 sn'de bitmedi)");
+            Check(father.State == FamilyState.Injured, "Kaldırma 3 sn sürüyor (1 sn'de bitmedi)");
             TickMembers(2.5f, held: true);
-            Check(father.State == FamilyState.Following && GameState.IsRescued(FamilyMemberId.Father), "Tedavi bitti, baba takip ediyor");
+            Check(father.State == FamilyState.WalkingToCabin && GameState.IsRescued(FamilyMemberId.Father),
+                $"Kaya kalktı, baba kabine yürüyor ({father.State})");
             director.OnMemberRescued(FamilyMemberId.Father);
+            Check(director.Followers.Count == 0, "Yürüyen baba takipçi değil");
 
-            // Takip: oyuncu sola yürür, baba arkasından gelir
-            player.SetScriptedInput(-1f);
-            StepWorld(1.5f);
-            player.SetScriptedInput(0f);
-            StepWorld(1f);
-            var pp = player.transform.position;
-            var fp = father.transform.position;
-            Check(fp.x > pp.x && Mathf.Abs(fp.x - pp.x - 0.9f) < 0.4f && Mathf.Abs(fp.y - pp.y) < 0.1f,
-                $"Baba oyuncunun ~0,9 m arkasından takip ediyor (oyuncu x={pp.x:F2}, baba x={fp.x:F2})");
+            // Baba kendi başına kabine varır ve girer (aksayarak ~1 m/sn)
+            float fatherStartX = father.transform.position.x;
+            float walked = 0f;
+            for (; walked < 30f && father.State != FamilyState.InCabin; walked += Dt) director.Tick(Dt);
+            Check(father.State == FamilyState.InCabin, $"Baba kabine kendisi girdi ({walked:F1} sn, {fatherStartX:F1} m'den)");
 
             // Kardeş: el feneriyle
             player.Teleport(new Vector3(4.5f, Up, 1f));

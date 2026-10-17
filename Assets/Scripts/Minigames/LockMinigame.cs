@@ -3,21 +3,20 @@ using UnityEngine.UI;
 
 namespace Deprem.Minigames
 {
-    // Kilitle: ibre bar üzerinde gidip gelir; yeşil alandayken tıkla. Mandalın kilitlenmesi için
-    // birkaç isabet gerekir; her isabette yeşil alan daralır ve ibre hızlanır.
-    // Iskalayınca bir isabet geri gider, bar kısa süre kırmızı yanar, yeşil alan yer değiştirir.
+    // Kilitle: ibre ray üzerinde gidip gelir; yeşil alandayken tıkla. Her isabette mandalın sürgüsü bir adım kapanır;
+    // gereken isabet sayısında kilitlenir. Her isabette yeşil alan daralır, ibre hızlanır ve alan kaymaya başlar
+    // (Berke'nin play testi: çok kolay ve hep aynıydı; MinigameVariant.LockDrift).
+    // Iskalayınca bir isabet geri gider, sürgü geri kayar, ray kısa süre kırmızı yanar, yeşil alan yer değiştirir.
     // Play testi 8: alan ve hız birikimliydi (ıskalayınca geri gelmiyordu), birkaç denemede geçilemez oluyordu.
-    // Artık ikisi de o anki isabet sayısından hesaplanır: ıskalayınca bir önceki zorluğa döner.
+    // Artık hepsi o anki isabet sayısından hesaplanır: ıskalayınca bir önceki zorluğa döner.
     public class LockMinigame : Minigame
     {
-        const float BarHeight = 18f;
+        const float BarHeight = 24f;
         const float FlashTime = 0.25f;
+        const float BoltTravel = 44f;
 
-        static readonly Color BarColor = new Color(0.15f, 0.15f, 0.18f);
-        static readonly Color MissColor = new Color(0.6f, 0.15f, 0.15f);
-        static readonly Color HitColor = new Color(0.2f, 0.45f, 0.25f);
-        static readonly Color PipOff = new Color(0.3f, 0.3f, 0.35f);
-        static readonly Color PipOn = new Color(0.45f, 0.85f, 0.5f);
+        static readonly Color PipOff = new Color(0.22f, 0.18f, 0.16f);
+        static readonly Color PipOn = MinigamePixels.Accent;
 
         readonly float startSpeed;
         readonly float startZoneWidth;
@@ -28,12 +27,16 @@ namespace Deprem.Minigames
         Image bar;
         RectTransform zone;
         RectTransform needle;
+        RectTransform bolt;
+        Vector2 boltOpen;
         Image[] pips;
         float barWidth;
         float time;
         float speed;
         float zoneWidth;
         float zoneCenter;
+        float drift;
+        float driftDirection = 1f;
         float flash;
         int hits;
 
@@ -48,26 +51,35 @@ namespace Deprem.Minigames
 
         protected override void OnBuild()
         {
-            barWidth = PanelSize.x * 0.8f;
+            barWidth = PanelSize.x * 0.78f;
             speed = startSpeed;
             zoneWidth = startZoneWidth;
+            var panelTex = TexSize(PanelSize);
+            CreateBackground(Art.lockBackground, MinigamePixels.CabinetDoor(panelTex.x, panelTex.y));
 
-            if (!CreateBackground(Art.lockBackground))
-                CreateRect("Latch", new Vector2(0f, 50f), new Vector2(70f, 40f), new Color(0.6f, 0.62f, 0.66f));
+            // Mandal: sağda karşılık, solda kapanan sürgü (sanatçı arka planı varsa sadece ışıklar ve ray)
+            if (!Art.lockBackground)
+            {
+                var plate = CreatePixel("LatchPlate", new Vector2(36f, 48f), new Vector2(32f, 44f), null, MinigamePixels.LatchPlate());
+                boltOpen = new Vector2(-34f, 48f);
+                bolt = CreatePixel("Bolt", boltOpen, new Vector2(48f, 12f), null, MinigamePixels.Bolt()).rectTransform;
+                plate.transform.SetAsLastSibling();
+            }
 
             pips = new Image[requiredHits];
-            float spacing = 22f;
+            float spacing = 18f;
             for (int i = 0; i < requiredHits; i++)
             {
                 float x = (i - (requiredHits - 1) * 0.5f) * spacing;
-                pips[i] = CreateRect($"Pip{i}", new Vector2(x, 10f), new Vector2(14f, 14f), PipOff);
+                pips[i] = CreatePixel($"Pip{i}", new Vector2(x, 4f), new Vector2(12f, 12f), null, MinigamePixels.ScrewHead());
+                pips[i].color = PipOff;
             }
 
-            bar = CreateRect("Bar", new Vector2(0f, -40f), new Vector2(barWidth, BarHeight), BarColor);
-            zone = CreateRect("Zone", Vector2.zero, new Vector2(barWidth * zoneWidth, BarHeight),
-                new Color(0.45f, 0.85f, 0.5f), bar.transform).rectTransform;
-            needle = CreateRect("Needle", Vector2.zero, new Vector2(Art.lockNeedle ? 8f : 4f, 32f), Color.white,
-                bar.transform, Art.lockNeedle).rectTransform;
+            var trackSize = new Vector2(barWidth + 8f, BarHeight);
+            bar = CreatePixel("Bar", new Vector2(0f, -56f), trackSize, null, MinigamePixels.Track(TexSize(trackSize).x, TexSize(trackSize).y));
+            zone = CreateRect("Zone", Vector2.zero, new Vector2(barWidth * zoneWidth, BarHeight - 8f), Color.white, bar.transform).rectTransform;
+            needle = CreatePixel("Needle", Vector2.zero, Art.lockNeedle ? new Vector2(8f, 32f) : new Vector2(14f, 36f),
+                Art.lockNeedle, MinigamePixels.Needle(), bar.transform).rectTransform;
             MoveZone();
         }
 
@@ -75,12 +87,31 @@ namespace Deprem.Minigames
         {
             time += input.DeltaTime * speed;
             float t = Mathf.PingPong(time, 1f);
-            needle.anchoredPosition = new Vector2((t - 0.5f) * barWidth, 0f);
+            needle.anchoredPosition = new Vector2((t - 0.5f) * barWidth, 6f);
+
+            // İsabetten sonra yeşil alan yavaşça kayar, kenarda döner
+            if (drift > 0f)
+            {
+                zoneCenter += driftDirection * drift * input.DeltaTime;
+                float half = zoneWidth * 0.5f;
+                if (zoneCenter < half || zoneCenter > 1f - half)
+                {
+                    driftDirection = -driftDirection;
+                    zoneCenter = Mathf.Clamp(zoneCenter, half, 1f - half);
+                }
+                zone.anchoredPosition = new Vector2((zoneCenter - 0.5f) * barWidth, 0f);
+            }
 
             if (flash > 0f)
             {
                 flash -= input.DeltaTime;
-                if (flash <= 0f) bar.color = BarColor;
+                if (flash <= 0f) bar.color = Color.white;
+            }
+            if (bolt)
+            {
+                // Sürgü hedefine doğru kayar
+                var target = boltOpen + Vector2.right * BoltTravel * hits / requiredHits;
+                bolt.anchoredPosition = Vector2.MoveTowards(bolt.anchoredPosition, target, 240f * input.DeltaTime);
             }
 
             if (!input.Pressed) return false;
@@ -92,15 +123,16 @@ namespace Deprem.Minigames
                 if (hits >= requiredHits)
                 {
                     UpdatePips();
+                    if (bolt) bolt.anchoredPosition = boltOpen + Vector2.right * BoltTravel;
                     return true;
                 }
-                Flash(HitColor);
+                Flash(MinigamePixels.Safe);
             }
             else
             {
                 hits = Mathf.Max(0, hits - 1);
                 Audio.Sfx.Play("minigame.miss");
-                Flash(MissColor);
+                Flash(MinigamePixels.Danger);
             }
 
             ApplyDifficulty();
@@ -113,6 +145,7 @@ namespace Deprem.Minigames
         {
             zoneWidth = startZoneWidth * Mathf.Pow(shrinkPerHit, hits);
             speed = startSpeed * Mathf.Pow(speedUpPerHit, hits);
+            drift = Variant.LockDrift * hits;
         }
 
         void Flash(Color color)
@@ -128,9 +161,15 @@ namespace Deprem.Minigames
 
         void MoveZone()
         {
-            zoneCenter = Random.Range(zoneWidth * 0.5f, 1f - zoneWidth * 0.5f);
-            zone.sizeDelta = new Vector2(barWidth * zoneWidth, BarHeight);
+            zoneCenter = Range(zoneWidth * 0.5f, 1f - zoneWidth * 0.5f);
+            driftDirection = Random.NextDouble() < 0.5 ? -1f : 1f;
+            var size = new Vector2(barWidth * zoneWidth, BarHeight - 8f);
+            zone.sizeDelta = size;
             zone.anchoredPosition = new Vector2((zoneCenter - 0.5f) * barWidth, 0f);
+            var image = zone.GetComponent<Image>();
+            image.sprite = MinigamePixels.Zone(TexSize(size).x, TexSize(size).y);
+            image.preserveAspect = false;
+            image.color = Color.white;
         }
     }
 }

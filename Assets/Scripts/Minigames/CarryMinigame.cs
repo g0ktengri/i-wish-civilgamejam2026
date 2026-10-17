@@ -1,35 +1,50 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Deprem.Minigames
 {
-    // Taşı ve yerleştir: eşyayı fareyle tutup sürükle, güvenli alana bırak.
-    // Arada bir duvar var; eşya duvardaki boşluktan geçmeli. Duvara çarparsa eşya düşer ve başa döner.
+    // Taşı ve yerleştir: eşyayı fareyle tutup sürükle, güvenli alana bırak. Aradaki tuğla duvarın boşluğundan geçmeli;
+    // duvara çarparsa eşya düşer ve başa döner. Kurulum eşyaya göre (MinigameVariant.Carry; Berke'nin play testi:
+    // çok kolay ve hep aynıydı): tek duvar, yukarı aşağı kayan boşluk ya da iki duvarlı zikzak. Taraflar ve
+    // boşlukların yeri her açılışta rastgele.
     public class CarryMinigame : Minigame
     {
         static readonly Vector2 ItemSize = new Vector2(48f, 48f);
         static readonly Vector2 TargetSize = new Vector2(64f, 64f);
-        static readonly Color WallColor = new Color(0.35f, 0.37f, 0.42f);
-        static readonly Color HitColor = new Color(0.7f, 0.2f, 0.2f);
         const float WallWidth = 16f;
         const float HitFlashTime = 0.25f;
+        const float DoubleWallX = 42f;
+        const float MovingSpeed = 1.1f; // rad/sn
+
+        class Wall
+        {
+            public float X;
+            public float GapY;
+            public float GapHeight;
+            public float BaseY;
+            public float Amplitude;
+            public float Phase;
+            public RectTransform Top;
+            public RectTransform Bottom;
+            public readonly List<Image> Images = new List<Image>();
+        }
 
         readonly float snapRadius;
         readonly float gapHeight;
         readonly Sprite itemSprite;
 
+        readonly List<Wall> walls = new List<Wall>();
         RectTransform item;
         RectTransform target;
-        RectTransform wallTop;
-        RectTransform wallBottom;
-        UnityEngine.UI.Image[] wallImages;
+        Image targetImage;
         Vector2 start;
-        float gapY;
         Vector2 grabOffset;
         bool dragging;
         float hitFlash;
-        Color baseWallColor;
+        float time;
 
-        // itemSprite: taşınan şeyin görseli (eşya ya da çanta malzemesi); boşsa Art.carryItem
+        // itemSprite: taşınan şeyin görseli (eşya ya da çanta malzemesi); boşsa Art.carryItem ya da pixel çizim
         public CarryMinigame(float snapRadius, float gapHeight, Sprite itemSprite)
         {
             this.snapRadius = snapRadius;
@@ -39,48 +54,124 @@ namespace Deprem.Minigames
 
         protected override void OnBuild()
         {
-            CreateBackground(Art.carryBackground);
+            var panelTex = TexSize(PanelSize);
+            CreateBackground(Art.carryBackground, MinigamePixels.Room(panelTex.x, panelTex.y));
 
-            // Eşya bir yanda, güvenli alan diğer yanda; taraf ve boşluğun yeri her açılışta rastgele
-            float side = Random.value < 0.5f ? -1f : 1f;
-            float x = PanelSize.x * 0.34f;
+            // Eşya bir yanda, güvenli alan diğer yanda
+            float side = Random.NextDouble() < 0.5 ? -1f : 1f;
+            float x = PanelSize.x * 0.5f - ItemSize.x * 0.5f - 6f;
+            float targetX = PanelSize.x * 0.5f - TargetSize.x * 0.5f - 4f; // güvenli alan kenarda kırpılmasın
             float halfHeight = PanelSize.y * 0.5f;
+            start = new Vector2(-side * x, Range(-halfHeight * 0.45f, halfHeight * 0.45f));
+            var targetPosition = new Vector2(side * targetX, Range(-halfHeight * 0.45f, halfHeight * 0.45f));
 
-            start = new Vector2(-side * x, Random.Range(-halfHeight * 0.5f, halfHeight * 0.5f));
-            var targetPosition = new Vector2(side * x, Random.Range(-halfHeight * 0.5f, halfHeight * 0.5f));
-            target = CreateRect("SafeSpot", targetPosition, TargetSize, new Color(0.45f, 0.85f, 0.5f, 0.35f),
-                null, Art.carryTarget).rectTransform;
+            BuildWalls(halfHeight);
 
-            gapY = Random.Range(-halfHeight + gapHeight, halfHeight - gapHeight);
-            float topHeight = halfHeight - (gapY + gapHeight * 0.5f);
-            float bottomHeight = (gapY - gapHeight * 0.5f) + halfHeight;
-            var top = CreateRect("WallTop", new Vector2(0f, halfHeight - topHeight * 0.5f), new Vector2(WallWidth, topHeight), WallColor, null, Art.carryWall);
-            var bottom = CreateRect("WallBottom", new Vector2(0f, -halfHeight + bottomHeight * 0.5f), new Vector2(WallWidth, bottomHeight), WallColor, null, Art.carryWall);
-            if (Art.carryWall)
-            {
-                // Duvar dikey döşenir, boşluk kodla açılır
-                foreach (var wall in new[] { top, bottom })
-                {
-                    wall.type = UnityEngine.UI.Image.Type.Tiled;
-                    wall.preserveAspect = false;
-                }
-            }
-            wallTop = top.rectTransform;
-            wallBottom = bottom.rectTransform;
-            wallImages = new[] { top, bottom };
-            baseWallColor = top.color;
+            targetImage = CreatePixel("SafeSpot", targetPosition, TargetSize, Art.carryTarget, MinigamePixels.SafeSpot(32));
+            target = targetImage.rectTransform;
 
             var sprite = itemSprite ? itemSprite : Art.carryItem;
-            item = CreateRect("Item", start, ItemSize, new Color(0.85f, 0.65f, 0.4f), null, sprite).rectTransform;
+            item = CreatePixel("Item", start, ItemSize, sprite, MinigamePixels.CarryItem(Variant.CarryKind)).rectTransform;
+        }
+
+        void BuildWalls(float halfHeight)
+        {
+            float margin = 10f;
+            switch (Variant.Carry)
+            {
+                case CarryMode.Moving:
+                {
+                    float gap = gapHeight + 10f;
+                    float amplitude = Mathf.Min(48f, halfHeight - gap * 0.5f - margin);
+                    AddWall(0f, gap, 0f, amplitude, Range(0f, Mathf.PI * 2f));
+                    break;
+                }
+                case CarryMode.Double:
+                {
+                    // Zikzak: bir boşluk üstte, diğeri altta
+                    float limit = halfHeight - gapHeight * 0.5f - margin;
+                    float upper = Range(limit * 0.35f, limit);
+                    float lower = -Range(limit * 0.35f, limit);
+                    bool flip = Random.NextDouble() < 0.5;
+                    AddWall(-DoubleWallX, gapHeight, flip ? upper : lower, 0f, 0f);
+                    AddWall(DoubleWallX, gapHeight, flip ? lower : upper, 0f, 0f);
+                    break;
+                }
+                default:
+                {
+                    float limit = halfHeight - gapHeight * 0.5f - margin;
+                    AddWall(0f, gapHeight, Range(-limit, limit), 0f, 0f);
+                    break;
+                }
+            }
+            foreach (var wall in walls) LayoutWall(wall);
+        }
+
+        void AddWall(float x, float gap, float baseY, float amplitude, float phase)
+        {
+            var wall = new Wall { X = x, GapHeight = gap, BaseY = baseY, GapY = baseY, Amplitude = amplitude, Phase = phase };
+            int index = walls.Count;
+            wall.Top = WallPiece($"Wall{index}Top", wall);
+            wall.Bottom = WallPiece($"Wall{index}Bottom", wall);
+            walls.Add(wall);
+        }
+
+        // Maskeli parça: içindeki tuğla dokusu panelde sabit durur, boşluk kayınca doku kaymaz
+        RectTransform WallPiece(string name, Wall wall)
+        {
+            var piece = new GameObject(name, typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
+            piece.SetParent(Panel, false);
+            piece.anchorMin = piece.anchorMax = new Vector2(0.5f, 0.5f);
+            var size = new Vector2(WallWidth, PanelSize.y);
+            var bricks = CreatePixel("Bricks", Vector2.zero, size, Art.carryWall, MinigamePixels.Bricks(TexSize(size).x, TexSize(size).y), piece);
+            if (Art.carryWall)
+            {
+                bricks.type = Image.Type.Tiled;
+                bricks.preserveAspect = false;
+            }
+            wall.Images.Add(bricks);
+            return piece;
+        }
+
+        void LayoutWall(Wall wall)
+        {
+            float half = PanelSize.y * 0.5f;
+            float gapTop = wall.GapY + wall.GapHeight * 0.5f;
+            float gapBottom = wall.GapY - wall.GapHeight * 0.5f;
+            Place(wall.Top, wall.X, gapTop, half);
+            Place(wall.Bottom, wall.X, -half, gapBottom);
+        }
+
+        static void Place(RectTransform piece, float x, float y0, float y1)
+        {
+            float height = Mathf.Max(0f, y1 - y0);
+            float center = (y0 + y1) * 0.5f;
+            piece.sizeDelta = new Vector2(WallWidth, height);
+            piece.anchoredPosition = new Vector2(x, center);
+            // Tuğla panelin ortasında sabit kalsın
+            var bricks = (RectTransform)piece.GetChild(0);
+            bricks.anchoredPosition = new Vector2(0f, -center);
         }
 
         public override bool Tick(MinigameInput input)
         {
+            time += input.DeltaTime;
+            foreach (var wall in walls)
+            {
+                if (wall.Amplitude <= 0f) continue;
+                wall.GapY = wall.BaseY + Mathf.Sin(time * MovingSpeed + wall.Phase) * wall.Amplitude;
+                LayoutWall(wall);
+            }
+
             if (hitFlash > 0f)
             {
                 hitFlash -= input.DeltaTime;
-                foreach (var image in wallImages) image.color = hitFlash > 0f ? HitColor : baseWallColor;
+                foreach (var wall in walls)
+                foreach (var image in wall.Images)
+                    image.color = hitFlash > 0f ? MinigamePixels.Danger : Color.white;
             }
+            // Güvenli alan hafifçe nabız gibi parlar
+            targetImage.color = new Color(1f, 1f, 1f, 0.75f + 0.25f * Mathf.Sin(time * 4f));
 
             if (input.Pressed && Contains(item.anchoredPosition, item.sizeDelta, input.Pointer))
             {
@@ -97,7 +188,7 @@ namespace Deprem.Minigames
                 item.anchoredPosition = new Vector2(Mathf.Clamp(position.x, -half.x, half.x),
                     Mathf.Clamp(position.y, -half.y, half.y));
 
-                if (Overlaps(item, wallTop) || Overlaps(item, wallBottom) || JumpedWall(previous, item.anchoredPosition))
+                if (HitsWall(previous, item.anchoredPosition))
                 {
                     // Duvara çarptı: eşya düşer, başa döner
                     dragging = false;
@@ -121,13 +212,19 @@ namespace Deprem.Minigames
             return false;
         }
 
-        // Fare tek karede duvarın öbür yanına sıçradıysa: geçiş noktası boşluğun içinde mi?
-        bool JumpedWall(Vector2 from, Vector2 to)
+        bool HitsWall(Vector2 from, Vector2 to)
         {
-            if (Mathf.Sign(from.x) == Mathf.Sign(to.x) || Mathf.Approximately(from.x, to.x)) return false;
-            float t = Mathf.InverseLerp(from.x, to.x, 0f);
-            float crossY = Mathf.Lerp(from.y, to.y, t);
-            return Mathf.Abs(crossY - gapY) > (gapHeight - ItemSize.y) * 0.5f;
+            foreach (var wall in walls)
+            {
+                if (Overlaps(item, wall.Top) || Overlaps(item, wall.Bottom)) return true;
+                // Fare tek karede duvarın öbür yanına sıçradıysa: geçiş noktası boşluğun içinde mi?
+                float a = from.x - wall.X, b = to.x - wall.X;
+                if (Mathf.Sign(a) == Mathf.Sign(b) || Mathf.Approximately(a, b)) continue;
+                float t = Mathf.InverseLerp(from.x, to.x, wall.X);
+                float crossY = Mathf.Lerp(from.y, to.y, t);
+                if (Mathf.Abs(crossY - wall.GapY) > (wall.GapHeight - ItemSize.y) * 0.5f) return true;
+            }
+            return false;
         }
 
         static bool Contains(Vector2 center, Vector2 size, Vector2 point)
@@ -138,6 +235,7 @@ namespace Deprem.Minigames
 
         static bool Overlaps(RectTransform a, RectTransform b)
         {
+            if (b.sizeDelta.y <= 0f) return false;
             Vector2 delta = a.anchoredPosition - b.anchoredPosition;
             Vector2 reach = (a.sizeDelta + b.sizeDelta) * 0.5f;
             return Mathf.Abs(delta.x) < reach.x && Mathf.Abs(delta.y) < reach.y;

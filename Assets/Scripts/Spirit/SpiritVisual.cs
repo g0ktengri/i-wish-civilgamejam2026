@@ -6,6 +6,8 @@ namespace Deprem.Spirit
     // Hareket ederken hızlı, dururken yavaş oynar; gittiği yöne döner; yarı saydam, soğuk renkli sprite
     // (ışıktan etkilenmez, ruh parlar). Pivot gövdenin ortası: ruhun etkileşim noktası ve sallanması aynı kalır.
     // SpiritPhase kurar (kare yoksa eski parlayan küre).
+    // Play testi: ruh duvarların içinden geçerken kalın duvar ve döşeme kutularının arkasında kayboluyordu. Sprite
+    // her karede evin önüne (frontZ) kameraya doğru çekilir; aynı oranda küçültülür, ekrandaki yeri ve boyu değişmez.
     public class SpiritVisual : MonoBehaviour
     {
         [SerializeField] Texture2D[] frames;
@@ -17,8 +19,11 @@ namespace Deprem.Spirit
         [Tooltip("Gövdenin ortası, karenin sol altından oran olarak (koşu çizimleriyle aynı hiza)")]
         [SerializeField] Vector2 pivot = new Vector2(55f / 128f, 60f / 128f);
         [SerializeField] float pixelsPerUnit = 64f;
+        [Tooltip("Sprite'ın çizildiği derinlik: evin kesit yüzünün ve oda örtülerinin (-0,03) önü")]
+        [SerializeField] float frontZ = -0.1f;
 
         SpriteRenderer spriteRenderer;
+        Transform spriteTransform;
         Sprite[] sprites;
         SpiritController controller;
         float time;
@@ -36,7 +41,10 @@ namespace Deprem.Spirit
 
         void Build()
         {
-            spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
+            // Sprite ayrı çocukta: kök ruhla ve sallanmayla gider, çocuk evin önüne yansıtılır
+            spriteTransform = new GameObject("Sprite").transform;
+            spriteTransform.SetParent(transform, false);
+            spriteRenderer = spriteTransform.gameObject.AddComponent<SpriteRenderer>();
             // Kendi materyal kopyası: çalışma anında üretilen başka bir sprite'la aynı çizimde birleşip
             // onun dokusunu almasın (önizlemede görüldü)
             spriteRenderer.sharedMaterial = new Material(spriteRenderer.sharedMaterial) { name = "SpiritSprite" };
@@ -68,6 +76,32 @@ namespace Deprem.Spirit
             var sprite = sprites[Mathf.FloorToInt(time) % sprites.Length];
             if (sprite) spriteRenderer.sprite = sprite;
             spriteRenderer.flipX = facingLeft;
+        }
+
+        void LateUpdate()
+        {
+            if (!spriteTransform) return;
+            var cam = Camera.main;
+            Vector3 target = transform.position;
+            if (!cam)
+            {
+                spriteTransform.localPosition = Vector3.zero;
+                spriteTransform.localScale = Vector3.one;
+                return;
+            }
+            if (cam.orthographic)
+            {
+                spriteTransform.position = new Vector3(target.x, target.y, frontZ);
+                spriteTransform.localScale = Vector3.one;
+                return;
+            }
+            // Kameradan geçen aynı ışın üzerinde öne çek: ekrandaki izdüşüm aynı kalır
+            Vector3 eye = cam.transform.position;
+            float depth = target.z - eye.z;
+            if (depth <= 0.01f) return;
+            float t = Mathf.Clamp01((frontZ - eye.z) / depth);
+            spriteTransform.position = eye + (target - eye) * t;
+            spriteTransform.localScale = Vector3.one * t;
         }
 
         void OnDestroy()
