@@ -63,6 +63,7 @@ MonoBehaviour:
   aftershockIntensity: 0.5
   aftershockGrace: 2.5
   injuredSpeedMultiplier: 0.6
+  noJumpIntensity: 0.1
   aftershockAfterPathDelay: 0.75
   aftershockZones:
   - name: "Koridora giri\u015F"
