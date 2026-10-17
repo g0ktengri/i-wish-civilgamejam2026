@@ -1525,6 +1525,49 @@ Mehmet oyunu başkalarına oynattı. Çıkanlar (özet):
   - Yeni denemede (`FamilyDirector.Awake`) `None` oluyor.
 - **Kardeş balonu (`bubble.family_missing.flashlight`):** "…onu göremiyorum… Bir el fenerim olsaydı bulurdum!"
 
+### Play testi 32: görev dağılımı
+
+Mehmet'in yorumu (özet):
+1. Minigame öğreticisindeki "F ya da tık: devam" satırı garip duruyor.
+2. Kurtarmada mutfak kapısındaki devrik dolap (portmanto) geri dikilmiş.
+3. Kırmızı konturlu (önemli) eşyalar tam belli olmuyor.
+4. Aile üyelerini gösteren oklar çok kaba.
+5. Baba kabine sürünmeyecek, yürüyecek; metni düzelt.
+6. Annede çok ışık var.
+7. Kardeş fenersiz bulunamayınca araya giren keşke çok geç geliyor, bir süre siyah ekran kalıyor.
+8. Minigame bitince her şeyin üstüne atılan yeşil filtre kötü; daha iyi bir geri bildirim olsun.
+9. El fenerini ya da ilk yardım çantasını alınca nereye koyacağımız belli değil, karışıyor.
+
+**Berke'ye düşen**
+
+- **M67. Öğretici "devam" satırı (`MinigameHost`):**
+  - Ekran görüntüsünde adım metni "saat / yönünde" diye bölünüyor, altında "F ya da tık: devam" düz yazı olarak duruyor.
+  - Öneri: devam ipucunu HUD ipuçları gibi tuş kapağıyla, sağ altta küçük ve ayrı göster ("[F] Devam"; tık da çalışsın, yazmaya gerek yok). Adım metni tek ya da iki dengeli satır olsun.
+- **M68. Önemli eşyalar belli değil (`SpiritHighlighter`; `ItemOutline` benim, istediğin gibi değiştir):**
+  - Kırmızı kontur kalınlaşsın ve nabız gibi parlasın.
+  - Öneri: eşyanın üstünde küçük kırmızı "!" ya da aile üyesinin yüz ikonu (kimin üstüne düşeceği). İsteğe bağlı olanlar daha da soluk.
+  - Konturun kalınlığı `Deprem/Outline` shader'ındaki `_OutlineWidth`; `ItemOutline`'a genişlik de ekleyebilirsin.
+- **M69. Aile okları çok kaba (`ObjectiveHud`):** daha ince, küçük, pixel art'a uygun bir ok. Uçta üyenin küçük yüz ikonu ya da baş harfi; uzaklıkla hafif solsun.
+- **M70. Minigame bitiş geri bildirimi (`MinigameHost`):** bütün paneli kaplayan yeşil filtre yerine:
+  - Sabitlenen parça oturur ("tık" sesi, kısa beyaz parlama).
+  - Panelin ortasına "SABİTLENDİ" damgası ve küçük bir onay işareti.
+  - Panel 0,6 sn sonra kapanır.
+- **M71. Malzemeyi nereye koyacağım (`BagSupply`, `SpiritHud`):** ruh bir malzeme taşırken:
+  - Çanta (`Marker_Bag`, kabinin önü) nabız gibi parlasın.
+  - Ekranın kenarında çantaya giden ok çıksın.
+  - Taşınan malzemenin yanında "Çantaya götür" ipucu dursun.
+  - Çantaya yaklaşınca "F: Çantaya koy".
+- **M72. Kardeş ölümünden sonraki uzun siyah (`WishScreen.Show`):**
+  - Sebep: `MissingBagItem`'da keşke ekranı önce kaybedilen üyeye odaklanıyor (`FocusOn`: 0,7 sn + 1,8 sn bekleme, sonra 1,6 sn kararma). Ama kardeş aramasında oyuncu tavanın altında ölüyor, ekran zaten benim ölüm karartmamla siyah. Kardeş de karanlıkta görünmez (`FamilyMember.Hidden`).
+  - Sonuç: ~4 sn boş siyah ekran.
+  - Öneri: oyuncu öldüyse (ekran kararmışsa) ya da üye gizliyse odaklanmayı atla, doğrudan `blackTakeover`'a geç.
+
+**Mehmet'in yapacakları**
+
+1. Portmanto kurtarmada geri dikilmesin (2).
+2. Baba metni: "kabine sürünürüm" → "topallaya topallaya kabine giderim" (`bubble.father_freed`) (5).
+3. Annenin ışığı kısılsın (6).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
