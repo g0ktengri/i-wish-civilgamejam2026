@@ -21,7 +21,19 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 18 Ekim (Play testi 6: M15–M19 bittikten sonra)*
+*Son güncelleme: Berke'nin Claude'u, 18 Ekim (Play testi 8: görev dağılımı)*
+
+### Play testi 8: görev dağılımı (18 Ekim)
+
+Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in tokenları yenilendiği için ikisi Mehmet'te.
+
+**Mehmet'te:**
+- **B10. Oda örtüsü elektrik gidince üst katta çalışmıyor.** Deprem öncesi odalar karanlık (örtülü), kapı açılınca aydınlanıyor: bu güzel. Ama elektrik kesilince (kurtarma fazı) üst katta odalar kapı açılınca / girince açılmıyor. Yer: `Visual/RoomVisibility.cs` (bakanın odasını bulma: `floorY` / `ceilingY` / `verticalMargin`, merdiven `Link`'i, kapılar). Şüphe: kurtarma fazında oyuncu merdivenden çıkınca bakan oda bulunamıyor ya da üst kat kapıları `doors` listesinde değil.
+- **B11. Sallanırken zıplayınca karakter bozuluyor ve yavaşlıyor.** Deprem sırasında (öncü / ana deprem / artçı) zıplayınca karakter takılıyor, sonra yavaş hareket ediyor. Yer: `Player/PlayerController` (zemin kontrolü, sarsıntıda hız çarpanı) ve `QuakeDirector`'ın sarsıntıda oyuncuya verdiği yavaşlatma / itme. Zıplama sarsıntıda tamamen kapatılabilir de; karar senin.
+
+**Berke'de:**
+- Mutfak minigame'i (kilitleme, `Minigames/LockMinigame`) geçilemiyor: zorluk ve zamanlama düzeltilecek.
+- S'ye basınca (çök-kapan / eğilme) karakter cüce gibi küçülüyor. Bunu play testi 7'de ben eklemiştim (`PlayerVisual.crouchedScale` 0,82 × 0,58). Daha hafif bir ölçeğe çekeceğim. `PlayerVisual` senin dosyan ama değişiklik benim; izin kapsamında düzeltiyorum.
 
 ### Berke'nin pushladıkları
 
