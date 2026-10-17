@@ -212,11 +212,11 @@ MonoBehaviour:
     carryFrame: {fileID: 0}
     lockBackground: {fileID: 0}
     lockNeedle: {fileID: 0}
-  lockCyclesPerSecond: 0.9
-  lockZoneWidth: 0.22
+  lockCyclesPerSecond: 0.75
+  lockZoneWidth: 0.24
   lockRequiredHits: 3
-  lockShrinkPerHit: 0.7
-  lockSpeedUpPerHit: 1.25
+  lockShrinkPerHit: 0.8
+  lockSpeedUpPerHit: 1.15
 --- !u!114 &1714028265692669343
 MonoBehaviour:
   m_ObjectHideFlags: 0

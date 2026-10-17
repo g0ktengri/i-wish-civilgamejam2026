@@ -45,11 +45,12 @@ namespace Deprem.Minigames
         [SerializeField] MinigameArt art = new MinigameArt();
 
         [Header("Kilitle")]
-        [SerializeField] float lockCyclesPerSecond = 0.9f;
-        [SerializeField] float lockZoneWidth = 0.22f;
+        // Play testi 8: mutfak dolabı geçilemiyordu; son isabette alan ~%15, hız ~1 tur/sn
+        [SerializeField] float lockCyclesPerSecond = 0.75f;
+        [SerializeField] float lockZoneWidth = 0.24f;
         [SerializeField] int lockRequiredHits = 3;
-        [SerializeField] float lockShrinkPerHit = 0.7f;
-        [SerializeField] float lockSpeedUpPerHit = 1.25f;
+        [SerializeField] float lockShrinkPerHit = 0.8f;
+        [SerializeField] float lockSpeedUpPerHit = 1.15f;
 
         CanvasGroup group;
         Image panel;

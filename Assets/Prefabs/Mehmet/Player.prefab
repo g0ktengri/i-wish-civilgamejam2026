@@ -293,7 +293,7 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 8f0357eb355c9d243abda63196b41938, type: 3}
   - {fileID: 2800000, guid: 8deeb1207b621ca4888e33c845afc215, type: 3}
   crouchFps: 14
-  crouchedScale: {x: 0.82, y: 0.58}
+  crouchedScale: {x: 0.95, y: 0.72}
   moveThreshold: 0.2
 --- !u!114 &3980672761434934324
 MonoBehaviour:

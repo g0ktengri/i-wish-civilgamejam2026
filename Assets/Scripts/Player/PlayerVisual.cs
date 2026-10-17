@@ -30,9 +30,9 @@ namespace Deprem.Player
         [Tooltip("Ayaktan çömelmeye; bir kez oynar, son karede kalır")]
         [SerializeField] private Texture2D[] crouchFrames;
         [SerializeField] private float crouchFps = 14f;
-        [Tooltip("Çömelme çiziminin son karedeki ölçeği (en, boy). Çizim ~1,3 m; masalar 0,78 m. Play testi: eğilince " +
-                 "karakter masanın çok üstünde kalıyordu; 0,58 ile tablanın altına (~0,74 m) sığar")]
-        [SerializeField] private Vector2 crouchedScale = new Vector2(0.82f, 0.58f);
+        [Tooltip("Çömelme çiziminin son karedeki ölçeği (en, boy). Çizim ~1,3 m; masalar 0,78 m. Play testi 7: masanın " +
+                 "çok üstünde kalıyordu; play testi 8: 0,82 × 0,58 cüce gibiydi. 0,72 ile ~0,92 m, masanın arkasından baş görünür")]
+        [SerializeField] private Vector2 crouchedScale = new Vector2(0.95f, 0.72f);
         [Tooltip("Bu yatay hızın altında duruyor sayılır (m/s)")]
         [SerializeField] private float moveThreshold = 0.2f;
 

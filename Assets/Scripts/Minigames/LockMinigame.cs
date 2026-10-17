@@ -6,6 +6,8 @@ namespace Deprem.Minigames
     // Kilitle: ibre bar üzerinde gidip gelir; yeşil alandayken tıkla. Mandalın kilitlenmesi için
     // birkaç isabet gerekir; her isabette yeşil alan daralır ve ibre hızlanır.
     // Iskalayınca bir isabet geri gider, bar kısa süre kırmızı yanar, yeşil alan yer değiştirir.
+    // Play testi 8: alan ve hız birikimliydi (ıskalayınca geri gelmiyordu), birkaç denemede geçilemez oluyordu.
+    // Artık ikisi de o anki isabet sayısından hesaplanır: ıskalayınca bir önceki zorluğa döner.
     public class LockMinigame : Minigame
     {
         const float BarHeight = 18f;
@@ -91,8 +93,6 @@ namespace Deprem.Minigames
                     UpdatePips();
                     return true;
                 }
-                zoneWidth *= shrinkPerHit;
-                speed *= speedUpPerHit;
                 Flash(HitColor);
             }
             else
@@ -101,9 +101,16 @@ namespace Deprem.Minigames
                 Flash(MissColor);
             }
 
+            ApplyDifficulty();
             UpdatePips();
             MoveZone();
             return false;
+        }
+
+        void ApplyDifficulty()
+        {
+            zoneWidth = startZoneWidth * Mathf.Pow(shrinkPerHit, hits);
+            speed = startSpeed * Mathf.Pow(speedUpPerHit, hits);
         }
 
         void Flash(Color color)

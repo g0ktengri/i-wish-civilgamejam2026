@@ -35,6 +35,10 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - Mutfak minigame'i (kilitleme, `Minigames/LockMinigame`) geçilemiyor: zorluk ve zamanlama düzeltilecek.
 - S'ye basınca (çök-kapan / eğilme) karakter cüce gibi küçülüyor. Bunu play testi 7'de ben eklemiştim (`PlayerVisual.crouchedScale` 0,82 × 0,58). Daha hafif bir ölçeğe çekeceğim. `PlayerVisual` senin dosyan ama değişiklik benim; izin kapsamında düzeltiyorum.
 
+**Berke'nin payı bitti:**
+- Kilitleme: yeşil alan ve ibre hızı birikimliydi. Her isabette daralıp hızlanıyor, ıskalayınca isabet düşse de geri gelmiyordu; birkaç denemede imkansızlaşıyordu. Artık ikisi de o anki isabet sayısından hesaplanıyor (`LockMinigame.ApplyDifficulty`). Ayarlar yumuşadı: 0,75 tur/sn, alan 0,24, isabet başına ×0,8 alan / ×1,15 hız.
+- Çömelme: `crouchedScale` 0,95 × 0,72 (son karede ~0,92 m). Eni neredeyse tam kalıyor, cüce görünümü bundandı.
+
 ### Berke'nin pushladıkları
 
 | Sistem | Dosya | Ne yapar |
