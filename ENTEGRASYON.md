@@ -948,6 +948,61 @@ Diğerleri:
 - `HitFeedback` (Quake) ölümde ve yatakta ezilmede tam şiddetle çalışıyor (ses, flaş, sarsıntı, ağır çekim); artçı yarasında hafif çalışıyor. Ağır çekim `Time.timeScale`'i 0,45 sn gerçek zaman boyunca 0,35 yapıp geri 1'e alıyor. M38 donmasına bakarken bunu hesaba kat; durdurma menüsü açıksa ya da timeScale 0 ise dokunmuyor.
 - Balon yazı sesi `bubble.blip`, iki harfte bir çalıyor. Perde: baba kalın, anne orta, kardeş ince.
 
+**Core:** `GameState.RestoreProgress(loop, failedAttempts)` eklendi (senin M42 isteğin, 7aae967). "Devam et"te `RestoreProgress(SaveGame.Loop, SaveGame.FailedAttempts)`, ardından her zamanki `BeginAttempt(loop)`.
+
+### Play testi 24: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- Oyuncunun odasına halı eklendi; babanın bekleme animasyonu geldi.
+- Tuş atamalarında "Varsayılana dön" çalışmıyor. "Spirit Left" gibi adlar yerine basitçe "Sola yürü / Sağa yürü".
+- Ölürken oyun kasıyor gibi duruyor; kırmızı fade in/out garip ve yetersiz.
+- Deprem kabini çok çirkin.
+- Hayaletken karakter çok aşağıda kalıyor.
+- Vidalı panel çizimlerini ekip yaptı.
+- Babanın ayağındaki taş kaldırılınca bir şey görünmüyor, belli olmuyor.
+- Kardeş odada saklansın: el feneri yoksa bulamayalım, deprem (artçı) olsun, ölelim.
+- Anne, baba, kardeş ve kabin görselleri çok kalın; daha küçük olsun.
+- "F" ipuçları ekranın orta altında değil, ilgili objenin üstünde ve biraz daha küçük çıksın.
+- Sonda deprem hazırlık listesi değil, çarpıcı bir şey: keşkelerin olmaması için.
+
+**Berke'ye düşen**
+
+- **M43. "Varsayılana dön" (Ayarlar > Kontroller) çalışmıyor.**
+  - `KeyBindings.ResetDefaults()` tuşları sıfırlayıp kaydediyor ve `KeyBindings.Changed`'i tetikliyor.
+  - Liste etiketleri muhtemelen yenilenmiyor: `Changed`'e abone olup satırları yeniden yaz. Ya da düğme başka bir şey çağırıyor olabilir.
+- **M44. Kontrol adları sade olsun:**
+  - "Sola yürü", "Sağa yürü", "Zıpla", "Eğil / Çök-Kapan-Tutun", "Etkileşim".
+  - Ruh için "Ruh: yukarı / aşağı / sola / sağa" ya da ayrı başlık altında "Yukarı, Aşağı, Sola, Sağa". "Spirit Left" gibi İngilizce ya da teknik ad görünmesin (TR ve EN).
+- **M45. Hayalet çok aşağıda:** ruh görseli (`SpiritPhase` / `SpiritVisual`) yerden yukarı alınsın, ayağı yere değmesin, hafif süzülsün. Bedenden çıkış ve bedene çekiliş ile hizalı kalsın.
+- **M46. İpuçları objenin üstünde, daha küçük:**
+  - "F: Kapıyı aç" ve benzerleri ekranın alt ortası yerine ilgili objenin üstünde, dünya konumundan ekrana çevrilerek gösterilsin. Biraz küçük, tuş rozeti + kısa yazı.
+  - Konumu ben veriyorum: `Deprem.Player.PlayerInteractor.PromptAnchor` (statik `Vector3?`, dünya koordinatı).
+    - Etkileşilen objenin tepesi.
+    - Deprem ipuçlarında ("F: Kalk", "S: Çök-Kapan-Tutun") oyuncunun başının üstü.
+    - `null` ise eski yerinde (alt orta).
+  - Ekran kenarına taşmasın.
+- **M47. Çarpıcı final (hazırlık listesi yerine):** öneri, değiştirebilirsin:
+  - Oyun boyunca söylenen bütün keşke cümleleri tek tek ekrana gelsin (karartılmış evin üstünde).
+  - Sonra her birinde "Keşke" kelimesi çatlayıp kırılsın (`wish.shatter` sesi), cümle geçmişten bugüne dönsün: "Keşke kitaplığı sabitleseydim" → "Kitaplığı sabitle."
+  - En sonda tek ve büyük cümle: "Deprem geldiğinde keşkelerin olmasın. Bugün hazırlan."
+  - Altta küçük satır: afad.gov.tr. Metinler `texts.csv`'de.
+- **Açıklar:** emeği geçenlerde sanatçı adları (Mehmet verecek); M38 donma takibi.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. **Çizimler:**
+   - Oyuncu odasına halı (`Omegehalisi.png`).
+   - Babanın bekleme animasyonu (5 kare).
+   - Vidalı panel ve vida çizimleri vida minigame'inin yakın planına. `Minigames/MinigameCloseUp.cs`'e dokunacağım; o dosyayı bu turda düzenleme.
+2. **Ölüm:** ağır çekim kalkıyor (kasma gibi görünüyordu). Yerine sert darbe karesi, güçlü sarsıntı, kamera yakınlaşması, kulak çınlaması ve kenarlardan kapanan karanlık geliyor; kırmızı fade in/out kalkıyor.
+3. **Kabin:** yeniden tasarım (çelik çerçeve, uyarı şeritleri, okunur tabela). Anne, baba, kardeş görselleri küçülüyor, kabin daha az kalın oluyor.
+4. **Babanın taşı:** ayağın üstünde belirgin, gölgeli kaya. Kaldırınca toz ve ses çıkıyor, kaya yana yuvarlanıp yerde kalıyor.
+5. **Kardeş saklanıyor:**
+   - Kurtarma fazında odasında görünmüyor (saklanmış).
+   - El feneri ışığı değince ortaya çıkıyor.
+   - Fener yoksa odada bir süre arayınca artçı gelip oyuncuyu öldürüyor; keşke cümlesi el feneri ve çanta.
+6. **`PromptAnchor`** (M46 için).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
