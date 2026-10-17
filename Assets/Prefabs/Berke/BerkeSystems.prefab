@@ -94,13 +94,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82602726594590944beda558a6ebb708, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.WishScreen
-  crackHoldSeconds: 0.55
-  shardFallSeconds: 1.3
-  crackRays: 11
-  crackShake: 6
-  crackColor: {r: 1, g: 1, b: 1, a: 0.85}
   fadeToBlack: 1.6
-  playerObjectName: Player
   wishDelay: 0.9
   wishCharsPerSecond: 12
   letterShake: 2

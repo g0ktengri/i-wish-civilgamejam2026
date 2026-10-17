@@ -93,10 +93,10 @@ namespace Deprem.Player
             var so = new SerializedObject(playerVisual);
             so.FindProperty("visual").objectReferenceValue = visual.transform;
             so.FindProperty("body").objectReferenceValue = renderer;
-            var framesProperty = so.FindProperty("runFrames");
-            framesProperty.arraySize = runFrames.Length;
-            for (int i = 0; i < runFrames.Length; i++)
-                framesProperty.GetArrayElementAtIndex(i).objectReferenceValue = runFrames[i];
+            SetFrames(so, "runFrames", runFrames);
+            // Ekip çizimleri: bekleme (2 kare) ve çömelme (5 kare; eğilme ve çök-kapan-tutun)
+            SetFrames(so, "idleFrames", LoadFrames("oyuncu_bekleme"));
+            SetFrames(so, "crouchFrames", LoadFrames("oyuncu_egilme"));
             so.ApplyModifiedPropertiesWithoutUndo();
 
             // 2.5D kenar ışığı: ışığa bakan kenarda 2 piksellik parlak şerit (Deprem/RimLight)
@@ -215,6 +215,14 @@ namespace Deprem.Player
         }
 
         /// <summary>Assets/Art/Characters/{prefix}_1.png, _2.png ... numara sırasıyla</summary>
+        private static void SetFrames(SerializedObject so, string property, Texture2D[] frames)
+        {
+            var framesProperty = so.FindProperty(property);
+            framesProperty.arraySize = frames.Length;
+            for (int i = 0; i < frames.Length; i++)
+                framesProperty.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+        }
+
         private static Texture2D[] LoadFrames(string prefix)
         {
             const string folder = "Assets/Art/Characters";

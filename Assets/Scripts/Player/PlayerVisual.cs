@@ -3,10 +3,10 @@ using UnityEngine;
 namespace Deprem.Player
 {
     /// <summary>
-    /// Karakterin 2D görünüşü: yönüne göre çevirir, yürürken koşma karelerini oynatır, eğilince alçaltır.
-    /// Kareler (Assets/Art/Characters/oyuncu_kosma_N.png, 128 x 128, sağa bakar) quad'ın materyaline
-    /// MaterialPropertyBlock ile takılır. Bekleme ve eğilme çizimleri gelene kadar duruşta idleFrame gösterilir,
-    /// eğilince görsel alçaltılır. Kare yoksa düz renkli yer tutucu kalır.
+    /// Karakterin 2D görünüşü: yönüne göre çevirir, yürürken koşma, dururken bekleme, eğilince çömelme
+    /// karelerini oynatır. Kareler (Assets/Art/Characters/oyuncu_kosma_N / oyuncu_bekleme_N / oyuncu_egilme_N.png,
+    /// 128 x 128, sağa bakar) quad'ın materyaline MaterialPropertyBlock ile takılır. Çömelme bir kez oynar ve son
+    /// karede kalır. Bekleme ya da çömelme çizimi yoksa eski davranış (koşma karesi, eğilince alçaltma).
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public sealed class PlayerVisual : MonoBehaviour
@@ -23,13 +23,20 @@ namespace Deprem.Player
         [Tooltip("Havadayken gösterilen kare (zıplama animasyonu gelene kadar)")]
         [SerializeField] private int airFrame;
         [SerializeField] private float runFps = 12f;
+        [SerializeField] private Texture2D[] idleFrames;
+        [SerializeField] private float idleFps = 2f;
+        [Tooltip("Ayaktan çömelmeye; bir kez oynar, son karede kalır")]
+        [SerializeField] private Texture2D[] crouchFrames;
+        [SerializeField] private float crouchFps = 14f;
         [Tooltip("Bu yatay hızın altında duruyor sayılır (m/s)")]
         [SerializeField] private float moveThreshold = 0.2f;
 
         private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");        private PlayerController player;
         private MaterialPropertyBlock block;
         private float frameTime;
-        private int shownFrame = -1;
+        private float idleTime;
+        private float crouchTime;
+        private Texture2D shownTexture;
 
         private void Awake()
         {
@@ -39,7 +46,9 @@ namespace Deprem.Player
         private void LateUpdate()
         {
             if (visual == null) return;
-            float height = player.IsCrouching ? player.CrouchHeight / player.StandingHeight : 1f;
+            // Çömelme çizimi varsa görsel alçaltılmaz, kareler çömelir
+            bool hasCrouchArt = crouchFrames != null && crouchFrames.Length > 0;
+            float height = player.IsCrouching && !hasCrouchArt ? player.CrouchHeight / player.StandingHeight : 1f;
             visual.localScale = new Vector3(player.Facing, height, 1f);
             // Yer tutucu: yatarken yan yatır, baş solda (yatağın başlığı), gövde pivotun ortasında ve
             // şiltenin üstünde (pivot = şilte üstü). Sprite gelince "yatakta uyuma" animasyonu.
@@ -55,35 +64,50 @@ namespace Deprem.Player
         {
             if (body == null || runFrames == null || runFrames.Length == 0) return;
 
-            int frame;
             float speed = player.Body != null ? Mathf.Abs(player.Body.linearVelocity.x) : 0f;
             bool moving = (speed > moveThreshold || player.IsOnPath) && !player.IsLying && !player.IsCrouching;
-            if (player.IsLying || player.IsCrouching)
+            crouchTime = player.IsCrouching ? crouchTime + dt : 0f;
+
+            Texture2D texture;
+            if (player.IsCrouching && crouchFrames != null && crouchFrames.Length > 0)
             {
-                frame = idleFrame;
+                int frame = Mathf.Min(Mathf.FloorToInt(crouchTime * crouchFps), crouchFrames.Length - 1);
+                texture = crouchFrames[frame];
+            }
+            else if (player.IsLying || player.IsCrouching)
+            {
+                texture = IdleTexture(dt);
             }
             else if (!player.IsGrounded && !player.IsOnPath)
             {
-                frame = airFrame;
+                texture = runFrames[Mathf.Clamp(airFrame, 0, runFrames.Length - 1)];
             }
             else if (moving)
             {
                 frameTime += dt * runFps;
-                frame = Mathf.FloorToInt(frameTime) % runFrames.Length;
+                texture = runFrames[Mathf.FloorToInt(frameTime) % runFrames.Length];
             }
             else
             {
                 frameTime = 0f;
-                frame = idleFrame;
+                texture = IdleTexture(dt);
             }
 
-            frame = Mathf.Clamp(frame, 0, runFrames.Length - 1);
-            if (frame == shownFrame || runFrames[frame] == null) return;
-            shownFrame = frame;
+            if (texture == null || texture == shownTexture) return;
+            shownTexture = texture;
             block ??= new MaterialPropertyBlock();
             body.GetPropertyBlock(block);
-            block.SetTexture(BaseMap, runFrames[frame]);
+            block.SetTexture(BaseMap, texture);
             body.SetPropertyBlock(block);
+        }
+
+        // Bekleme çizimi varsa yavaş döngü, yoksa koşma karelerinden en dar adımlısı
+        private Texture2D IdleTexture(float dt)
+        {
+            if (idleFrames == null || idleFrames.Length == 0)
+                return runFrames[Mathf.Clamp(idleFrame, 0, runFrames.Length - 1)];
+            idleTime += dt * idleFps;
+            return idleFrames[Mathf.FloorToInt(idleTime) % idleFrames.Length];
         }
     }
 }

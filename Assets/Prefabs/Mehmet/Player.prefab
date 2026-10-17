@@ -273,6 +273,17 @@ MonoBehaviour:
   idleFrame: 2
   airFrame: 0
   runFps: 12
+  idleFrames:
+  - {fileID: 2800000, guid: 3152c56d0fddbc549815a82c4b7cc582, type: 3}
+  - {fileID: 2800000, guid: 24e39b706b526a34bbfd0fb4f1751577, type: 3}
+  idleFps: 2
+  crouchFrames:
+  - {fileID: 2800000, guid: 95d604a3e58928c4e892a243d0d58ec8, type: 3}
+  - {fileID: 2800000, guid: 08549c1b8c799e34fb68834c1022fbd3, type: 3}
+  - {fileID: 2800000, guid: fe0feb36a083b0e4ebfe76ee9f513d6e, type: 3}
+  - {fileID: 2800000, guid: 8f0357eb355c9d243abda63196b41938, type: 3}
+  - {fileID: 2800000, guid: 8deeb1207b621ca4888e33c845afc215, type: 3}
+  crouchFps: 14
   moveThreshold: 0.2
 --- !u!114 &3980672761434934324
 MonoBehaviour:

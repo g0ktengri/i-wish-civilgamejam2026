@@ -761,16 +761,36 @@ namespace Deprem.HouseBuilder
 
             var side = fallback * 0.8f;
             side.a = 1f;
+            var size = max - min;
             var mats = new List<Material>
             {
-                GetMaterial(textureKey + "_on", frontPath, fallback),
-                plainSides ? GetMaterial(textureKey + "_yan", null, side) : GetMaterial(textureKey + "_yan", $"Assets/Art/{artFolder}/{textureKey}_yan.png", side),
-                plainSides ? GetMaterial(textureKey + "_ust", null, side) : GetMaterial(textureKey + "_ust", $"Assets/Art/{artFolder}/{textureKey}_ust.png", side),
+                BodyMaterial(textureKey, "on", frontPath, fallback, new Vector2(size.x, size.y)),
+                BodyMaterial(textureKey, "yan", plainSides ? null : $"Assets/Art/{artFolder}/{textureKey}_yan.png", side, new Vector2(size.z, size.y)),
+                BodyMaterial(textureKey, "ust", plainSides ? null : $"Assets/Art/{artFolder}/{textureKey}_ust.png", side, new Vector2(size.x, size.z)),
             };
             foreach (var (key, color) in ToneMaterials) mats.Add(GetMaterial(key, null, color));
             go.AddComponent<MeshRenderer>().sharedMaterials = mats.ToArray();
             if (collider) go.AddComponent<BoxCollider>().size = max - min;
             return go;
+        }
+
+        /// <summary>
+        /// Gövde yüzü materyali: sanatçı dokusu varsa o; yoksa yüzün boyutunda kodla üretilen pixel art doku
+        /// (PixelFurnitureTextures; düz renk salonun pixel art duvarlarının yanında sırıtıyordu).
+        /// </summary>
+        private static Material BodyMaterial(string key, string face, string artPath, Color fallback, Vector2 faceSize)
+        {
+            string name = key + "_" + face;
+            bool hasArt = artPath != null && AssetDatabase.LoadAssetAtPath<Texture2D>(artPath) != null;
+            bool cached = MaterialCache.ContainsKey(name);
+            var mat = GetMaterial(name, hasArt ? artPath : null, fallback);
+            if (!hasArt && !cached)
+            {
+                mat.SetTexture("_BaseMap", PixelFurnitureTextures.Get(key, face, faceSize, fallback));
+                mat.SetColor("_BaseColor", Color.white);
+                EditorUtility.SetDirty(mat);
+            }
+            return mat;
         }
 
         private static int FaceToItemSubmesh(BoxFace face)
