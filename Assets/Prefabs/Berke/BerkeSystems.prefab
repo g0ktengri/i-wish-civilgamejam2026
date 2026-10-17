@@ -270,6 +270,9 @@ MonoBehaviour:
     screwDone: {fileID: 0}
     carryBackground: {fileID: 0}
     carryWall: {fileID: 0}
+    carryPanel: {fileID: 21300000, guid: 585f01e150892dd40b2428df7e0fc0d7, type: 3}
+    carryRod: {fileID: 21300000, guid: adb321fb85ca4f240bf951ae96a829ce, type: 3}
+    carryRodEnd: {fileID: 21300000, guid: 1433e0095c13f7d4e8a2f075846941f1, type: 3}
     carryTarget: {fileID: 0}
     carryItem: {fileID: 0}
     carryBedShelf: {fileID: 0}
@@ -506,7 +509,7 @@ MonoBehaviour:
   rainMotif: 1
   heartbeatMotif: 1
   backgroundSprite: {fileID: 0}
-  logoSprite: {fileID: 0}
+  logoSprite: {fileID: 21300000, guid: 6ac9ff0bd81f52a4785291ad352b96d4, type: 3}
   teamLogo: {fileID: 21300000, guid: 05864002f44128747aa651804af71593, type: 3}
   teamLogoHeight: 56
   teamLogoAlpha: 0.45

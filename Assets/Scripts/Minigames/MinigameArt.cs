@@ -31,6 +31,13 @@ namespace Deprem.Minigames
         public Sprite carryBackground;
         [Tooltip("minigame_duvar.png, 16 x 256: ortadaki duvar (boşluk kodla açılır, dikey döşenir)")]
         public Sprite carryWall;
+        [Tooltip("minigame_tasi_panel.png, 720 x 512 (ekranda 360 x 256): ekip çizimi kutu (Panel2), çerçeve ve iç oda. " +
+                 "Varsa arka planın yerine geçer; eşya çerçevenin içinde kalır, duvarlar çubuk çizimiyle")]
+        public Sprite carryPanel;
+        [Tooltip("minigame_tasi_cubuk.png, 32 x 16 (ekranda 16 genişlik): metal çubuğun gövdesi, dikey gerilir")]
+        public Sprite carryRod;
+        [Tooltip("minigame_tasi_cubuk_uc.png, 32 x 16: çubuğun yuvarlak ucu (aşağı bakan; alttaki çubukta ters çevrilir)")]
+        public Sprite carryRodEnd;
         [Tooltip("minigame_guvenli_alan.png, 64 x 64: güvenli alan")]
         public Sprite carryTarget;
         [Tooltip("minigame_esya.png, 48 x 48: eşyaya özel görsel yoksa taşınan şey")]

@@ -36,6 +36,13 @@ namespace Deprem.Minigames
         readonly float gapHeight;
         readonly Sprite itemSprite;
 
+        // Panel2 (ekip çizimi kutu): çerçevenin iç açıklığı panelin bu oranı; eşya ve duvarlar bunun içinde
+        static readonly Vector2 FramedArea = new Vector2(0.84f, 0.72f);
+        bool Framed => Art.carryPanel;
+        bool Rods => Framed && Art.carryRod;
+        // Oyun alanı: çerçeveli kutuda iç açıklık, yoksa bütün panel
+        Vector2 Area => Framed ? Vector2.Scale(PanelSize, FramedArea) : PanelSize;
+
         readonly List<Wall> walls = new List<Wall>();
         static readonly Vector2 ShadowOffset = new Vector2(4f, -5f);
         RectTransform item;
@@ -58,14 +65,15 @@ namespace Deprem.Minigames
 
         protected override void OnBuild()
         {
-            CreateBackground(Art.carryBackground, MinigamePixels.Ground((int)PanelSize.x, (int)PanelSize.y, "room"));
+            if (Framed) CreateBackground(Art.carryPanel); // Mehmet'in play testi: ekip çizimi kutu (Panel2)
+            else CreateBackground(Art.carryBackground, MinigamePixels.Ground((int)PanelSize.x, (int)PanelSize.y, "room"));
             ItemSize = (Vector2)MinigamePixels.CarrySize(Variant.CarryKind) * MinigamePixels.Scale;
 
             // Eşya bir yanda, güvenli alan diğer yanda
             float side = Random.NextDouble() < 0.5 ? -1f : 1f;
-            float x = PanelSize.x * 0.5f - ItemSize.x * 0.5f - 6f;
-            float targetX = PanelSize.x * 0.5f - TargetSize.x * 0.5f - 4f; // güvenli alan kenarda kırpılmasın
-            float halfHeight = PanelSize.y * 0.5f;
+            float x = Area.x * 0.5f - ItemSize.x * 0.5f - 6f;
+            float targetX = Area.x * 0.5f - TargetSize.x * 0.5f - 4f; // güvenli alan kenarda kırpılmasın
+            float halfHeight = Area.y * 0.5f;
             start = new Vector2(-side * x, Range(-halfHeight * 0.45f, halfHeight * 0.45f));
             var targetPosition = new Vector2(side * targetX, Range(-halfHeight * 0.45f, halfHeight * 0.45f));
 
@@ -119,17 +127,22 @@ namespace Deprem.Minigames
         {
             var wall = new Wall { X = x, GapHeight = gap, BaseY = baseY, GapY = baseY, Amplitude = amplitude, Phase = phase };
             int index = walls.Count;
-            wall.Top = WallPiece($"Wall{index}Top", wall);
-            wall.Bottom = WallPiece($"Wall{index}Bottom", wall);
+            wall.Top = WallPiece($"Wall{index}Top", wall, true);
+            wall.Bottom = WallPiece($"Wall{index}Bottom", wall, false);
             walls.Add(wall);
         }
 
         // Maskeli parça: içindeki tuğla dokusu panelde sabit durur, boşluk kayınca doku kaymaz
-        RectTransform WallPiece(string name, Wall wall)
+        RectTransform WallPiece(string name, Wall wall, bool top)
         {
             var piece = new GameObject(name, typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
             piece.SetParent(Panel, false);
             piece.anchorMin = piece.anchorMax = new Vector2(0.5f, 0.5f);
+            if (Rods)
+            {
+                RodPiece(piece, wall, top);
+                return piece;
+            }
             var size = new Vector2(WallWidth, PanelSize.y);
             var bricks = CreatePixel("Bricks", Vector2.zero, size, Art.carryWall, MinigamePixels.Block((int)size.x, (int)size.y), piece);
             if (Art.carryWall)
@@ -141,21 +154,45 @@ namespace Deprem.Minigames
             return piece;
         }
 
+        // Panel2 çizimindeki metal çubuk: gövde boyuna gerilir, boşluğa bakan ucu yuvarlak (alttaki çubukta ters)
+        void RodPiece(RectTransform piece, Wall wall, bool top)
+        {
+            float endHeight = Art.carryRodEnd ? WallWidth * Art.carryRodEnd.rect.height / Art.carryRodEnd.rect.width : 0f;
+            var body = CreateRect("Rod", Vector2.zero, Vector2.zero, Color.white, piece, Art.carryRod);
+            body.preserveAspect = false;
+            var bodyRect = body.rectTransform;
+            bodyRect.anchorMin = Vector2.zero;
+            bodyRect.anchorMax = Vector2.one;
+            // Uç saydam köşeli: gövde ucun altına girmesin
+            bodyRect.offsetMin = new Vector2(0f, top ? endHeight : 0f);
+            bodyRect.offsetMax = new Vector2(0f, top ? 0f : -endHeight);
+            wall.Images.Add(body);
+            if (!Art.carryRodEnd) return;
+            var end = CreateRect("RodEnd", Vector2.zero, new Vector2(WallWidth, endHeight), Color.white, piece, Art.carryRodEnd);
+            end.preserveAspect = false;
+            var endRect = end.rectTransform;
+            endRect.anchorMin = endRect.anchorMax = new Vector2(0.5f, top ? 0f : 1f);
+            endRect.anchoredPosition = new Vector2(0f, top ? endHeight * 0.5f : -endHeight * 0.5f);
+            if (!top) endRect.localScale = new Vector3(1f, -1f, 1f);
+            wall.Images.Add(end);
+        }
+
         void LayoutWall(Wall wall)
         {
-            float half = PanelSize.y * 0.5f;
+            float half = Area.y * 0.5f;
             float gapTop = wall.GapY + wall.GapHeight * 0.5f;
             float gapBottom = wall.GapY - wall.GapHeight * 0.5f;
             Place(wall.Top, wall.X, gapTop, half);
             Place(wall.Bottom, wall.X, -half, gapBottom);
         }
 
-        static void Place(RectTransform piece, float x, float y0, float y1)
+        void Place(RectTransform piece, float x, float y0, float y1)
         {
             float height = Mathf.Max(0f, y1 - y0);
             float center = (y0 + y1) * 0.5f;
             piece.sizeDelta = new Vector2(WallWidth, height);
             piece.anchoredPosition = new Vector2(x, center);
+            if (Rods) return; // çubuk parçayla birlikte gerilir
             // Tuğla panelin ortasında sabit kalsın
             var bricks = (RectTransform)piece.GetChild(0);
             bricks.anchoredPosition = new Vector2(0f, -center);
@@ -193,7 +230,7 @@ namespace Deprem.Minigames
 
             if (dragging && input.Held)
             {
-                Vector2 half = (PanelSize - ItemSize) * 0.5f;
+                Vector2 half = (Area - ItemSize) * 0.5f;
                 Vector2 previous = item.anchoredPosition;
                 Vector2 position = input.Pointer + grabOffset;
                 item.anchoredPosition = new Vector2(Mathf.Clamp(position.x, -half.x, half.x),

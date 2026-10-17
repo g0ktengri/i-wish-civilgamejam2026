@@ -130,6 +130,7 @@ namespace Deprem.Loop.EditorTools
                 RenderScene(name, root =>
                 {
                     var host = root.AddComponent<Deprem.Minigames.MinigameHost>();
+                    UsePrefabArt(host);
                     Call(host, "Awake");
                     var variant = typeof(Deprem.Minigames.MinigameHost).GetMethod("VariantFor", Flags).Invoke(host, new object[] { id });
                     string title = Deprem.Localization.Texts.Format("minigame.title", Deprem.Localization.Texts.Get($"item.{id}"));
@@ -163,6 +164,7 @@ namespace Deprem.Loop.EditorTools
             RenderScene("minigame_flashlight", root =>
             {
                 var host = root.AddComponent<Deprem.Minigames.MinigameHost>();
+                UsePrefabArt(host);
                 Call(host, "Awake");
                 host.Open(Deprem.Core.MinigameType.CarryAndPlace, _ => { }, null,
                     Deprem.Localization.Texts.Get("bag.Flashlight"), "flashlight");
@@ -173,6 +175,7 @@ namespace Deprem.Loop.EditorTools
             {
                 var menu = root.AddComponent<MainMenu>();
                 typeof(MainMenu).GetField("teamLogo", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/takim_logo.png"));
+                typeof(MainMenu).GetField("logoSprite", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/logo.png"));
                 Call(menu, "Awake");
                 var screens = typeof(MainMenu).GetNestedType("Screen", BindingFlags.NonPublic);
                 Call(menu, "Show", System.Enum.Parse(screens, "Main"));
@@ -184,6 +187,7 @@ namespace Deprem.Loop.EditorTools
             {
                 var menu = root.AddComponent<MainMenu>();
                 typeof(MainMenu).GetField("teamLogo", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/takim_logo.png"));
+                typeof(MainMenu).GetField("logoSprite", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/logo.png"));
                 Call(menu, "Awake");
                 var screens = typeof(MainMenu).GetNestedType("Screen", BindingFlags.NonPublic);
                 Call(menu, "Show", System.Enum.Parse(screens, "Main"));
@@ -456,6 +460,15 @@ namespace Deprem.Loop.EditorTools
             var blur = new RenderTexture(96, 54, 0) { filterMode = FilterMode.Bilinear };
             Graphics.Blit(texture, blur);
             return blur;
+        }
+
+        // Minigame önizlemesi oyundaki gibi ekip görselleriyle (BerkeSystems prefab'ındaki art): Panel2 kutusu vb.
+        static void UsePrefabArt(Deprem.Minigames.MinigameHost host)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Berke/BerkeSystems.prefab");
+            var source = prefab ? prefab.GetComponent<Deprem.Minigames.MinigameHost>() : null;
+            var field = typeof(Deprem.Minigames.MinigameHost).GetField("art", Flags);
+            if (source && field != null) field.SetValue(host, field.GetValue(source));
         }
 
         static void Call(object target, string method, params object[] args) =>

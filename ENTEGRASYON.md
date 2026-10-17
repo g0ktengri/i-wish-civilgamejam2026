@@ -52,6 +52,21 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Ana menü logosu ve taşı-yerleştir kutusu (Panel2), senin dosyalarında Mehmet'in isteğiyle
+
+Dört test geçiyor; Play'de denenmedi.
+
+- **Logo:** `Assets/Art/UI/logo.png`, çatlaklı KEŞKE (kodla çizildi, AI beyanına yazılmalı). `MainMenu.logoSprite`'a bağlanıyor ve yazı başlığın yerini alıyor.
+  - Logo artık başlık grubunun içinde, menüdeki sarsıntıda yazı gibi titriyor.
+  - Önizlemesi `HudPreview`'da.
+  - İngilizce menüde de "KEŞKE" görünüyor.
+- **Taşı-yerleştir (`CarryMinigame`, `MinigameArt`):**
+  - Ekibin `Panel2.png` kutusu arka plan oldu (`minigame_tasi_panel.png`). İçindeki çizili çubuklar silindi.
+  - Duvarları yine kod çiziyor, ama çubuk çizimiyle: `minigame_tasi_cubuk.png` gövde, `_uc.png` yuvarlak uç. Rastgele, kayan ve çift duvar düzenleri aynen duruyor.
+  - Eşya ve duvarlar çerçevenin iç açıklığında (`FramedArea` 0,84 × 0,72).
+  - Panel2 yoksa eski tuğla/pixel görünüm kullanılıyor.
+- **`HudPreview`:** minigame önizlemeleri artık prefab'daki ekip görselleriyle çiziliyor (`UsePrefabArt`).
+
 ### Mehmet'in play testi: kardeş, salon penceresi, anne, ölüm efekti, çök-kapan ipucu, keşke yazıları
 
 Dört test geçiyor; Play'de denenmedi.

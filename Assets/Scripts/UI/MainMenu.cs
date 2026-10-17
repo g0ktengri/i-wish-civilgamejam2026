@@ -393,19 +393,22 @@ namespace Deprem.UI
             if (backdrop) backdrop.InsertBelowLamp(shade.transform);
             UiBuilder.Stretch(shade.rectTransform, new Vector2(0.18f, 0f), new Vector2(0.82f, 1f));
 
-            if (logoSprite)
-            {
-                logo = UiBuilder.CreateImage(canvas.transform, "Logo", Color.white);
-                logo.sprite = logoSprite;
-                logo.rectTransform.anchorMin = logo.rectTransform.anchorMax = new Vector2(0.5f, 0.76f);
-                // Referans pikselinde kendi boyutu (ölçeklenmez)
-                logo.rectTransform.sizeDelta = logoSprite.rect.size;
-            }
-
             // Orta sütun: başlık (titrer) ve iki yanı süslü alt başlık
             titleGroup = CreateRect(canvas.transform, "TitleGroup");
             UiBuilder.Stretch(titleGroup, new Vector2(0.1f, 0.6f), new Vector2(0.9f, 0.86f));
             titleHome = titleGroup.anchoredPosition;
+
+            if (logoSprite)
+            {
+                // Mehmet'in play testi: çatlaklı KEŞKE logosu (Assets/Art/UI/logo.png). Başlık grubunun içinde:
+                // menüdeki sarsıntıda yazı gibi o da titrer
+                logo = UiBuilder.CreateImage(titleGroup, "Logo", Color.white);
+                logo.sprite = logoSprite;
+                logo.raycastTarget = false;
+                logo.rectTransform.anchorMin = logo.rectTransform.anchorMax = new Vector2(0.5f, 0.64f); // lambaya değmesin
+                // Referans pikselinde kendi boyutu (ölçeklenmez)
+                logo.rectTransform.sizeDelta = logoSprite.rect.size;
+            }
             var titleArea = CreateRect(titleGroup, "TitleArea");
             UiBuilder.Stretch(titleArea, new Vector2(0f, 0.32f), Vector2.one);
             titleText = UiTitle.Create(titleArea, "Title", font, titleFontSize, 3f);
