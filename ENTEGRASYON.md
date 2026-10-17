@@ -1118,6 +1118,7 @@ Mehmet'in yorumu (özet):
 - **Acil durum ışıkları:** tavan ortasından odanın önüne (kamera tarafı, yarı yükseklik) taşındı, gölgesiz, daha az mavi.
 - **Kardeş ipucu:** artık odaya girişte tetikleniyor (`RoomVisibility.SameRoom`). Fenersiz arama süresi odaya girişten itibaren 6 sn. `texts.csv`'de yalnız `bubble.family_missing.flashlight` metni değişti.
 - **Ölüm zamanlaması:** tavandan düşen sıvanın alt kenarı başın tepesine inince ölüm başlıyor (en fazla 1,5 sn).
+- **M49 sesi:** `spirit.rise` ses bankasında. Yaklaşık 1,1 sn yükselen, titreşen iki ton ve hava sesi, sonda hafif bir çan; yankıyla ~2 sn'de söner. `Sfx.Play("spirit.rise")` artık çalıyor.
 
 ---
 

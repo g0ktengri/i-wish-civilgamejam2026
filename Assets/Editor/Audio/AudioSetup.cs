@@ -181,6 +181,7 @@ namespace Deprem.Audio
 
             // --- Ruh fazı
             yield return new Recipe { key = "spirit.ambience", volume = 0.7f, make = SpiritAmbience };
+            yield return new Recipe { key = "spirit.rise", volume = 0.75f, make = SpiritRise }; // ENTEGRASYON M49 (Berke)
             yield return new Recipe { key = "spirit.tick", volume = 0.6f, make = s => Tick(s, 3200f) };
             yield return new Recipe { key = "spirit.tock", volume = 0.6f, make = s => Tick(s, 2300f) };
             yield return new Recipe { key = "item.secured", volume = 0.8f, make = Secured };
@@ -648,6 +649,27 @@ namespace Deprem.Audio
             for (int h = 1; h <= 7; h += 2) Mix(b, Sine(len, _ => 520f * h), 0f, 1f / h);
             Envelope(b, 0.002f, 0.012f, 70f);
             return Fade(Normalize(LowPass(b, 2800f), 0.5f), 0.002f, 0.008f);
+        }
+
+        /// <summary>
+        /// Ruhun bedenden çıkışı (M49, ~1,1 sn): yumuşak, yükselen ve titreşen iki ses (beşli aralık), altında
+        /// yükselen hava; sonda hafif bir çan. Uzun yankıyla söner, ürkütücü değil, boşlukta süzülme hissi
+        /// </summary>
+        private static float[] SpiritRise(SoundSynth s)
+        {
+            const float len = 2.2f;
+            var b = Buffer(len);
+            Func<float, float> glide = t => Mathf.Lerp(220f, 440f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 1.1f)));
+            var low = Sine(1.6f, t => glide(t) * (1f + 0.012f * Mathf.Sin(t * 34f)));
+            var high = Sine(1.6f, t => glide(t) * 1.5f * (1f + 0.012f * Mathf.Sin(t * 29f + 1f)));
+            Func<float, float> swell = t => Mathf.Sin(Mathf.Clamp01(t / 1.6f) * Mathf.PI) * Mathf.Clamp01(t / 0.35f);
+            Mix(b, Shape(low, swell), 0f, 0.35f);
+            Mix(b, Shape(high, swell), 0f, 0.22f);
+            var air = BandPass(s.White(1.5f), t => 400f + 2200f * t / 1.5f, 3f);
+            Shape(air, t => Mathf.Sin(Mathf.Clamp01(t / 1.5f) * Mathf.PI));
+            Mix(b, Normalize(air, 1f), 0f, 0.16f);
+            Mix(b, Note(1.2f, 1318.5f, 0.01f, 2.5f, 0.3f), 1.05f, 0.12f);
+            return Fade(Normalize(Reverb(b, 1.8f, 0.45f, 0.85f), 0.8f), 0.02f, 0.05f);
         }
 
         /// <summary>Ölüm anı: derin vuruş, altında inen uyumsuz ton, kulak çınlaması (Play testi 24), uzun yankıyla sönen</summary>

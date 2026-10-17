@@ -129,6 +129,11 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 53bd457076dda7546b5a5f9d147f65ae, type: 3}
     volume: 0.7
     pitch: {x: 1, y: 1}
+  - key: spirit.rise
+    clips:
+    - {fileID: 8300000, guid: 9eb4e77d29ab7024faadc78ae0423a90, type: 3}
+    volume: 0.75
+    pitch: {x: 1, y: 1}
   - key: spirit.tick
     clips:
     - {fileID: 8300000, guid: 93a7ffdd68806d74f9b8b4e8d4477d15, type: 3}
