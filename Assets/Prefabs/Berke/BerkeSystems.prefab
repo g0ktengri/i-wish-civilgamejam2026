@@ -117,6 +117,9 @@ MonoBehaviour:
   crackJag: 5
   crackShake: 7
   heartbeatBpm: 62
+  crackFullAtWish: 5
+  crackWidthRange: {x: 0.3, y: 1.15}
+  crackThicknessRange: {x: 2, y: 5}
   infoDelay: 1.6
   infoCharsPerSecond: 40
   hintDelay: 1.5

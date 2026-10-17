@@ -27,6 +27,8 @@ namespace Deprem.Family
         [SerializeField] private Vector3 cabinInsideOffset = new Vector3(0f, 0.2f, 1.75f);
         [Tooltip("Kayası kaldırılan babanın kabine yürüme hızı (aksayarak, m/s; Berke'nin play testi 16)")]
         [SerializeField] private float limpSpeed = 1f;
+        [Tooltip("İlk yardım yoksa baba kabin girişinin bu kadar yanında yığılır (m; giriş etkileşimini kapatmasın)")]
+        [SerializeField] private float collapseOffsetX = 0.9f;
 
         private readonly List<Vector3> trail = new List<Vector3>();
         private readonly List<FamilyMember> followers = new List<FamilyMember>();
@@ -102,7 +104,8 @@ namespace Deprem.Family
             WalkToCabin(dt);
         }
 
-        // Kabine kendisi yürüyen üye: aynı katta giriş X'ine doğru yürür, varınca girer
+        // Kabine kendisi yürüyen üye: aynı katta giriş X'ine doğru yürür. Varınca: gereken malzeme (ilk yardım) çantada
+        // varsa yarasını sarıp girer, yoksa girişin yanında kanayıp yığılır (oyuncu görünce kayıp)
         private void WalkToCabin(float dt)
         {
             foreach (var member in FamilyMember.All)
@@ -112,6 +115,12 @@ namespace Deprem.Family
                 var goal = new Vector3(cabin.InteractionPoint.x, p.y, p.z);
                 if (Mathf.Abs(p.x - goal.x) <= 0.05f)
                 {
+                    if (member.NeedsCabinBagItem)
+                    {
+                        member.CollapseAtCabin(goal + Vector3.right * collapseOffsetX);
+                        continue;
+                    }
+                    member.TreatAtCabin();
                     member.EnterCabin(cabin.InteractionPoint + cabinInsideOffset);
                     continue;
                 }

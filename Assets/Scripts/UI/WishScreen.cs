@@ -69,6 +69,11 @@ namespace Deprem.UI
         [SerializeField] float crackShake = 7f;
         [Tooltip("Beklerken kalp atışı: dakikada vuruş")]
         [SerializeField] float heartbeatBpm = 62f;
+        [Tooltip("Berke'nin play testi: çatlak her keşkede büyür. İlk keşke en küçük, bu kadarıncı keşkede en büyük")]
+        [SerializeField] int crackFullAtWish = 5;
+        [Tooltip("İlk keşkede çatlağın eni (cümle enine oran) ve kalınlığı; en büyükte en ve kalınlık")]
+        [SerializeField] Vector2 crackWidthRange = new Vector2(0.3f, 1.15f);
+        [SerializeField] Vector2 crackThicknessRange = new Vector2(2f, 5f);
 
         [Header("Bilgi ve devam (sn)")]
         [Tooltip("Cümle bittikten sonra bilgi satırından önceki sessizlik")]
@@ -414,22 +419,30 @@ namespace Deprem.UI
 
         // M22: cümlenin altını kırmızı bir çatlak yarar. Ortadan iki yana hızla ilerler; o anda ekran koyu kırmızı
         // parlar ve yazılar sarsılır. Sonra çatlak kalp atışı gibi atar (Heartbeat).
+        // 0 = ilk keşke (küçük, ince), 1 = crackFullAtWish'inci ve sonrası (geniş, kalın, çok dallı)
+        float CrackGrowth => Mathf.Clamp01((GameState.FailedAttempts - 1) / (float)Mathf.Max(1, crackFullAtWish - 1));
+
         IEnumerator Crack()
         {
+            float growth = CrackGrowth;
             float canvasWidth = ((RectTransform)wishText.canvas.transform).rect.width;
-            float width = Mathf.Clamp(wishText.preferredWidth, 220f, canvasWidth * 0.75f);
-            BuildCrack(width);
+            float textWidth = Mathf.Clamp(wishText.preferredWidth, 220f, canvasWidth * 0.75f);
+            float width = Mathf.Min(textWidth * Mathf.Lerp(crackWidthRange.x, crackWidthRange.y, growth), canvasWidth * 0.92f);
+            BuildCrack(width, Mathf.Lerp(crackThicknessRange.x, crackThicknessRange.y, growth), Mathf.Lerp(0.55f, 1.5f, growth), growth);
             Sfx.Play("wish.shatter");
             var shakeHead = headRect.anchoredPosition;
-            for (float t = 0f; t < crackSeconds; t += Time.unscaledDeltaTime)
+            float seconds = crackSeconds * Mathf.Lerp(0.6f, 1.25f, growth);
+            float shakeStrength = crackShake * Mathf.Lerp(0.35f, 1.3f, growth);
+            var flash = Color.Lerp(Color.Lerp(flashColor, Color.black, 0.55f), flashColor * 1.3f, growth);
+            for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
             {
-                float k = t / crackSeconds;
+                float k = t / seconds;
                 ShowCrack(Mathf.CeilToInt(crackCore.Count * k));
-                float shake = crackShake * (1f - k);
+                float shake = shakeStrength * (1f - k);
                 var offset = Random.insideUnitCircle * shake;
                 wishRect.anchoredPosition = wishHome + offset;
                 headRect.anchoredPosition = shakeHead + offset * 0.6f;
-                background.color = Color.Lerp(flashColor, Color.black, k);
+                background.color = Color.Lerp(flash, Color.black, k);
                 yield return null;
             }
             ShowCrack(crackCore.Count);
@@ -445,40 +458,50 @@ namespace Deprem.UI
             heartbeat = true;
         }
 
-        // Kırık çizgi: crackStep aralıklı, dikeyde crackJag kadar sapan noktalar; her parça döndürülmüş ince bir
-        // Image (çekirdek 3 px, arkasında yarı saydam 9 px ışıma). Birkaç kısa dal. Pikseller tam sayıya oturur.
-        void BuildCrack(float width)
+        // Kırık çizgi: crackStep aralıklı, dikeyde jag kadar sapan noktalar; her parça döndürülmüş ince bir Image
+        // (çekirdek, arkasında üç kat kalın yarı saydam ışıma). Dallar: büyüdükçe sıklaşır ve uzar. Pikseller tam sayıda.
+        // thickness: çekirdek kalınlığı, jagScale: kırıklık, growth: 0 ilk keşke .. 1 en büyük
+        void BuildCrack(float width, float thickness, float jagScale, float growth)
         {
             ClearCrack();
+            float jag = crackJag * jagScale;
             var points = new List<Vector2>();
             float half = width * 0.5f;
             float y = 0f;
             for (float x = -half; x <= half + 0.01f; x += crackStep)
             {
                 points.Add(new Vector2(Mathf.Round(x), Mathf.Round(y)));
-                y = Mathf.Clamp(y + Random.Range(-crackJag, crackJag), -crackJag * 1.6f, crackJag * 1.6f);
+                y = Mathf.Clamp(y + Random.Range(-jag, jag), -jag * 1.6f, jag * 1.6f);
             }
 
+            float core = Mathf.Round(thickness);
+            float branch = Mathf.Max(1f, Mathf.Round(thickness * 0.65f));
             var segments = new List<(Vector2 a, Vector2 b, float thickness)>();
-            for (int i = 0; i + 1 < points.Count; i++) segments.Add((points[i], points[i + 1], 3f));
-            // Dallar: ana çizgiden yukarı ya da aşağı 2 kısa parça
-            for (int i = 2; i + 2 < points.Count; i += Random.Range(3, 6))
+            for (int i = 0; i + 1 < points.Count; i++) segments.Add((points[i], points[i + 1], core));
+            // Dallar: ana çizgiden yukarı ya da aşağı; büyüdükçe daha sık, daha uzun (üç parçaya kadar)
+            int minGap = Mathf.RoundToInt(Mathf.Lerp(6f, 2f, growth)), maxGap = Mathf.RoundToInt(Mathf.Lerp(9f, 4f, growth));
+            int pieces = growth > 0.6f ? 3 : 2;
+            for (int i = 2; i + 2 < points.Count; i += Random.Range(minGap, maxGap + 1))
             {
-                var start = points[i];
+                var from = points[i];
                 float dir = Random.value < 0.5f ? -1f : 1f;
-                var mid = start + new Vector2(Random.Range(-crackStep, crackStep), dir * Random.Range(crackJag, crackJag * 2f));
-                var end = mid + new Vector2(Random.Range(-crackStep, crackStep) * 0.7f, dir * Random.Range(crackJag * 0.5f, crackJag * 1.5f));
-                segments.Add((start, Round(mid), 2f));
-                segments.Add((Round(mid), Round(end), 2f));
+                for (int piece = 0; piece < pieces; piece++)
+                {
+                    float shrink = 1f - piece * 0.3f;
+                    var to = Round(from + new Vector2(Random.Range(-crackStep, crackStep) * shrink,
+                        dir * Random.Range(jag * 0.6f, jag * 1.8f) * shrink));
+                    segments.Add((from, to, Mathf.Max(1f, branch - piece)));
+                    from = to;
+                }
             }
             // Ortadan kenara doğru açılsın
             segments.Sort((s1, s2) => Mathf.Abs((s1.a.x + s1.b.x) * 0.5f).CompareTo(Mathf.Abs((s2.a.x + s2.b.x) * 0.5f)));
 
             var glowColor = new Color(lineColor.r, lineColor.g, lineColor.b, 0.28f);
-            foreach (var (a, b, thickness) in segments)
+            foreach (var (a, b, size) in segments)
             {
-                crackGlow.Add(Segment(a, b, thickness * 3f, glowColor));
-                crackCore.Add(Segment(a, b, thickness, lineColor));
+                crackGlow.Add(Segment(a, b, size * 3f, glowColor));
+                crackCore.Add(Segment(a, b, size, lineColor));
             }
             // Işıma çekirdeğin arkasında kalsın
             foreach (var glow in crackGlow) glow.transform.SetAsFirstSibling();

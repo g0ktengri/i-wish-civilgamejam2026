@@ -25,6 +25,7 @@ namespace Deprem.Family
             public string Marker;
             public ItemId Danger;
             public BagItemId Bag;
+            public BagItemId CabinBag;
             public bool Injured;
             public float Height;
             public Color Color;
@@ -34,7 +35,8 @@ namespace Deprem.Family
         private static readonly MemberDef[] Members =
         {
             new MemberDef { Name = "Father", Id = FamilyMemberId.Father, Marker = "Marker_Father", Danger = ItemId.Bookcase,
-                Bag = BagItemId.FirstAidKit, Injured = true, Height = 1.8f, Color = new Color(0.35f, 0.5f, 0.85f) },
+                // Berke'nin play testi: kayayı kaldırmak için çanta şart değil; kan kaybı kabinde ortaya çıkar (ilk yardım)
+                Bag = BagItemId.None, CabinBag = BagItemId.FirstAidKit, Injured = true, Height = 1.8f, Color = new Color(0.35f, 0.5f, 0.85f) },
             new MemberDef { Name = "Mother", Id = FamilyMemberId.Mother, Marker = "Marker_Mother", Danger = ItemId.Wardrobe,
                 Bag = BagItemId.None, Injured = false, Height = 1.65f, Color = new Color(0.85f, 0.4f, 0.45f) },
             new MemberDef { Name = "Sibling", Id = FamilyMemberId.Sibling, Marker = "Marker_Sibling", Danger = ItemId.ToyShelf,
@@ -128,6 +130,7 @@ namespace Deprem.Family
             so.FindProperty("homeMarker").stringValue = def.Marker;
             so.FindProperty("dangerItem").enumValueIndex = (int)def.Danger;
             so.FindProperty("requiredBagItem").enumValueIndex = (int)def.Bag;
+            so.FindProperty("cabinBagItem").enumValueIndex = (int)def.CabinBag;
             so.FindProperty("injuredAfterQuake").boolValue = def.Injured;
             // Yaralıyken ayağındaki kaya: deprem molozunun materyali (QuakeSetup üretir), doku çalışma anında
             so.FindProperty("rockMaterial").objectReferenceValue =

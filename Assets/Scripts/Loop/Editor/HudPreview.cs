@@ -127,6 +127,24 @@ namespace Deprem.Loop.EditorTools
                 settings.Open(null);
             });
 
+            // Keşke çatlağı: ilk keşke (küçük) ve beşinci keşke (en büyük)
+            foreach (var (name, growth) in new[] { ("wish_crack_1", 0f), ("wish_crack_5", 1f) })
+            {
+                RenderScene(name, root =>
+                {
+                    var wish = root.AddComponent<WishScreen>();
+                    Call(wish, "Awake");
+                    Get<CanvasGroup>(wish, "group").alpha = 1f;
+                    Get<Image>(wish, "background").color = Color.black;
+                    var text = Get<Text>(wish, "wishText");
+                    text.text = "...ÇÖK-KAPAN-TUTUN YAPSAYDIM";
+                    float textWidth = Mathf.Clamp(text.preferredWidth, 220f, 720f);
+                    Call(wish, "BuildCrack", textWidth * Mathf.Lerp(0.3f, 1.15f, growth), Mathf.Lerp(2f, 5f, growth),
+                        Mathf.Lerp(0.55f, 1.5f, growth), growth);
+                    Call(wish, "ShowCrack", 9999);
+                });
+            }
+
             RenderScene("spirit", root =>
             {
                 var spirit = root.AddComponent<SpiritHud>();

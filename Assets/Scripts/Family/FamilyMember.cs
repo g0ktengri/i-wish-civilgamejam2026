@@ -15,6 +15,7 @@ namespace Deprem.Family
         Following, // oyuncuyu takip ediyor
         InCabin,
         WalkingToCabin, // Berke'nin play testi 16: kayası kaldırılan baba kabine kendisi, yavaşça yürür
+        Bleeding,       // kabine varınca kanaması başladı, çantada ilk yardım yok: kabin girişinde yatıyor
     }
 
     /// <summary>
@@ -22,8 +23,10 @@ namespace Deprem.Family
     ///   - dangerItem sabitlenmeden devrilirse üstüne düşer; oyuncu yanına gelince FamilyHitByItem.
     ///   - requiredBagItem çantada yoksa oyuncu yanına gelince MissingBagItem (baba: ilk yardım, kardeş: el feneri).
     ///   - Yaralıysa F basılı tutularak tedavi edilir, değilse F ile toplanır; sonra takip eder.
-    ///   - Berke'nin play testi 16: babanın ayağına kaya düşmüş (kan kaybı da var: ilk yardım çantası yine şart).
-    ///     F 3 sn basılı tutulunca kaya kalkar, baba teşekkür eder ve kabine kendisi aksayarak yürür (FamilyDirector).
+    ///   - Berke'nin play testi 16: babanın ayağına kaya düşmüş. F 3 sn basılı tutulunca kaya kalkar (çanta şart değil),
+    ///     baba teşekkür eder ve kabine kendisi aksayarak yürür (FamilyDirector).
+    ///   - Kan kaybı kabinde ortaya çıkar (cabinBagItem = ilk yardım): çantada varsa yarasını sarıp girer; yoksa girişte
+    ///     yığılır, seslenir, oyuncu görünce MissingBagItem (oyuncu ilk yardım çantasının gerektiğini orada fark eder).
     /// Takip ve kabin FamilyDirector'da.
     /// </summary>
     public sealed class FamilyMember : MonoBehaviour, IInteractable, IPromptSource
@@ -37,6 +40,8 @@ namespace Deprem.Family
         [SerializeField] private ItemId dangerItem;
         [Tooltip("Kurtarmak için çantada olması gereken malzeme (yoksa None)")]
         [SerializeField] private BagItemId requiredBagItem;
+        [Tooltip("Kabine varınca gereken malzeme (baba: ilk yardım; yoksa girişte kanayıp yığılır)")]
+        [SerializeField] private BagItemId cabinBagItem;
         [Tooltip("Ana depremden sonra yaralı mı (baba: pencere camı, GDD)")]
         [SerializeField] private bool injuredAfterQuake;
 
@@ -71,6 +76,8 @@ namespace Deprem.Family
         [SerializeField] private float callQuietRange = 2.5f;
 
         public FamilyMemberId Id => id;
+        /// <summary>Kabine vardığında gereken malzeme çantada yok mu (FamilyDirector kabin girişinde sorar)</summary>
+        public bool NeedsCabinBagItem => cabinBagItem != BagItemId.None && !GameState.HasBagItem(cabinBagItem);
         public FamilyState State { get; private set; } = FamilyState.Waiting;
         public ItemId HitBy { get; private set; }
         public bool IsTreating { get; private set; }
@@ -195,7 +202,8 @@ namespace Deprem.Family
             if (player == null) return;
 
             bool missingBagItem = requiredBagItem != BagItemId.None && !GameState.HasBagItem(requiredBagItem);
-            bool lost = State == FamilyState.Hit || (missingBagItem && (State == FamilyState.Waiting || State == FamilyState.Injured));
+            bool lost = State == FamilyState.Hit || State == FamilyState.Bleeding ||
+                        (missingBagItem && (State == FamilyState.Waiting || State == FamilyState.Injured));
             if (lost && IsNear(player.transform.position, discoverRange))
             {
                 if (!PlayerReacted) ReactToLoss(State == FamilyState.Hit);
@@ -231,7 +239,7 @@ namespace Deprem.Family
         /// </summary>
         private void CallForHelp(float dt)
         {
-            if (State != FamilyState.Waiting && State != FamilyState.Injured) return;
+            if (State != FamilyState.Waiting && State != FamilyState.Injured && State != FamilyState.Bleeding) return;
             if (IsNear(player.transform.position, callQuietRange)) return;
             // Play testi 11: kardeş odaya girmeden konuşuyordu; odası örtülüyken seslenmez
             var visibility = Deprem.Visual.RoomVisibility.Instance;
@@ -240,7 +248,8 @@ namespace Deprem.Family
             if (callTimer > 0f) return;
             callTimer = Random.Range(callInterval.x, callInterval.y);
             if (bubble == null) bubble = GetComponent<SpeechBubble>();
-            if (bubble != null) bubble.Say("bubble.family_call." + id.ToString().ToLowerInvariant(), callDuration);
+            string call = State == FamilyState.Bleeding ? "bubble.family_bleeding." : "bubble.family_call.";
+            if (bubble != null) bubble.Say(call + id.ToString().ToLowerInvariant(), callDuration);
         }
 
         /// <summary>
@@ -253,9 +262,10 @@ namespace Deprem.Family
             player.InputEnabled = false;
             player.SetScriptedInput(0f);
             player.Face(transform.position.x >= player.transform.position.x ? 1 : -1);
+            var missing = State == FamilyState.Bleeding ? cabinBagItem : requiredBagItem;
             string key = hit
                 ? "bubble.family_hit." + id.ToString().ToLowerInvariant()
-                : "bubble.family_missing." + requiredBagItem.ToString().ToLowerInvariant();
+                : "bubble.family_missing." + missing.ToString().ToLowerInvariant();
             var bubble = player.GetComponent<SpeechBubble>();
             if (bubble != null) bubble.Say(key, failDelay);
             StartCoroutine(Reveal());
@@ -379,6 +389,24 @@ namespace Deprem.Family
             transform.position = position;
         }
 
+        /// <summary>Kabine vardı ama kanaması başladı ve ilk yardım yok: girişin yanında yığılır, seslenir</summary>
+        public void CollapseAtCabin(Vector3 position)
+        {
+            State = FamilyState.Bleeding;
+            transform.position = position;
+            callTimer = callDuration + 1f;
+            if (bubble == null) bubble = GetComponent<SpeechBubble>();
+            if (bubble != null) bubble.Say("bubble.family_bleeding." + id.ToString().ToLowerInvariant(), callDuration + 0.5f);
+        }
+
+        /// <summary>Kabine vardı, çantadaki malzemeyle (ilk yardım) yarasını sardı</summary>
+        public void TreatAtCabin()
+        {
+            if (cabinBagItem == BagItemId.None) return;
+            if (bubble == null) bubble = GetComponent<SpeechBubble>();
+            if (bubble != null) bubble.Say("bubble.family_treated." + id.ToString().ToLowerInvariant(), callDuration);
+        }
+
         public void EnterCabin(Vector3 inside)
         {
             State = FamilyState.InCabin;
@@ -400,7 +428,7 @@ namespace Deprem.Family
             if (glow != null)
                 glow.enabled = GameState.Phase == GamePhase.Rescue && State != FamilyState.InCabin;
             if (visual == null) return;
-            bool lying = State == FamilyState.Injured || State == FamilyState.Hit;
+            bool lying = State == FamilyState.Injured || State == FamilyState.Hit || State == FamilyState.Bleeding;
             bool ducking = State == FamilyState.Ducking;
             visual.localRotation = lying ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
             visual.localScale = new Vector3(Facing, ducking ? 0.6f : 1f, 1f);

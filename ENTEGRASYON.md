@@ -41,6 +41,16 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Berke'nin play testi: büyüyen keşke çatlağı, kan kaybı kabinde (senin klasörlerinde izinle)
+
+- **Keşke çatlağı her keşkede büyüyor (`WishScreen`):** `GameState.FailedAttempts`'a göre. İlk keşkede cümlenin ~%30'u kadar, 2 px, az dallı. 5. keşkede (`crackFullAtWish`) cümleden geniş, 5 px, sık ve üç parçalı dallı. Yarılma süresi, sarsıntı ve kırmızı parlama da büyüyor. Önizleme: `Logs/hud_preview_wish_crack_1.png` / `_5.png`.
+- **Babanın kan kaybı kabinde (`FamilyMember`, `FamilyDirector`, `FamilySetup`, `FamilySmokeTest`):**
+  - Kayayı kaldırmak için çanta şart değil (`requiredBagItem` None); F 3 sn, baba kabine kendisi yürür (değişmedi).
+  - Yeni `cabinBagItem` (baba: ilk yardım). Kabine varınca çantada varsa "Çantada ilk yardım varmış, yaramı sardım" deyip girer (`TreatAtCabin`, `bubble.family_treated.father`).
+  - Yoksa yeni `FamilyState.Bleeding`: kabin girişinin 0,9 m yanında yatar (`collapseOffsetX`), "Bacağım çok kanıyor... Kanama durmuyor!" diye seslenir (`bubble.family_bleeding.father`). Oyuncu `discoverRange` içine gelince senin kayıp akışın: oyuncunun balonu `bubble.family_missing.firstaidkit`, `failDelay` sonra `MissingBagItem`. Oyuncu ilk yardım çantasının gerektiğini kabinde fark ediyor.
+  - `FamilySmokeTest.FatherWithoutFirstAid` bu yolu baştan sona deniyor (kaya, yürüme, yığılma, kabinde kayıp); tam kurtarma testi (ilk yardımla) geçiyor.
+- **M33 (HUD okunabilirliği):** sırada, ayrıca yapılacak.
+
 ### Play testi 20: M29–M32 (Berke)
 
 - **M29 ruh balonu:** `SpiritBubble` artık ruh çiziminin başının tepesine bağlı (`SpiritVisual.HeadTop`, evin önüne yansıtılmış sprite'tan; kuyruk başın 0,25 m üstünde, yansıtma ölçeğiyle). Ekranın üstüne taşarsa balon aşağıda kalıyor (üst kenardan 8 px pay).

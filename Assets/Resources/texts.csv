@@ -153,7 +153,9 @@ hud.rescue_time,ZAMAN,TIME
 bubble.injured,"Ah, bacağım! Zor yürüyorum...","Ow, my leg! I can barely walk..."
 bubble.rescue_start,"Annem, babam, kardeşim... Onları bulup kabine götürmeliyim!","Mom, Dad, my sibling... I have to find them and get them to the shelter!"
 bubble.family_call.father,"İmdat! Ayağım kayanın altında, kalkamıyorum!","Help! My leg is stuck under a rock!"
-bubble.father_freed,"Sağ ol! Kanamayı sardım, kabine gidiyorum. Sen diğerlerine bak!","Thank you! I've bandaged it, I'll get to the shelter. Go help the others!"
+bubble.father_freed,"Sağ ol! Ben kabine gidiyorum, sen diğerlerine bak!","Thank you! I'll get to the shelter, go help the others!"
+bubble.family_bleeding.father,"Bacağım çok kanıyor... Kanama durmuyor!","My leg is bleeding badly... it won't stop!"
+bubble.family_treated.father,"Çantada ilk yardım varmış, yaramı sardım. Oh be...","There's a first aid kit in the bag. I've bandaged my leg."
 bubble.family_call.mother,Kimse yok mu? Yardım edin!,Is anyone there? Help!
 bubble.family_call.sibling,"Abi! Neredesin, çok korkuyorum!","Where are you? I'm so scared!"
 

@@ -74,14 +74,26 @@ namespace Deprem.Family
                   && GameState.LastLoseItem == ItemId.Bookcase, $"Döngü 3: salona girince 'Keşke kitaplığı sabitleseydim' ({GameState.LastLoseReason}, {GameState.LastLoseItem})");
         }
 
+        // Berke'nin play testi: kaya çantasız kalkar; kan kaybı kabinde ortaya çıkar. İlk yardım yoksa baba kabin
+        // girişinde yığılır, oyuncu oraya gelince MissingBagItem
         private static void FatherWithoutFirstAid()
         {
             StartAttempt(4, new BagItemId[0]);
             Check(father.State == FamilyState.Injured, "Döngü 4: baba yaralı (ayağında kaya)");
-            player.Teleport(new Vector3(19.5f, 0f, 1f));
+            player.Teleport(new Vector3(22.2f, 0f, 1f));
+            TickMembers(2f);
+            Check(GameState.Phase == GamePhase.Rescue, "Döngü 4: babanın yanında hemen kaybedilmiyor (kaya kalkabilir)");
+            Check(father.CanInteract(player), "İlk yardım olmadan da kayayı kaldırmak mümkün");
+            father.Interact(player);
+            TickMembers(3.5f, held: true);
+            Check(father.State == FamilyState.WalkingToCabin, $"Kaya kalktı, baba kabine yürüyor ({father.State})");
+            for (float t = 0f; t < 30f && father.State == FamilyState.WalkingToCabin; t += Dt) director.Tick(Dt);
+            Check(father.State == FamilyState.Bleeding, $"İlk yardım yok: baba kabin girişinde kanayıp yığıldı ({father.State})");
+            var entrance = GameObject.Find("Marker_CabinEntrance").transform.position;
+            player.Teleport(entrance);
             TickMembers(6f);
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.MissingBagItem,
-                $"Döngü 4: ilk yardım yok, 'Keşke deprem çantası hazırlasaydım' ({GameState.LastLoseReason})");
+                $"Kabinde fark edildi: 'Keşke deprem çantası hazırlasaydım' ({GameState.LastLoseReason})");
         }
 
         private static void FullRescueAndWin()
