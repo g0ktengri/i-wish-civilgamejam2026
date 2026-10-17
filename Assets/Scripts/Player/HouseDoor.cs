@@ -89,6 +89,11 @@ namespace Deprem.Player
                 BlockedByItem = jammedBy;
                 var bubble = player.GetComponent<SpeechBubble>();
                 if (bubble != null) bubble.Say(jammedBubbleKey, 3f);
+                // Play testi 27: kapı açılmayınca oyuncu boş boş bekliyordu. Ruh fazı açılmış döngülerde ("Eyvah, kapı
+                // açılmıyor!") artçı gelir, tavan çöker; keşke kapıyı kapatan eşya. İlk döngülerde oyuncu yukarı çıkıp
+                // annenin durumunu görmeli (ruha dönüşme sekansı), orada bitmez.
+                if (GameState.SpiritPhaseUnlocked && GameState.Phase == GamePhase.Rescue)
+                    Deprem.Quake.QuakeDirector.RequestFatalAftershock(LoseReason.RescueTimeout, jammedBy);
                 return;
             }
             Open(player.transform.position.x);

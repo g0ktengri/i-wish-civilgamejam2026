@@ -18,7 +18,7 @@ namespace Deprem.Quake
         [Tooltip("Önden gelen dolgu ışığı: elektrik varken lambayla aynı sıcak ton, kesilince soğuk ay ışığı")]
         [SerializeField] private Light fill;
         [SerializeField] private Color fillPowerOn = new Color(1f, 0.88f, 0.74f);
-        [SerializeField] private Color fillPowerOff = new Color(0.62f, 0.7f, 0.95f);
+        [SerializeField] private Color fillPowerOff = new Color(0.8f, 0.79f, 0.78f); // Play testi 27: mavi değil, nötr gece
         [Tooltip("Elektrik kesikken dolgu ışığının oranı (karanlık gerçekten karanlık olsun)")]
         [SerializeField] private float fillPowerOffScale = 0.25f;
         [Tooltip("Elektrik kesikken ortam ışığının oranı")]

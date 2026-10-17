@@ -37,8 +37,8 @@ namespace Deprem.Quake
         [SerializeField] private float drainTime = 0.5f;
 
         [Header("Kararma")]
-        [SerializeField] private float blackoutStart = 1.7f;
-        [SerializeField] private float blackoutTime = 0.6f;
+        [SerializeField] private float blackoutStart = 0.8f; // Play testi 27: siyah daha yavaş insin
+        [SerializeField] private float blackoutTime = 1.6f;
         [Tooltip("Keşke ekranı gelmezse karanlık en fazla bu kadar kalır (sn)")]
         [SerializeField] private float maxHold = 6f;
 

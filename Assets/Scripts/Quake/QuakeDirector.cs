@@ -99,7 +99,7 @@ namespace Deprem.Quake
         [Tooltip("Tavandan kopan parçanın başa değmesi için en fazla bekleme (sn): değdiği an ölme animasyonu başlar")]
         [SerializeField] private float debrisImpactDelay = 1.5f;
         [Tooltip("Öldükten sonra kayıp ekranından önce sahnede kalma (sn): ölme kareleri biter, ruh yükselir, ekran kararır (Play testi 25)")]
-        [SerializeField] private float deathLinger = 2.4f;
+        [SerializeField] private float deathLinger = 2.6f;
         [Tooltip("Play testi 24: kardeş bulunamayınca gelen artçıda tavanın çökmesinden önceki sarsıntı (sn)")]
         [SerializeField] private float fatalAftershockLead = 1.2f;
         [Tooltip("Döngü 1: raf yatan oyuncunun üstüne düşer; kaplama kutusunun merkezi oyuncunun kökünden bu kadar uzakta")]
@@ -449,7 +449,7 @@ namespace Deprem.Quake
         /// </summary>
         private IEnumerator DuckCoverHold(float duration, float grace, Action<bool> result)
         {
-            QuakePrompts.Set(QuakePrompts.DuckCover);
+            QuakePrompts.Set(DuckCoverLearned ? "" : QuakePrompts.DuckCover); // Play testi 27: tuş ipucu sadece öğrenene kadar
             SafeSpot.ShowAll(true);
             var check = new DuckCoverHoldCheck(grace, duckCoverTolerance);
             bool warnedNotSafe = false;
@@ -467,7 +467,7 @@ namespace Deprem.Quake
                 }
                 // Güvenli masanın dışında C işe yaramaz: oyuncu bunu görsün (ipucu değişir, masa daha çok parlar, bir kez konuşur)
                 bool wrongPlace = pressing && !inSafeSpot;
-                QuakePrompts.Set(wrongPlace ? QuakePrompts.DuckCoverFind : QuakePrompts.DuckCover);
+                QuakePrompts.Set(wrongPlace ? QuakePrompts.DuckCoverFind : DuckCoverLearned ? "" : QuakePrompts.DuckCover);
                 SafeSpot.Emphasize(wrongPlace);
                 if (wrongPlace && !warnedNotSafe)
                 {
@@ -487,8 +487,18 @@ namespace Deprem.Quake
             QuakePrompts.Clear();
             player.SetScriptedInput(0f);
             player.InputEnabled = true;
+            if (!check.Failed && !DuckCoverLearned)
+            {
+                PlayerPrefs.SetInt(DuckCoverLearnedKey, 1);
+                PlayerPrefs.Save();
+            }
             result(!check.Failed);
         }
+
+        // Play testi 27: "S: Çök-Kapan-Tutun" tuş ipucu bir kez başarıyla yapılana kadar gösterilir, sonra gösterilmez
+        // (yanlış yerde basınca çıkan uyarı kalır)
+        private const string DuckCoverLearnedKey = "tutorial.duck_cover";
+        private static bool DuckCoverLearned => PlayerPrefs.GetInt(DuckCoverLearnedKey, 0) == 1;
 
         /// <summary>
         /// Çök-kapan sırasında oyuncunun çevresine tavandan taş ve sıva düşer; oyuncuya değmez (ölümdeki darbe değil).

@@ -1140,7 +1140,7 @@ Mehmet'in yorumu (özet):
   - Kodla çizilen simge çirkin. Daha okunur bir el feneri: yatay gövde, önde geniş başlık ve camı, küçük düğme, 2 tonlu gölge.
   - İstersen diğer simgeleri de aynı dille elden geçir. Sanatçı çizimi gelirse `ikon_el_feneri.png`.
 - **M52. Keşke ekranı siyahtan yavaşça açılsın:**
-  - Ben ölümde ekranı yavaşça siyaha indiriyorum (~1,4 sn).
+  - Ben ölümde ekranı yavaşça siyaha indiriyorum: 0,8 sn'de başlıyor, 1,6 sn sürüyor. Keşke ekranı ölümden 2,6 sn sonra geliyor.
   - Keşke ekranı (`WishScreen`) bu siyahın üstünde sert açılmasın; siyahtan yumuşakça (0,6–0,8 sn) belirsin.
 
 **Mehmet'in yapacakları (bilgi için)**
@@ -1149,6 +1149,8 @@ Mehmet'in yorumu (özet):
 2. **Kilitli kapı:** ruh fazı açılmış döngülerde kilitli kapıyı açmaya çalışınca oyuncu "Eyvah, kapı açılmıyor!" der, artçı gelir, tavan çöker. Keşke: kapıyı kapatan eşya (`RescueTimeout`, o eşya). İlk döngülerde eski davranış.
 3. **Çök-kapan tuş ipucu:** bir kez başarıyla yapıldıktan sonra gösterilmiyor (PlayerPrefs `tutorial.duck_cover`). Yanlış yerde basınca çıkan uyarı kalıyor.
 4. **Ölüm:** siyah daha erken başlayıp daha yavaş iniyor.
+
+**Mehmet tarafı (Play testi 27): 1–4 yapıldı.** Dört test geçiyor; Play'de denenmedi. `ElektrikKesik` Volume'undaki mavi renk filtresi ve vinyet de nötrlendi.
 
 ---
 

@@ -78,14 +78,14 @@ namespace Deprem.Visual
                 color.saturation.Override(-30f);
                 color.contrast.Override(15f);
                 color.postExposure.Override(-0.2f);
-                color.colorFilter.Override(new Color(0.85f, 0.9f, 1f));
+                color.colorFilter.Override(new Color(0.95f, 0.95f, 0.95f)); // Play testi 27: mavi ton yok, nötr
                 var bloom = Get<Bloom>(p);
                 bloom.intensity.Override(0.8f);
                 bloom.threshold.Override(0.9f);
                 var vignette = Get<Vignette>(p);
                 vignette.intensity.Override(0.45f);
                 vignette.smoothness.Override(0.55f);
-                vignette.color.Override(new Color(0.01f, 0.02f, 0.05f));
+                vignette.color.Override(new Color(0.02f, 0.02f, 0.02f));
                 Get<FilmGrain>(p).intensity.Override(0.3f);
                 Get<ChromaticAberration>(p).intensity.Override(0.05f);
             });

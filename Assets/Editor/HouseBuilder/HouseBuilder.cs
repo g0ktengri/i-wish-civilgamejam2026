@@ -1040,7 +1040,7 @@ namespace Deprem.HouseBuilder
                     dim.transform.position = new Vector3((room.X0 + room.X1) * 0.5f, room.FloorY + room.Height * 0.5f, -1.4f);
                     var dimLight = dim.AddComponent<Light>();
                     dimLight.type = LightType.Point;
-                    dimLight.color = new Color(0.62f, 0.67f, 0.8f);
+                    dimLight.color = new Color(0.78f, 0.76f, 0.74f); // Play testi 27: mavi değil, nötr sıcak gri
                     // Play testi 3: elektrik gidince her yer rahat görünüyordu (0,9 -> 0,35); ENTEGRASYON B10: bu kez
                     // açılan oda kapalıyla aynı karanlıkta kalıyor, açıldığı anlaşılmıyordu. Arası.
                     dimLight.intensity = siblingRoom ? 0.12f : 0.55f;

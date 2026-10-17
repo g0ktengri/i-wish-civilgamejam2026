@@ -147,12 +147,14 @@ namespace Deprem.Player
             // Play testi 4: çok ışıklıydı; artık küçük ve önde, sadece karakteri hafifçe seçtirir
             // Berke'nin play testi (son): karanlıkta ilerlerken çok yakın çevre görünmüyordu. Biraz daha alçakta ve
             // önde, menzil ~1,8 m: ayağın altı, yakın duvar ve eşya seçilir; oda yine karanlık kalır
-            sightGo.transform.localPosition = new Vector3(0f, 0.9f, -0.6f);
+            // Play testi 27: mavimsiydi ve ayağın dibinde belirgin bir "mavi ışık" havuzu bırakıyordu. Nötr sıcak,
+            // daha geniş ve yumuşak: kaynağı belli olmayan hafif bir aydınlık
+            sightGo.transform.localPosition = new Vector3(0f, 1.1f, -1f);
             var sight = sightGo.AddComponent<Light>();
             sight.type = LightType.Point;
-            sight.color = new Color(0.78f, 0.84f, 1f);
-            sight.intensity = 0.55f;
-            sight.range = 1.8f;
+            sight.color = new Color(0.92f, 0.88f, 0.82f);
+            sight.intensity = 0.4f;
+            sight.range = 2.6f;
             sight.shadows = LightShadows.None;
             sight.enabled = false;
 

@@ -85,7 +85,7 @@ MonoBehaviour:
   rubbleInterval: {x: 0.35, y: 0.7}
   debrisFrontOffset: 0.15
   debrisImpactDelay: 1.5
-  deathLinger: 2.4
+  deathLinger: 2.6
   fatalAftershockLead: 1.2
   shelfLandOffset: {x: -0.15, y: 0.24, z: -0.05}
   shelfDropTime: 0.45
@@ -186,6 +186,6 @@ MonoBehaviour:
   deathShake: 1.4
   deathShakeTime: 0.45
   drainTime: 0.5
-  blackoutStart: 1.7
-  blackoutTime: 0.6
+  blackoutStart: 0.8
+  blackoutTime: 1.6
   maxHold: 6
