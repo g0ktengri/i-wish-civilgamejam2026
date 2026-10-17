@@ -210,16 +210,19 @@ namespace Deprem.HouseBuilder
 
             // 9-slice paneller (ENTEGRASYON M10): yeşil çizgiler 8 px kenar; köşeler olduğu gibi kalır,
             // aradaki kısımlar yazıya göre uzar. Kenar değeri ArtTextureImporter.SliceBorder ile aynı.
-            int slice = ArtTextureImporter.SliceBorder;
-            void SliceGuides(Texture2D tex)
+            void SliceGuidesAt(Texture2D tex, int slice)
             {
                 VLine(tex, slice, Guide, 1);
                 VLine(tex, tex.width - 1 - slice, Guide, 1);
                 HLine(tex, 0, tex.width, slice, Guide);
                 HLine(tex, 0, tex.width, tex.height - 1 - slice, Guide);
             }
+            void SliceGuides(Texture2D tex) => SliceGuidesAt(tex, ArtTextureImporter.SliceBorder);
             Save("UI/hud_ipucu.png", 192, 32, SliceGuides, transparent: true);
             Save("UI/konusma_balonu.png", 48, 32, SliceGuides, transparent: true);
+            // Tuş kapağı (ENTEGRASYON B12): 4 px kenar; altta 2-3 px koyu kalınlık kenar içinde kalır,
+            // böylece tuş genişleyince basılabilir görünüm bozulmaz. Harf kodla üstüne yazılır.
+            Save("UI/hud_tus.png", 12, 14, tex => SliceGuidesAt(tex, ArtTextureImporter.KeyCapSliceBorder), transparent: true);
             // Kuyruk: gövdenin altına ortalanır, ucu alt kenarın ortasında
             Save("UI/konusma_balonu_kuyruk.png", 16, 12, tex =>
             {

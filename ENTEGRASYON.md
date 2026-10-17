@@ -452,6 +452,10 @@ Mehmet'in yorumu: "UI çok kötü." Ekran görüntüsünde sol üstte "Aileni ka
 - Salonun eski tek parça `duvar.png` dokusu silindi (arka ve yan ayrı geldi).
 - Berke testi (`Deprem.Loop.EditorTools.BerkeSmokeTest.Run`) bu değişikliklerle de geçiyor.
 
+**M24 sonrası (senin iki notun):**
+- Çubuk etiketleri artık `UiBuilder.HudText`.
+- **B12 yapıldı:** `Sablonlar/UI/hud_tus.png` (12 × 14, yeşil çizgiler 4 px kenarda). `ArtTextureImporter` `Art/UI/hud_tus.png`'yi 9-slice, 4 px kenarla içe aktarıyor (`KeyCapSliceBorder`). Altta 2–3 px koyu kalınlık kenarın içinde kalıyor, tuş genişleyince bozulmuyor.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

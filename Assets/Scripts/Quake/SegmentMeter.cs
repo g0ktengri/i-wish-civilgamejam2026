@@ -30,7 +30,7 @@ namespace Deprem.Quake
             float labelWidth = 0f;
             if (!string.IsNullOrEmpty(labelText))
             {
-                meter.label = UiBuilder.CreateText(root, "Label", null, fontSize, new Color(0.95f, 0.9f, 0.8f));
+                meter.label = UiBuilder.CreateText(root, "Label", null, fontSize, UiBuilder.HudText);
                 meter.label.text = labelText;
                 meter.label.alignment = TextAnchor.MiddleLeft;
                 meter.label.horizontalOverflow = HorizontalWrapMode.Overflow;
