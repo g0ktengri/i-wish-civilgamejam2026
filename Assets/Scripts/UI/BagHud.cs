@@ -15,15 +15,15 @@ namespace Deprem.UI
     // M24: ortak HUD paneli; başlık soluk, eklenen malzemenin adı vurgu renginde.
     public class BagHud : MonoBehaviour
     {
-        const float IconSize = 32f;
-        const float IconGap = 6f;
+        const float IconSize = 44f; // M33: 32'den
+        const float IconGap = 8f;
 
         [SerializeField] Font font;
-        [SerializeField] int fontSize = 13;
+        [SerializeField] int fontSize = 19;
         [Tooltip("0: UiStyle.hudFontSize")]
         [SerializeField] int toastFontSize;
-        [Tooltip("Sol alttan yükseklik: ruh fazındaki uçma ipucunun üstünde kalsın")]
-        [SerializeField] float bottomOffset = 58f;
+        [Tooltip("Sol alttan yükseklik: uçma ipucunun ve alttaki ipucu kutusunun (M33: alttan 60 px) üstünde kalsın")]
+        [SerializeField] float bottomOffset = 124f;
         [SerializeField] float toastSeconds = 2f;
         [SerializeField] float fadeSeconds = 0.3f;
         [SerializeField] float popScale = 1.6f;
@@ -48,23 +48,25 @@ namespace Deprem.UI
             panel.pivot = new Vector2(0f, 0f);
             panel.anchoredPosition = new Vector2(UiBuilder.HudMargin, bottomOffset);
 
-            title = UiBuilder.CreateText(panel, "Title", font, fontSize, UiBuilder.HudMuted, TextAnchor.MiddleLeft);
+            // M33: soluk gri yerine tam krem, konturlu
+            title = UiBuilder.Outlined(UiBuilder.CreateText(panel, "Title", font, fontSize, UiBuilder.HudText, TextAnchor.MiddleLeft));
             var titleRect = title.rectTransform;
             titleRect.anchorMin = new Vector2(0f, 0f);
             titleRect.anchorMax = new Vector2(0f, 1f);
             titleRect.pivot = new Vector2(0f, 0.5f);
-            titleRect.anchoredPosition = new Vector2(10f, 0f);
-            titleRect.sizeDelta = new Vector2(48f, 0f);
+            titleRect.anchoredPosition = new Vector2(14f, 0f);
+            titleRect.sizeDelta = new Vector2(70f, 0f);
 
             var toast = UiBuilder.CreatePanel(canvas.transform, "Toast");
             var toastRect = toast.rectTransform;
             toastRect.anchorMin = toastRect.anchorMax = new Vector2(0.5f, 0.76f);
-            toastRect.sizeDelta = new Vector2(280f, 36f);
+            toastRect.sizeDelta = new Vector2(320f, 48f);
             toastGroup = toast.gameObject.AddComponent<CanvasGroup>();
             toastText = UiBuilder.CreateText(toastRect, "Text", font, toastFontSize > 0 ? toastFontSize : UiBuilder.HudFontSize,
                 UiBuilder.HudText);
             UiBuilder.Stretch(toastText.rectTransform, Vector2.zero, Vector2.one);
             toastText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            UiBuilder.Outlined(toastText);
             toastText.supportRichText = true;
             toastGroup.alpha = 0f;
 
@@ -101,7 +103,7 @@ namespace Deprem.UI
 
             toastText.text = Texts.Format("bag.added", $"<color={UiBuilder.Hex(UiBuilder.HudAccent)}>{Texts.Get($"bag.{id}")}</color>");
             ((RectTransform)toastText.rectTransform.parent).sizeDelta =
-                new Vector2(Mathf.Max(200f, toastText.preferredWidth + 32f), 36f);
+                new Vector2(Mathf.Max(240f, toastText.preferredWidth + 44f), 48f);
             if (toastRoutine != null) StopCoroutine(toastRoutine);
             toastRoutine = StartCoroutine(ShowToast());
         }
@@ -114,7 +116,7 @@ namespace Deprem.UI
             icons.Clear();
 
             var bag = BagSystem.Instance;
-            float x = 60f;
+            float x = 90f;
             foreach (var id in GameState.BagItems)
             {
                 var image = UiBuilder.CreateImage(panel, $"Icon_{id}", bag ? bag.ColorFor(id) : Color.white);
@@ -129,7 +131,7 @@ namespace Deprem.UI
                 x += IconSize + IconGap;
             }
 
-            panel.sizeDelta = new Vector2(x + 2f, IconSize + 12f);
+            panel.sizeDelta = new Vector2(x + 6f, IconSize + 16f);
             panel.gameObject.SetActive(icons.Count > 0);
             RefreshTitle();
         }

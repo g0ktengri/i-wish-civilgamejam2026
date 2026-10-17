@@ -36,7 +36,7 @@ namespace Deprem.UI
         [SerializeField] Color cabinColor = new Color(0.96f, 0.92f, 0.84f); // HUD krem
         [Tooltip("Okun ekran kenarından uzaklığı (referans pikseli)")]
         [SerializeField] float arrowMargin = 34f;
-        [SerializeField] float arrowSize = 36f;
+        [SerializeField] float arrowSize = 44f;
         [Tooltip("Nabız: büyüme oranı ve hızı; it: hedefe doğru kayma (referans pikseli)")]
         [SerializeField] float pulseScale = 0.12f;
         [SerializeField] float pulseSpeed = 5f;
@@ -86,12 +86,13 @@ namespace Deprem.UI
             panel.anchorMin = panel.anchorMax = new Vector2(0f, 1f);
             panel.pivot = new Vector2(0f, 1f);
             panel.anchoredPosition = new Vector2(margin, -margin);
-            panel.sizeDelta = new Vector2(220f, 34f);
+            panel.sizeDelta = new Vector2(260f, 46f);
             objectiveText = UiBuilder.CreateText(panel, "Text", font, fontSize > 0 ? fontSize : UiBuilder.HudFontSize,
                 UiBuilder.HudText, TextAnchor.MiddleLeft);
             UiBuilder.Stretch(objectiveText.rectTransform, Vector2.zero, Vector2.one);
-            objectiveText.rectTransform.offsetMin = new Vector2(12f, 0f);
+            objectiveText.rectTransform.offsetMin = new Vector2(16f, 0f);
             objectiveText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            UiBuilder.Outlined(objectiveText);
             objectiveText.supportRichText = true;
 
             group.alpha = 0f;
@@ -251,8 +252,8 @@ namespace Deprem.UI
 
             // Rozet: üyenin baş harfi (Baba → B), kabin için ev işareti yerine "K"/"S" (Kabin/Shelter)
             var badge = UiBuilder.CreatePanel(root, "Badge").rectTransform;
-            badge.sizeDelta = new Vector2(22f, 22f);
-            var badgeText = UiBuilder.CreateText(badge, "Letter", font, 13, tint);
+            badge.sizeDelta = new Vector2(30f, 30f);
+            var badgeText = UiBuilder.CreateText(badge, "Letter", font, 18, tint);
             UiBuilder.Stretch(badgeText.rectTransform, Vector2.zero, Vector2.one);
             badgeText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
@@ -351,7 +352,7 @@ namespace Deprem.UI
         {
             objectiveText.text = $"{Texts.Get("objective.short")}   " +
                                  $"<color={UiBuilder.Hex(UiBuilder.HudAccent)}>{inCabin.Count}/{FamilyTotal()}</color>";
-            panel.sizeDelta = new Vector2(Mathf.Max(160f, objectiveText.preferredWidth + 26f), panel.sizeDelta.y);
+            panel.sizeDelta = new Vector2(Mathf.Max(200f, objectiveText.preferredWidth + 34f), panel.sizeDelta.y);
             var culture = new System.Globalization.CultureInfo(Texts.Current == Language.Turkish ? "tr-TR" : "en-US");
             foreach (var arrow in arrows)
             {

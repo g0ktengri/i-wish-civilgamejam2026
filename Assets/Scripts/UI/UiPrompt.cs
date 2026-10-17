@@ -7,19 +7,25 @@ namespace Deprem.UI
     // Tuş ipucu (M24): "C / S: Parlayan masada Çök-Kapan-Tutun" → [C] [S] Parlayan masada Çök-Kapan-Tutun.
     // Tuşlar ayrı kapaklarda (UiBuilder.CreateKeyCap), yazı yanında; panel yazıya göre genişler.
     // ':' yoksa ya da tuş kısmı tuşa benzemiyorsa düz yazı. PromptHud ve SpiritHud kullanır.
+    // M33 (Mehmet'in play testi 21: okunmuyordu): ölçüler yazı boyundan (22 punto → 46 px yükseklik), geniş iç boşluk,
+    // krem yazıda koyu kontur; yeni ipucu gelince kısa büyüme ve sarı parlama (fark edilsin).
     public class UiPrompt : MonoBehaviour
     {
-        const float Height = 34f;
-        const float Padding = 10f;
-        const float Gap = 4f;
         const int MaxKeyLength = 6;
+        const float PopSeconds = 0.3f;
+        const float PopScale = 0.18f;
 
         Font font;
         int fontSize;
+        float height;
+        float padding;
+        float gap;
+        Image panel;
         Text message;
         readonly List<GameObject> caps = new List<GameObject>();
         readonly List<string> keys = new List<string>();
         string shown;
+        float pop = -1f;
 
         public RectTransform Rect => (RectTransform)transform;
 
@@ -27,17 +33,21 @@ namespace Deprem.UI
         {
             var panel = UiBuilder.CreatePanel(parent, name);
             var prompt = panel.gameObject.AddComponent<UiPrompt>();
-            prompt.font = font;
+            prompt.panel = panel;
+            prompt.font = font ? font : UiBuilder.HudFont;
             prompt.fontSize = fontSize > 0 ? fontSize : UiBuilder.HudFontSize;
-            prompt.message = UiBuilder.CreateText(panel.rectTransform, "Message", font, prompt.fontSize, UiBuilder.HudText,
-                TextAnchor.MiddleLeft);
+            prompt.height = Mathf.Round(prompt.fontSize * 2.1f);
+            prompt.padding = Mathf.Round(prompt.fontSize * 0.75f);
+            prompt.gap = Mathf.Round(prompt.fontSize * 0.3f);
+            prompt.message = UiBuilder.Outlined(UiBuilder.CreateText(panel.rectTransform, "Message", prompt.font,
+                prompt.fontSize, UiBuilder.HudText, TextAnchor.MiddleLeft));
             var rect = prompt.message.rectTransform;
             rect.anchorMin = new Vector2(0f, 0f);
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 0.5f);
             prompt.message.horizontalOverflow = HorizontalWrapMode.Overflow;
             prompt.message.supportRichText = true;
-            panel.rectTransform.sizeDelta = new Vector2(Padding * 2f, Height);
+            panel.rectTransform.sizeDelta = new Vector2(prompt.padding * 2f, prompt.height);
             panel.gameObject.SetActive(false);
             return prompt;
         }
@@ -60,22 +70,39 @@ namespace Deprem.UI
             if (!visible) return;
 
             Split(text, keys, out string body);
-            float x = Padding;
+            float x = padding;
             foreach (var key in keys)
             {
-                var cap = UiBuilder.CreateKeyCap(transform, key, font, Mathf.Max(10, fontSize - 1));
+                var cap = UiBuilder.CreateKeyCap(transform, key, font, fontSize);
                 cap.anchoredPosition = new Vector2(x, 0f);
                 caps.Add(cap.gameObject);
-                x += cap.sizeDelta.x + Gap;
+                x += cap.sizeDelta.x + gap;
             }
-            if (keys.Count > 0) x += Gap;
+            if (keys.Count > 0) x += gap;
 
             message.text = body;
             float width = message.preferredWidth;
             message.rectTransform.anchoredPosition = new Vector2(x, 0f);
             message.rectTransform.sizeDelta = new Vector2(width, 0f);
-            x += width + Padding + 2f;
-            Rect.sizeDelta = new Vector2(x, Height);
+            x += width + padding;
+            Rect.sizeDelta = new Vector2(x, height);
+            pop = 0f; // yeni ipucu: büyüme ve parlama
+        }
+
+        void Update()
+        {
+            if (pop < 0f) return;
+            pop += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(pop / PopSeconds);
+            float ease = 1f - (1f - k) * (1f - k);
+            transform.localScale = Vector3.one * (1f + PopScale * (1f - ease));
+            panel.color = Color.Lerp(new Color(1f, 0.88f, 0.55f), Color.white, ease);
+            if (k >= 1f)
+            {
+                pop = -1f;
+                transform.localScale = Vector3.one;
+                panel.color = Color.white;
+            }
         }
 
         // "C / S: Çök" → C, S + "Çök". "F (basılı tut): Sar" → F + "(basılı tut) Sar". "Burada olmaz!" → düz.

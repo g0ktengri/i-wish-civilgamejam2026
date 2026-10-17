@@ -13,13 +13,13 @@ namespace Deprem.UI
     public class SpiritHud : MonoBehaviour
     {
         [SerializeField] Font font;
-        [SerializeField] int timerFontSize = 24;
+        [SerializeField] int timerFontSize = 34;
         [Tooltip("0: UiStyle.hudFontSize")]
         [SerializeField] int promptFontSize;
-        [SerializeField] int hintFontSize = 13;
+        [SerializeField] int hintFontSize = 18;
         [Tooltip("Son kaç saniyede sayaç kırmızıya döner ve atar")]
         [SerializeField] float warningSeconds = 10f;
-        [SerializeField] float promptBottomOffset = 22f;
+        [SerializeField] float promptBottomOffset = 60f;
         [SerializeField] int sortingOrder = 50;
 
         CanvasGroup group;
@@ -44,8 +44,8 @@ namespace Deprem.UI
             timerPanel.anchorMin = timerPanel.anchorMax = new Vector2(0.5f, 1f);
             timerPanel.pivot = new Vector2(0.5f, 1f);
             timerPanel.anchoredPosition = new Vector2(0f, -margin);
-            timerPanel.sizeDelta = new Vector2(84f, 38f);
-            timerText = UiBuilder.CreateText(timerPanel, "Text", font, timerFontSize, UiBuilder.HudText);
+            timerPanel.sizeDelta = new Vector2(116f, 52f);
+            timerText = UiBuilder.Outlined(UiBuilder.CreateText(timerPanel, "Text", font, timerFontSize, UiBuilder.HudText));
             UiBuilder.Stretch(timerText.rectTransform, Vector2.zero, Vector2.one);
 
             prompt = UiPrompt.Create(canvas.transform, "Prompt", font, promptFontSize);
@@ -67,15 +67,16 @@ namespace Deprem.UI
             var iconRect = carryIcon.rectTransform;
             iconRect.anchorMin = iconRect.anchorMax = new Vector2(0f, 0.5f);
             iconRect.pivot = new Vector2(0f, 0.5f);
-            iconRect.anchoredPosition = new Vector2(10f, 0f);
-            iconRect.sizeDelta = new Vector2(24f, 24f);
+            iconRect.anchoredPosition = new Vector2(12f, 0f);
+            iconRect.sizeDelta = new Vector2(32f, 32f);
             carryText = UiBuilder.CreateText(carryPanel, "Text", font, UiBuilder.HudFontSize, UiBuilder.HudText,
                 TextAnchor.MiddleLeft);
             var textRect = carryText.rectTransform;
             textRect.anchorMin = new Vector2(0f, 0f);
             textRect.anchorMax = new Vector2(0f, 1f);
             textRect.pivot = new Vector2(0f, 0.5f);
-            textRect.anchoredPosition = new Vector2(42f, 0f);
+            textRect.anchoredPosition = new Vector2(54f, 0f);
+            UiBuilder.Outlined(carryText);
             carryText.horizontalOverflow = HorizontalWrapMode.Overflow;
             carryText.supportRichText = true;
             carryPanel.gameObject.SetActive(false);
@@ -132,7 +133,7 @@ namespace Deprem.UI
             var bag = BagSystem.Instance;
             var icon = bag ? bag.IconFor(shownCarry) : UiBuilder.PixelBagIcon(shownCarry);
             UiBuilder.ApplySprite(carryIcon, icon);
-            carryPanel.sizeDelta = new Vector2(42f + carryText.preferredWidth + 12f, 36f);
+            carryPanel.sizeDelta = new Vector2(54f + carryText.preferredWidth + 16f, 48f);
         }
     }
 }

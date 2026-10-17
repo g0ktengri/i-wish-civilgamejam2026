@@ -41,6 +41,17 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Play testi 21: M33 HUD okunabilirliği (Berke)
+
+- **Boy:** `UiStyle.hudFontSize` 15 → 22, `hudMargin` 16 → 20 (asset de güncellendi). `UiPrompt` ölçüleri yazı boyundan (22 → 46 px yükseklik, geniş iç boşluk). Tuş kapakları yazı boyuyla büyüyor (22 → 34 px kare kapak, harf ortalı).
+  - Hedef paneli 46 px; çanta ikonları 32 → 44; ruh sayacı 34 punto, 116×52 panel; taşınan malzeme paneli 48 px.
+  - "Eklendi" bildirimi 22 punto; aile okları 44 px, rozet 30 px / 18 punto. Keşke ekranının bilgi satırı 15 → 19.
+- **Kontrast:** soluk gri (`HudMuted`) yerine tam krem; HUD yazılarına 1,5 px koyu kontur (`UiBuilder.Outlined`). Senin çubuk etiketlerin de istersen `UiBuilder.Outlined(text)` ile aynı konturu alabilir.
+- **İpucu kutusu:** alttan 22 → 60 px; yeni ipucu gelince 0,3 sn büyüyüp sarı parlıyor (fark edilsin). Çanta paneli alttan 124 px'e çıktı (ipucu kutusu ve uçma ipucuyla çakışmasın).
+- **Minigame:** başlık 24 punto, çerçevenin içinde. İpucu ekranın altında şerit değil, aynı çerçevenin içinde alt şeritte, 18 punto, iki satıra kadar. İkisi de sığmazsa küçülüyor (best fit). Panel 256 → 360 px en (en uzun başlık tek satırda tam boy sığsın); minigame'ler genişliğe göre yerleşiyor, testler geçiyor.
+- **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
+- Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
+
 ### Berke'nin play testi: büyüyen keşke çatlağı, kan kaybı kabinde (senin klasörlerinde izinle)
 
 - **Keşke çatlağı her keşkede büyüyor (`WishScreen`):** `GameState.FailedAttempts`'a göre. İlk keşkede cümlenin ~%30'u kadar, 2 px, az dallı. 5. keşkede (`crackFullAtWish`) cümleden geniş, 5 px, sık ve üç parçalı dallı. Yarılma süresi, sarsıntı ve kırmızı parlama da büyüyor. Önizleme: `Logs/hud_preview_wish_crack_1.png` / `_5.png`.
@@ -49,8 +60,6 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
   - Yeni `cabinBagItem` (baba: ilk yardım). Kabine varınca çantada varsa "Çantada ilk yardım varmış, yaramı sardım" deyip girer (`TreatAtCabin`, `bubble.family_treated.father`).
   - Yoksa yeni `FamilyState.Bleeding`: kabin girişinin 0,9 m yanında yatar (`collapseOffsetX`), "Bacağım çok kanıyor... Kanama durmuyor!" diye seslenir (`bubble.family_bleeding.father`). Oyuncu `discoverRange` içine gelince senin kayıp akışın: oyuncunun balonu `bubble.family_missing.firstaidkit`, `failDelay` sonra `MissingBagItem`. Oyuncu ilk yardım çantasının gerektiğini kabinde fark ediyor.
   - `FamilySmokeTest.FatherWithoutFirstAid` bu yolu baştan sona deniyor (kaya, yürüme, yığılma, kabinde kayıp); tam kurtarma testi (ilk yardımla) geçiyor.
-- **M33 (HUD okunabilirliği):** sırada, ayrıca yapılacak.
-
 ### Play testi 20: M29–M32 (Berke)
 
 - **M29 ruh balonu:** `SpiritBubble` artık ruh çiziminin başının tepesine bağlı (`SpiritVisual.HeadTop`, evin önüne yansıtılmış sprite'tan; kuyruk başın 0,25 m üstünde, yansıtma ölçeğiyle). Ekranın üstüne taşarsa balon aşağıda kalıyor (üst kenardan 8 px pay).

@@ -90,7 +90,8 @@ namespace Deprem.UI
         [SerializeField] Font font;
         [SerializeField] int headFontSize = 76;
         [SerializeField] int wishFontSize = 40;
-        [SerializeField] int infoFontSize = 15;
+        [Tooltip("M33: bilgi satırı ve ipucu 15'ten 19'a (okunmuyordu)")]
+        [SerializeField] int infoFontSize = 19;
         [SerializeField] Color wishColor = new Color(1f, 0.95f, 0.88f);
         [SerializeField] Color infoColor = new Color(0.72f, 0.72f, 0.75f);
         [SerializeField] Color lineColor = new Color(0.9f, 0.22f, 0.16f);

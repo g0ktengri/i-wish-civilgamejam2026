@@ -32,9 +32,12 @@ namespace Deprem.UI
         public Color hudMuted = new Color(0.74f, 0.69f, 0.6f);
         public Color hudWarning = new Color(1f, 0.42f, 0.36f);
         public Color keyText = new Color(0.13f, 0.11f, 0.1f);
-        public int hudFontSize = 15;
+        [Tooltip("M33 (Mehmet'in play testi 21: yazılar okunmuyordu): 15'ten 22'ye")]
+        public int hudFontSize = 22;
         [Tooltip("Kenarlardan pay (referans pikseli, 960 x 540)")]
-        public float hudMargin = 16f;
+        public float hudMargin = 20f;
+        [Tooltip("HUD yazılarının fontu (M33: Mehmet'in DepremBalon'u, e ve E daha okunaklı); boşsa font")]
+        public Font hudFont;
 
         static UiStyle current;
         static bool loaded;

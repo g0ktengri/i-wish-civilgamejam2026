@@ -56,10 +56,15 @@ namespace Deprem.Loop.EditorTools
         };
 
         // "font" alanı olan bütün UI bileşenleri
+        // Menüler ve keşke ekranı Pixelify Sans
         static readonly Type[] FontUsers =
         {
-            typeof(WishScreen), typeof(SpiritHud), typeof(MinigameHost), typeof(PromptHud),
-            typeof(FinalScreen), typeof(PauseMenu), typeof(MainMenu), typeof(ObjectiveHud), typeof(BagHud), typeof(SettingsMenu),
+            typeof(WishScreen), typeof(FinalScreen), typeof(PauseMenu), typeof(MainMenu), typeof(SettingsMenu),
+        };
+        // M33: oyun içi HUD yazıları okunaklı balon fontu DepremBalon (Mehmet'in play testi 21)
+        static readonly Type[] HudFontUsers =
+        {
+            typeof(SpiritHud), typeof(MinigameHost), typeof(PromptHud), typeof(ObjectiveHud), typeof(BagHud),
         };
 
         // Ortak UI stili (Assets/Resources/UiStyle.asset): alan → Assets/Art/UI dosyası
@@ -198,6 +203,7 @@ namespace Deprem.Loop.EditorTools
             foreach (var type in FontUsers) SetReference(root.GetComponent(type), "font", font);
             var bubbleFont = AssetDatabase.LoadAssetAtPath<Font>(BubbleFontPath);
             SetReference(root.GetComponent<SpiritPhase>(), "bubbleFont", bubbleFont ? bubbleFont : font);
+            foreach (var type in HudFontUsers) SetReference(root.GetComponent(type), "font", bubbleFont ? bubbleFont : font);
 
             // Ortak stil: balon, panel ve font bütün oyunda (Mehmet'in SpeechBubble'ı dahil) buradan
             var style = AssetDatabase.LoadAssetAtPath<UiStyle>(StylePath);
@@ -208,6 +214,7 @@ namespace Deprem.Loop.EditorTools
                 AssetDatabase.CreateAsset(style, StylePath);
             }
             style.font = font;
+            style.hudFont = AssetDatabase.LoadAssetAtPath<Font>(BubbleFontPath);
             foreach (var (field, file) in StyleSprites)
             {
                 var sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"{UiArtFolder}/{file}.png");

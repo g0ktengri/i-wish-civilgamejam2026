@@ -21,11 +21,15 @@ namespace Deprem.Minigames
         [Header("Görünüm")]
         [SerializeField] Font font;
         [SerializeField] int sortingOrder = 80;
-        [SerializeField] Vector2 panelSize = new Vector2(256f, 256f); // GDD yakın çekim boyutu
+        [SerializeField] Vector2 panelSize = new Vector2(360f, 256f); // GDD yakın çekim boyutu; M33: en uzun başlık ("Merdivendeki aynayı sabitle") tam boyda tek satır sığsın diye 256 → 360 en
         [Tooltip("Çerçevenin içerikten payı (referans pikseli)")]
         [SerializeField] float framePadding = 8f;
         [Tooltip("Başlık şeridinin yüksekliği: başlık çerçevenin içinde, içeriğin üstünde (M28: tek, sade çerçeve)")]
-        [SerializeField] float headerHeight = 26f;
+        [SerializeField] float headerHeight = 38f;
+        [Tooltip("M33: ipucu panelin içinde, alt şeritte (ekranın altında küçük şerit değil)")]
+        [SerializeField] float footerHeight = 58f;
+        [SerializeField] int titleFontSize = 24;
+        [SerializeField] int hintFontSize = 18;
         [Tooltip("Bulanık oda görüntüsünün üstündeki karartma (M28: biraz daha koyu)")]
         [SerializeField] Color overlayColor = new Color(0.02f, 0.03f, 0.07f, 0.66f);
         [Tooltip("Arkadaki bulanık oda görüntüsünün rengi (ruh fazının soğuk mavisi)")]
@@ -77,7 +81,7 @@ namespace Deprem.Minigames
         Image successFlash;
         Text titleText;
         RectTransform titlePanel;
-        UiPrompt hint;
+        Text hintText;
         UiPrompt cancel;
         string doneKey;
 
@@ -190,9 +194,9 @@ namespace Deprem.Minigames
             titleText.text = Capitalize(title);
             titleText.color = UiBuilder.HudText;
             titlePanel.gameObject.SetActive(!string.IsNullOrEmpty(title));
-            hint.Set(type == MinigameType.Lock
+            hintText.text = type == MinigameType.Lock
                 ? Texts.Format(HintKey(type), lockRequiredHits)
-                : Texts.Get(HintKey(type)));
+                : Texts.Get(HintKey(type));
             cancel.Set(Texts.Get("prompt.cancel"));
             group.alpha = 1f;
             Cursor.visible = true;
@@ -369,19 +373,19 @@ namespace Deprem.Minigames
             panel = UiBuilder.CreatePanel(canvas.transform, "Panel");
             var panelRect = panel.rectTransform;
             panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = panelSize + Vector2.one * framePadding * 2f + new Vector2(0f, headerHeight);
-            panelRect.anchoredPosition = new Vector2(0f, 14f + headerHeight * 0.5f);
+            panelRect.sizeDelta = panelSize + Vector2.one * framePadding * 2f + new Vector2(0f, headerHeight + footerHeight);
+            panelRect.anchoredPosition = new Vector2(0f, 10f + (headerHeight - footerHeight) * 0.5f);
 
             content = new GameObject("Content", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
             content.SetParent(panel.transform, false);
             UiBuilder.Stretch(content, Vector2.zero, Vector2.one);
-            content.offsetMin = Vector2.one * framePadding;
+            content.offsetMin = new Vector2(framePadding, framePadding + footerHeight);
             content.offsetMax = -new Vector2(framePadding, framePadding + headerHeight);
 
             // İçeriğin dışında (OpenPanel içeriği her açılışta temizler), içeriğin üstünde
             successFlash = UiBuilder.CreateImage(panel.transform, "SuccessFlash", successColor);
             UiBuilder.Stretch(successFlash.rectTransform, Vector2.zero, Vector2.one);
-            successFlash.rectTransform.offsetMin = Vector2.one * framePadding;
+            successFlash.rectTransform.offsetMin = new Vector2(framePadding, framePadding + footerHeight);
             successFlash.rectTransform.offsetMax = -new Vector2(framePadding, framePadding + headerHeight);
             successFlash.enabled = false;
 
@@ -394,9 +398,13 @@ namespace Deprem.Minigames
             titlePanel.pivot = new Vector2(0.5f, 1f);
             titlePanel.sizeDelta = new Vector2(-framePadding * 2f, headerHeight);
             titlePanel.anchoredPosition = new Vector2(0f, -framePadding * 0.5f);
-            titleText = UiBuilder.CreateText(titlePanel, "Text", font, UiBuilder.HudFontSize, UiBuilder.HudText);
+            titleText = UiBuilder.Outlined(UiBuilder.CreateText(titlePanel, "Text", font, titleFontSize, UiBuilder.HudText));
             UiBuilder.Stretch(titleText.rectTransform, Vector2.zero, Vector2.one);
-            titleText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            titleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            // Uzun başlık çerçeveden taşmasın: gerekirse küçülür
+            titleText.resizeTextForBestFit = true;
+            titleText.resizeTextMinSize = 16;
+            titleText.resizeTextMaxSize = titleFontSize;
             var separator = UiBuilder.CreateImage(titlePanel, "Separator", new Color(1f, 1f, 1f, 0.12f));
             separator.rectTransform.anchorMin = Vector2.zero;
             separator.rectTransform.anchorMax = new Vector2(1f, 0f);
@@ -404,12 +412,21 @@ namespace Deprem.Minigames
             separator.rectTransform.sizeDelta = new Vector2(0f, 2f);
             separator.rectTransform.anchoredPosition = new Vector2(0f, 2f);
 
-            hint = UiPrompt.Create(canvas.transform, "Hint", font, 14);
-            hint.Rect.anchorMin = hint.Rect.anchorMax = new Vector2(0.5f, 0.5f);
-            hint.Rect.pivot = new Vector2(0.5f, 1f);
-            hint.Rect.anchoredPosition = new Vector2(0f, 14f - panelRect.sizeDelta.y * 0.5f - 10f);
+            // İpucu: aynı çerçevenin içinde alt şeritte, büyük ve iki satıra kadar
+            hintText = UiBuilder.Outlined(UiBuilder.CreateText(panel.transform, "Hint", font, hintFontSize, UiBuilder.HudText));
+            var hintRect = hintText.rectTransform;
+            hintRect.anchorMin = Vector2.zero;
+            hintRect.anchorMax = new Vector2(1f, 0f);
+            hintRect.pivot = new Vector2(0.5f, 0f);
+            hintRect.sizeDelta = new Vector2(-framePadding * 2f - 12f, footerHeight - 4f);
+            hintRect.anchoredPosition = new Vector2(0f, framePadding * 0.5f);
+            hintText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            hintText.lineSpacing = 0.9f;
+            hintText.resizeTextForBestFit = true;
+            hintText.resizeTextMinSize = 14;
+            hintText.resizeTextMaxSize = hintFontSize;
 
-            cancel = UiPrompt.Create(canvas.transform, "Cancel", font, 13);
+            cancel = UiPrompt.Create(canvas.transform, "Cancel", font, 18);
             cancel.Rect.anchorMin = cancel.Rect.anchorMax = Vector2.right;
             cancel.Rect.pivot = Vector2.right;
             cancel.Rect.anchoredPosition = new Vector2(-UiBuilder.HudMargin, UiBuilder.HudMargin);

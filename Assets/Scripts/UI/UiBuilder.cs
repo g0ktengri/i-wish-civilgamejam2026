@@ -180,8 +180,20 @@ namespace Deprem.UI
         public static Color HudMuted => UiStyle.Current ? UiStyle.Current.hudMuted : new Color(0.74f, 0.69f, 0.6f);
         public static Color HudWarning => UiStyle.Current ? UiStyle.Current.hudWarning : new Color(1f, 0.42f, 0.36f);
         public static Color KeyText => UiStyle.Current ? UiStyle.Current.keyText : new Color(0.13f, 0.11f, 0.1f);
-        public static int HudFontSize => UiStyle.Current ? UiStyle.Current.hudFontSize : 15;
-        public static float HudMargin => UiStyle.Current ? UiStyle.Current.hudMargin : 16f;
+        public static int HudFontSize => UiStyle.Current ? UiStyle.Current.hudFontSize : 22;
+        public static float HudMargin => UiStyle.Current ? UiStyle.Current.hudMargin : 20f;
+        // M33: HUD yazıları okunaklı balon fontuyla (DepremBalon); yoksa ortak font
+        public static Font HudFont => UiStyle.Current && UiStyle.Current.hudFont ? UiStyle.Current.hudFont : DefaultFont;
+
+        // M33: HUD yazısına 1 px koyu kontur (krem yazı her zeminde okunsun)
+        public static Text Outlined(Text text)
+        {
+            var outline = text.GetComponent<Outline>();
+            if (!outline) outline = text.gameObject.AddComponent<Outline>(); // Unity null: ?? kullanılmaz
+            outline.effectColor = new Color(0.04f, 0.03f, 0.03f, 0.9f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
+            return text;
+        }
 
         static Sprite hudPanel;
         static Sprite keyCap;
@@ -263,7 +275,8 @@ namespace Deprem.UI
             return image;
         }
 
-        // Tuş kapağı: "F", "C", "Esc". Kök sol-orta pivotlu; eni yazıya göre (en az 22), boyu 24 referans pikseli
+        // Tuş kapağı: "F", "C", "Esc". Kök sol-orta pivotlu; boyu yazı boyuna göre (M33: 22 punto → 34 px), eni yazıya
+        // göre ama en az boyu kadar (kare kapak), harf ortalı
         public static RectTransform CreateKeyCap(Transform parent, string key, Font font, int fontSize)
         {
             var style = UiStyle.Current;
@@ -272,14 +285,16 @@ namespace Deprem.UI
             var label = CreateText(cap.rectTransform, "Text", font, fontSize, KeyText);
             Stretch(label.rectTransform, Vector2.zero, Vector2.one);
             // Yüz alttaki kalınlığın üstünde; fontun üst boşluğu yüzünden harf biraz aşağı alınır
-            label.rectTransform.offsetMin = new Vector2(0f, 2f);
-            label.rectTransform.offsetMax = new Vector2(0f, -2f);
+            float height = Mathf.Round(fontSize * 1.55f);
+            float lift = Mathf.Round(height * 0.09f);
+            label.rectTransform.offsetMin = new Vector2(0f, lift);
+            label.rectTransform.offsetMax = new Vector2(0f, -lift);
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
             label.text = key;
             var rect = cap.rectTransform;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 0.5f);
             rect.pivot = new Vector2(0f, 0.5f);
-            rect.sizeDelta = new Vector2(Mathf.Max(22f, label.preferredWidth + 12f), 24f);
+            rect.sizeDelta = new Vector2(Mathf.Max(height, label.preferredWidth + height * 0.5f), height);
             return rect;
         }
 

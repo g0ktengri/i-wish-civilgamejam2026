@@ -13,8 +13,8 @@ namespace Deprem.UI
         [SerializeField] Font font;
         [Tooltip("0: UiStyle.hudFontSize")]
         [SerializeField] int fontSize;
-        [Tooltip("Ekranın altından yükseklik (referans pikseli)")]
-        [SerializeField] float bottomOffset = 22f;
+        [Tooltip("Ekranın altından yükseklik (referans pikseli; M33: alta yapışmasın, 22'den 60'a)")]
+        [SerializeField] float bottomOffset = 60f;
         [SerializeField] int sortingOrder = 60;
 
         UiPrompt prompt;

@@ -23,5 +23,6 @@ MonoBehaviour:
   hudMuted: {r: 0.74, g: 0.69, b: 0.6, a: 1}
   hudWarning: {r: 1, g: 0.42, b: 0.36, a: 1}
   keyText: {r: 0.13, g: 0.11, b: 0.1, a: 1}
-  hudFontSize: 15
-  hudMargin: 16
+  hudFontSize: 22
+  hudMargin: 20
+  hudFont: {fileID: 12800000, guid: b130f425b0541a64e94ef955310244fb, type: 3}
