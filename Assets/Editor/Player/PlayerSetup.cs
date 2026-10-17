@@ -216,9 +216,42 @@ namespace Deprem.Player
             mat.SetOverrideTag("RenderType", "Transparent");
             mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             mat.renderQueue = (int)RenderQueue.Transparent;
-            mat.SetColor("_BaseColor", new Color(1f, 0.95f, 0.8f, 0.12f));
+            mat.SetTexture("_BaseMap", BeamTexture());
+            mat.SetColor("_BaseColor", new Color(1f, 0.95f, 0.8f, 0.45f));
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>
+        /// Huzmenin dokusu (Play testi 12: düz koni çirkindi): U boyunca (lensten uca) solar, V'de kenarlara doğru
+        /// yumuşak; lensin hemen önü en parlak. Kodla üretilir: Assets/Generated/Player/el_feneri_huzme.png.
+        /// </summary>
+        private static Texture2D BeamTexture()
+        {
+            const string path = "Assets/Generated/Player/el_feneri_huzme.png";
+            const int w = 64, h = 32;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                float u = (x + 0.5f) / w, v = (y + 0.5f) / h;
+                float along = Mathf.Pow(1f - u, 1.4f) * Mathf.Clamp01(u * 12f);   // lensten sonra parlak, uca doğru söner
+                float across = Mathf.Clamp01(1f - Mathf.Abs(v - 0.5f) * 2f);
+                across = across * across * (3f - 2f * across);                     // kenarlar yumuşak
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, along * across));
+            }
+            tex.Apply();
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(path);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            importer.alphaIsTransparency = true;
+            importer.mipmapEnabled = false;
+            importer.wrapMode = TextureWrapMode.Clamp;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         /// <summary>Assets/Art/Characters/{prefix}_1.png, _2.png ... numara sırasıyla</summary>

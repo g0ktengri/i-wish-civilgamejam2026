@@ -120,6 +120,7 @@ namespace Deprem.Quake
             topplers.AddRange(FindObjectsByType<ItemToppler>(FindObjectsSortMode.None));
             zoneTriggered = new bool[aftershockZones.Length];
             if (!TryGetComponent(out duckCoverBar)) duckCoverBar = gameObject.AddComponent<DuckCoverBar>();
+            if (player != null) duckCoverBar.Follow(player.transform);
             TryGetComponent(out effects);
         }
 

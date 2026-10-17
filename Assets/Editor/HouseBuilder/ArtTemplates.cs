@@ -195,7 +195,6 @@ namespace Deprem.HouseBuilder
                 ("UI/ikon_el_feneri.png", 32, 32), ("UI/ikon_ilk_yardim.png", 32, 32), ("UI/ikon_su.png", 32, 32),
                 ("UI/ikon_duduk.png", 32, 32), ("UI/deprem_cantasi.png", 48, 48),
                 ("UI/tus_f.png", 32, 32), ("UI/tus_c.png", 32, 32), ("UI/tus_space.png", 32, 32), ("UI/tus_esc.png", 32, 32),
-                ("UI/sarsinti_cubugu.png", 192, 16),
                 ("UI/minigame_vida.png", 256, 256), ("UI/minigame_l_demiri.png", 256, 256), ("UI/minigame_dolap_kapagi.png", 256, 256),
                 // Berke'nin UI yuvaları (ENTEGRASYON B9)
                 ("UI/minigame_panel.png", 256, 256), ("UI/minigame_tasi.png", 256, 256),

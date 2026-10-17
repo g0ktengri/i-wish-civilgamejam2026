@@ -46,10 +46,10 @@ namespace Deprem.Quake
         [SerializeField] private float playerPlaneZ = 1f;
         [SerializeField] private float playerRadius = 0.25f;
 
-        [Header("Sarsıntı çubuğu")]
-        [Tooltip("Sanatçının çubuğu (Assets/Art/UI, 192x16). Boşsa düz renk.")]
-        [SerializeField] private Sprite barSprite;
-        [SerializeField] private Vector2 barSize = new Vector2(192f, 16f);
+        [Header("Süre çubuğu (Play testi 12: düz sarı şerit yerine parçalı pixel çubuk)")]
+        [SerializeField] private int barSegments = 24;
+        [SerializeField] private Vector2 segmentSize = new Vector2(7f, 10f);
+        [SerializeField] private float segmentGap = 2f;
         [SerializeField] private float barTopMargin = 14f;
         [SerializeField] private Color calmColor = new Color(1f, 0.85f, 0.45f);
         [SerializeField] private Color urgentColor = new Color(1f, 0.15f, 0.1f);
@@ -68,9 +68,7 @@ namespace Deprem.Quake
         private readonly List<ItemToppler> topplers = new List<ItemToppler>();
 
         private GameObject barRoot;
-        private RectTransform barFrame;
-        private RectTransform barFill;
-        private Image fillImage;
+        private SegmentMeter meter;
 
         private void Awake()
         {
@@ -219,54 +217,25 @@ namespace Deprem.Quake
         {
             if (barRoot != null) return;
 
-            barRoot = new GameObject("RescueBar");
-            barRoot.transform.SetParent(transform, false);
-            var canvas = barRoot.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 40;
-            var scaler = barRoot.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(960f, 540f); // GDD referans çözünürlük
-            scaler.matchWidthOrHeight = 0.5f;
-
-            barFrame = NewRect("Frame", barRoot.transform);
-            barFrame.anchorMin = barFrame.anchorMax = new Vector2(0.5f, 1f);
-            barFrame.pivot = new Vector2(0.5f, 1f);
-            barFrame.sizeDelta = barSize + new Vector2(4f, 4f);
-            barFrame.anchoredPosition = new Vector2(0f, -barTopMargin);
-            barFrame.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
-
-            barFill = NewRect("Fill", barFrame);
-            barFill.anchorMin = new Vector2(0f, 0f);
-            barFill.anchorMax = new Vector2(1f, 1f);
-            barFill.pivot = new Vector2(0f, 0.5f);
-            barFill.offsetMin = new Vector2(2f, 2f);
-            barFill.offsetMax = new Vector2(-2f, -2f);
-            fillImage = barFill.gameObject.AddComponent<Image>();
-            fillImage.sprite = barSprite;
-            fillImage.color = calmColor;
-        }
-
-        private static RectTransform NewRect(string name, Transform parent)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            return (RectTransform)go.transform;
+            var canvas = Deprem.UI.UiBuilder.CreateCanvas(transform, "RescueBar", 40);
+            barRoot = canvas.gameObject;
+            meter = SegmentMeter.Create(canvas.transform, "TimeMeter", barSegments, segmentSize, segmentGap,
+                Deprem.Localization.Texts.Get("hud.rescue_time"));
+            meter.Root.anchorMin = meter.Root.anchorMax = new Vector2(0.5f, 1f);
+            meter.Root.pivot = new Vector2(0.5f, 1f);
+            meter.Root.anchoredPosition = new Vector2(0f, -barTopMargin);
         }
 
         private void UpdateBar()
         {
-            if (barFill == null) return;
+            if (meter == null) return;
             float fraction = Duration > 0f ? Remaining / Duration : 0f;
-            barFill.anchorMax = new Vector2(fraction, 1f);
-            barFill.offsetMax = new Vector2(fraction > 0f ? -2f : 0f, -2f);
-
             float urgency = state == TimerState.Counting ? Mathf.Clamp01(1f - Remaining / tensionWindow) : 1f;
-            fillImage.color = Color.Lerp(calmColor, urgentColor, urgency);
+            meter.SetValue(fraction, Color.Lerp(calmColor, urgentColor, urgency), urgency > 0f);
 
             // Sakinken de hafif titrer (GDD: titreşen sarsıntı çubuğu); süre azaldıkça sertleşir
             float jitter = barMaxJitter * Mathf.Lerp(0.15f, 1f, urgency);
-            barFrame.anchoredPosition = new Vector2(Random.Range(-jitter, jitter), -barTopMargin + Random.Range(-jitter, jitter) * 0.5f);
+            meter.Root.anchoredPosition = new Vector2(Random.Range(-jitter, jitter), -barTopMargin + Random.Range(-jitter, jitter) * 0.5f);
         }
     }
 }

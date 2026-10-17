@@ -59,14 +59,8 @@ namespace Deprem.Quake
             }).ToArray();
             root.AddComponent<QuakeEffects>().Configure(ceilings, DustMaterial(), DebrisMaterial());
 
-            var timer = root.AddComponent<RescueTimer>();
-            var bar = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/sarsinti_cubugu.png");
-            if (bar != null)
-            {
-                var timerSo = new SerializedObject(timer);
-                timerSo.FindProperty("barSprite").objectReferenceValue = bar;
-                timerSo.ApplyModifiedPropertiesWithoutUndo();
-            }
+            // Süre çubuğu artık parçalı pixel ölçer (SegmentMeter, Berke'nin paneli); ayrı sprite kullanılmıyor
+            root.AddComponent<RescueTimer>();
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;

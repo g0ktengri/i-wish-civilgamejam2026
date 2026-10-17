@@ -151,8 +151,9 @@ MonoBehaviour:
   slowRange: 1.2
   playerPlaneZ: 1
   playerRadius: 0.25
-  barSprite: {fileID: 0}
-  barSize: {x: 192, y: 16}
+  barSegments: 24
+  segmentSize: {x: 7, y: 10}
+  segmentGap: 2
   barTopMargin: 14
   calmColor: {r: 1, g: 0.85, b: 0.45, a: 1}
   urgentColor: {r: 1, g: 0.15, b: 0.1, a: 1}

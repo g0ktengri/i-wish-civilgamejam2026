@@ -25,8 +25,33 @@ namespace Deprem.Player
         [Tooltip("Aşağı eğim (derece)")]
         [SerializeField] private float downTilt = 12f;
 
+        [Tooltip("Görünen huzmenin en uzun hali (mesh boyu, m)")]
+        [SerializeField] private float beamLength = 3f;
+
         private PlayerController player;
         private PlayerVisual visual;
+        private Collider[] ownColliders;
+        private readonly RaycastHit[] hits = new RaycastHit[8];
+
+        /// <summary>
+        /// Play testi 12: huzme duvarın arkasına geçiyordu. Lensten ileri ışın atılır; ilk duvarda / kapalı kapıda /
+        /// eşyada huzme orada biter (huzme bütün olarak küçülür, koni biçimi korunur).
+        /// </summary>
+        private void ClipBeamAtWall()
+        {
+            if (beam == null) return;
+            if (ownColliders == null) ownColliders = GetComponentsInChildren<Collider>(true);
+            var origin = spot.transform.position;
+            var direction = spot.transform.forward;
+            float distance = beamLength;
+            int count = Physics.RaycastNonAlloc(origin, direction, hits, beamLength, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                if (System.Array.IndexOf(ownColliders, hits[i].collider) >= 0) continue;
+                distance = Mathf.Min(distance, hits[i].distance);
+            }
+            beam.transform.localScale = Vector3.one * Mathf.Clamp(distance / beamLength, 0.12f, 1f);
+        }
 
         /// <summary>Fener yanıyor mu (PlayerVisual fenerle koşu karelerine geçer)</summary>
         public bool IsOn { get; private set; }
@@ -57,6 +82,7 @@ namespace Deprem.Player
             else
                 spot.transform.localPosition = new Vector3(forward * player.Facing, height, -0.1f);
             spot.transform.rotation = Quaternion.LookRotation(new Vector3(player.Facing, -Mathf.Tan(downTilt * Mathf.Deg2Rad), 0f));
+            ClipBeamAtWall();
         }
     }
 }

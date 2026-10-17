@@ -434,6 +434,13 @@ Mehmet'in yorumu: "UI çok kötü." Ekran görüntüsünde sol üstte "Aileni ka
 3. **El feneri huzmesi duvarın arkasına geçiyor, düz koni çirkin:** huzme ilk duvarda kesilir (ışın uzunluğu duvara kadar), kenarları ve ucu yumuşak solan dokulu huzme; diğer ışıklar gibi görünsün.
 4. **Yeni arka planlar:** salon (arka, yan, zemin), oyuncu odası (arka, yan, tavan, zemin), mutfak (arka, yan, tavan, zemin) `Assets/Art/Rooms/` altına; ev yeniden kurulur.
 
+**Mehmet tarafı: 1–4 yapıldı** (Play'de son kontrol bekliyor).
+- Yeni ölçer: `Scripts/Quake/SegmentMeter.cs` (senin `CreatePanel`'in içinde parçalı kareler). M24'te paneli değiştirirsen çubuklar da kendiliğinden yeni stili alır.
+- Süre çubuğu: üst orta, "ZAMAN" etiketi (`hud.rescue_time`). Çök-kapan çubuğu: karakterin başının üstünde, ekranın altında değil; ipucunla çakışmaz.
+- `UI/sarsinti_cubugu` şablonu ve sprite yuvası kalktı.
+- Salonun eski tek parça `duvar.png` dokusu silindi (arka ve yan ayrı geldi).
+- Berke testi (`Deprem.Loop.EditorTools.BerkeSmokeTest.Run`) bu değişikliklerle de geçiyor.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

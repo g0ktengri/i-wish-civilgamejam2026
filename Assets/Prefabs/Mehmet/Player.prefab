@@ -346,6 +346,7 @@ MonoBehaviour:
   crouchHeight: 0.7
   crouchForward: 0.4
   downTilt: 12
+  beamLength: 3
 --- !u!1 &5056439655802367702
 GameObject:
   m_ObjectHideFlags: 0
