@@ -620,6 +620,33 @@ Mehmet'in yorumu (özet):
   - Dekorun derinliği var: tablo, fotoğraf, ayna ve saatin arkasında çerçeve kalınlığında gövde (3–5 cm), pencerede öne çıkan kasa, kayıt, denizlik ve korniş.
   - Dekorun renkleri odaya göre ayarlanıyor: odanın arka duvar dokusunun ortalama tonuna doğru kaydırılıyor (`DecorProps.Grade`).
 
+### Play testi 19: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- Masadaki vazo düşüp kırılmıyor.
+- Aile üyelerine giden oklar çok yavan.
+- Minigame arka planları çok detaylı, temamıza uymuyor; genel panel de çirkin.
+- Ses tasarımı genel olarak çok kötü, özellikle adım sesleri.
+
+**Berke'ye düşen**
+
+- **M27. Aile okları (`ObjectiveHud`).** İnce yavan ok yerine:
+  - pixel çizimli, konturlu, kalın bir ok; hafif nabız ve kayma (aileye doğru "it");
+  - üye başına renk ve küçük simge ya da baş harf (Baba / Anne / Kardeş), kurtarılınca söner;
+  - ekran kenarına yapışık, hedef ekrandaysa üyenin başının üstünde aşağı bakan küçük işaret;
+  - uzaklık arttıkça biraz küçülür.
+  - Renkler M24 HUD paletinden.
+- **M28. Minigame görünüşü, tema uyumu.** Ekran görüntüsündeki iç zemin (duvar kağıdı, tuğla, lambri, ahşap tahta) çok detaylı ve çok renkli; oyunun geri kalanından kopuk duruyor. Öneri:
+  - Zemin sade: tek ya da iki tonlu koyu düzlük, çok hafif doku; eşya ve hedef öne çıksın.
+  - Piksel ölçüsü oyunla aynı olsun: büyük, net pikseller; ince gürültü olmasın.
+  - Panel, başlık etiketi ve ipucu kutusu M24'teki HUD paneliyle aynı aileden (`UiBuilder.CreatePanel`), çift çerçeve ya da altın başlık şeridi yerine tek, sade çerçeve.
+  - Arkadaki bulanık oda görüntüsü kalabilir, ama biraz daha karartılsın.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. **Vazo:** düzeltildi. Masadaki eşyalar ana depremde hep düşüyor; masadan kayıp düşüyorlar, yere oturunca kırılıyorlar. `Tools > Deprem > Test: Dekor Düşme` fizikle deniyor: 18/19 dekor düşüyor (kitaplığın üstüne düşen fotoğraf orada kalıyor), camlı ve seramik olanların hepsi kırılıyor.
+2. **Ses:** kodla üretilen sesler yerine gerçek kayıtlar (CC0 ses paketleri). İlk iş adım sesleri, sonra deprem, cam ve UI.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
