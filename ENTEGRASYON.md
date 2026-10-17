@@ -41,6 +41,11 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Balon fontu (Berke, senin play testi 13 notuna)
+
+- `SpiritBubble` artık `DepremBalon` 18 kullanıyor (`SpiritPhase.bubbleFont` / `bubbleFontSize`, prefab kurulurken bağlanıyor). Ruh, oyuncu ve aile balonları aynı fontta.
+- **Dikkat:** prefab kurucum HUD fontunu `Art/Fonts`'taki alfabetik ilk fonttan alıyordu; `DepremBalon` gelince bir sonraki kurulumda bütün HUD ve keşke ekranı balon fontuna dönecekti. Artık adla `PixelifySans.ttf` seçiliyor. `Art/Fonts`'a yeni font koyarsan HUD etkilenmez.
+
 ### Berke'nin play testi 16: vida kolaylaştı, baba senaryosu değişti (senin klasörlerinde izinle)
 
 - **Vida:** uç artık vidadan kopmuyor (`screwMaxTurnsPerSecond` 0; özellik duruyor, istersen açılır). Vida başına tur 1,25 → 1,5. Tornavida çekiştirince uzamıyor: boy sabit, sadece fareye doğru dönüyor.

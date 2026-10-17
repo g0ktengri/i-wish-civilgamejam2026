@@ -23,6 +23,10 @@ namespace Deprem.Loop.EditorTools
         const string PrefabPath = Folder + "/BerkeSystems.prefab";
         const string UiArtFolder = "Assets/Art/UI";
         const string FontFolder = "Assets/Art/Fonts";
+        // HUD, menü, keşke ekranı Pixelify Sans; konuşma balonları Mehmet'in DepremBalon'u (play testi 13).
+        // Klasörde iki font olduğu için adla seçilir (alfabetik ilk font DepremBalon'du).
+        const string UiFontPath = FontFolder + "/PixelifySans.ttf";
+        const string BubbleFontPath = FontFolder + "/DepremBalon-Regular.ttf";
 
         // (bileşen, alan yolu, Assets/Art/UI altındaki dosya adı)
         static readonly (Type component, string field, string file)[] Sprites =
@@ -180,6 +184,8 @@ namespace Deprem.Loop.EditorTools
 
             var font = FindFont();
             foreach (var type in FontUsers) SetReference(root.GetComponent(type), "font", font);
+            var bubbleFont = AssetDatabase.LoadAssetAtPath<Font>(BubbleFontPath);
+            SetReference(root.GetComponent<SpiritPhase>(), "bubbleFont", bubbleFont ? bubbleFont : font);
 
             // Ortak stil: balon, panel ve font bütün oyunda (Mehmet'in SpeechBubble'ı dahil) buradan
             var style = AssetDatabase.LoadAssetAtPath<UiStyle>(StylePath);
@@ -211,8 +217,9 @@ namespace Deprem.Loop.EditorTools
         static Font FindFont()
         {
             if (!AssetDatabase.IsValidFolder(FontFolder)) return null;
-            var path = AssetDatabase.FindAssets("t:Font", new[] { FontFolder })
+            var path = AssetDatabase.LoadAssetAtPath<Font>(UiFontPath) ? UiFontPath : AssetDatabase.FindAssets("t:Font", new[] { FontFolder })
                 .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(p => p != BubbleFontPath)
                 .OrderBy(p => p)
                 .FirstOrDefault();
             if (path == null) return null;

@@ -23,6 +23,9 @@ namespace Deprem.Spirit
         [SerializeField] SpiritController spiritPrefab;
         [Tooltip("Ekip çizimi ruh_N.png (prefab kurulurken Art/Characters'tan bağlanır); yoksa parlayan küre")]
         [SerializeField] Texture2D[] spiritFrames;
+        [Tooltip("Ruhun konuşma balonunun fontu: oyuncu ve aile balonlarıyla aynı (DepremBalon), prefab kurulurken bağlanır")]
+        [SerializeField] Font bubbleFont;
+        [SerializeField] int bubbleFontSize = 18;
         [SerializeField] Color glowColor = new Color(0.55f, 0.8f, 1f);
         [SerializeField] float glowIntensity = 3f;
         [SerializeField] float glowRange = 3f;
@@ -84,7 +87,11 @@ namespace Deprem.Spirit
 
             // Berke'nin play testi: ruh formuna geçince karakter bir şey demeli
             var bubble = spirit.GetComponent<SpiritBubble>();
-            if (bubble == null) bubble = spirit.gameObject.AddComponent<SpiritBubble>();
+            if (bubble == null)
+            {
+                bubble = spirit.gameObject.AddComponent<SpiritBubble>();
+                bubble.SetFont(bubbleFont, bubbleFontSize);
+            }
             if (seenBefore) bubble.Say(("spirit.again", 2.5f));
             else bubble.Say(("spirit.intro_1", 2.8f), ("spirit.intro_2", 3f));
             seenBefore = true;

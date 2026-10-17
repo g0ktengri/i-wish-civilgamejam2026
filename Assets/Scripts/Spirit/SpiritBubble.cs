@@ -11,12 +11,22 @@ namespace Deprem.Spirit
     {
         [Tooltip("Balonun ruhun üstündeki yüksekliği (m)")]
         [SerializeField] float height = 0.45f;
-        [SerializeField] int fontSize = 14;
+        [Tooltip("Balon fontu; boşsa ortak UI fontu. SpiritPhase verir (Mehmet'in balon fontu DepremBalon)")]
+        [SerializeField] Font font;
+        [SerializeField] int fontSize = 18;
         [SerializeField] float maxTextWidth = 220f;
         [SerializeField] int sortingOrder = 31;
 
         Canvas canvas;
         UiBubble bubble;
+
+        // İlk Say'den önce çağrılır (balon o anda kurulur)
+        public void SetFont(Font bubbleFont, int size)
+        {
+            if (canvas != null) return;
+            font = bubbleFont;
+            if (size > 0) fontSize = size;
+        }
 
         // Sırayla söyler: her satır (anahtar, saniye)
         public void Say(params (string key, float seconds)[] lines)
@@ -71,7 +81,7 @@ namespace Deprem.Spirit
             if (canvas != null) return;
             // Ruh objesinin altında değil: ruh kapanıp açıldıkça balon kaybolmasın diye ayrı kök
             canvas = UiBuilder.CreateCanvas(null, "SpiritBubbleCanvas", sortingOrder);
-            bubble = UiBuilder.CreateSpeechBubble(canvas.transform, null, fontSize);
+            bubble = UiBuilder.CreateSpeechBubble(canvas.transform, font, fontSize);
             bubble.gameObject.SetActive(false);
         }
 
