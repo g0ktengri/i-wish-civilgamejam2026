@@ -122,8 +122,9 @@ namespace Deprem.Player
             var sight = sightGo.AddComponent<Light>();
             sight.type = LightType.Point;
             sight.color = new Color(0.7f, 0.78f, 1f);
-            sight.intensity = 0.5f;
-            sight.range = 1.3f;
+            // Berke'nin play testi: hâlâ çok parlaktı
+            sight.intensity = 0.22f;
+            sight.range = 1.1f;
             sight.shadows = LightShadows.None;
             sight.enabled = false;
 

@@ -288,8 +288,8 @@ MonoBehaviour:
   body: {fileID: 7844497210284148813}
   rimMaterial: {fileID: 2100000, guid: da210e0a404c6294697f4dc86ff671b9, type: 2}
   pixels: 2
-  gain: 0.35
-  maxStrength: 1.2
+  gain: 0.8
+  maxStrength: 2.2
   refreshInterval: 0.5
 --- !u!114 &704763786387298917
 MonoBehaviour:
@@ -563,8 +563,8 @@ Light:
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 0.7, g: 0.78, b: 1, a: 1}
-  m_Intensity: 0.5
-  m_Range: 1.3
+  m_Intensity: 0.22
+  m_Range: 1.1
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}

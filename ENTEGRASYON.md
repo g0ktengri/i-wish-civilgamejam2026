@@ -71,6 +71,13 @@
   - Metinler `texts.csv` `# Mehmet` başlığında: `bubble.deja_vu`, `bubble.deja_vu_again`, `bubble.door_jammed`.
   - Play'de elle denenmesi gerekenler: merdivenden çıkınca artçının zamanı, masaların sarı konturu, salon kapısının TV devrilince kilitlenmesi, döngü 1'de rafın görselin önünde kalması.
   - **Düzeltme (Berke'nin play testi):** Bütün masa parçalarına kontur koymak çekmeceyi ve ayakları dolu sarı gösteriyordu. Artık sadece üst tabla ince konturlu (`kontur_masa.mat`: kalınlık 0,015, daha güçlü nabız) ve masanın altında yumuşak sıcak bir ışık (`SafeSpot.underGlow`) yanıyor.
+- **Berke'nin play testi 2 (Mehmet'in izniyle onun klasörlerinde de):**
+  - Vida: 4 vida süreye yetmiyordu; `MinigameHost.screwCount = 1` (levhanın ortasında tek vida, 2 tur). 4'e geri almak Inspector'dan.
+  - Keşke ekranı: 1,6 sn'de yavaş kararma, keşke cümlesi harf harf (14 harf/sn, noktalamada durur), 1,6 sn sessizlik, bilgi satırı da yazılır; tıklayınca yazı tamamlanır.
+  - `FamilyMember.failDelay` 3 → 5,5 sn: kayıp balonu okunmadan keşke ekranına geçiyordu. Kayıp fark edilince üyenin önünde 0,8 sn'de yükselen soğuk beyaz ışık (`Reveal`, gölgeli): karanlıkta devrilen gardırop / raf ve üye görünür. `FamilySmokeTest` beklemeleri buna göre uzatıldı (testler geçiyor).
+  - Gece görüş ışığı (`PlayerSetup` NightSight) 0,5 → 0,22, menzil 1,3 → 1,1.
+  - Kenar ışığı daha belirgin: `CharacterRimLight.gain` 0,35 → 0,8, en fazla 2,2.
+  - Çök-kapan şimdilik S ile de (`QuakeDirector.altDuckCoverKey`); ipucu "C / S: Parlayan masanın altında Çök-Kapan-Tutun".
 - **Çök-kapan netleşti (Berke'nin play testi; Mehmet'in izniyle onun klasörlerinde):** Güvenli masanın dışında C'ye basınca hiçbir şey olmuyordu, oyuncu "çalışmıyor" sanıyordu.
   - `QuakeDirector.DuckCoverHold`: masanın dışında C basılıyken ipucu `prompt.duck_cover_find` ("Burada olmaz! Parlayan masanın altına geç") olur, masaların altındaki ışık 2,5 kat parlar (`SafeSpot.Emphasize`), oyuncu bir kez `bubble.not_safe_here` der. Kural aynı: C sadece güvenli noktada sayılır.
   - `prompt.duck_cover` artık "C: Parlayan masanın altında Çök-Kapan-Tutun". `PromptHud` paneli yazıya göre genişliyor (en az 192).

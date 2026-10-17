@@ -6,7 +6,7 @@ key,tr,en
 content_warning,Bu oyun deprem ve kayıp temalarını içerir.,This game contains themes of earthquakes and loss.
 prompt.continue,F: Devam,F: Continue
 prompt.stand_up,F: Kalk,F: Get up
-prompt.duck_cover,C: Parlayan masanın altında Çök-Kapan-Tutun,C: Drop-Cover-Hold On under the glowing table
+prompt.duck_cover,C / S: Parlayan masanın altında Çök-Kapan-Tutun,C / S: Drop-Cover-Hold On under the glowing table
 prompt.duck_cover_find,Burada olmaz! Parlayan masanın altına geç,Not here! Get under the glowing table
 prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
@@ -28,7 +28,7 @@ family.Sibling,Kardeş,Sibling
 family.cabin,Kabin,Shelter
 
 # Minigame'ler
-minigame.screw.hint,"Tornavidanın ucunu vidaya getir, basılı tut ve sapı saat yönünde çevir; 4 vidayı da sık","Put the screwdriver tip on a screw, hold and turn the handle clockwise; tighten all 4 screws"
+minigame.screw.hint,"Tornavidanın ucunu vidaya getir, basılı tut ve sapı saat yönünde çevir","Put the screwdriver tip on the screw, hold and turn the handle clockwise"
 minigame.carry.hint,Eşyayı duvardaki boşluktan geçirip güvenli yere bırak,Drag the item through the gap in the wall to the safe spot
 minigame.lock.hint,İbre yeşil alandayken tıkla; {0} kez tuttur,Click when the needle is in the green zone; hit it {0} times
 

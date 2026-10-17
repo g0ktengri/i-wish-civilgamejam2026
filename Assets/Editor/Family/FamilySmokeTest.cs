@@ -69,7 +69,7 @@ namespace Deprem.Family
             player.Teleport(new Vector3(19.5f, 0f, 1f));
             TickMembers(1f);
             Check(father.PlayerReacted && !player.InputEnabled && GameState.Phase == GamePhase.Rescue, "Babayı görünce oyuncu durup tepki veriyor, keşke ekranı hemen gelmiyor");
-            TickMembers(2.5f);
+            TickMembers(5f); // failDelay 5,5 sn (Berke'nin play testi)
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.FamilyHitByItem
                   && GameState.LastLoseItem == ItemId.Bookcase, $"Döngü 3: salona girince 'Keşke kitaplığı sabitleseydim' ({GameState.LastLoseReason}, {GameState.LastLoseItem})");
         }
@@ -79,7 +79,7 @@ namespace Deprem.Family
             StartAttempt(4, new BagItemId[0]);
             Check(father.State == FamilyState.Injured, "Döngü 4: baba camla yaralı");
             player.Teleport(new Vector3(19.5f, 0f, 1f));
-            TickMembers(3.5f);
+            TickMembers(6f);
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.MissingBagItem,
                 $"Döngü 4: ilk yardım yok, 'Keşke deprem çantası hazırlasaydım' ({GameState.LastLoseReason})");
         }
@@ -147,7 +147,7 @@ namespace Deprem.Family
         {
             StartAttempt(5, new[] { BagItemId.FirstAidKit });
             player.Teleport(new Vector3(5.5f, Up, 1f));
-            TickMembers(3.5f);
+            TickMembers(6f);
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.MissingBagItem,
                 $"El feneri yok, kardeşin odasında 'Keşke deprem çantası hazırlasaydım' ({GameState.LastLoseReason})");
         }
@@ -156,7 +156,7 @@ namespace Deprem.Family
         {
             StartAttempt(5, new[] { BagItemId.FirstAidKit, BagItemId.Flashlight }, ItemId.Wardrobe);
             player.Teleport(new Vector3(22f, Up, 1f));
-            TickMembers(3.5f);
+            TickMembers(6f);
             Check(GameState.Phase == GamePhase.Failed && GameState.LastLoseReason == LoseReason.FamilyHitByItem
                   && GameState.LastLoseItem == ItemId.Wardrobe, $"Gardırop anneye devrildi, 'Keşke gardırobu sabitleseydim' ({GameState.LastLoseItem})");
         }

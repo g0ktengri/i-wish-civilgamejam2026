@@ -94,10 +94,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82602726594590944beda558a6ebb708, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.WishScreen
-  fadeToBlack: 0.6
-  wishDelay: 0.8
-  infoDelay: 1.2
-  minShowTime: 2.5
+  fadeToBlack: 1.6
+  wishDelay: 0.9
+  wishCharsPerSecond: 14
+  infoDelay: 1.6
+  infoCharsPerSecond: 40
+  hintDelay: 1.5
   fadeFromBlack: 0.8
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   wishFontSize: 32
@@ -183,7 +185,8 @@ MonoBehaviour:
   panelColor: {r: 0.1, g: 0.12, b: 0.16, a: 0.95}
   successColor: {r: 0.2, g: 0.4, b: 0.25, a: 0.95}
   successHold: 0.4
-  screwTurnsPerScrew: 1.25
+  screwCount: 1
+  screwTurnsPerScrew: 2
   screwReversePenalty: 1
   screwMinRadius: 18
   carrySnapRadius: 14

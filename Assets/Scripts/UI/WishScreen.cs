@@ -8,16 +8,22 @@ using UnityEngine.UI;
 
 namespace Deprem.UI
 {
-    // Keşke ekranı: kaybedince ekran kararır, keşke cümlesi ve altında bilgi satırı çıkar.
+    // Keşke ekranı: kaybedince ekran yavaşça kararır, keşke cümlesi harf harf yazılır, kısa bir sessizlikten
+    // sonra altında bilgi satırı da yazılır (oyuncu sindirsin; Berke'nin play testi).
     // Oyuncu F'ye (ya da Space/Enter/tık) basınca döngü yöneticisi zamanı geri sarar.
     // Yeni denemede siyahtan açılarak başlar. Canvas'ı kendisi kurar; sahnede tek bir objede durması yeter.
     public class WishScreen : MonoBehaviour
     {
         [Header("Zamanlama (sn)")]
-        [SerializeField] float fadeToBlack = 0.6f;
-        [SerializeField] float wishDelay = 0.8f;
-        [SerializeField] float infoDelay = 1.2f;
-        [SerializeField] float minShowTime = 2.5f;
+        [SerializeField] float fadeToBlack = 1.6f;
+        [SerializeField] float wishDelay = 0.9f;
+        [Tooltip("Keşke cümlesinin yazılma hızı (harf/sn)")]
+        [SerializeField] float wishCharsPerSecond = 14f;
+        [Tooltip("Cümle bittikten sonra bilgi satırından önceki sessizlik")]
+        [SerializeField] float infoDelay = 1.6f;
+        [SerializeField] float infoCharsPerSecond = 40f;
+        [Tooltip("Her şey yazıldıktan sonra devam ipucundan önceki bekleme")]
+        [SerializeField] float hintDelay = 1.5f;
         [SerializeField] float fadeFromBlack = 0.8f;
 
         [Header("Görünüm")]
@@ -89,15 +95,36 @@ namespace Deprem.UI
 
             yield return Fade(group.alpha, 1f, fadeToBlack);
             yield return new WaitForSecondsRealtime(wishDelay);
-            wishText.text = wish;
+            yield return Type(wishText, wish, wishCharsPerSecond);
             yield return new WaitForSecondsRealtime(infoDelay);
-            infoText.text = info;
-
-            float shown = wishDelay + infoDelay;
-            if (shown < minShowTime) yield return new WaitForSecondsRealtime(minShowTime - shown);
+            yield return Type(infoText, info, infoCharsPerSecond);
+            yield return new WaitForSecondsRealtime(hintDelay);
             hintText.text = Texts.Get("prompt.continue");
             hintText.enabled = true;
             canContinue = true;
+        }
+
+        // Harf harf yazar; noktalama işaretlerinde kısa durur. Hızlıca okumak isteyen tıklayınca tamamlanır.
+        IEnumerator Type(Text target, string text, float charsPerSecond)
+        {
+            target.text = string.Empty;
+            if (string.IsNullOrEmpty(text)) yield break;
+            float interval = 1f / Mathf.Max(1f, charsPerSecond);
+            for (int i = 1; i <= text.Length; i++)
+            {
+                target.text = text.Substring(0, i);
+                char c = text[i - 1];
+                float wait = c == ',' || c == ';' ? interval * 5f : c == '.' || c == '!' || c == '?' ? interval * 8f : interval;
+                for (float t = 0f; t < wait; t += Time.unscaledDeltaTime)
+                {
+                    if (ContinuePressed())
+                    {
+                        target.text = text;
+                        yield break;
+                    }
+                    yield return null;
+                }
+            }
         }
 
         IEnumerator FadeFromBlack()

@@ -78,6 +78,8 @@ namespace Deprem.Quake
         [SerializeField] private Key walkLeftKey = Key.A;
         [SerializeField] private Key walkRightKey = Key.D;
         [SerializeField] private Key duckCoverKey = Key.C;
+        [Tooltip("Şimdilik çök-kapan S (eğilme) tuşuyla da yapılabilir (Berke'nin play testi)")]
+        [SerializeField] private Key altDuckCoverKey = Key.S;
 
         [Tooltip("M19: raf yatağa düşünce kısa kamera sarsıntısı")]
         [SerializeField, Range(0f, 1f)] private float shelfImpactShake = 0.85f;
@@ -360,7 +362,7 @@ namespace Deprem.Quake
             bool warnedNotSafe = false;
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
-                bool pressing = Held(duckCoverKey);
+                bool pressing = Held(duckCoverKey) || Held(altDuckCoverKey);
                 bool inSafeSpot = SafeSpot.AnyContains(player.transform.position);
                 bool holding = pressing && inSafeSpot;
                 // Güvenli masanın dışında C işe yaramaz: oyuncu bunu görsün (ipucu değişir, masa daha çok parlar, bir kez konuşur)

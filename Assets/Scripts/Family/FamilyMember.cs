@@ -42,7 +42,11 @@ namespace Deprem.Family
         [SerializeField] private float discoverRange = 3.5f;
         [SerializeField] private float interactRange = 1.2f;
         [Tooltip("Fark ettikten sonra keşke ekranına kadar süre: oyuncu durur, döner, balonla tepki verir")]
-        [SerializeField] private float failDelay = 3f;
+        [SerializeField] private float failDelay = 5.5f; // Berke'nin play testi: balon okunmadan keşke ekranına geçiyordu
+        [Tooltip("Kayıp fark edilince sahne aydınlanır: karanlıkta devrilen eşya ve üye görünsün")]
+        [SerializeField] private float revealIntensity = 3f;
+        [SerializeField] private float revealRange = 4.5f;
+        [SerializeField] private Color revealColor = new Color(0.85f, 0.9f, 1f);
         [SerializeField] private Key interactKey = Key.F;
 
         [Header("Görünüş")]
@@ -238,6 +242,25 @@ namespace Deprem.Family
                 : "bubble.family_missing." + requiredBagItem.ToString().ToLowerInvariant();
             var bubble = player.GetComponent<SpeechBubble>();
             if (bubble != null) bubble.Say(key, failDelay);
+            StartCoroutine(Reveal());
+        }
+
+        /// <summary>Kayıp anında üyenin önünde yumuşakça yükselen ışık: karanlıkta devrilen gardırop / raf görünür</summary>
+        private System.Collections.IEnumerator Reveal()
+        {
+            var light = new GameObject("LossReveal").AddComponent<Light>();
+            light.transform.SetParent(transform, false);
+            light.transform.localPosition = new Vector3(0f, 1.4f, -1.2f);
+            light.type = LightType.Point;
+            light.color = revealColor;
+            light.range = revealRange;
+            light.shadows = LightShadows.Soft;
+            for (float t = 0f; t < 0.8f; t += Time.deltaTime)
+            {
+                light.intensity = Mathf.Lerp(0f, revealIntensity, t / 0.8f);
+                yield return null;
+            }
+            light.intensity = revealIntensity;
         }
 
         // ------------------------------------------------------------------ F etkileşimi

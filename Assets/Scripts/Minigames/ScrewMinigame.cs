@@ -4,10 +4,10 @@ using UnityEngine.UI;
 
 namespace Deprem.Minigames
 {
-    // Vida sıkma: L demiri levhası 4 köşesinden vidalanır.
+    // Vida sıkma: L demiri levhası vidalanır (1 vida ortada ya da 4 vida köşelerde; MinigameHost.screwCount).
     // Fare tornavidanın sapını tutar; ucu bir vidanın üstüne getirip basılı tut: uç vidaya oturur.
     // Sapı vidanın etrafında saat yönünde çevir; ters yönde çevirmek gevşetir. Bırakınca tornavida kalkar,
-    // o vidanın ilerlemesi kalır. Dört vida da sıkılınca biter.
+    // o vidanın ilerlemesi kalır. Bütün vidalar sıkılınca biter.
     public class ScrewMinigame : Minigame
     {
         static readonly Vector2 PlateCenter = new Vector2(0f, 12f);
@@ -76,6 +76,7 @@ namespace Deprem.Minigames
         readonly float turnsPerScrew;
         readonly float reversePenalty;
         readonly float minRadius;
+        readonly int screwCount;
 
         readonly List<Screw> screws = new List<Screw>();
         Driver driver;
@@ -87,11 +88,12 @@ namespace Deprem.Minigames
         float lastAngle;
         bool hasAngle;
 
-        public ScrewMinigame(float turnsPerScrew, float reversePenalty, float minRadius)
+        public ScrewMinigame(float turnsPerScrew, float reversePenalty, float minRadius, int screwCount = 1)
         {
             this.turnsPerScrew = Mathf.Max(0.25f, turnsPerScrew);
             this.reversePenalty = Mathf.Max(0f, reversePenalty);
             this.minRadius = minRadius;
+            this.screwCount = screwCount >= 4 ? 4 : 1;
         }
 
         protected override void OnBuild()
@@ -100,7 +102,10 @@ namespace Deprem.Minigames
             CreateRect("Plate", PlateCenter, PlateSize, PlateColor, null, Art.screwPlate);
 
             Vector2 half = PlateSize * 0.5f - Vector2.one * CornerInset;
-            foreach (var corner in new[] { new Vector2(-1, 1), new Vector2(1, 1), new Vector2(-1, -1), new Vector2(1, -1) })
+            var layout = screwCount == 1
+                ? new[] { Vector2.zero }
+                : new[] { new Vector2(-1, 1), new Vector2(1, 1), new Vector2(-1, -1), new Vector2(1, -1) };
+            foreach (var corner in layout)
             {
                 var position = PlateCenter + Vector2.Scale(half, corner);
                 var image = CreateRect("Screw", position, Vector2.one * ScrewSize, ScrewLoose, null,

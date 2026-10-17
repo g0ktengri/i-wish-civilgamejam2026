@@ -18,8 +18,8 @@ namespace Deprem.Visual
         [Tooltip("Kenar şeridinin kalınlığı (doku pikseli)")]
         [SerializeField] private float pixels = 2f;
         [Tooltip("Işık gücünü kenar parlaklığına çeviren çarpan")]
-        [SerializeField] private float gain = 0.35f;
-        [SerializeField] private float maxStrength = 1.2f;
+        [SerializeField] private float gain = 0.8f; // Berke'nin play testi: 0,35'te pek seçilmiyordu
+        [SerializeField] private float maxStrength = 2.2f;
         [Tooltip("Sahnedeki ışık listesinin yenilenme aralığı (sn)")]
         [SerializeField] private float refreshInterval = 0.5f;
 
