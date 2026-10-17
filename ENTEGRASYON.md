@@ -419,6 +419,21 @@ Mehmet: "İlk yardım ve el fenerinin 3D'de ne olduğu anlaşılmıyor; pixel'e 
 - `PlayerController.CrouchEnabled`: döngü 1–2'de false (`QuakeDirector` öncüde ayarlar).
 - `RoomVisibility.Instance.IsVisibleAt(pos)`: bir nokta açık odada mı (aile seslenmesi bunu kullanıyor; senin ok / HUD'un da kullanabilir).
 
+### Play testi 12: görev dağılımı (18 Ekim)
+
+Mehmet'in yorumu: "UI çok kötü." Ekran görüntüsünde sol üstte "Aileni kabine götür · 0/3" kutusu, altta "C / S: Parlayan masanın altında Çök-Kapan-Tutun" ipucu ve onun üstüne binen yeşil çök-kapan çubuğu, üstte düz sarı süre çubuğu var.
+
+**Berke'ye düşen**
+
+- **M24. HUD baştan, tek stil.** İpucu kutusu (`PromptHud`), hedef ve aile sayacı (`ObjectiveHud`), çanta HUD'u (`BagHud`), ruh sayacı. Pixel fontla uyumlu çerçeve (9-slice `hud_ipucu`), tuş harfleri ayrı kutucuk içinde ("[C]" / "[S]" gibi), daha kısa yazılar ve kenarlardan pay; düz gri kutular yerine oyunun paletinde koyu panel, ince açık kenar ve hafif gölge. Yerleşim önerisi: hedef sol üst; ipucu alt ortada ama ekranın en altına yakın (çök-kapan çubuğunun altında kalsın); süre çubuğu üst ortada (Mehmet). Bitince yeni stili `UiStyle`'a koy; Mehmet'in çubukları `UiBuilder.CreatePanel` ile çizildiği için onlar da kendiliğinden alır.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. **Çök-kapan çubuğu ipucunun üstüne biniyor:** çubuk karakterin başının üstüne taşınır (dünyada, karakterle hareket eder), pixel parçalı dolum; ipucuyla çakışmaz.
+2. **Süre çubuğu kötü:** düz sarı şerit yerine çerçeveli, parçalı (segmentli) pixel çubuk, başında saat / kalp simgesi; son saniyelerde kırmızıya döner, titrer. Süre değerleri değişmez.
+3. **El feneri huzmesi duvarın arkasına geçiyor, düz koni çirkin:** huzme ilk duvarda kesilir (ışın uzunluğu duvara kadar), kenarları ve ucu yumuşak solan dokulu huzme; diğer ışıklar gibi görünsün.
+4. **Yeni arka planlar:** salon (arka, yan, zemin), oyuncu odası (arka, yan, tavan, zemin), mutfak (arka, yan, tavan, zemin) `Assets/Art/Rooms/` altına; ev yeniden kurulur.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
