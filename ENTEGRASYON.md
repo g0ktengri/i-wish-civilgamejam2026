@@ -242,3 +242,20 @@ Mehmet oyunu Play'de denedi. Sorunlar ve kime düştüğü aşağıda. Berke'nin
 - `Marker_FirstAid` (19,02; üst kat + 0,62; 4,55): ebeveyn odasındaki komodinin üstü.
 - `Marker_PlayerBed` x 1,5 (ruhun çıktığı yer). `Marker_Father` 22,75, `Marker_Mother` 24,45, `Marker_Sibling` 4,2.
 - Efektler `Scripts/Quake/QuakeEffects.cs`. Tutma çubuğu `Scripts/Quake/DuckCoverBar.cs` (`UiBuilder.CreatePanel`); fontu da senin `UiStyle`'ından alır.
+
+### Play testi 4: görev dağılımı (17 Ekim gece)
+
+**Berke'ye düşen**
+
+- **M13. Malzemeyi aldığımız belli olmuyor.** Ruh fazında malzeme çantaya konunca net bir geri bildirim: ekranda kısa yazı ("El feneri çantaya kondu", texts.csv), HUD'da çantadaki malzemelerin ikon listesi (`ikon_el_feneri`, `ikon_ilk_yardim`), varsa kısa parlama. Kurtarma fazında da çantada ne olduğu köşede görünsün.
+- **Bilgi:** deprem çantası artık **deprem kabininin önünde** (`Marker_Bag` kabinin girişine taşınıyor; çanta kabinde durur). `BagDropPoint` adla bulduğu için kodunda iş yok. Görsel kabinin önünde kötü durursa yerini söyle, işareti kaydırırım.
+
+**Mehmet'in yapacakları (bilgi için, senin tarafında iş yok)**
+
+1. Çanta kabinde (`Marker_Bag`).
+2. Gece karakter çok ışıklı: görüş ışığı küçülür, sadece karakteri hafifçe öne çıkarır.
+3. El feneri belli olmuyor: daha güçlü spot ve önünde görünen ışık huzmesi.
+4. Devrilen raf / gardırop / kitaplık aile üyesinin üstüne düşmüş görünmüyor: ezilen üye eşyanın altında yatar.
+5. Toz efektleri yavan: daha yoğun toz, iri toz topakları, yere çarpıp seken sıva parçaları, ana depremin ilk vuruşunda toz patlaması.
+6. Merdiven çirkin: yan kiriş, basamak altı, korkuluk ve küpeşte.
+7. Mobilyalar: parçalara detay renkleri (kulp, yastık, kitap, ekran); yerleşim bir kez daha kontrol edilir.
