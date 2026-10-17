@@ -78,7 +78,12 @@ namespace Deprem.UI
         readonly HashSet<FamilyMemberId> inCabin = new HashSet<FamilyMemberId>();
         bool rescue;
         Transform player;
+        static bool searchLookedUp;
+        static System.Type familyType;
+        static System.Reflection.PropertyInfo searchProperty;
+        static System.Reflection.FieldInfo searchField;
         static Sprite arrowSprite;
+
         static Sprite markerSprite;
 
         void Awake()
@@ -149,9 +154,31 @@ namespace Deprem.UI
             bool everyoneFound = FoundCount() >= FamilyTotal();
             foreach (var arrow in arrows)
             {
-                bool wanted = arrow.Id == FamilyMemberId.None ? everyoneFound : !GameState.IsRescued(arrow.Id);
+                bool wanted = arrow.Id == FamilyMemberId.None ? everyoneFound
+                    : !GameState.IsRescued(arrow.Id) && !BeingSearched(arrow);
                 UpdateArrow(arrow, cam, wanted, Time.unscaledTime);
             }
+        }
+
+        // M53 (Mehmet'in play testi 28): oyuncu fenersiz kardeşin odasındayken (kardeş saklanıyor) ok gösterilmez.
+        // Mehmet'in FamilyMember.BeingSearched'ı yansımayla okunur (gelmeden de derlenir; yokken ok her zamanki gibi).
+        static bool BeingSearched(Arrow arrow)
+        {
+            if (!arrow.Member) return false;
+            if (!searchLookedUp)
+            {
+                searchLookedUp = true;
+                familyType = System.Type.GetType("Deprem.Family.FamilyMember, Assembly-CSharp");
+                const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static;
+                searchProperty = familyType?.GetProperty("BeingSearched", flags);
+                searchField = searchProperty == null ? familyType?.GetField("BeingSearched", flags) : null;
+            }
+            if (familyType == null || (searchProperty == null && searchField == null)) return false;
+            var member = arrow.Member.GetComponentInParent(familyType);
+            if (!member) return false;
+            object value = searchProperty != null ? searchProperty.GetValue(member) : searchField.GetValue(member);
+            return value is bool searched && searched;
         }
 
         static void Hide(Arrow arrow)

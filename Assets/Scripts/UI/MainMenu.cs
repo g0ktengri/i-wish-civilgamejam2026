@@ -281,6 +281,7 @@ namespace Deprem.UI
         static void StartNewGame()
         {
             SaveGame.Clear();
+            Bag.BagLessonGate.Clear(); // M54: el feneri ve ilk yardım dersleri baştan
             WishLines.ClearHistory();
             StartLoop(1);
         }

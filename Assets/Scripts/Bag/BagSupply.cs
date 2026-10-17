@@ -8,6 +8,7 @@ namespace Deprem.Bag
 {
     // Evdeki bir çanta malzemesi. Ruh fazında F → taşı-yerleştir minigame'i → ruh taşır.
     // Taşınırken ruhun yanında durur; taşıma iptal olursa yerine döner.
+    // M54: el feneri ve ilk yardım, dersi öğrenilmeden (BagLessonGate) evde görünmez, ışığı ve vurgusu yok, alınamaz.
     public class BagSupply : MonoBehaviour, ISpiritTarget
     {
         const string SpiritObjectName = "Spirit"; // Kararlar: ruh objesinin adı sabit
@@ -21,6 +22,8 @@ namespace Deprem.Bag
         bool shown = true;
         Sprite icon;
         Transform spirit;
+        float spiritCenter;
+
         bool opening;
 
         public BagItemId Id => id;
@@ -30,7 +33,7 @@ namespace Deprem.Bag
 
         public bool CanInteract =>
             !opening && GameState.Phase == GamePhase.Spirit && BagSystem.Carrying == BagItemId.None &&
-            !GameState.HasBagItem(id);
+            !GameState.HasBagItem(id) && BagLessonGate.IsAvailable(id);
 
         // position: işaret noktası (masa / komodin yüzeyi). Görünüş sırası: Mehmet'in modeli (pivot taban ortası,
         // sarı kontur), ikon sprite'ı (64 PPU), renkli küp. Sprite ve küp merkezli: yüzeye gömülmesin diye yarım boy yukarı.
@@ -117,17 +120,23 @@ namespace Deprem.Bag
                 if (!spirit)
                 {
                     var spiritObject = GameObject.Find(SpiritObjectName);
-                    if (spiritObject) spirit = spiritObject.transform;
+                    if (spiritObject)
+                    {
+                        spirit = spiritObject.transform;
+                        var controller = spiritObject.GetComponent<SpiritController>();
+                        spiritCenter = controller ? controller.CenterHeight : 0f;
+                    }
                 }
-                if (spirit) transform.position = spirit.position + system.CarryOffset;
+                // M50'den beri ruhun kökü ayak hizasında: taşıma payı gövdenin ortasından
+                if (spirit) transform.position = spirit.position + Vector3.up * spiritCenter + system.CarryOffset;
             }
             else if (!inBag)
             {
                 transform.position = home;
             }
 
-            // Çantaya konan malzeme dünyada görünmez (çantanın içinde)
-            var visible = !inBag;
+            // Çantaya konan malzeme dünyada görünmez (çantanın içinde); M54: dersi öğrenilmemişse hiç görünmez
+            var visible = !inBag && (carried || BagLessonGate.IsAvailable(id));
             if (pickup)
             {
                 if (shown != visible)

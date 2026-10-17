@@ -13,8 +13,12 @@ namespace Deprem.Spirit
     public class SpiritPhase : MonoBehaviour
     {
         [Header("Süre")]
-        [Tooltip("GDD: 60-90 sn; Play testinde fazla zaman kaldığı için 50")]
-        [SerializeField] float duration = 50f;
+        [Tooltip("M55 (Mehmet'in play testi 28): ilk ruh çıkışının süresi (sn); her kayıpta artar")]
+        [SerializeField] float duration = 35f;
+        [Tooltip("Her kayıpta (GameState.FailedAttempts) eklenen süre (sn)")]
+        [SerializeField] float durationPerLoss = 5f;
+        [Tooltip("Sürenin üst sınırı (sn)")]
+        [SerializeField] float maxDuration = 60f;
 
         [Header("Çıkış noktası")]
         [Tooltip("Boşsa aşağıdaki isimdeki işaret noktası aranır")]
@@ -66,6 +70,9 @@ namespace Deprem.Spirit
 
         // Ruh fazını daha önce görmüş mü (sahne yeniden yüklense de kalır): ilk sefer uzun, sonra kısa konuşur
         static bool seenBefore;
+        // M55: ruh fazı ilk açıldığında kayıp sayısı (sahne yeniden yüklense de kalır)
+        static int lossBaseline = -1;
+
 
         public static bool Running { get; private set; }
         public static float TimeLeft { get; private set; }
@@ -142,8 +149,14 @@ namespace Deprem.Spirit
             if (!spirit) spirit = CreateSpirit();
             var spiritInteractor = spirit.GetComponent<SpiritInteractor>();
             spiritInteractor.InstantSecure = instantSecureWithoutMinigame;
-            remaining = duration;
-            Duration = duration;
+            // M55: ilk çıkış kısa, kaybettikçe biraz uzar (sayaç ve HUD bu süreyle). Kayıplar ruh fazının ilk açıldığı
+            // andan sayılır (döngü 1-2'deki kayıplar ilk çıkışı uzatmasın); yeni oyunda sayı sıfırlanınca taban da.
+            if (lossBaseline < 0 || GameState.FailedAttempts < lossBaseline) lossBaseline = GameState.FailedAttempts;
+            int losses = GameState.FailedAttempts - lossBaseline;
+            float seconds = Mathf.Min(maxDuration, duration + durationPerLoss * losses);
+            remaining = seconds;
+            Duration = seconds;
+
             TimeLeft = remaining;
             running = false;
             Running = false;
@@ -304,6 +317,7 @@ namespace Deprem.Spirit
             TimeLeft = 0f;
             Duration = 60f;
             seenBefore = false;
+            lossBaseline = -1;
         }
     }
 }

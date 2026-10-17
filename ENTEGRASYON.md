@@ -52,6 +52,24 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Play testi 28: M53–M55 (Berke)
+
+Play'de denenmedi; dört test geçiyor.
+
+- **M55, ruh süresi (`SpiritPhase`):**
+  - İlk ruh çıkışı 35 sn. Her kayıpta +5 sn, en fazla 60 sn (`duration`, `durationPerLoss`, `maxDuration`). Sayaç bu süreyle başlıyor.
+  - Kayıplar ruh fazının ilk açıldığı andan sayılıyor; döngü 1–2'deki kayıplar ilk çıkışı uzatmıyor. Yeni oyunda taban sıfırlanıyor.
+- **M53, kardeşin oku (`ObjectiveHud`):** üyenin `FamilyMember.BeingSearched`'ı true iken oku ve başındaki işareti gösterilmiyor.
+- **M54, malzemeler ancak bir kez ölünce (`Bag/BagLessonGate.cs`, `BagSupply`):**
+  - El feneri ve ilk yardım `BagLessons.IsLearned` false iken evde görünmüyor; ışığı ve vurgusu yok, alınamıyor. Ders öğrenilince bir sonraki denemede yerinde.
+  - "Yeni oyun" `BagLessons.Clear()` çağırıyor; "Devam et" dokunmuyor.
+- **`BeingSearched` ve `BagLessons` henüz projede yok.** İkisini de yansımayla okuyorum, sen ekleyince kendiliğinden bağlanacaklar. Beklediğim imzalar:
+  - `FamilyMember.BeingSearched`: `bool`, özellik ya da alan, örnek ya da statik olabilir.
+  - `BagLessons.IsLearned(BagItemId)`: `bool`, public static.
+  - `BagLessons.Clear()`: public static.
+  - Sınıflar yokken eski davranış sürüyor.
+- **Düzeltme (M50'nin yan etkisi):** ruhun kökü ayak hizasına inince taşınan malzeme ruhun ayağında kalıyordu. `BagSupply` artık taşıma payını gövdenin ortasından (`SpiritController.CenterHeight`) veriyor.
+
 ### Play testi 27: M50–M52 (Berke)
 
 Play'de denenmedi; dört test geçiyor (senin 7e2f61e ile birlikte).
