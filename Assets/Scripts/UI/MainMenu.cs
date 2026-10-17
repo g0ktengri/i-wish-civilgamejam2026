@@ -10,29 +10,33 @@ namespace Deprem.UI
     // Ana menü: ilk açılışta içerik uyarısı, sonra Devam et (M42, kayıttan) / Yeni oyun / Ayarlar / Kontroller /
     // Emeği geçenler / Dil / Çıkış. Menü açıkken oyun durur (timeScale 0).
     // Deneme başlatmak için sahne yeniden yüklendiğinde menü gizli kalır. Canvas'ı kendisi kurar.
-    // Arayüz turu: arkada evin bulanık, soğuk mavi görüntüsü ve düşen toz (UiBackdrop); konturlu başlık, altında
-    // ince kırmızı çatlak, ara ara titrer; satırlar pixel panelde (MenuList); altta tuş kapaklı ipuçları (UiPromptRow).
-    // Arayüz turu 2 (çok sade duruyordu): tepede sallanan lamba ve sıcak ışık konisi, kabartma başlık (UiTitle) ve
-    // harfleri yaran kırmızı çatlak, süslü alt başlık, satır simgeleri, duvar köşelerinde çatlaklar, sol altta
-    // jam adı; her titremede arka plan da sarsılır (moloz, toz), her üçüncüsü daha güçlü.
+    // Arayüz turu: arkada evin bulanık, soğuk mavi görüntüsü ve düşen toz (UiBackdrop); tepede sallanan lamba ve sıcak
+    // ışık konisi; kabartma başlık (UiTitle); ara ara sarsıntı (moloz, toz, lamba).
+    // Arayüz turu 3 (Berke: "iç arayüz gibi olmuş, bağımsız olsun", sonra "kırmızı kalksın, ortada olsun"): oyun içi
+    // HUD paneli yok. Ortalı başlık ekranı: lamba başlığın üstünde, altında iki yanı süslü alt başlık, çıplak ve büyük
+    // satırlar (MenuList plain: seçili satırda iki yanda elmas, altında ortadan açılan ince çatlak); ortadaki sütun
+    // yumuşak koyu bantla okunur, iki yanda ev görünür. Metinler (uyarı, emeği geçenler, onay) ortada, üstte ve altta
+    // kısa çizgiyle; tuş ipuçları sağ altta düz yazı, jam adı sol altta.
     public class MainMenu : MonoBehaviour
     {
         enum Screen { Hidden, Warning, Main, ConfirmNew, Controls, Credits }
 
         static bool warningShown;
+        static Sprite shadeSprite;
 
         [SerializeField] Font font;
-        [SerializeField] int titleFontSize = 64;
+        [SerializeField] int titleFontSize = 72;
         [SerializeField] int subtitleFontSize = 16;
-        [SerializeField] int itemFontSize = 20;
+        [SerializeField] int itemFontSize = 24;
         [SerializeField] int bodyFontSize = 17;
-        [SerializeField] float rowHeight = 32f;
+        [SerializeField] int hintFontSize = 15;
+        [SerializeField] float rowHeight = 36f;
         [SerializeField] Color normalColor = new Color(0.82f, 0.78f, 0.7f);
         [SerializeField] Color highlightColor = new Color(1f, 0.82f, 0.4f);
-        [SerializeField] Color crackColor = new Color(0.9f, 0.22f, 0.16f);
         [Tooltip("Başlık bu aralıkla (sn) kısa bir an titrer (deprem)")]
         [SerializeField] float tremorInterval = 5f;
-        [SerializeField] Color backgroundColor = new Color(0.02f, 0.03f, 0.06f, 1f);
+        [Tooltip("Ortadaki sütunun arkasındaki koyu bandın en koyu yeri (0-1)")]
+        [SerializeField] float centerShade = 0.6f;
         [SerializeField] int sortingOrder = 120;
 
         [Header("Görseller (Assets/Art/UI, prefab kurulurken bağlanır)")]
@@ -43,23 +47,26 @@ namespace Deprem.UI
 
         CanvasGroup group;
         UiBackdrop backdrop;
+        Image shade;
         RectTransform titleGroup;
+        RectTransform ornamentLeft;
+        RectTransform ornamentRight;
         Vector2 titleHome;
-        Image bodyPanel;
-        UiPromptRow footer;
         UiTitle titleText;
         Text subtitleText;
         Image logo;
+        RectTransform bodyRoot;
         Text bodyText;
+        Text hintText;
         Text footerText;
         RectTransform items;
         MenuList menu;
         Screen screen = Screen.Hidden;
         bool musicPlaying;
+        int tremorCycle = -1;
 
         // M38: ana menü ekranda mı (duraklatmanın zaman bekçisi için)
         public static bool Visible { get; private set; }
-        int tremorCycle = -1;
 
         void Awake() => BuildCanvas();
 
@@ -138,47 +145,32 @@ namespace Deprem.UI
                 else Sfx.StopMusic();
             }
 
-            // Alt ekranlarda metin ortada, "Geri" altta
-            bool subScreen = next == Screen.Controls || next == Screen.Credits || next == Screen.ConfirmNew;
-            UiBuilder.Stretch(items, new Vector2(0.33f, subScreen ? 0.06f : 0.08f),
-                new Vector2(0.67f, subScreen ? (next == Screen.ConfirmNew ? 0.26f : 0.2f) : 0.64f));
-
             menu.Clear();
             switch (next)
             {
                 case Screen.Main:
-                    // M42: "Bölüm seç" yerine kayıtlı döngüden "Devam et" (kayıt yoksa gri, seçilemez); yeni oyun kaydı
+                    // M42: "Bölüm seç" yerine kayıtlı döngüden "Devam et" (kayıt yoksa soluk, seçilemez); yeni oyun kaydı
                     // silmeden önce sorar
-                    menu.Add("menu.continue", () => StartLoop(SaveGame.Loop), SaveGame.Loop);
-                    menu.SetIcon(UiIcons.Play);
+                    menu.Add("menu.continue", () => StartLoop(SaveGame.Loop));
                     menu.SetEnabled(SaveGame.Exists);
                     menu.Add("menu.new_game", () =>
                     {
                         if (SaveGame.Exists) Show(Screen.ConfirmNew);
                         else StartNewGame();
                     });
-                    menu.SetIcon(UiIcons.House);
                     menu.Add("menu.settings", OpenSettings);
-                    menu.SetIcon(UiIcons.Gear);
                     menu.Add("menu.controls", () => { if (SettingsMenu.Instance) SettingsMenu.Instance.OpenControls(Refresh); });
-                    menu.SetIcon(UiIcons.Key);
                     menu.Add("menu.credits", () => Show(Screen.Credits));
-                    menu.SetIcon(UiIcons.Heart);
                     menu.Add("menu.language", () => Texts.ToggleLanguage());
-                    menu.SetIcon(UiIcons.Globe);
                     menu.Add("menu.quit", Quit);
-                    menu.SetIcon(UiIcons.Door);
                     break;
                 case Screen.ConfirmNew:
                     menu.Add("menu.new_confirm_yes", StartNewGame);
-                    menu.SetIcon(UiIcons.House);
                     menu.Add("menu.cancel", () => Show(Screen.Main));
-                    menu.SetIcon(UiIcons.Back);
                     break;
                 case Screen.Controls:
                 case Screen.Credits:
                     menu.Add("menu.back", () => Show(Screen.Main));
-                    menu.SetIcon(UiIcons.Back);
                     break;
             }
             Refresh();
@@ -186,51 +178,70 @@ namespace Deprem.UI
 
         void Refresh()
         {
-            bool showTitle = screen != Screen.Warning;
-            titleText.Text = showTitle && !logoSprite ? Texts.Get("game.title") : string.Empty;
+            bool warning = screen == Screen.Warning;
+            titleText.Text = !warning && !logoSprite ? Texts.Get("game.title") : string.Empty;
             subtitleText.text = Texts.Get("menu.subtitle");
-            if (logo) logo.enabled = showTitle;
-            if (titleGroup) titleGroup.gameObject.SetActive(showTitle);
+            if (logo) logo.enabled = !warning;
+            titleGroup.gameObject.SetActive(!warning);
+            items.gameObject.SetActive(!warning);
             switch (screen)
             {
                 case Screen.Warning:
                     bodyText.text = Texts.Get("content_warning");
-                    footer.Set(Texts.Get("prompt.continue"));
+                    SetHints(Texts.Get("prompt.continue"));
                     break;
                 case Screen.Controls:
                     bodyText.text = Texts.Get("controls.body");
-                    footer.Set(Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
+                    SetHints(Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
                     break;
                 case Screen.Credits:
                     bodyText.text = Texts.Get("credits.body");
-                    footer.Set(Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
-                    break;
-                case Screen.Main:
-                    bodyText.text = string.Empty;
-                    footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"));
+                    SetHints(Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
                     break;
                 case Screen.ConfirmNew:
                     bodyText.text = Texts.Get("menu.new_confirm");
-                    footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
+                    SetHints(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
                     break;
                 default:
                     bodyText.text = string.Empty;
-                    footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
+                    SetHints(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"));
                     break;
             }
-            // Uyarı, kontroller ve emeği geçenler metni panelin içinde
-            bodyPanel.gameObject.SetActive(!string.IsNullOrEmpty(bodyText.text));
+
+            // Metinler ortada, üstte ve altta kısa çizgi; uyarıda başlık yok, diğerlerinde başlığın altında ve satırlar
+            // metnin altına iner
+            bool hasBody = !string.IsNullOrEmpty(bodyText.text);
+            bodyRoot.gameObject.SetActive(hasBody);
+            if (warning) UiBuilder.Stretch(bodyRoot, new Vector2(0.14f, 0.38f), new Vector2(0.86f, 0.62f));
+            else UiBuilder.Stretch(bodyRoot, new Vector2(0.18f, screen == Screen.ConfirmNew ? 0.4f : 0.3f), new Vector2(0.82f, 0.56f));
+            UiBuilder.Stretch(items, new Vector2(0.3f, 0.04f), new Vector2(0.7f, hasBody ? (screen == Screen.ConfirmNew ? 0.36f : 0.26f) : 0.56f));
+
             footerText.text = Texts.Get("menu.jam");
-            PlaceOrnaments();
+            PlaceTitleDetails();
             menu.Refresh();
         }
 
-        void PlaceOrnaments()
+        // Sağ altta düz yazı ipuçları: tuş kısmı vurgu renginde ("W/S: Seç" → W/S Seç)
+        void SetHints(params string[] hints)
         {
-            float half = subtitleText.preferredWidth * 0.5f + 12f;
-            var area = subtitleText.rectTransform.parent;
-            ((RectTransform)area.Find("OrnamentLeft")).anchoredPosition = new Vector2(-half, 0f);
-            ((RectTransform)area.Find("OrnamentRight")).anchoredPosition = new Vector2(half, 0f);
+            var builder = new System.Text.StringBuilder();
+            string accent = UiBuilder.Hex(highlightColor);
+            foreach (var hint in hints)
+            {
+                if (builder.Length > 0) builder.Append("     ");
+                int colon = hint.IndexOf(':');
+                if (colon > 0) builder.Append($"<color={accent}>{hint.Substring(0, colon)}</color> {hint.Substring(colon + 1).Trim()}");
+                else builder.Append(hint);
+            }
+            hintText.text = builder.ToString();
+        }
+
+        // Alt başlığın süsleri yazının iki yanına
+        void PlaceTitleDetails()
+        {
+            float half = Mathf.Round(subtitleText.preferredWidth * 0.5f + 14f);
+            ornamentLeft.anchoredPosition = new Vector2(-half, 0f);
+            ornamentRight.anchoredPosition = new Vector2(half, 0f);
         }
 
         // M32: ayarlar ana menünün üstünde açılır; kapanınca ana menü yenilenir (dil değişmiş olabilir)
@@ -259,27 +270,6 @@ namespace Deprem.UI
                 : titleHome;
         }
 
-        // Alt başlığın iki yanındaki süs: ince çizgi ve ucunda küçük pixel elmas
-        static void Ornament(RectTransform parent, Color color, bool left)
-        {
-            var root = new GameObject(left ? "OrnamentLeft" : "OrnamentRight", typeof(RectTransform)).GetComponent<RectTransform>();
-            root.SetParent(parent, false);
-            root.anchorMin = root.anchorMax = new Vector2(0.5f, 0.5f);
-            root.sizeDelta = Vector2.zero;
-            float side = left ? -1f : 1f;
-            var line = UiBuilder.CreateImage(root, "Line", color);
-            line.rectTransform.sizeDelta = new Vector2(46f, 2f);
-            line.rectTransform.anchoredPosition = new Vector2(side * 23f, 0f);
-            line.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1f, -1f);
-            var diamond = UiBuilder.CreateImage(root, "Diamond", color);
-            diamond.rectTransform.sizeDelta = new Vector2(6f, 6f);
-            diamond.rectTransform.anchoredPosition = new Vector2(side * 49f, 0f);
-            diamond.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            diamond.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1f, -1f);
-            // Alt başlık yazısı ölçülünce yanlara itilir (Refresh)
-            root.name = left ? "OrnamentLeft" : "OrnamentRight";
-        }
-
         static void StartNewGame()
         {
             SaveGame.Clear();
@@ -300,95 +290,142 @@ namespace Deprem.UI
             Application.Quit();
         }
 
+        static RectTransform CreateRect(Transform parent, string name)
+        {
+            var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            return rect;
+        }
+
+        // Alt başlığın bir yanındaki süs: kısa çizgi ve dış ucunda elmas (side: -1 sol, +1 sağ)
+        static RectTransform Ornament(RectTransform parent, Color color, float side)
+        {
+            var root = CreateRect(parent, side < 0f ? "OrnamentLeft" : "OrnamentRight");
+            root.anchorMin = root.anchorMax = new Vector2(0.5f, 0.5f);
+            root.sizeDelta = Vector2.zero;
+            Line(root, "Line", color, new Vector2(56f, 2f), new Vector2(side * 28f, 0f));
+            Line(root, "Diamond", color, new Vector2(6f, 6f), new Vector2(side * 59f, 0f)).rectTransform.localRotation =
+                Quaternion.Euler(0f, 0f, 45f);
+            return root;
+        }
+
+        static Image Line(Transform parent, string name, Color color, Vector2 size, Vector2 position)
+        {
+            var line = UiBuilder.CreateImage(parent, name, color);
+            line.rectTransform.sizeDelta = size;
+            line.rectTransform.anchoredPosition = position;
+            line.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1f, -1f);
+            return line;
+        }
+
         void BuildCanvas()
         {
             var canvas = UiBuilder.CreateCanvas(transform, "MainMenuCanvas", sortingOrder);
             group = canvas.GetComponent<CanvasGroup>();
+            var accent = new Color(highlightColor.r, highlightColor.g, highlightColor.b, 0.85f);
 
-            // Arka plan: sanatçı görseli varsa o; yoksa evin bulanık soğuk mavi görüntüsü ve düşen toz
+            // Arka plan: sanatçı görseli varsa o; yoksa evin bulanık soğuk mavi görüntüsü, toz ve başlığın üstünde lamba
             if (backgroundSprite)
             {
                 var background = UiBuilder.CreateImage(canvas.transform, "Background", Color.white);
                 background.sprite = backgroundSprite;
                 UiBuilder.Stretch(background.rectTransform, Vector2.zero, Vector2.one);
             }
-            else backdrop = UiBackdrop.Create(canvas.transform, new Color(0.34f, 0.45f, 0.68f), 0.5f, true, 0.5f);
+            else backdrop = UiBackdrop.Create(canvas.transform, new Color(0.34f, 0.45f, 0.68f), 0.42f, true, 0.5f);
 
-            // Duvar köşelerinde soğuk renkli ince çatlaklar (sol üst, sağ alt)
-            var wallCrack = new Color(0.62f, 0.72f, 0.9f, 0.22f);
-            foreach (var (anchor, direction, seed) in new[]
-            {
-                (new Vector2(0f, 1f), new Vector2(1f, -0.55f), 3),
-                (new Vector2(0f, 1f), new Vector2(0.4f, -1f), 5),
-                (new Vector2(1f, 0f), new Vector2(-1f, 0.45f), 11),
-                (new Vector2(1f, 0f), new Vector2(-0.5f, 1f), 13),
-            })
-            {
-                var corner = new GameObject("WallCrack", typeof(RectTransform)).GetComponent<RectTransform>();
-                corner.SetParent(canvas.transform, false);
-                corner.anchorMin = corner.anchorMax = anchor;
-                corner.sizeDelta = Vector2.zero;
-                UiBuilder.CreateCrack(corner, Vector2.zero, direction, seed % 2 == 1 && seed > 4 ? 90f : 150f, seed, wallCrack, 2f, 0f, 12f, 4f);
-            }
+            // Ortadaki sütun okunsun diye ortası koyu, iki yana açılan bant (lambanın altında: ışığı bandın üstünde)
+            shade = UiBuilder.CreateImage(canvas.transform, "CenterShade", new Color(0.01f, 0.02f, 0.04f, centerShade));
+            shade.sprite = ShadeSprite;
+            if (backdrop) backdrop.InsertBelowLamp(shade.transform);
+            UiBuilder.Stretch(shade.rectTransform, new Vector2(0.18f, 0f), new Vector2(0.82f, 1f));
 
             if (logoSprite)
             {
                 logo = UiBuilder.CreateImage(canvas.transform, "Logo", Color.white);
                 logo.sprite = logoSprite;
-                logo.rectTransform.anchorMin = logo.rectTransform.anchorMax = new Vector2(0.5f, 0.83f);
+                logo.rectTransform.anchorMin = logo.rectTransform.anchorMax = new Vector2(0.5f, 0.76f);
                 // Referans pikselinde kendi boyutu (ölçeklenmez)
                 logo.rectTransform.sizeDelta = logoSprite.rect.size;
             }
 
-            // Başlık ve altındaki çatlak birlikte titrer
-            titleGroup = new GameObject("TitleGroup", typeof(RectTransform)).GetComponent<RectTransform>();
-            titleGroup.SetParent(canvas.transform, false);
-            UiBuilder.Stretch(titleGroup, new Vector2(0.1f, 0.68f), new Vector2(0.9f, 0.88f));
+            // Orta sütun: başlık (titrer) ve iki yanı süslü alt başlık
+            titleGroup = CreateRect(canvas.transform, "TitleGroup");
+            UiBuilder.Stretch(titleGroup, new Vector2(0.1f, 0.6f), new Vector2(0.9f, 0.86f));
             titleHome = titleGroup.anchoredPosition;
-            var titleArea = new GameObject("TitleArea", typeof(RectTransform)).GetComponent<RectTransform>();
-            titleArea.SetParent(titleGroup, false);
-            UiBuilder.Stretch(titleArea, new Vector2(0f, 0.35f), Vector2.one);
+            var titleArea = CreateRect(titleGroup, "TitleArea");
+            UiBuilder.Stretch(titleArea, new Vector2(0f, 0.32f), Vector2.one);
             titleText = UiTitle.Create(titleArea, "Title", font, titleFontSize, 3f);
-            // Kırmızı çatlak (keşke ekranındaki çatlağın küçüğü)
-            var crack = new GameObject("TitleCrack", typeof(RectTransform)).GetComponent<RectTransform>();
-            crack.SetParent(titleArea, false);
-            crack.anchorMin = crack.anchorMax = new Vector2(0.5f, 0.5f);
-            crack.sizeDelta = Vector2.zero;
-            // Harfleri yukarıdan aşağı yaran ana çatlak ve iki kısa kolu
-            UiBuilder.CreateCrack(crack, new Vector2(-6f, 30f), new Vector2(0.28f, -1f), 70f, 7, crackColor, 2f, 0.25f, 9f, 4f);
-            UiBuilder.CreateCrack(crack, new Vector2(2f, 12f), new Vector2(-1f, -0.5f), 34f, 9, crackColor, 2f, 0.25f, 8f, 3f);
-            UiBuilder.CreateCrack(crack, new Vector2(10f, -14f), new Vector2(1f, -0.35f), 30f, 12, crackColor, 2f, 0.25f, 8f, 3f);
 
-            var subtitleArea = new GameObject("SubtitleArea", typeof(RectTransform)).GetComponent<RectTransform>();
-            subtitleArea.SetParent(titleGroup, false);
-            UiBuilder.Stretch(subtitleArea, Vector2.zero, new Vector2(1f, 0.3f));
+            var subtitleArea = CreateRect(titleGroup, "SubtitleArea");
+            UiBuilder.Stretch(subtitleArea, Vector2.zero, new Vector2(1f, 0.28f));
             subtitleText = UiBuilder.Outlined(UiBuilder.CreateText(subtitleArea, "Subtitle", font, subtitleFontSize, normalColor));
             UiBuilder.Stretch(subtitleText.rectTransform, Vector2.zero, Vector2.one);
-            var ornamentColor = new Color(highlightColor.r, highlightColor.g, highlightColor.b, 0.85f);
-            Ornament(subtitleArea, ornamentColor, true);
-            Ornament(subtitleArea, ornamentColor, false);
+            subtitleText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            ornamentLeft = Ornament(subtitleArea, accent, -1f);
+            ornamentRight = Ornament(subtitleArea, accent, 1f);
 
-            bodyPanel = UiBuilder.CreatePanel(canvas.transform, "BodyPanel");
-            UiBuilder.Stretch(bodyPanel.rectTransform, new Vector2(0.14f, 0.24f), new Vector2(0.86f, 0.7f));
-            bodyPanel.gameObject.SetActive(false);
-            bodyText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Body", font, bodyFontSize, normalColor));
-            UiBuilder.Stretch(bodyText.rectTransform, new Vector2(0.16f, 0.26f), new Vector2(0.84f, 0.68f));
+            // Satırlar: ortada, başlığın altında, panelsiz
+            items = CreateRect(canvas.transform, "Items");
+            UiBuilder.Stretch(items, new Vector2(0.3f, 0.04f), new Vector2(0.7f, 0.56f));
+            menu = new MenuList(items, font, itemFontSize, rowHeight, normalColor, highlightColor, true)
+            {
+                UnderlineColor = new Color(highlightColor.r, highlightColor.g, highlightColor.b, 0.9f),
+            };
 
-            items = new GameObject("Items", typeof(RectTransform)).GetComponent<RectTransform>();
-            items.SetParent(canvas.transform, false);
-            UiBuilder.Stretch(items, new Vector2(0.3f, 0.08f), new Vector2(0.7f, 0.66f));
-            menu = new MenuList(items, font, itemFontSize, rowHeight, normalColor, highlightColor);
+            // Metin alanı (uyarı, emeği geçenler, onay): panelsiz, ortada, üstte ve altta kısa çizgi
+            bodyRoot = CreateRect(canvas.transform, "Body");
+            foreach (var y in new[] { 0f, 1f })
+            {
+                var line = Line(bodyRoot, "Line", accent, new Vector2(140f, 2f), Vector2.zero);
+                line.rectTransform.anchorMin = line.rectTransform.anchorMax = new Vector2(0.5f, y);
+            }
+            bodyText = UiBuilder.Outlined(UiBuilder.CreateText(bodyRoot, "Text", font, bodyFontSize, normalColor));
+            UiBuilder.Stretch(bodyText.rectTransform, Vector2.zero, Vector2.one);
+            bodyRoot.gameObject.SetActive(false);
 
-            // Sol altta soluk jam adı
+            // Sol altta soluk jam adı, sağ altta tuş ipuçları
             footerText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Footer", font, 14,
                 new Color(normalColor.r, normalColor.g, normalColor.b, 0.55f), TextAnchor.LowerLeft));
             footerText.rectTransform.anchorMin = footerText.rectTransform.anchorMax = Vector2.zero;
             footerText.rectTransform.pivot = Vector2.zero;
             footerText.rectTransform.sizeDelta = new Vector2(260f, 24f);
             footerText.rectTransform.anchoredPosition = new Vector2(14f, 10f);
-            footer = UiPromptRow.Create(canvas.transform, font, 18, 16f);
+
+            hintText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Hints", font, hintFontSize,
+                new Color(normalColor.r, normalColor.g, normalColor.b, 0.85f), TextAnchor.LowerRight));
+            hintText.rectTransform.anchorMin = hintText.rectTransform.anchorMax = new Vector2(1f, 0f);
+            hintText.rectTransform.pivot = new Vector2(1f, 0f);
+            hintText.rectTransform.sizeDelta = new Vector2(600f, 24f);
+            hintText.rectTransform.anchoredPosition = new Vector2(-16f, 10f);
+            hintText.supportRichText = true;
+            hintText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             group.alpha = 0f;
+        }
+
+        // 64 x 1: ortası dolu, iki yana doğru saydamlaşan beyaz (rengi Image.color'dan; yumuşak)
+        static Sprite ShadeSprite
+        {
+            get
+            {
+                if (shadeSprite) return shadeSprite;
+                const int n = 64;
+                var texture = new Texture2D(n, 1, TextureFormat.RGBA32, false)
+                {
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp,
+                    name = "MenuLeftShade",
+                };
+                for (int x = 0; x < n; x++)
+                {
+                    float k = Mathf.Abs((x + 0.5f) / n - 0.5f) * 2f; // 0 ortada, 1 kenarda
+                    texture.SetPixel(x, 0, new Color(1f, 1f, 1f, Mathf.SmoothStep(1f, 0f, Mathf.InverseLerp(0.3f, 1f, k))));
+
+                }
+                texture.Apply();
+                shadeSprite = Sprite.Create(texture, new Rect(0, 0, n, 1), new Vector2(0.5f, 0.5f), 100f);
+                return shadeSprite;
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

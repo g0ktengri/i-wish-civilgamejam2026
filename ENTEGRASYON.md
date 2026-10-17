@@ -52,6 +52,20 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Arayüz turu 3: ana menü bağımsız başlık ekranı (Berke)
+
+Berke Play'de denedi; dört test geçiyor.
+
+- **Ana menü** artık oyun içi HUD paneli kullanmıyor; ortalı bir başlık ekranı:
+  - Başlığın üstünde geniş abajurlu lamba, ışığı başlığı baştan sona kaplıyor.
+  - Altında iki yanı süslü alt başlık, çıplak ve büyük satırlar. Seçili satırda iki yanda elmas, altında ortadan açılan ince sarı çatlak (`MenuList` yeni `plain` görünümü).
+  - Ortadaki sütun yumuşak koyu bantla okunuyor, iki yanda ev görünüyor. Tuş ipuçları sağ altta düz yazı.
+  - Emeği geçenler, onay ve uyarı metinleri ortada, üstte ve altta kısa çizgiyle.
+- **Kaldırılanlar:** başlıktaki kırmızı çatlak, duvar köşelerindeki çatlaklar ve bütün bölüm yazıları ("Devam et" artık yalnızca "Devam et"; duraklatmanın altındaki "Bölüm N" satırı da kalktı).
+- **Ortak:** `UiTitle`'ın derinlik katmanı koyu kırmızı yerine sıcak ahşap kahvesi; lamba (`UiBackdrop`) duraklatmada da aynı, daha geniş haliyle.
+- Duraklatma ve ayarlar oyun içi HUD görünümünde kaldı.
+- Önizleme: `Logs/hud_preview_menu_main.png`, `_menu_credits.png`, `_menu_warning.png`.
+
 ### Play testi 23: M35, M38–M42 (Berke)
 
 Play'de denenmedi; dört test geçiyor.

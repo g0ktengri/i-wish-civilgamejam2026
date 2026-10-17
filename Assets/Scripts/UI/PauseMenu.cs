@@ -10,12 +10,11 @@ namespace Deprem.UI
 {
     // Esc ile duraklatma: Devam et / Dil / Ana menü. Oyun durur (timeScale 0), PauseChanged gönderilir.
     // Minigame açıkken Esc minigame'i kapatır; keşke ve final ekranlarında duraklatma yok.
-    // Arayüz turu 2: kabartma başlık, altında vurgu renginde bölüm adı, tepede sallanan lamba, satır simgeleri.
+    // Arayüz turu 2: kabartma başlık, tepede sallanan lamba, satır simgeleri.
     public class PauseMenu : MonoBehaviour
     {
         [SerializeField] Font font;
         [SerializeField] int titleFontSize = 40;
-        [SerializeField] int subtitleFontSize = 17;
         [SerializeField] int itemFontSize = 20;
         [SerializeField] float rowHeight = 34f;
         [SerializeField] Color normalColor = new Color(0.82f, 0.78f, 0.7f);
@@ -26,7 +25,6 @@ namespace Deprem.UI
         UiBackdrop backdrop;
         UiPromptRow footer;
         UiTitle titleText;
-        Text subtitleText;
         MenuList menu;
         bool paused;
         int minigameClosedFrame = -1;
@@ -121,7 +119,6 @@ namespace Deprem.UI
         void Refresh()
         {
             titleText.Text = Texts.Get("menu.paused");
-            subtitleText.text = Texts.Format("menu.chapter", GameState.CurrentLoop);
             footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
             menu.Refresh();
         }
@@ -138,8 +135,6 @@ namespace Deprem.UI
             titleArea.SetParent(canvas.transform, false);
             UiBuilder.Stretch(titleArea, new Vector2(0.2f, 0.7f), new Vector2(0.8f, 0.82f));
             titleText = UiTitle.Create(titleArea, "Title", font, titleFontSize, 2f);
-            subtitleText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Subtitle", font, subtitleFontSize, highlightColor));
-            UiBuilder.Stretch(subtitleText.rectTransform, new Vector2(0.2f, 0.64f), new Vector2(0.8f, 0.7f));
 
             var items = new GameObject("Items", typeof(RectTransform)).GetComponent<RectTransform>();
             items.SetParent(canvas.transform, false);

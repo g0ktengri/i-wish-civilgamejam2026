@@ -35,6 +35,9 @@ namespace Deprem.UI
             public Image ArrowLeft;
             public Image ArrowRight;
             public Image[] Segments;
+            public Image MarkerRight;
+            public RectTransform Underline;
+            public float UnderlineTarget;
             public bool Disabled;
             public bool ShowValue;
             public Func<float> SliderValue;
@@ -55,12 +58,20 @@ namespace Deprem.UI
         readonly Color highlight;
         readonly List<Entry> entries = new List<Entry>();
         readonly RectTransform panel;
+        readonly bool plain;
+        readonly float padding;
         int selected;
         Vector2 lastMouse;
+
+        /// <summary>plain görünümde seçili satırın altındaki çatlağın rengi</summary>
+        public Color UnderlineColor { get; set; } = new Color(0.9f, 0.22f, 0.16f);
         static Sprite markerSprite;
         static Sprite dotSprite;
 
-        public MenuList(RectTransform parent, Font font, int fontSize, float rowHeight, Color normal, Color highlight)
+        // plain: ana menünün kendi görünümü (oyun içi HUD paneli yok): satırlar çıplak, ortalı, büyük yazı; seçili satırda
+        // yazının iki yanında küçük elmas ve altında ortadan iki yana açılan ince çatlak çizgisi; simge ve ayraç yok
+        public MenuList(RectTransform parent, Font font, int fontSize, float rowHeight, Color normal, Color highlight,
+            bool plain = false)
         {
             this.parent = parent;
             this.font = font;
@@ -68,8 +79,16 @@ namespace Deprem.UI
             this.rowHeight = rowHeight;
             this.normal = normal;
             this.highlight = highlight;
+            this.plain = plain;
+            padding = plain ? 0f : Padding;
 
             panel = UiBuilder.CreatePanel(parent, "MenuPanel").rectTransform;
+            if (plain)
+            {
+                panel.GetComponent<Image>().enabled = false;
+                var shadow = panel.GetComponent<Shadow>();
+                if (shadow) shadow.enabled = false;
+            }
             panel.anchorMin = new Vector2(0f, 1f);
             panel.anchorMax = new Vector2(1f, 1f);
             panel.pivot = new Vector2(0.5f, 1f);
@@ -97,11 +116,11 @@ namespace Deprem.UI
             row.anchorMin = new Vector2(0f, 1f);
             row.anchorMax = new Vector2(1f, 1f);
             row.pivot = new Vector2(0.5f, 1f);
-            row.sizeDelta = new Vector2(-Padding * 2f, rowHeight);
-            row.anchoredPosition = new Vector2(0f, -Padding - entries.Count * rowHeight);
+            row.sizeDelta = new Vector2(-padding * 2f, rowHeight);
+            row.anchoredPosition = new Vector2(0f, -padding - entries.Count * rowHeight);
 
             // Üstteki satırla arasında noktalı ayraç (ilk satırda yok)
-            if (entries.Count > 0)
+            if (entries.Count > 0 && !plain)
             {
                 var divider = UiBuilder.CreateImage(row, "Divider", new Color(0.04f, 0.03f, 0.03f, 0.55f));
                 divider.sprite = DotSprite;
@@ -120,14 +139,45 @@ namespace Deprem.UI
             bar.rectTransform.offsetMin = new Vector2(0f, 3f);
             bar.rectTransform.offsetMax = new Vector2(0f, -3f);
 
-            // Seçili satırın solunda dikey vurgu çizgisi
+            // Seçili satırın solunda dikey vurgu çizgisi (plain: yazının iki yanında küçük elmas)
             var marker = UiBuilder.CreateImage(row, "Marker", highlight);
-            marker.rectTransform.anchorMin = new Vector2(0f, 0f);
-            marker.rectTransform.anchorMax = new Vector2(0f, 1f);
-            marker.rectTransform.pivot = new Vector2(0f, 0.5f);
-            marker.rectTransform.sizeDelta = new Vector2(4f, -6f);
-            marker.rectTransform.anchoredPosition = Vector2.zero;
+            Image markerRight = null;
+            if (plain)
+            {
+                foreach (var diamond in new[] { marker, markerRight = UiBuilder.CreateImage(row, "MarkerRight", highlight) })
+                {
+                    diamond.rectTransform.anchorMin = diamond.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                    diamond.rectTransform.sizeDelta = new Vector2(7f, 7f);
+                    diamond.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                }
+                markerRight.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1f, -1f);
+            }
+            else
+            {
+                marker.rectTransform.anchorMin = new Vector2(0f, 0f);
+                marker.rectTransform.anchorMax = new Vector2(0f, 1f);
+                marker.rectTransform.pivot = new Vector2(0f, 0.5f);
+                marker.rectTransform.sizeDelta = new Vector2(4f, -6f);
+                marker.rectTransform.anchoredPosition = Vector2.zero;
+            }
             marker.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1f, -1f);
+
+            // plain: yazının altında maskeyle ortadan iki yana açılan çatlak çizgisi
+            RectTransform underline = null;
+            if (plain)
+            {
+                underline = new GameObject("Underline", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
+                underline.SetParent(row, false);
+                underline.anchorMin = underline.anchorMax = new Vector2(0.5f, 0f);
+                underline.pivot = new Vector2(0.5f, 0.5f);
+                underline.sizeDelta = new Vector2(0f, 14f);
+                underline.anchoredPosition = new Vector2(0f, 5f);
+                var origin = new GameObject("Origin", typeof(RectTransform)).GetComponent<RectTransform>();
+                origin.SetParent(underline, false);
+                origin.anchorMin = origin.anchorMax = new Vector2(0.5f, 0.5f);
+                origin.sizeDelta = Vector2.zero;
+                UiBuilder.CreateCrack(origin, new Vector2(-210f, 0f), Vector2.right, 420f, 17 + entries.Count, UnderlineColor, 2f, 0.28f, 12f, 1.5f);
+            }
 
             var icon = UiBuilder.CreateImage(row, "Icon", normal);
             icon.rectTransform.anchorMin = icon.rectTransform.anchorMax = new Vector2(0f, 0.5f);
@@ -135,7 +185,8 @@ namespace Deprem.UI
             icon.rectTransform.sizeDelta = Vector2.one * IconSize;
             icon.enabled = false;
 
-            var label = UiBuilder.Outlined(UiBuilder.CreateText(row, "Label", font, fontSize, normal, TextAnchor.MiddleLeft));
+            var label = UiBuilder.Outlined(UiBuilder.CreateText(row, "Label", font, fontSize, normal,
+                plain ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft));
             UiBuilder.Stretch(label.rectTransform, Vector2.zero, Vector2.one);
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
 
@@ -145,7 +196,7 @@ namespace Deprem.UI
             value.horizontalOverflow = HorizontalWrapMode.Overflow;
             value.enabled = false;
 
-            var entry = new Entry { Row = row, Bar = bar, Marker = marker, Icon = icon, Label = label, Value = value, Key = key, Args = args, Action = action };
+            var entry = new Entry { Row = row, Bar = bar, Marker = marker, MarkerRight = markerRight, Icon = icon, Label = label, Value = value, Underline = underline, Key = key, Args = args, Action = action };
             entries.Add(entry);
             Layout(entry);
             Resize();
@@ -155,7 +206,7 @@ namespace Deprem.UI
         /// <summary>Son eklenen satırın soldaki simgesi (UiIcons)</summary>
         public void SetIcon(Sprite sprite)
         {
-            if (entries.Count == 0) return;
+            if (entries.Count == 0 || plain) return;
             var entry = entries[entries.Count - 1];
             entry.Icon.sprite = sprite;
             entry.Icon.enabled = sprite;
@@ -250,6 +301,15 @@ namespace Deprem.UI
         // Simge varsa yazı simgenin sağında başlar; seçiliyken sağa kayar (Slide)
         void Layout(Entry entry)
         {
+            if (plain)
+            {
+                // Ortalı: yazı satırın ortasında, elmaslar yazının iki yanında
+                entry.Label.rectTransform.offsetMin = entry.Label.rectTransform.offsetMax = Vector2.zero;
+                float half = entry.Label.preferredWidth * 0.5f + 16f;
+                entry.Marker.rectTransform.anchoredPosition = new Vector2(-half, 0f);
+                entry.MarkerRight.rectTransform.anchoredPosition = new Vector2(half, 0f);
+                return;
+            }
             float left = 16f + entry.Slide;
             if (entry.Icon.enabled)
             {
@@ -263,7 +323,7 @@ namespace Deprem.UI
         void Resize()
         {
             panel.gameObject.SetActive(entries.Count > 0);
-            panel.sizeDelta = new Vector2(0f, entries.Count * rowHeight + Padding * 2f);
+            panel.sizeDelta = new Vector2(0f, entries.Count * rowHeight + padding * 2f);
         }
 
         public void Refresh()
@@ -311,8 +371,15 @@ namespace Deprem.UI
                         entry.Segments[s].color = s < filled ? color : dim;
                 }
                 entry.Icon.color = color;
-                entry.Bar.color = on ? bar : Color.clear;
+                entry.Bar.color = on && !plain ? bar : Color.clear;
+                if (entry.Underline)
+                {
+                    entry.UnderlineTarget = on ? entry.Label.preferredWidth + 16f : 0f;
+                    if (!Application.isPlaying) entry.Underline.sizeDelta = new Vector2(entry.UnderlineTarget, entry.Underline.sizeDelta.y);
+                }
                 entry.Marker.enabled = on;
+                if (entry.MarkerRight) entry.MarkerRight.enabled = on;
+                if (plain) Layout(entry); // elmaslar yazı genişliğine göre (dil değişebilir)
             }
         }
 
@@ -324,14 +391,24 @@ namespace Deprem.UI
             // Seçili satırın vurgu çizgisi nabız gibi parlar; seçili satırın yazısı sağa kayar, diğerleri geri döner
             float pulse = 0.65f + 0.35f * Mathf.Sin(Time.unscaledTime * 5f);
             entries[selected].Marker.color = new Color(highlight.r, highlight.g, highlight.b, pulse);
+            if (entries[selected].MarkerRight) entries[selected].MarkerRight.color = entries[selected].Marker.color;
             float step = Time.unscaledDeltaTime * 60f;
             for (int i = 0; i < entries.Count; i++)
             {
                 var entry = entries[i];
-                float target = i == selected ? SlideDistance : 0f;
+                float target = i == selected && !plain ? SlideDistance : 0f;
                 if (Mathf.Approximately(entry.Slide, target)) continue;
                 entry.Slide = Mathf.MoveTowards(entry.Slide, target, step);
                 Layout(entry);
+            }
+            // plain: seçili satırın altındaki çatlak ortadan iki yana açılır, diğerlerininki kapanır
+            foreach (var entry in entries)
+            {
+                if (!entry.Underline) continue;
+                var size = entry.Underline.sizeDelta;
+                if (Mathf.Approximately(size.x, entry.UnderlineTarget)) continue;
+                size.x = Mathf.MoveTowards(size.x, entry.UnderlineTarget, Time.unscaledDeltaTime * (entry.UnderlineTarget > size.x ? 520f : 900f));
+                entry.Underline.sizeDelta = size;
             }
 
             if (UiInput.Up()) selected = Step(selected, -1);

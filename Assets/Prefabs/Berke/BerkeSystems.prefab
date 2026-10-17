@@ -430,7 +430,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PauseMenu
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
   titleFontSize: 40
-  subtitleFontSize: 17
   itemFontSize: 20
   rowHeight: 34
   normalColor: {r: 0.82, g: 0.78, b: 0.7, a: 1}
@@ -470,16 +469,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.MainMenu
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  titleFontSize: 64
+  titleFontSize: 72
   subtitleFontSize: 16
-  itemFontSize: 20
+  itemFontSize: 24
   bodyFontSize: 17
-  rowHeight: 32
+  hintFontSize: 15
+  rowHeight: 36
   normalColor: {r: 0.82, g: 0.78, b: 0.7, a: 1}
   highlightColor: {r: 1, g: 0.82, b: 0.4, a: 1}
-  crackColor: {r: 0.9, g: 0.22, b: 0.16, a: 1}
   tremorInterval: 5
-  backgroundColor: {r: 0.02, g: 0.03, b: 0.06, a: 1}
+  centerShade: 0.6
   sortingOrder: 120
   backgroundSprite: {fileID: 0}
   logoSprite: {fileID: 0}

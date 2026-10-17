@@ -142,7 +142,7 @@ controls.bind.spirit_up,Ruh yukarı: {0},Spirit up: {0}
 controls.bind.spirit_down,Ruh aşağı: {0},Spirit down: {0}
 controls.bind.spirit_left,Ruh sola: {0},Spirit left: {0}
 controls.bind.spirit_right,Ruh sağa: {0},Spirit right: {0}
-menu.continue,Devam et · Bölüm {0},Continue · Chapter {0}
+menu.continue,Devam et,Continue
 menu.new_confirm,Kayıtlı ilerlemen silinecek. Baştan başlamak istiyor musun?,Your saved progress will be deleted. Do you want to start over?
 menu.new_confirm_yes,"Evet, baştan başla","Yes, start over"
 menu.cancel,Vazgeç,Cancel

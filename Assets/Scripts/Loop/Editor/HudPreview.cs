@@ -137,6 +137,19 @@ namespace Deprem.Loop.EditorTools
                 var backdrop = Get<UiBackdrop>(menu, "backdrop");
                 if (backdrop) backdrop.SetTexture(HouseBlur());
             });
+            // Arayüz turu 3: ana menünün emeği geçenler ve içerik uyarısı ekranları
+            foreach (var (name, screen) in new[] { ("menu_credits", "Credits"), ("menu_warning", "Warning") })
+            {
+                RenderScene(name, root =>
+                {
+                    var menu = root.AddComponent<MainMenu>();
+                    Call(menu, "Awake");
+                    var screens = typeof(MainMenu).GetNestedType("Screen", BindingFlags.NonPublic);
+                    Call(menu, "Show", System.Enum.Parse(screens, screen));
+                    var backdrop = Get<UiBackdrop>(menu, "backdrop");
+                    if (backdrop) backdrop.SetTexture(HouseBlur());
+                });
+            }
             RenderScene("menu_pause", root =>
             {
                 var pause = root.AddComponent<PauseMenu>();

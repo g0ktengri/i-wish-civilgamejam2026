@@ -104,6 +104,13 @@ namespace Deprem.UI
             SetTexture(small);
         }
 
+        /// <summary>Karartmanın üstüne, lambanın ve ışığının altına bir katman koy (ana menünün sol geçişi)</summary>
+        public void InsertBelowLamp(Transform layer)
+        {
+            layer.SetParent(root, false);
+            layer.SetSiblingIndex(lamp ? lamp.GetSiblingIndex() : dim.transform.GetSiblingIndex() + 1);
+        }
+
         /// <summary>Kısa sarsıntı (0-1): görüntü titrer, lamba savrulur, moloz düşer, toz hızlanır</summary>
         public void Quake(float strength)
         {
@@ -153,8 +160,8 @@ namespace Deprem.UI
             var coneRect = cone.rectTransform;
             coneRect.anchorMin = coneRect.anchorMax = new Vector2(0.5f, 1f);
             coneRect.pivot = new Vector2(0.5f, 1f);
-            coneRect.sizeDelta = new Vector2(520f, 480f);
-            coneRect.anchoredPosition = new Vector2(0f, -rope - 22f);
+            coneRect.sizeDelta = new Vector2(960f, 520f);
+            coneRect.anchoredPosition = new Vector2(0f, -rope - 26f);
             coneAlpha = cone.color.a;
 
             var cord = UiBuilder.CreateImage(lamp, "Cord", new Color(0.06f, 0.05f, 0.05f));
@@ -165,14 +172,14 @@ namespace Deprem.UI
             bulb = UiBuilder.CreateImage(lamp, "Bulb", new Color(1f, 0.92f, 0.6f));
             bulb.rectTransform.anchorMin = bulb.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             bulb.rectTransform.pivot = new Vector2(0.5f, 1f);
-            bulb.rectTransform.sizeDelta = new Vector2(10f, 8f);
-            bulb.rectTransform.anchoredPosition = new Vector2(0f, -rope - 18f);
+            bulb.rectTransform.sizeDelta = new Vector2(14f, 8f);
+            bulb.rectTransform.anchoredPosition = new Vector2(0f, -rope - 22f);
 
             var shade = UiBuilder.CreateImage(lamp, "Shade", Color.white);
             shade.sprite = LampSprite;
             shade.rectTransform.anchorMin = shade.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             shade.rectTransform.pivot = new Vector2(0.5f, 1f);
-            shade.rectTransform.sizeDelta = new Vector2(60f, 24f);
+            shade.rectTransform.sizeDelta = new Vector2(100f, 28f);
             shade.rectTransform.anchoredPosition = new Vector2(0f, -rope);
         }
 
@@ -248,17 +255,17 @@ namespace Deprem.UI
             if (small) small.Release();
         }
 
-        // 20 x 8 pixel abajur: üstü dar, altı geniş yamuk; koyu kontur, içi koyu yeşil-gri metal, sol üstte açık
+        // 25 x 7 pixel abajur (4 kat büyütülür): üstü dar, altı geniş yamuk; koyu kontur, içi koyu yeşil-gri metal, sol üstte açık
         // parıltı, alt kenarda sıcak ışık şeridi
         static Sprite LampSprite
         {
             get
             {
                 if (lampSprite) return lampSprite;
-                const int w = 20, h = 8;
+                const int w = 25, h = 7;
                 bool Inside(int x, int y)
                 {
-                    float half = Mathf.Lerp(10f, 4f, y / (h - 1f)); // y = 0 altta (geniş)
+                    float half = Mathf.Lerp(12.5f, 5f, y / (h - 1f)); // y = 0 altta (geniş)
                     return y >= 0 && y < h && Mathf.Abs(x + 0.5f - w * 0.5f) <= half;
                 }
                 var texture = new Texture2D(w, h, TextureFormat.RGBA32, false)
@@ -304,7 +311,7 @@ namespace Deprem.UI
                 for (int x = 0; x < n; x++)
                 {
                     float down = 1f - (y + 0.5f) / n; // 0 tepede, 1 altta
-                    float half = Mathf.Lerp(0.06f, 0.5f, down);
+                    float half = Mathf.Lerp(0.055f, 0.5f, down);
                     float across = Mathf.Abs((x + 0.5f) / n - 0.5f) / half;
                     float a = Mathf.Clamp01(1f - across) * Mathf.Lerp(1f, 0.15f, down);
                     texture.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.SmoothStep(0f, 1f, a)));
