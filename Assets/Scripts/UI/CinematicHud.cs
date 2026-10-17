@@ -45,11 +45,10 @@ namespace Deprem.UI
         static FieldInfo canSkipField;
         static MethodInfo skip;
 
-        // Gizlenen oyun içi HUD'lar (kendi Canvas'ları kapatılır; kendi kodları alpha'larıyla oynamaya devam eder)
-        static readonly Type[] HudTypes =
-        {
-            typeof(PromptHud), typeof(ObjectiveHud), typeof(BagHud), typeof(SpiritHud),
-        };
+        // Gizlenen oyun içi HUD kanvasları (PromptHud, ObjectiveHud, BagHud, SpiritHud'un kurduğu adlarla). Sadece bunlar:
+        // bütün sistemler aynı BerkeSystems objesinde, onun altındaki her kanvası kapatmak PixelScreen'i (oyunun
+        // görüntüsü) de kapatıp ekranı siyah bırakıyordu. Kendi kodları alpha'larıyla oynamaya devam eder.
+        static readonly string[] HudCanvases = { "PromptCanvas", "ObjectiveCanvas", "BagHudCanvas", "SpiritHudCanvas" };
 
         public static bool Playing => Read(isPlaying, isPlayingField);
         static bool Skippable => Read(canSkip, canSkipField);
@@ -97,10 +96,10 @@ namespace Deprem.UI
         void SetHudHidden(bool hidden)
         {
             hudHidden = hidden;
-            foreach (var type in HudTypes)
-                foreach (var hud in FindObjectsByType(type, FindObjectsSortMode.None))
-                    foreach (var canvas in ((Component)hud).GetComponentsInChildren<Canvas>(true))
-                        canvas.enabled = !hidden;
+            foreach (var canvas in FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (Array.IndexOf(HudCanvases, canvas.name) >= 0)
+                    canvas.enabled = !hidden;
+
         }
 
         static bool Read(PropertyInfo property, FieldInfo field)

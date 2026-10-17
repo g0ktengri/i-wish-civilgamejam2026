@@ -35,6 +35,7 @@ namespace Deprem.Loop.EditorTools
                 if (prefab != null)
                 {
                     TestPrefab(prefab);
+                    TestCinematicHud();
                     var host = new SerializedObject(prefab.GetComponent<MinigameHost>());
                     var panelSize = host.FindProperty("panelSize").vector2Value;
                     TestLock(host, panelSize);
@@ -63,7 +64,53 @@ namespace Deprem.Loop.EditorTools
             if (Application.isBatchMode) EditorApplication.Exit(passed ? 0 : 1);
         }
 
+        // ------------------------------------------------------------------ Sinematik (M56)
+
+        // Intro siyah ekranda kalıyordu: sinematik HUD'ları gizlerken aynı objedeki bütün kanvasları (PixelScreen'in
+        // oyun görüntüsü dahil) kapatıyordu. Sadece dört HUD kanvası kapanmalı, diğerleri açık kalmalı.
+        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+
+        static void TestCinematicHud()
+        {
+            var root = new GameObject("CinematicTest");
+            try
+            {
+                var huds = new Component[]
+                {
+                    root.AddComponent<PromptHud>(), root.AddComponent<ObjectiveHud>(), root.AddComponent<BagHud>(),
+                    root.AddComponent<SpiritHud>(),
+                };
+                foreach (var hud in huds) hud.GetType().GetMethod("Awake", Flags)?.Invoke(hud, null);
+                var other = new GameObject("PixelScreenCanvas", typeof(RectTransform), typeof(Canvas)).GetComponent<Canvas>();
+                other.transform.SetParent(root.transform, false);
+                var cinematic = root.AddComponent<CinematicHud>();
+                cinematic.GetType().GetMethod("Awake", Flags)?.Invoke(cinematic, null);
+
+                typeof(CinematicHud).GetMethod("SetHudHidden", Flags).Invoke(cinematic, new object[] { true });
+                int hiddenHuds = 0, visibleOthers = 0, others = 0;
+                foreach (var canvas in root.GetComponentsInChildren<Canvas>(true))
+                {
+                    bool hud = canvas.name == "PromptCanvas" || canvas.name == "ObjectiveCanvas" ||
+                               canvas.name == "BagHudCanvas" || canvas.name == "SpiritHudCanvas";
+                    if (hud && !canvas.enabled) hiddenHuds++;
+                    if (!hud)
+                    {
+                        others++;
+                        if (canvas.enabled) visibleOthers++;
+                    }
+                }
+                Check(hiddenHuds == 4, $"Sinematik: dört HUD kanvası gizli ({hiddenHuds}/4)");
+                Check(others > 0 && visibleOthers == others, $"Sinematik: diğer kanvaslar açık ({visibleOthers}/{others}; PixelScreen siyah kalmasın)");
+                typeof(CinematicHud).GetMethod("SetHudHidden", Flags).Invoke(cinematic, new object[] { false });
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
         // ------------------------------------------------------------------ Prefab
+
 
         static void TestPrefab(GameObject prefab)
         {
