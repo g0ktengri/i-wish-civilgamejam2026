@@ -23,7 +23,8 @@ namespace Deprem.UI
         [SerializeField] float barSeconds = 0.6f;
         [Tooltip("Geçmek için basılı tutma süresi (sn)")]
         [SerializeField] float holdSeconds = 1f;
-        [SerializeField] int sortingOrder = 100;
+        [Tooltip("Intronun kendi karartması (98) bantların üstünde kalsın diye altında")]
+        [SerializeField] int sortingOrder = 97;
 
         RectTransform top;
         RectTransform bottom;
