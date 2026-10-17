@@ -52,55 +52,6 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
-### Ana menü logosu ve taşı-yerleştir kutusu (Panel2), senin dosyalarında Mehmet'in isteğiyle
-
-Dört test geçiyor; Play'de denenmedi.
-
-- **Logo:** `Assets/Art/UI/logo.png`, çatlaklı KEŞKE (kodla çizildi, AI beyanına yazılmalı). `MainMenu.logoSprite`'a bağlanıyor ve yazı başlığın yerini alıyor.
-  - Logo artık başlık grubunun içinde, menüdeki sarsıntıda yazı gibi titriyor.
-  - Önizlemesi `HudPreview`'da.
-  - İngilizce menüde de "KEŞKE" görünüyor.
-- **Taşı-yerleştir (`CarryMinigame`, `MinigameArt`):**
-  - Ekibin `Panel2.png` kutusu arka plan oldu (`minigame_tasi_panel.png`). İçindeki çizili çubuklar silindi.
-  - Duvarları yine kod çiziyor, ama çubuk çizimiyle: `minigame_tasi_cubuk.png` gövde, `_uc.png` yuvarlak uç. Rastgele, kayan ve çift duvar düzenleri aynen duruyor.
-  - Eşya ve duvarlar çerçevenin iç açıklığında (`FramedArea` 0,84 × 0,72).
-  - Panel2 yoksa eski tuğla/pixel görünüm kullanılıyor.
-- **`HudPreview`:** minigame önizlemeleri artık prefab'daki ekip görselleriyle çiziliyor (`UsePrefabArt`).
-
-### Mehmet'in play testi: kardeş, salon penceresi, anne, ölüm efekti, çök-kapan ipucu, keşke yazıları
-
-Dört test geçiyor; Play'de denenmedi.
-
-- **Senin dosyan, Mehmet'in isteğiyle biz yaptık (`UI/WishScreen.cs`, `BerkeSystems.prefab` yeniden kuruldu):** keşke yazıları büyüdü.
-  - Punto: KEŞKE 76 → 96, cümle 40 → 54, bilgi ve ipucu 19 → 23.
-  - Cümle alanı iki satıra göre açıldı. Başlık cümlenin üstüne 62 yerine 92 px kalkıyor; çatlak ve bilgi satırı biraz aşağı indi.
-  - Önizleme: `Logs/hud_preview_wish_*.png`.
-- **Kardeş (`FamilyMember`):** oyuncak dolabı düşünce oyuncu odaya girmeden görüp konuşuyordu. Kayıp tepkisi ve vurgu sesi artık oyuncu üyenin odasındayken.
-- **Salon penceresi (`DecorProps.BuildSalonWindow`):** kanepenin üstündeki pencere düz koyu bir dikdörtgendi. Artık camlı gece penceresi: kasa, kayıtlar, perde, denizlik, camda parıltı. Eski `pencere.mat` silindi.
-- **Anne (`FamilyDirector.PointBehind`):** yürürken titriyordu, çünkü takip hedefi iz adımlarıyla sıçrıyordu. Hedef artık oyuncunun anlık konumundan ölçülüyor.
-- **Ölüm efekti (`QuakeDirector`):** 1. döngüde efekt rafın yatağa çarptığı anda başlıyor; tavan 0,25 sn sonra çöküyor (`collapseAfterShelf`).
-- **Çök-kapan ipucu:** önceki oyunlardan kalan "öğrenildi" kaydı yüzünden hiç çıkmıyordu. "Yeni oyun"da (intro oynarken) kayıt siliniyor; ipucu bir kez yeniden gösteriliyor.
-
-### Intro: dışarıdan giriş ve portmanto yönü (Mehmet)
-
-Dört test geçiyor; Play'de denenmedi.
-
-- **Oyuncu dışarıdan geliyor (`IntroCinematic`):** Berke'nin "eşikte görünmez başla" çözümünün yerine geçti, `SetPlayerVisible` kalktı.
-  - Oyuncu evin sağında, karanlıkta başlıyor ve koyu görünüyor.
-  - Kapının önüne yürüyüp duruyor, kapıyı açıyor, içeri giriyor. Kapıdan geçerken mutfağın ışığına açılıyor.
-  - Dışarıda ev sınırı ve zemin çarpışması yok; bu yüzden oyuncu yol boyunca (`FollowPath`) yürüyor.
-- **`PlayerController` ve `PlayerVisual`:**
-  - Yolda bekletme için yeni `PathPaused` (kapının önünde durur).
-  - Gövdeyi koyulaştırmak için yeni `PlayerVisual.Shade` (0..1).
-- **İkinci play testi:**
-  - Dışarısı simsiyah bir blokla (`OutsideCover`) tamamen kapalı; oyuncu dışarıdayken görünmüyor.
-  - Oyuncu dışarıdayken kamera mutfağa bakıyor, oyuncu içeri girince ona dönüyor.
-  - Kapı yakın çekimi aşağı indi (`entranceFocusOffset`, görüş açısı 0,8); dolabın devrilişi tam görünüyor. Önizlemeler: `Logs/house_preview_giris_yakin*.png`.
-- **`HouseBuilder`:**
-  - Evin sağındaki ilk denemenin karanlık zemini ve gece arka planı kaldırıldı; yerini simsiyah blok aldı.
-  - Portmantonun kapakları artık sola, mutfağa bakıyor. Yine kameraya doğru devrilip kapıyı kapatıyor.
-  - Yeni önizlemeler: `Logs/house_preview_giris_dis.png`, `_giris_portmanto.png`.
-
 ### Teknik borç ve ruh ipuçları (Berke)
 
 Dört test geçiyor; ipucu kontrolleri Berke testinde.
@@ -607,7 +558,7 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 
 ## Mehmet → Berke
 
-*Son güncelleme: Mehmet'in Claude'u, 18 Ekim (Play testi 8: B10, B11 cevapları, en altta)*
+*Son güncelleme: Mehmet'in Claude'u, 17 Ekim gece (Play testi 31: görev dağılımı M59–M66, en altta). Not: intro, Mehmet'in play testi ve logo/Panel2 notlarım yanlışlıkla Berke → Mehmet bölümüne yazılmıştı; buraya, Play testi 30'un altına taşındı.*
 
 ### Mehmet'in pushladıkları
 
@@ -1433,6 +1384,98 @@ Mehmet'in isteği (özet):
   - Yeni satırlar: `bubble.family_rescued.mother`, `bubble.family_rescued.sibling` (kurtarılınca konuşurlar), `bubble.drop_first.mother`, `bubble.drop_first.sibling`, `bubble.drop_first.father`.
 
 - **Yeni ses `quake.crumble`:** taş kırılma ve çökme. Sarsıntıda 4–7,5 sn'de bir uzaktan çalıyor ve artçı başlarken (susturulan `quake.creak`'in yerinde).
+
+### Intro: dışarıdan giriş ve portmanto yönü (Mehmet)
+
+Dört test geçiyor; Play'de denenmedi.
+
+- **Oyuncu dışarıdan geliyor (`IntroCinematic`):** Berke'nin "eşikte görünmez başla" çözümünün yerine geçti, `SetPlayerVisible` kalktı.
+  - Oyuncu evin sağında, karanlıkta başlıyor ve koyu görünüyor.
+  - Kapının önüne yürüyüp duruyor, kapıyı açıyor, içeri giriyor. Kapıdan geçerken mutfağın ışığına açılıyor.
+  - Dışarıda ev sınırı ve zemin çarpışması yok; bu yüzden oyuncu yol boyunca (`FollowPath`) yürüyor.
+- **`PlayerController` ve `PlayerVisual`:**
+  - Yolda bekletme için yeni `PathPaused` (kapının önünde durur).
+  - Gövdeyi koyulaştırmak için yeni `PlayerVisual.Shade` (0..1).
+- **İkinci play testi:**
+  - Dışarısı simsiyah bir blokla (`OutsideCover`) tamamen kapalı; oyuncu dışarıdayken görünmüyor.
+  - Oyuncu dışarıdayken kamera mutfağa bakıyor, oyuncu içeri girince ona dönüyor.
+  - Kapı yakın çekimi aşağı indi (`entranceFocusOffset`, görüş açısı 0,8); dolabın devrilişi tam görünüyor. Önizlemeler: `Logs/house_preview_giris_yakin*.png`.
+- **`HouseBuilder`:**
+  - Evin sağındaki ilk denemenin karanlık zemini ve gece arka planı kaldırıldı; yerini simsiyah blok aldı.
+  - Portmantonun kapakları artık sola, mutfağa bakıyor. Yine kameraya doğru devrilip kapıyı kapatıyor.
+  - Yeni önizlemeler: `Logs/house_preview_giris_dis.png`, `_giris_portmanto.png`.
+
+### Mehmet'in play testi: kardeş, salon penceresi, anne, ölüm efekti, çök-kapan ipucu, keşke yazıları
+
+Dört test geçiyor; Play'de denenmedi.
+
+- **Senin dosyan, Mehmet'in isteğiyle biz yaptık (`UI/WishScreen.cs`, `BerkeSystems.prefab` yeniden kuruldu):** keşke yazıları büyüdü.
+  - Punto: KEŞKE 76 → 96, cümle 40 → 54, bilgi ve ipucu 19 → 23.
+  - Cümle alanı iki satıra göre açıldı. Başlık cümlenin üstüne 62 yerine 92 px kalkıyor; çatlak ve bilgi satırı biraz aşağı indi.
+  - Önizleme: `Logs/hud_preview_wish_*.png`.
+- **Kardeş (`FamilyMember`):** oyuncak dolabı düşünce oyuncu odaya girmeden görüp konuşuyordu. Kayıp tepkisi ve vurgu sesi artık oyuncu üyenin odasındayken.
+- **Salon penceresi (`DecorProps.BuildSalonWindow`):** kanepenin üstündeki pencere düz koyu bir dikdörtgendi. Artık camlı gece penceresi: kasa, kayıtlar, perde, denizlik, camda parıltı. Eski `pencere.mat` silindi.
+- **Anne (`FamilyDirector.PointBehind`):** yürürken titriyordu, çünkü takip hedefi iz adımlarıyla sıçrıyordu. Hedef artık oyuncunun anlık konumundan ölçülüyor.
+- **Ölüm efekti (`QuakeDirector`):** 1. döngüde efekt rafın yatağa çarptığı anda başlıyor; tavan 0,25 sn sonra çöküyor (`collapseAfterShelf`).
+- **Çök-kapan ipucu:** önceki oyunlardan kalan "öğrenildi" kaydı yüzünden hiç çıkmıyordu. "Yeni oyun"da (intro oynarken) kayıt siliniyor; ipucu bir kez yeniden gösteriliyor.
+
+### Ana menü logosu ve taşı-yerleştir kutusu (Panel2), senin dosyalarında Mehmet'in isteğiyle
+
+Dört test geçiyor; Play'de denenmedi.
+
+- **Logo:** `Assets/Art/UI/logo.png`, çatlaklı KEŞKE (kodla çizildi, AI beyanına yazılmalı). `MainMenu.logoSprite`'a bağlanıyor ve yazı başlığın yerini alıyor.
+  - Logo artık başlık grubunun içinde, menüdeki sarsıntıda yazı gibi titriyor.
+  - Önizlemesi `HudPreview`'da.
+  - İngilizce menüde de "KEŞKE" görünüyor.
+- **Taşı-yerleştir (`CarryMinigame`, `MinigameArt`):**
+  - Ekibin `Panel2.png` kutusu arka plan oldu (`minigame_tasi_panel.png`). İçindeki çizili çubuklar silindi.
+  - Duvarları yine kod çiziyor, ama çubuk çizimiyle: `minigame_tasi_cubuk.png` gövde, `_uc.png` yuvarlak uç. Rastgele, kayan ve çift duvar düzenleri aynen duruyor.
+  - Eşya ve duvarlar çerçevenin iç açıklığında (`FramedArea` 0,84 × 0,72).
+  - Panel2 yoksa eski tuğla/pixel görünüm kullanılıyor.
+- **`HudPreview`:** minigame önizlemeleri artık prefab'daki ekip görselleriyle çiziliyor (`UsePrefabArt`).
+
+### Play testi 31: görev dağılımı
+
+Mehmet oyunu başkalarına oynattı. Çıkanlar (özet):
+1. Duvardaki tablolar biraz daha yukarıda olmalı.
+2. Keşke ekranında geçmek için "F" yazıyor; herhangi bir tuş olmalı.
+3. Oyuncu bir minigame'e ilk girdiğinde onu sindire sindire öğrenmeli.
+4. Oyuncular hangi eşyaları sabitlemesi gerektiğini bilmiyor; aynaları sabitlemeye uğraşıyorlar, çözmesi de zor.
+5. Ruh süresi yetmiyor.
+6. Ruhken el fenerini almasa da oyuncu bedenle oraya gidebilirse eline alabilmeli.
+7. Kardeş el fenersiz bulunamadıysa keşke açıklamasında bu net görünmeli.
+8. Aynı keşke ekranı ikinci kez geliyorsa daha hızlı geçmeli.
+9. Mutfaktaki üçüncü tür minigame (kilitleme) kalkmalı.
+10. Merdivende inerken ya da çıkarken F'ye tekrar basınca oyuncu geri dönebilmeli.
+
+**Berke'ye düşen**
+
+- **M59. Keşke ekranı herhangi bir tuşla geçilsin (`WishScreen`):** F yerine herhangi bir tuş ya da fare tıkı; ipucu metni "Devam etmek için bir tuşa bas" gibi (`texts.csv`). Esc duraklatmaya gidiyorsa onu hariç tut.
+- **M60. Aynı keşke ikinci kez daha hızlı:** keşke geçmişinde (`WishLines`) aynı cümle daha önce gösterildiyse yazma hızı 2–3 katı, aradaki beklemeler kısa; çatlak ve geri sarma da kısa.
+- **M61. Minigame eğitimi:** her minigame türüne ilk girişte adım adım öğretici; süre öğretici bitene kadar akmasın.
+  - Taşı-yerleştir örneği: önce eşya parlar ("Eşyayı tut"), sonra boşluk parlar ("Duvara değmeden boşluktan geçir"), sonra yeşil alan ("Buraya bırak").
+  - Vida için de benzer adımlar.
+  - Her tür bir kez gösterilsin (kayıt PlayerPrefs'te, "Yeni oyun"da silinsin).
+- **M62. Hangi eşya önemli:** ruh fazında, birinin üstüne düşecek eşyalar öne çıksın; diğerleri (ayna, çerçeve) soluk ya da "isteğe bağlı" görünsün.
+  - Önemli olanlar: yatak rafı (oyuncunun üstüne düşer) ve ailenin eşyaları (baba: kitaplık, anne: gardırop, kardeş: oyuncak rafı).
+  - Veri benden: her üyede `FamilyMember.DangerItem` (yeni, salt okunur). Yatak rafı `ItemId.BedShelf`.
+  - Öneri: önemli eşyaların konturu kırmızımsı, ruh ipucu "Önce ailenin üstüne düşecekleri sabitle".
+  - Aynanın taşı-yerleştir'i de kolaylaşsın (tek duvar ya da daha geniş boşluk; `VariantFor`).
+- **M63. Ruh süresi (`SpiritPhase`):** öneri: 35 → 50 sn başlangıç, kayıp başına +5, en fazla 75 sn.
+- **M64. El fenerini bedenle almak (`BagSupply`):** malzeme ruhken alınmadıysa ve öğrenildiyse (`BagLessons.IsLearned`) kurtarma fazında evde yerinde dursun. Oyuncu bedenle yanına gelip F ile alabilsin; çantaya eklensin (`GameState`). Benim `PlayerInteractor`'ım `IInteractable` olan her şeyi zaten gösterir.
+- **M65. Kardeş açıklaması:** kayıp sebebi kardeşi fenersiz bulamamaksa keşke ekranının bilgi satırı bunu açıkça söylesin. Örnek: "Kardeşini karanlıkta bulamadın; el fenerin yoktu." Babanın kanaması için de aynısı (ilk yardım).
+  - Veri benden: `BagLessons.LastMissingItem` (`BagItemId`) ve `BagLessons.LastMissingMember` (`FamilyMemberId`). Ben `MissingBagItem` ile kaybettirmeden hemen önce yazıyorum; yeni denemede sıfırlanıyor.
+- **M66. Mutfak üst dolapları artık sabitlenemiyor (ben yapıyorum):**
+  - Sahnede `SecurableItem` yok, dekor oluyor, depremde devrilmiyor. `ItemId.KitchenCabinets` Core'da kalıyor.
+  - Sabitlenebilir eşya 9 → 8. Sende 9'u sabit sayan ya da `KitchenCabinets`'i listeleyen yerler varsa güncelle: hedef paneli, final, `LoopManager`, `HudPreview`'daki `minigame_kitchen`, testler.
+  - Kilitleme minigame'i artık hiçbir eşyada kullanılmıyor; kodunu silmek zorunda değilsin.
+
+**Mehmet'in yapacakları**
+
+1. Tablolar biraz yukarı (`DecorProps`).
+2. Merdivende F'ye tekrar basınca geri dönme (`StairPath`, `PlayerController`).
+3. Mutfak üst dolapları dekor (M66).
+4. `FamilyMember.DangerItem` (M62), `BagLessons.LastMissingItem` / `LastMissingMember` (M65); kardeşin "el fenerim olsaydı" balonu daha net.
 
 ---
 
