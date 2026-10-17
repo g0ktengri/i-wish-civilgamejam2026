@@ -134,6 +134,9 @@ namespace Deprem.Family
             Deprem.Player.PlayerSetup.ConfigureBubble(bubble);
             var bubbleSo = new SerializedObject(bubble);
             bubbleSo.FindProperty("headHeight").floatValue = def.Height + 0.35f;
+            // Yazı sesi kişiye göre: baba kalın, anne biraz ince, kardeş ince (Play testi 23)
+            bubbleSo.FindProperty("blipPitch").floatValue =
+                def.Id == FamilyMemberId.Father ? 0.72f : def.Id == FamilyMemberId.Mother ? 1.18f : 1.45f;
             bubbleSo.ApplyModifiedPropertiesWithoutUndo();
 
             var member = go.AddComponent<FamilyMember>();

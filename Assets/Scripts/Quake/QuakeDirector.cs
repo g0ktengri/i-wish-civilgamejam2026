@@ -80,11 +80,11 @@ namespace Deprem.Quake
         [SerializeField] private float standUpOffsetX = 0f;
         [Tooltip("Yatağın ortasından bu kadar önde (kameraya doğru, m) yatar: ön kenarda, sarkan bacağı şilte örtmez")]
         [SerializeField] private float bedEdgeOffsetZ = 0.75f;
-        [SerializeField] private Key standUpKey = Key.F;
-        [SerializeField] private Key walkLeftKey = Key.A;
-        [SerializeField] private Key walkRightKey = Key.D;
-        [Tooltip("Play testi 22: çök-kapan yalnızca S (eğilme tuşu); C kaldırıldı")]
-        [SerializeField] private Key duckCoverKey = Key.S;
+        // M40: tuşlar ayarlardan değiştirilebilir (KeyBindings). Play testi 22: çök-kapan eğilme tuşuyla (S), C yok
+        private static Key standUpKey => KeyBindings.Interact;
+        private static Key walkLeftKey => KeyBindings.Left;
+        private static Key walkRightKey => KeyBindings.Right;
+        private static Key duckCoverKey => KeyBindings.Crouch;
 
         [Tooltip("M19: raf yatağa düşünce kısa kamera sarsıntısı")]
         [SerializeField, Range(0f, 1f)] private float shelfImpactShake = 0.85f;
@@ -399,6 +399,7 @@ namespace Deprem.Quake
             {
                 player.SpeedMultiplier = injuredSpeedMultiplier;
                 Say("bubble.injured", 2.5f); // yavaşlamanın sebebi anlaşılsın
+                Feedback.Play(0.45f);
                 GameState.AddAftershockInjury(); // ikincisinde döngüyü GameState bitirir
             }
 
@@ -538,7 +539,7 @@ namespace Deprem.Quake
             // çarpışmaz: parçalar başta sekmez, yere yığılan bedenin üstüne düşer ve orada kalır (DebrisSettle)
             yield return new WaitForSeconds(debrisImpactDelay);
             player.Die();
-            QuakeCameraShake.Intensity = Mathf.Max(QuakeCameraShake.Intensity, 0.8f);
+            Feedback.Play(1f); // Play testi 23: ses, sarsıntı, kırmızı flaş, ağır çekim
             yield return new WaitForSeconds(deathLinger);
         }
 
@@ -567,6 +568,7 @@ namespace Deprem.Quake
             }
             if (effects != null) effects.Burst(1.2f);
             QuakeCameraShake.Intensity = 1f;
+            Feedback.Play(1f);
             // Yatan oyuncunun dik kapsülü parçaları havada tutmasın: parçalar yatağın şiltesine düşer
             player.Body.detectCollisions = false;
             yield return new WaitForSeconds(1.4f);
@@ -586,6 +588,9 @@ namespace Deprem.Quake
             body.mass = mass;
             body.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
             body.linearVelocity = Vector3.down * 1.5f;
+            // Play testi 23: yere yığılan taşlar oyuncuyu sıkıştırıp buga sokuyordu; parçalar oyuncuyla çarpışmaz
+            var playerCollider = player != null ? player.GetComponent<Collider>() : null;
+            if (playerCollider != null) Physics.IgnoreCollision(piece.GetComponent<Collider>(), playerCollider);
             // Play testi 20: düşme sesi; büyük parça (tavan, sıva) daha gür
             piece.AddComponent<DebrisSettle>().SetImpactSound(mass >= 20f ? "item.crash" : "quake.debris",
                 Mathf.Clamp(0.35f + mass / 20f, 0.35f, 1f));
@@ -658,6 +663,19 @@ namespace Deprem.Quake
             if (player == null) return;
             var position = bed != null ? bed.position : player.transform.position;
             player.LieDown(position + Vector3.up * bedHeight + Vector3.back * bedEdgeOffsetZ);
+        }
+
+        private HitFeedback feedback;
+
+        /// <summary>Darbe geri bildirimi (Play testi 23); prefab'da yoksa eklenir</summary>
+        private HitFeedback Feedback
+        {
+            get
+            {
+                if (feedback == null) feedback = GetComponent<HitFeedback>();
+                if (feedback == null) feedback = gameObject.AddComponent<HitFeedback>();
+                return feedback;
+            }
         }
 
         private IEnumerator RiseAfterSpirit()

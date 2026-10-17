@@ -13,7 +13,7 @@ namespace Deprem.Player
         [Tooltip("Merdivende iki adım arası (sn)")]
         [SerializeField] private float stairStepInterval = 0.3f;
         [Tooltip("Play testi 20: adımlar çok zayıftı")]
-        [SerializeField, Range(0f, 1f)] private float stepVolume = 1f;
+        [SerializeField, Range(0f, 1f)] private float stepVolume = 0.45f; // Play testi 23: çok yüksekti
         [SerializeField, Range(0f, 1f)] private float landVolume = 0.9f;
 
         private PlayerController player;

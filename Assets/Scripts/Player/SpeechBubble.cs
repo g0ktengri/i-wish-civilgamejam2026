@@ -29,6 +29,14 @@ namespace Deprem.Player
         [Tooltip("Yazı bittikten sonra en az bu kadar ekranda kalır (sn)")]
         [SerializeField] private float minReadTime = 1.2f;
 
+        [Header("Yazı sesi (Play testi 23: Undertale gibi)")]
+        [Tooltip("Konuşanın sesi: perde (oyuncu 1, baba kalın, kardeş ince)")]
+        [SerializeField] private float blipPitch = 1f;
+        [Tooltip("Kaç harfte bir blip (her harfte çok sık)")]
+        [SerializeField] private int blipEvery = 2;
+        [SerializeField, Range(0f, 1f)] private float blipVolume = 0.4f;
+        private int blipCounter;
+
         private Canvas canvas;
         private UiBubble bubble;
         private float hideAt;
@@ -62,6 +70,13 @@ namespace Deprem.Player
 
             int chars = Mathf.Clamp(Mathf.FloorToInt(t * charsPerSecond), 0, fullText.Length);
             if (chars == typedChars) return;
+            // Yeni çıkan harflerde blip: boşluk ve noktalamada sessiz, kişiye göre perde, hafif rastgele
+            for (int i = Mathf.Max(0, typedChars); i < chars; i++)
+            {
+                if (!char.IsLetterOrDigit(fullText[i])) continue;
+                if (blipCounter++ % Mathf.Max(1, blipEvery) != 0) continue;
+                Deprem.Audio.Sfx.PlayPitched("bubble.blip", blipVolume, blipPitch * Random.Range(0.94f, 1.06f));
+            }
             typedChars = chars;
             // Yazılmamış kısım saydam: satırlar ve balon boyu yazarken kaymaz
             bubble.Label.text = chars >= fullText.Length

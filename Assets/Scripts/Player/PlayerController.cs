@@ -46,11 +46,11 @@ namespace Deprem.Player
         [Tooltip("Yatarken ve kalkınca baktığı yön: çizimde baş solda (yastık), kalkınca sağa döner (1)")]
         [SerializeField] private int getUpFacing = 1;
 
-        [Header("Tuşlar")]
-        [SerializeField] private Key leftKey = Key.A;
-        [SerializeField] private Key rightKey = Key.D;
-        [SerializeField] private Key jumpKey = Key.Space;
-        [SerializeField] private Key crouchKey = Key.S;
+        // Play testi 23 (M40): tuşlar ayarlardan değiştirilebilir, KeyBindings'ten okunur
+        private static Key leftKey => KeyBindings.Left;
+        private static Key rightKey => KeyBindings.Right;
+        private static Key jumpKey => KeyBindings.Jump;
+        private static Key crouchKey => KeyBindings.Crouch;
 
         public bool InputEnabled { get; set; } = true;
         public float SpeedMultiplier { get; set; } = 1f;

@@ -892,6 +892,23 @@ Mehmet'in yorumu (özet):
 5. **İlk yardım minigame'i:** duvarı hareketli (kayan boşluk).
 6. **`KeyBindings`:** M40 için ortak sınıf; oyuncu ve çök-kapan oradan okuyor.
 
+**Mehmet tarafı (Play testi 23): 1–6 yapıldı** (Play'de son kontrol bekliyor).
+
+M40 için `Deprem.Player.KeyBindings` (`Assets/Scripts/Player/KeyBindings.cs`):
+- **Alanlar:** `Left, Right, Jump, Crouch, Interact, SpiritUp, SpiritDown, SpiritLeft, SpiritRight` (`UnityEngine.InputSystem.Key`). Varsayılanlar: A, D, Space, S, F; ruh W, S, A, D.
+- **Ayarlar ekranı için:**
+  - `Get("Interact")` / `Set("Interact", key)`: eylem adıyla okur ve yazar. `Set` kaydeder ve `Changed` event'ini tetikler.
+  - `ResetDefaults()`: varsayılan tuşlara döner.
+  - `Label(key)`: ekranda gösterilecek ad ("F", "Space").
+  - `Held(key)` / `Pressed(key)`: kolaylık için.
+- **Yükleme:** oyun açılırken PlayerPrefs'ten kendiliğinden yüklenir (`key.<Eylem>`).
+- **Okuyanlar:** `PlayerController`, `PlayerInteractor`, `FamilyMember` ve `QuakeDirector` (kalk = Interact, çök-kapan = Crouch). Bu bileşenlerin Inspector'daki tuş alanları kalktı.
+- **Berke'ye kalan:** `SpiritController` ve ipucu yazılarındaki tuş harfleri.
+
+Diğerleri:
+- `HitFeedback` (Quake) ölümde ve yatakta ezilmede tam şiddetle çalışıyor (ses, flaş, sarsıntı, ağır çekim); artçı yarasında hafif çalışıyor. Ağır çekim `Time.timeScale`'i 0,45 sn gerçek zaman boyunca 0,35 yapıp geri 1'e alıyor. M38 donmasına bakarken bunu hesaba kat; durdurma menüsü açıksa ya da timeScale 0 ise dokunmuyor.
+- Balon yazı sesi `bubble.blip`, iki harfte bir çalıyor. Perde: baba kalın, anne orta, kardeş ince.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

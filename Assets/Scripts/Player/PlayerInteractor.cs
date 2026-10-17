@@ -7,7 +7,7 @@ namespace Deprem.Player
     [RequireComponent(typeof(PlayerController))]
     public sealed class PlayerInteractor : MonoBehaviour
     {
-        [SerializeField] private Key interactKey = Key.F;
+        private static Key interactKey => KeyBindings.Interact; // M40: ayarlardan değiştirilebilir
 
         public IInteractable Current { get; private set; }
 

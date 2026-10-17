@@ -167,7 +167,7 @@ namespace Deprem.Audio
             yield return new Recipe { key = "quake.aftershock", make = Aftershock };
             yield return new Recipe { key = "quake.big", make = Big };
             yield return new Recipe { key = "quake.creak", variants = 3, volume = 0.75f, pitch = new Vector2(0.9f, 1.1f), make = Creak };
-            yield return new Recipe { key = "quake.debris", variants = 4, volume = 0.7f, pitch = new Vector2(0.85f, 1.15f), make = Debris };
+            yield return new Recipe { key = "quake.debris", variants = 4, volume = 0.5f, pitch = new Vector2(0.85f, 1.15f), make = Debris };
             yield return new Recipe { key = "item.crash", variants = 2, pitch = new Vector2(0.9f, 1.05f), make = Crash };
             yield return new Recipe { key = "glass.break", variants = 2, volume = 0.85f, pitch = new Vector2(0.95f, 1.1f), make = s => Glass(s, 1.8f, 40, 0.25f) };
             yield return new Recipe { key = "power.off", make = PowerOff };
@@ -206,6 +206,9 @@ namespace Deprem.Audio
             yield return new Recipe { key = "music.final", make = s => Music(s, FinalChords, 0.5f, 0.3f) };
             // Play testi 20: kurtarmada arkada gerilim, aile üyesinin durumu görülünce vurgu
             yield return new Recipe { key = "music.tension", volume = 0.9f, make = TensionMusic };
+            // Play testi 23: balon yazı sesi (Undertale gibi), ölüm vurgusu
+            yield return new Recipe { key = "bubble.blip", volume = 0.6f, pitch = new Vector2(0.97f, 1.03f), make = Blip };
+            yield return new Recipe { key = "player.death", make = DeathStinger };
             yield return new Recipe { key = "family.discover", volume = 0.85f, make = DiscoverStinger };
             yield return new Recipe { key = "family.loss", volume = 0.9f, make = LossStinger };
             yield return new Recipe { key = "music.menu", volume = 0.8f, make = s => Music(s, MenuChords, 1f, 0.2f) };
@@ -302,19 +305,24 @@ namespace Deprem.Audio
         /// <summary>Tavandan düşen taş ve sıva: birkaç küçük tok darbe ve kum hışırtısı</summary>
         private static float[] Debris(SoundSynth s)
         {
+            // Play testi 23: kazma gibi çınlayan sesler kötüydü. Yumuşak, alçak tok vuruşlar ve ardından ince kum
+            // ve sıva hışırtısı (tiz çınlama yok)
             var b = Buffer(0.9f);
-            int hits = 3 + (int)(s.Rand() * 4);
+            int hits = 1 + (int)(s.Rand() * 3);
             float t = 0f;
             for (int i = 0; i < hits; i++)
             {
-                var thud = Envelope(LowPass(s.White(0.12f), s.Range(250f, 600f)), 0.001f, 0f, s.Range(35f, 60f));
-                var grit = Envelope(HighPass(s.White(0.06f), 2200f), 0.001f, 0f, 90f);
-                float gain = Mathf.Lerp(1f, 0.35f, i / (float)hits);
-                Mix(b, Normalize(thud, 1f), t, gain);
-                Mix(b, grit, t, gain * 0.25f);
-                t += s.Range(0.04f, 0.14f);
+                var thud = Envelope(LowPass(LowPass(s.White(0.16f), s.Range(180f, 320f)), 400f), 0.002f, 0f, s.Range(22f, 34f));
+                Mix(b, Normalize(thud, 1f), t, Mathf.Lerp(1f, 0.45f, i / (float)Mathf.Max(1, hits)));
+                t += s.Range(0.06f, 0.16f);
             }
-            return Fade(Normalize(b, 0.8f));
+            for (int k = 0; k < 22; k++)
+            {
+                float at = s.Range(0.02f, 0.55f);
+                var grain = Envelope(BandPass(s.White(0.02f), s.Range(1200f, 2600f), 3f), 0.0005f, 0f, 220f);
+                Mix(b, grain, at, 0.05f * Mathf.Exp(-at * 3f));
+            }
+            return Fade(Normalize(LowPass(b, 5000f), 0.6f));
         }
 
         /// <summary>Devrilen dolap: büyük tok darbe ve tahta takırtıları</summary>
@@ -632,6 +640,26 @@ namespace Deprem.Audio
             for (int i = 0; i < wet.Length; i++) loop[i % loop.Length] += wet[i];
             return Normalize(loop, 0.8f);
         }
+        /// <summary>Konuşma balonu yazı sesi: kısa, yumuşak kare dalga "blip" (perdeyi konuşan belirler)</summary>
+        private static float[] Blip(SoundSynth s)
+        {
+            const float len = 0.055f;
+            var b = Buffer(len);
+            for (int h = 1; h <= 7; h += 2) Mix(b, Sine(len, _ => 520f * h), 0f, 1f / h);
+            Envelope(b, 0.002f, 0.012f, 70f);
+            return Fade(Normalize(LowPass(b, 2800f), 0.5f), 0.002f, 0.008f);
+        }
+
+        /// <summary>Ölüm anı: derin vuruş, altında inen uyumsuz ton, uzun yankıyla sönen</summary>
+        private static float[] DeathStinger(SoundSynth s)
+        {
+            var b = Buffer(3f);
+            Mix(b, Normalize(Impact(s, 2f, 1f), 1f), 0f, 0.8f);
+            Mix(b, Envelope(Sine(2.5f, t => 196f * Mathf.Pow(0.5f, t / 2f)), 0.01f, 0.1f, 1.2f), 0.05f, 0.25f);
+            Mix(b, Envelope(Sine(2.5f, t => 207.65f * Mathf.Pow(0.5f, t / 2f)), 0.01f, 0.1f, 1.2f), 0.05f, 0.2f);
+            return Fade(Normalize(Reverb(b, 2f, 0.4f, 0.85f), 0.95f));
+        }
+
         /// <summary>Aile üyesinin durumu görülünce: tok vuruş, uyumsuz akor, kabaran hava</summary>
         private static float[] DiscoverStinger(SoundSynth s)
         {

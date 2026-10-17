@@ -1041,6 +1041,14 @@ namespace Deprem.HouseBuilder
                     dimLight.range = Mathf.Max(room.Width, room.Height) * 1.1f;
                     dimLight.shadows = LightShadows.Soft;
                     dimLight.enabled = false;
+                    // Play testi 22-23: oyuncunun odasında tavan ortasındaki soğuk ışık arka duvarda kaynaksız bir
+                    // "rastgele mavi ışık" gibi duruyordu. Bu odada ay ışığı sol duvardaki pencereden girer
+                    if (room.Key == "oyuncu")
+                    {
+                        dim.transform.position = new Vector3(room.X0 + HouseDims.Thickness * 0.5f + 0.5f, room.FloorY + 1.75f, 2.3f);
+                        dimLight.intensity = 0.45f;
+                        dimLight.range = 4.5f;
+                    }
                     emergency.Add(dimLight);
                 }
 

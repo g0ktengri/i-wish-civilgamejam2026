@@ -162,10 +162,10 @@ namespace Deprem.Audio
 
         // ------------------------------------------------------------------ ISoundBackend (Sfx)
 
-        void ISoundBackend.Play(string key, float volume, Vector3? position)
+        void ISoundBackend.Play(string key, float volume, Vector3? position, float pitch)
         {
-            if (position.HasValue) Play3D(key, position.Value, volume);
-            else Play2D(key, volume, 0f);
+            var source = position.HasValue ? Play3D(key, position.Value, volume) : Play2D(key, volume, 0f);
+            if (source != null) source.pitch *= pitch;
         }
 
         void ISoundBackend.PlayMusic(string key, float fadeSeconds) => PlayMusic(key, fadeSeconds);

@@ -47,12 +47,11 @@ MonoBehaviour:
     pitch: {x: 0.9, y: 1.1}
   - key: quake.debris
     clips:
-    - {fileID: 8300000, guid: 307fabcddc7b6f94498e58a4befe7a15, type: 3}
-    - {fileID: 8300000, guid: 6107290b94c63c8449cefe6990c30876, type: 3}
-    - {fileID: 8300000, guid: a660aa07133095647851318e5e940a59, type: 3}
-    - {fileID: 8300000, guid: c62f441b25ca74548be512bd67fbd4d1, type: 3}
-    - {fileID: 8300000, guid: b612020c2d28a6c4b9edc67365fb9cd0, type: 3}
-    volume: 0.7
+    - {fileID: 8300000, guid: 6b436819d71e07840b0570cc69cf2466, type: 3}
+    - {fileID: 8300000, guid: d8d96626a35feff43b61007bd177fe10, type: 3}
+    - {fileID: 8300000, guid: 349566f8be9602940b727b4eaa96fd0f, type: 3}
+    - {fileID: 8300000, guid: 3649fbc5a8b98cd4694bff9f181f8687, type: 3}
+    volume: 0.5
     pitch: {x: 0.85, y: 1.15}
   - key: item.crash
     clips:
@@ -256,6 +255,16 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 9b86d1fa274263444b03c88a18fd5b6a, type: 3}
     volume: 0.9
+    pitch: {x: 1, y: 1}
+  - key: bubble.blip
+    clips:
+    - {fileID: 8300000, guid: 6c77d8f6d02d64b4ba1d5967cd5106a1, type: 3}
+    volume: 0.6
+    pitch: {x: 0.97, y: 1.03}
+  - key: player.death
+    clips:
+    - {fileID: 8300000, guid: 44835b358369a304c896457f78562f34, type: 3}
+    volume: 1
     pitch: {x: 1, y: 1}
   - key: family.discover
     clips:

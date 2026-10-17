@@ -160,7 +160,8 @@ namespace Deprem.Minigames
             if (!string.IsNullOrEmpty(carryKind))
             {
                 variant.CarryKind = carryKind;
-                variant.Carry = carryKind == "flashlight" ? CarryMode.Moving : CarryMode.Single;
+                // Play testi 23: ilk yardım çantasında duvar sabit kalıyordu; o da kayan boşluklu, diğerleri zikzak
+                variant.Carry = carryKind == "flashlight" || carryKind == "firstaid" ? CarryMode.Moving : CarryMode.Double;
             }
             ApplyTuning(variant);
             doneKey = "minigame.taken";

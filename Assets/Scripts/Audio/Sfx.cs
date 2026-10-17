@@ -20,10 +20,13 @@ namespace Deprem.Audio
         internal static ISoundBackend Backend;
 
         /// <summary>Ekrana bağlı (2D) tek seferlik ses</summary>
-        public static void Play(string key, float volume = 1f) => Backend?.Play(key, volume, null);
+        public static void Play(string key, float volume = 1f) => Backend?.Play(key, volume, null, 1f);
+
+        /// <summary>Perdesi değiştirilmiş ekran sesi (ör. konuşma balonu yazı sesi, kişiye göre)</summary>
+        public static void PlayPitched(string key, float volume, float pitch) => Backend?.Play(key, volume, null, pitch);
 
         /// <summary>Dünyada bir noktadan gelen ses (eşya, aile üyesi)</summary>
-        public static void PlayAt(string key, Vector3 position, float volume = 1f) => Backend?.Play(key, volume, position);
+        public static void PlayAt(string key, Vector3 position, float volume = 1f) => Backend?.Play(key, volume, position, 1f);
 
         /// <summary>Müzik ya da uzun ambiyans; aynı anda tek müzik çalar, öncekiyle yumuşak geçiş</summary>
         public static void PlayMusic(string key, float fadeSeconds = 1f) => Backend?.PlayMusic(key, fadeSeconds);
@@ -36,7 +39,7 @@ namespace Deprem.Audio
 
     internal interface ISoundBackend
     {
-        void Play(string key, float volume, Vector3? position);
+        void Play(string key, float volume, Vector3? position, float pitch);
         void PlayMusic(string key, float fadeSeconds);
         void StopMusic(float fadeSeconds);
         void SetTension(float value);

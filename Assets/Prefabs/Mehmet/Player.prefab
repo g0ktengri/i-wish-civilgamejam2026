@@ -218,10 +218,6 @@ MonoBehaviour:
   getUpDropStart: 0.15
   getUpHold: 0.45
   getUpFacing: 1
-  leftKey: 15
-  rightKey: 18
-  jumpKey: 1
-  crouchKey: 33
 --- !u!114 &5532818211175703949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -234,7 +230,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aa2731d9e6e30c47a6b89df1b1adbd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.PlayerInteractor
-  interactKey: 20
 --- !u!114 &2938270592028414152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -255,6 +250,9 @@ MonoBehaviour:
   charsPerSecond: 45
   popTime: 0.18
   minReadTime: 1.2
+  blipPitch: 1
+  blipEvery: 2
+  blipVolume: 0.4
 --- !u!114 &165845842698080658
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -270,7 +268,7 @@ MonoBehaviour:
   stepInterval: 0.32
   crouchStepInterval: 0.5
   stairStepInterval: 0.3
-  stepVolume: 1
+  stepVolume: 0.45
   landVolume: 0.9
 --- !u!114 &8684074246600651156
 MonoBehaviour:

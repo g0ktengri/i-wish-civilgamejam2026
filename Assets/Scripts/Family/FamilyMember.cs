@@ -61,7 +61,7 @@ namespace Deprem.Family
         [SerializeField] private float revealIntensity = 3f;
         [SerializeField] private float revealRange = 4.5f;
         [SerializeField] private Color revealColor = new Color(0.85f, 0.9f, 1f);
-        [SerializeField] private Key interactKey = Key.F;
+        private static Key interactKey => Deprem.Player.KeyBindings.Interact; // M40: ayarlardan değiştirilebilir
 
         [Header("Görünüş")]
         [SerializeField] private Transform visual;

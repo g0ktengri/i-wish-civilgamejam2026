@@ -79,10 +79,6 @@ MonoBehaviour:
   bedHeight: 0.66
   standUpOffsetX: 0
   bedEdgeOffsetZ: 0.75
-  standUpKey: 20
-  walkLeftKey: 15
-  walkRightKey: 18
-  duckCoverKey: 33
   shelfImpactShake: 0.85
   debrisMaterial: {fileID: 2100000, guid: 71e340dba9c327b4ba118e7a598bbf0e, type: 2}
   rubbleInterval: {x: 0.35, y: 0.7}
