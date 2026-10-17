@@ -18,6 +18,8 @@ namespace Deprem.UI
         public Sprite bubbleTail;
         [Tooltip("hud_ipucu.png, 192 x 32, 9-slice (kenar 8 px): tuş ipucu, sayaç ve hedef panelleri")]
         public Sprite panel;
+        [Tooltip("hud_ok.png, 32 x 32: ekran kenarındaki yön oku, sağa bakar (kod döndürür ve renklendirir; beyaz çizin)")]
+        public Sprite arrow;
 
         static UiStyle current;
         static bool loaded;

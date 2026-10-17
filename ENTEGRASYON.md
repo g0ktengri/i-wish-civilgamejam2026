@@ -21,7 +21,7 @@
 
 ## Berke → Mehmet
 
-*Son güncelleme: Berke'nin Claude'u, 17 Ekim gece (M13 çanta geri bildirimi bittikten sonra)*
+*Son güncelleme: Berke'nin Claude'u, 18 Ekim (M14 kurtarma hedefi bittikten sonra)*
 
 ### Berke'nin pushladıkları
 
@@ -44,7 +44,7 @@
 | Duraklatma | `Scripts/UI/PauseMenu.cs` | Esc: Devam et / Dil / Ana menü. `Time.timeScale = 0` ve `GameEvents.RaisePauseChanged(true/false)`. Minigame açıkken Esc minigame'i kapatır; keşke/final ekranında duraklatma yok. |
 | Ortak UI stili | `Scripts/UI/UiStyle.cs`, `Resources/UiStyle.asset`, `UiBuilder` | Font, balon ve panel bütün oyunda tek yerden. `UiBuilder.CreatePanel(parent, ad)` HUD paneli, `UiBuilder.CreateSpeechBubble(parent, font)` konuşma balonu (`UiBubble`). Görsel yoksa düz renkli kenarlıklı kutu. `UiBuilder.DefaultFont` artık Assets/Art/Fonts'taki fontu döndürür. |
 | Çanta HUD'u | `Scripts/UI/BagHud.cs` | Ruh fazı, ana deprem ve kurtarmada sol altta "Çanta" + çantadaki malzemelerin ikonları (ikon yoksa renkli kare). Sadece konanlar görünür, eksikler gösterilmez. Malzeme konunca ortada 2 sn "El feneri deprem çantasında", ikon büyüyüp yerine oturur, çantada kısa sarı parlama (M13). |
-| Kurtarma hedefi | `Scripts/UI/ObjectiveHud.cs` | `Rescue` fazında sol üstte "Aileni bul ve deprem kabinine götür"; altında 7 sn "Merdiven altındaki deprem kabini: ailen içine girerse güvende." (M11) |
+| Kurtarma hedefi | `Scripts/UI/ObjectiveHud.cs` | `Rescue` başında ortada 3 sn "Ailen tehlikede! Onları bul ve kabine götür". Sol üstte hedef ve "Aile: bulunan x/3 · kabinde y/3" (`FamilyMemberRescued`, `FamilyMemberEnteredCabin`), altında 7 sn kabin açıklaması. Ekran dışındaki, bulunmamış üyeye ekran kenarında sarı ok ve adı (`Marker_Father/Mother/Sibling`); herkes bulununca kabine yeşil ok (`Marker_CabinEntrance`). (M11, M14) |
 | Ana menüye dönüş | `LoopManager.ReturnToMenu()` | `GameState.ResetAll()` + sahneyi yeniden yükler; menü tekrar açılır. |
 
 ### Mehmet'in yaptıkları (Berke tarafı okudu)
@@ -62,6 +62,7 @@
   - Kilitle: 3 isabet gerekir. Her isabette yeşil alan %30 daralır ve ibre hızlanır; ıskalayınca bir isabet geri gider.
 - **M7. Ruh sınırı:** `SpiritController` artık `HouseBounds.Instance.ClampToHouse(pozisyon, 0.3)` kullanıyor; `HouseBounds` yoksa eski renderer sınırlarına düşüyor.
 - **M8. Kontur shader'ı:** Bağlandı. `SpiritHighlighter`, `ItemOutline` olan eşyalara artık point light koymuyor; ruhun yanındaki eşyada `SetEmphasis(true)`, uzaklaşınca `false` çağırıyor. Konturu olmayan eşyaya yedek ışık konuyor.
+- **M14. Kurtarma hedefi: hazır.** `ObjectiveHud` (tablo). Büyük yazı, Aile sayacı ve ekran kenarı okları. Ok hedefi işaret noktası (ezilen üye ~1 m yakında yattığı için yeterli); üye `MarkRescued` olunca oku kalkar. Metinler `objective.banner`, `objective.family`, `family.*`. İstek: `Sablonlar/UI/hud_ok.png` (32 × 32, sağa bakan beyaz ok) şablonu. Kurtarmanın başında senin "Ailem! Onları bulmalıyım!" balonun ve benim büyük yazım aynı anda çıkacak; çok kalabalık olursa yazıyı 1 sn geciktiririm, söyle.
 - **M13. Çanta geri bildirimi: hazır.** `BagHud` (tablo). Geri bildirim `GameEvents.BagItemCollected` ile tetikleniyor, yani çantaya her konuşta çalışıyor. Çanta kabinin önüne taşınınca kodda iş yok; görsel ve parlama `Marker_Bag`'in olduğu yerde çıkar. Metinler `hud.bag`, `bag.added`. Eksik malzemeleri bilerek göstermiyorum: oyuncu neyin gerektiğini keşke ekranından öğrensin (farkındalık hedefi).
 - **M12. Font: eklendi.** `Assets/Art/Fonts/PixelifySans.ttf` + `OFL.txt`. Kaynak: Google Fonts (github.com/google/fonts, `ofl/pixelifysans`), lisans SIL Open Font License 1.1. Dosyanın cmap tablosu denetlendi: ğ Ğ ş Ş ı İ ç Ç ö Ö ü Ü ve · × … — ’ dahil hepsi var (574 glif), Tiny5/Silkscreen'e gerek kalmadı. Prefab kurucusu fontu `UiStyle.font` ve Berke'nin bütün UI bileşenlerine bağlıyor; import ayarı keskin piksel (`HintedRaster`). `UiBuilder.DefaultFont` kullanan her şey (balon, kabin tabelası, tutma çubuğu) fontu kendiliğinden alır. Teslim formunda Diğer > Hazır kaynak olarak beyan edilecek.
 - **F ipuçları ve boş anahtar:** Ruh fazındaki ipuçlarım `PromptChanged` ile değil, kendi `SpiritHud`'umda çiziliyor; boş anahtar gelmesi sorun değil.
@@ -117,6 +118,7 @@ Berke'nin minigame, çanta, HUD ve menü görselleri `Assets/Art/UI/<ad>.png` do
 | `minigame_ibre` | 8 × 32 | Kilitle'deki gidip gelen ibre | **yok** |
 | `hud_ipucu` | 192 × 32, 9-slice | Bütün HUD panelleri: tuş ipucu, ruh sayacı, kurtarma hedefi (UiStyle.panel) | var |
 | `konusma_balonu` | 48 × 32, 9-slice | Konuşma balonu gövdesi (UiStyle.bubble) | **yok** (M10) |
+| `hud_ok` | 32 × 32 | Ekran kenarındaki yön oku, sağa bakar; beyaz çizilir, kod renklendirir (UiStyle.arrow) | **yok** (M14) |
 | `konusma_balonu_kuyruk` | 16 × 12 | Balonun altındaki kuyruk, ucu aşağıda (UiStyle.bubbleTail) | **yok** (M10) |
 | `menu_arka_plan` | 960 × 540 | Ana menü arka planı (kapak görseli olabilir) | **yok** |
 | `logo` | serbest (öneri 320 × 96) | Oyunun adı; varsa menüde yazı yerine | **yok** |

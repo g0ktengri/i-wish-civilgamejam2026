@@ -16,3 +16,4 @@ MonoBehaviour:
   bubble: {fileID: 0}
   bubbleTail: {fileID: 0}
   panel: {fileID: 0}
+  arrow: {fileID: 0}

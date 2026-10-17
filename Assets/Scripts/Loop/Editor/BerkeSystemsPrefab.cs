@@ -63,6 +63,7 @@ namespace Deprem.Loop.EditorTools
             ("bubble", "konusma_balonu"),
             ("bubbleTail", "konusma_balonu_kuyruk"),
             ("panel", "hud_ipucu"),
+            ("arrow", "hud_ok"),
         };
 
         [MenuItem("Tools/Deprem/Berke: Sistem Prefab'ını Kur")]
