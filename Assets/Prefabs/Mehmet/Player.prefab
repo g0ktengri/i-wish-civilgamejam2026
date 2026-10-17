@@ -112,6 +112,7 @@ GameObject:
   - component: {fileID: 3811161841924820453}
   - component: {fileID: 5532818211175703949}
   - component: {fileID: 2938270592028414152}
+  - component: {fileID: 165845842698080658}
   - component: {fileID: 8684074246600651156}
   - component: {fileID: 3980672761434934324}
   - component: {fileID: 704763786387298917}
@@ -213,6 +214,10 @@ MonoBehaviour:
   crouchHeight: 1
   radius: 0.25
   groundCheckDistance: 0.08
+  getUpDuration: 1.2
+  getUpDropStart: 0.15
+  getUpHold: 0.45
+  getUpFacing: 1
   leftKey: 15
   rightKey: 18
   jumpKey: 1
@@ -244,11 +249,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.SpeechBubble
   headHeight: 2.1
   lyingHeadHeight: 1.15
+  font: {fileID: 12800000, guid: b130f425b0541a64e94ef955310244fb, type: 3}
   fontSize: 18
   maxTextWidth: 260
   charsPerSecond: 45
   popTime: 0.18
   minReadTime: 1.2
+--- !u!114 &165845842698080658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4785924010238185731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51b451cc198a5b04e9d99f3c39ded540, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Player.PlayerFootsteps
+  stepInterval: 0.32
+  crouchStepInterval: 0.5
+  stepVolume: 0.35
+  landVolume: 0.7
 --- !u!114 &8684074246600651156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -315,6 +337,15 @@ MonoBehaviour:
   deathFps: 8
   deathOffsetX: -0.53125
   crouchedScale: {x: 0.95, y: 0.72}
+  getUpFrames:
+  - {fileID: 2800000, guid: 6177cc3b3ffe44547ab5d64bbc8376d1, type: 3}
+  - {fileID: 2800000, guid: 1be9bff0972bd8d4f8e681615576049b, type: 3}
+  - {fileID: 2800000, guid: 093af36bc28ec3b4ba7d2f56476cfc69, type: 3}
+  - {fileID: 2800000, guid: 8de5df6a8d379234b83a21cde238442e, type: 3}
+  - {fileID: 2800000, guid: 429064395c47e4d4798aafe74cc51d6d, type: 3}
+  - {fileID: 2800000, guid: 5ce6de27048eee34a8488837f10dd4d3, type: 3}
+  lyingArtOffset: {x: -0.37, y: -0.75}
+  standArtOffset: {x: -0.37, y: -0.16}
   moveThreshold: 0.2
 --- !u!114 &3980672761434934324
 MonoBehaviour:
