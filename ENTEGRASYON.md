@@ -1118,7 +1118,37 @@ Mehmet'in yorumu (özet):
 - **Acil durum ışıkları:** tavan ortasından odanın önüne (kamera tarafı, yarı yükseklik) taşındı, gölgesiz, daha az mavi.
 - **Kardeş ipucu:** artık odaya girişte tetikleniyor (`RoomVisibility.SameRoom`). Fenersiz arama süresi odaya girişten itibaren 6 sn. `texts.csv`'de yalnız `bubble.family_missing.flashlight` metni değişti.
 - **Ölüm zamanlaması:** tavandan düşen sıvanın alt kenarı başın tepesine inince ölüm başlıyor (en fazla 1,5 sn).
-- **M49 sesi:** `spirit.rise` ses bankasında. Yaklaşık 1,1 sn yükselen, titreşen iki ton ve hava sesi, sonda hafif bir çan; yankıyla ~2 sn'de söner. `Sfx.Play("spirit.rise")` artık çalıyor.
+- **M49 sesi (Mehmet):** `spirit.rise` ses bankasında. Yaklaşık 1,1 sn yükselen, titreşen iki ton ve hava sesi, sonda hafif bir çan; yankıyla ~2 sn'de söner. `Sfx.Play("spirit.rise")` artık çalıyor.
+
+### Play testi 27: görev dağılımı
+
+Mehmet'in yorumu (özet):
+- Ölüm ekranına siyah daha yavaş (fade in) girsin.
+- Eğilince (çök-kapan) eşyaların yanında çıkan tuş ipucu sadece ilk sefer çıksın.
+- **Hayalet hâlâ çok yukarıda, zemini göremiyoruz.** Oyuncu hayattayken nerede duruyorsa ruh da orada durabilsin, aşağı inebilsin.
+- Soldaki envanterde el feneri simgesi çok kötü.
+- Babanın kapısı açılmıyorsa ("kapı açılmıyor") boş boş bekliyoruz. Deprem olsun, oyun bitsin. Sadece ilk oynayışta (ruh fazı açılmadan) bitmesin, orada oyuncu yukarı çıkıp anneyi görecek.
+- Mavi ışık hâlâ duruyor.
+
+**Berke'ye düşen**
+
+- **M50. Ruh yerde durabilsin (M45'i geri al):**
+  - Ruh, oyuncunun yaşarkenki seviyesine kadar inebilsin: `floorClearance`'ı kaldır ya da ayak zemine değecek kadar düşür.
+  - Süzülme kalsın ama ruhun alt sınırı zemin olsun. Kamera zemini göstersin.
+  - M48'deki erişim çizgisi kalabilir.
+- **M51. Envanterdeki el feneri simgesi (sol alt çanta paneli):**
+  - Kodla çizilen simge çirkin. Daha okunur bir el feneri: yatay gövde, önde geniş başlık ve camı, küçük düğme, 2 tonlu gölge.
+  - İstersen diğer simgeleri de aynı dille elden geçir. Sanatçı çizimi gelirse `ikon_el_feneri.png`.
+- **M52. Keşke ekranı siyahtan yavaşça açılsın:**
+  - Ben ölümde ekranı yavaşça siyaha indiriyorum (~1,4 sn).
+  - Keşke ekranı (`WishScreen`) bu siyahın üstünde sert açılmasın; siyahtan yumuşakça (0,6–0,8 sn) belirsin.
+
+**Mehmet'in yapacakları (bilgi için)**
+
+1. **Mavi ışık:** kaynağı oyuncuyu takip eden `NightSight` ışığı (mavimsi, ayağın dibinde havuz) ve elektrik kesikken öndeki soğuk dolgu, acil durum ve pencere ışıkları. Hepsi nötr, sıcak griye çekiliyor; `NightSight` yumuşuyor.
+2. **Kilitli kapı:** ruh fazı açılmış döngülerde kilitli kapıyı açmaya çalışınca oyuncu "Eyvah, kapı açılmıyor!" der, artçı gelir, tavan çöker. Keşke: kapıyı kapatan eşya (`RescueTimeout`, o eşya). İlk döngülerde eski davranış.
+3. **Çök-kapan tuş ipucu:** bir kez başarıyla yapıldıktan sonra gösterilmiyor (PlayerPrefs `tutorial.duck_cover`). Yanlış yerde basınca çıkan uyarı kalıyor.
+4. **Ölüm:** siyah daha erken başlayıp daha yavaş iniyor.
 
 ---
 
