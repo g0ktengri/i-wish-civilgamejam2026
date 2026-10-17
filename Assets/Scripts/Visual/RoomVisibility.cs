@@ -86,7 +86,19 @@ namespace Deprem.Visual
 
         private bool Visible(int i) => revealed[i] || (spiritMode && spiritSeen[i]);
 
+        /// <summary>Oda örtüleri (Berke'nin ana menüsü arka plan görüntüsünü çekerken bunları bir anlığına gizler)</summary>
+        public IEnumerable<Renderer> Covers
+        {
+            get
+            {
+                if (areas == null) yield break;
+                foreach (var area in areas)
+                    if (area.cover != null) yield return area.cover;
+            }
+        }
+
         /// <summary>Noktanın odasının anahtarı (HouseLayout: "kardes", "ebeveyn"...); oda bulunamazsa null</summary>
+
         public string RoomKeyAt(Vector3 position)
         {
             if (areas == null) return null;

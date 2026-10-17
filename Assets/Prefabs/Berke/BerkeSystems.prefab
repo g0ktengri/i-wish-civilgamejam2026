@@ -224,6 +224,9 @@ MonoBehaviour:
   hintFontSize: 18
   warningSeconds: 10
   promptBottomOffset: 60
+  worldPromptFontSize: 16
+  worldLift: 10
+  screenMargin: 12
   sortingOrder: 50
 --- !u!114 &5672897155684826516
 MonoBehaviour:
@@ -350,7 +353,6 @@ MonoBehaviour:
   worldFontSize: 16
   worldLift: 10
   screenMargin: 12
-  playerHeadHeight: 2.1
   sortingOrder: 60
 --- !u!114 &1766816693970637449
 MonoBehaviour:

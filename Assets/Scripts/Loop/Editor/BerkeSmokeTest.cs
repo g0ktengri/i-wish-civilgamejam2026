@@ -36,6 +36,7 @@ namespace Deprem.Loop.EditorTools
                 {
                     TestPrefab(prefab);
                     TestCinematicHud();
+                    TestWorldPrompts();
                     var host = new SerializedObject(prefab.GetComponent<MinigameHost>());
                     var panelSize = host.FindProperty("panelSize").vector2Value;
                     TestLock(host, panelSize);
@@ -109,7 +110,47 @@ namespace Deprem.Loop.EditorTools
             }
         }
 
+        // ------------------------------------------------------------------ İpuçları objenin üstünde (M46)
+
+        // Konum verilince "F" ipucu alttaki yerine hedefin üstündeki küçük ipucunda çıkmalı (oyuncu ve ruh)
+        static void TestWorldPrompts()
+        {
+            var cam = new GameObject("PromptTestCamera", typeof(Camera));
+            cam.tag = "MainCamera";
+            cam.transform.position = new Vector3(0f, 1f, -10f);
+            var root = new GameObject("PromptTest");
+            var playerAnchor = typeof(Deprem.Player.PlayerInteractor).GetProperty("PromptAnchor");
+            var spiritAnchor = typeof(Deprem.Spirit.SpiritInteractor).GetProperty("PromptAnchor");
+            try
+            {
+                var hud = root.AddComponent<PromptHud>();
+                hud.GetType().GetMethod("Awake", Flags).Invoke(hud, null);
+                playerAnchor.SetValue(null, (Vector3?)new Vector3(1f, 2f, 0f));
+                hud.GetType().GetMethod("HandlePromptChanged", Flags).Invoke(hud, new object[] { "prompt.interact" });
+                var world = (UiPrompt)hud.GetType().GetField("worldPrompt", Flags).GetValue(hud);
+                var bottom = (UiPrompt)hud.GetType().GetField("prompt", Flags).GetValue(hud);
+                Check(world.gameObject.activeSelf && !bottom.gameObject.activeSelf, "İpucu: oyuncunun F ipucu hedefin üstünde");
+
+                var spiritHud = root.AddComponent<SpiritHud>();
+                spiritHud.GetType().GetMethod("Awake", Flags).Invoke(spiritHud, null);
+                spiritAnchor.SetValue(null, (Vector3?)new Vector3(-1f, 1.5f, 0f));
+                spiritHud.GetType().GetField("promptText", Flags).SetValue(spiritHud, "F: Sabitle");
+                spiritHud.GetType().GetMethod("PlacePrompt", Flags).Invoke(spiritHud, null);
+                var spiritWorld = (UiPrompt)spiritHud.GetType().GetField("worldPrompt", Flags).GetValue(spiritHud);
+                var spiritBottom = (UiPrompt)spiritHud.GetType().GetField("prompt", Flags).GetValue(spiritHud);
+                Check(spiritWorld.gameObject.activeSelf && !spiritBottom.gameObject.activeSelf, "İpucu: ruhun F ipucu hedefin üstünde");
+            }
+            finally
+            {
+                playerAnchor.SetValue(null, null);
+                spiritAnchor.SetValue(null, null);
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(cam);
+            }
+        }
+
         // ------------------------------------------------------------------ Prefab
+
 
 
         static void TestPrefab(GameObject prefab)

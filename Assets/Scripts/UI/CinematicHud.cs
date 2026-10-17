@@ -1,6 +1,6 @@
 using System;
-using System.Reflection;
 using Deprem.Localization;
+using Deprem.Quake;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -11,7 +11,7 @@ namespace Deprem.UI
     // - Cinematic.IsPlaying iken üstte ve altta siyah sinema bantları yumuşakça girer, oyun içi HUD'lar (ipucu, hedef ve
     //   oklar, çanta, ruh sayacı) gizlenir; bitince bantlar çıkar, HUD'lar döner. Duraklatma (Esc) çalışır.
     // - Cinematic.CanSkip iken sağ altta "Boşluk (basılı tut): Geç" ve dolan halka; basılı tutulunca Cinematic.Skip().
-    // Cinematic sınıfı yansımayla okunur: gelmeden de derlenir; yokken hiçbir şey görünmez.
+    // Cinematic önce yansımayla okunuyordu (sınıf gelmeden derlensin diye); geldiği için artık doğrudan çağrılır.
     public class CinematicHud : MonoBehaviour
     {
         [SerializeField] Font font;
@@ -37,21 +37,14 @@ namespace Deprem.UI
         bool skipped;
         static Sprite ringSprite;
 
-        // Yansıma: Deprem.Quake.Cinematic (IsPlaying, CanSkip, Skip)
-        static bool lookedUp;
-        static PropertyInfo isPlaying;
-        static PropertyInfo canSkip;
-        static FieldInfo isPlayingField;
-        static FieldInfo canSkipField;
-        static MethodInfo skip;
 
         // Gizlenen oyun içi HUD kanvasları (PromptHud, ObjectiveHud, BagHud, SpiritHud'un kurduğu adlarla). Sadece bunlar:
         // bütün sistemler aynı BerkeSystems objesinde, onun altındaki her kanvası kapatmak PixelScreen'i (oyunun
         // görüntüsü) de kapatıp ekranı siyah bırakıyordu. Kendi kodları alpha'larıyla oynamaya devam eder.
         static readonly string[] HudCanvases = { "PromptCanvas", "ObjectiveCanvas", "BagHudCanvas", "SpiritHudCanvas" };
 
-        public static bool Playing => Read(isPlaying, isPlayingField);
-        static bool Skippable => Read(canSkip, canSkipField);
+        public static bool Playing => Cinematic.IsPlaying;
+        static bool Skippable => Cinematic.CanSkip;
 
         void Awake() => BuildCanvas();
 
@@ -89,7 +82,7 @@ namespace Deprem.UI
                 skipped = true;
                 hold = 0f;
                 Audio.Sfx.Play("ui.click");
-                skip?.Invoke(null, null);
+                Cinematic.Skip();
             }
         }
 
@@ -99,36 +92,8 @@ namespace Deprem.UI
             foreach (var canvas in FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (Array.IndexOf(HudCanvases, canvas.name) >= 0)
                     canvas.enabled = !hidden;
-
         }
 
-        static bool Read(PropertyInfo property, FieldInfo field)
-        {
-            LookUp();
-            try
-            {
-                object value = property != null ? property.GetValue(null) : field?.GetValue(null);
-                return value is bool b && b;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        static void LookUp()
-        {
-            if (lookedUp) return;
-            lookedUp = true;
-            var type = Type.GetType("Deprem.Quake.Cinematic, Assembly-CSharp");
-            if (type == null) return;
-            const BindingFlags flags = BindingFlags.Public | BindingFlags.Static;
-            isPlaying = type.GetProperty("IsPlaying", flags);
-            canSkip = type.GetProperty("CanSkip", flags);
-            isPlayingField = isPlaying == null ? type.GetField("IsPlaying", flags) : null;
-            canSkipField = canSkip == null ? type.GetField("CanSkip", flags) : null;
-            skip = type.GetMethod("Skip", flags, null, Type.EmptyTypes, null);
-        }
 
         void BuildCanvas()
         {
@@ -211,13 +176,5 @@ namespace Deprem.UI
             }
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetOnPlay()
-        {
-            lookedUp = false;
-            isPlaying = canSkip = null;
-            isPlayingField = canSkipField = null;
-            skip = null;
-        }
     }
 }

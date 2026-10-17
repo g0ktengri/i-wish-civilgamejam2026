@@ -117,14 +117,18 @@ namespace Deprem.UI
                 small = new RenderTexture(96, 54, 0) { name = "MenuSnapshotBlur", filterMode = FilterMode.Bilinear };
             }
             // Oda örtüleri (Mehmet'in RoomVisibility'si: oyuncu girmeden odalar karanlık) çekim anında gizlenir; menü
-            // açılırken hepsi kapalı olduğu için arka plan simsiyah çıkıyordu
+            // açılırken hepsi kapalı olduğu için arka plan simsiyah çıkıyordu. Örtüler RoomVisibility.Covers'tan
+            // (malzeme adına bakılmaz)
             var covers = new System.Collections.Generic.List<Renderer>();
-            foreach (var r in FindObjectsByType<Renderer>(FindObjectsSortMode.None))
-                if (r.enabled && r.sharedMaterial && r.sharedMaterial.name.StartsWith("oda_ortusu"))
-                {
-                    r.enabled = false;
-                    covers.Add(r);
-                }
+            var visibility = Visual.RoomVisibility.Instance;
+            if (visibility)
+                foreach (var r in visibility.Covers)
+                    if (r.enabled)
+                    {
+                        r.enabled = false;
+                        covers.Add(r);
+                    }
+
             var previous = cam.targetTexture;
             cam.targetTexture = big;
             cam.Render();

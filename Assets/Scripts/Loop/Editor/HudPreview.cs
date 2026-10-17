@@ -31,8 +31,10 @@ namespace Deprem.Loop.EditorTools
                 Debug.LogError("[HudPreview] Main'de kamera yok");
                 return;
             }
-            var covers = Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None)
-                .Where(r => r.sharedMaterial && r.sharedMaterial.name.StartsWith("oda_ortusu")).ToList();
+            // Edit modunda RoomVisibility.Instance yok (Awake çalışmadı): sahnedeki bileşenden
+            var visibility = Object.FindFirstObjectByType<Deprem.Visual.RoomVisibility>();
+            var covers = visibility ? visibility.Covers.ToList() : new System.Collections.Generic.List<Renderer>();
+
             Debug.Log($"[HudPreview] Oda örtüsü: {covers.Count}, kamera {cam.name} @ {cam.transform.position}");
             foreach (var (name, hide) in new[] { ("covers", false), ("clean", true) })
             {

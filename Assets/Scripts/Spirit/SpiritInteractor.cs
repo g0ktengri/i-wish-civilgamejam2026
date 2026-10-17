@@ -23,6 +23,9 @@ namespace Deprem.Spirit
         public static ISpiritTarget NearestTarget { get; private set; }
         // HUD'da gösterilecek ipucunun texts.csv anahtarı (yoksa null)
         public static string PromptKey { get; private set; }
+        // Berke'nin play testi: "F" ipucu hedefin üstünde çıksın. İpucunun dünya konumu (eşyanın tepesi ya da hedef
+        // noktasının biraz üstü); ipucu yoksa null. SpiritHud ekrana çevirir.
+        public static Vector3? PromptAnchor { get; private set; }
 
         // Sahnede MinigameHost yoksa F ile eşya anında sabitlenir (SpiritPhase ayarlar, test için)
         public bool InstantSecure { get; set; }
@@ -42,11 +45,13 @@ namespace Deprem.Spirit
             {
                 NearestTarget = target;
                 PromptKey = target.PromptKey;
+                PromptAnchor = target.Point + Vector3.up * 0.6f;
             }
             else if (item)
             {
                 Nearest = item;
                 PromptKey = "prompt.secure";
+                PromptAnchor = TopOf(item);
             }
 
             var keyboard = Keyboard.current;
@@ -117,12 +122,23 @@ namespace Deprem.Spirit
         }
 
 
+        // Eşyanın görünen kutusunun tepesinin ortası (biraz yukarıda); kutu yoksa eşyanın 1,2 m üstü
+        static Vector3 TopOf(SecurableItem item)
+        {
+            var collider = item.GetComponent<Collider>();
+            if (!collider) return item.transform.position + Vector3.up * 1.2f;
+            var bounds = collider.bounds;
+            return new Vector3(bounds.center.x, bounds.max.y + 0.15f, bounds.min.z);
+        }
+
         static void Clear()
         {
             Nearest = null;
             NearestTarget = null;
             PromptKey = null;
+            PromptAnchor = null;
         }
+
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetOnPlay() => Clear();

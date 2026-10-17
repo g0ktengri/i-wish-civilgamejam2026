@@ -86,6 +86,22 @@ Dört test geçiyor; Play'de denenmedi.
   - Portmantonun kapakları artık sola, mutfağa bakıyor. Yine kameraya doğru devrilip kapıyı kapatıyor.
   - Yeni önizlemeler: `Logs/house_preview_giris_dis.png`, `_giris_portmanto.png`.
 
+### Teknik borç ve ruh ipuçları (Berke)
+
+Dört test geçiyor; ipucu kontrolleri Berke testinde.
+
+- **Yansıma kalktı:** senin sınıflarını artık doğrudan çağırıyorum. Bir adı değiştirirsen sessizce bozulmak yerine derleme hatası verir.
+  - `PlayerInteractor.PromptAnchor` (`PromptHud`)
+  - `BagLessons.IsLearned` / `Clear` (`BagLessonGate`)
+  - `FamilyMember.BeingSearched` (`ObjectiveHud`)
+  - `Cinematic.IsPlaying` / `CanSkip` / `Skip` (`CinematicHud`)
+- **`RoomVisibility.Covers` (senin dosyana küçük ek):** oda örtülerini veren salt okunur özellik. Ana menü arka planı çekilirken örtüleri bununla gizliyorum; önce `oda_ortusu` malzeme adına bakıyordum.
+- **Ruh ipuçları hedefin üstünde:**
+  - "F: Sabitle", "F: Al", "F: Çantaya koy" artık eşyanın tepesinde ya da malzemenin üstünde, daha küçük; ekran kenarına taşmıyor.
+  - Yeni `SpiritInteractor.PromptAnchor` (`SpiritHud` gösterir).
+  - Senin oyuncu ipuçların (`PromptHud` + `PromptAnchor`) zaten böyleydi.
+- Eski hâl Berke'de yerel `yedek/teknik-borc-oncesi` dalında.
+
 ### Arayüz turu 4–5: canlı ana menü arka planı ve ekip logosu (Berke)
 
 Berke Play'de denedi; dört test geçiyor.

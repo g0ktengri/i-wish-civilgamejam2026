@@ -1,4 +1,3 @@
-using System.Reflection;
 using Deprem.Core;
 using Deprem.Localization;
 using UnityEngine;
@@ -11,7 +10,7 @@ namespace Deprem.UI
     // çubuğu ile çakışmaz.
     // M46 (Mehmet'in play testi 24): ipucu ilgili objenin üstünde ve daha küçük. Konum Mehmet'in
     // Deprem.Player.PlayerInteractor.PromptAnchor'ından (statik Vector3?, dünya koordinatı); null ise eski yerinde
-    // (alt orta). O alan henüz yoksa oyuncunun başının üstü. Ekran kenarına taşmaz.
+    // (alt orta). Ekran kenarına taşmaz.
     public class PromptHud : MonoBehaviour
     {
         [SerializeField] Font font;
@@ -25,20 +24,16 @@ namespace Deprem.UI
         [SerializeField] float worldLift = 10f;
         [Tooltip("Ekran kenarından en az bu kadar içeride (referans pikseli)")]
         [SerializeField] float screenMargin = 12f;
-        [Tooltip("PromptAnchor yokken oyuncunun başının üstü: oyuncu pivotundan yükseklik (m)")]
-        [SerializeField] float playerHeadHeight = 2.1f;
+
         [SerializeField] int sortingOrder = 60;
 
         UiPrompt prompt;
         UiPrompt worldPrompt;
         RectTransform canvasRect;
-        Transform player;
+
         string key = string.Empty;
         string text = string.Empty;
 
-        static bool anchorLookedUp;
-        static PropertyInfo anchorProperty;
-        static FieldInfo anchorField;
 
         void Awake()
         {
@@ -110,34 +105,7 @@ namespace Deprem.UI
             worldPrompt.Rect.anchoredPosition = new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
-        // Mehmet'in PromptAnchor'ı (yansımayla: o alan gelmeden de derlensin); alan hiç yoksa oyuncunun başı
-        Vector3? Anchor()
-        {
-            if (!anchorLookedUp)
-            {
-                anchorLookedUp = true;
-                var type = System.Type.GetType("Deprem.Player.PlayerInteractor, Assembly-CSharp");
-                const BindingFlags flags = BindingFlags.Public | BindingFlags.Static;
-                anchorProperty = type?.GetProperty("PromptAnchor", flags);
-                anchorField = anchorProperty == null ? type?.GetField("PromptAnchor", flags) : null;
-            }
-            if (anchorProperty != null) return anchorProperty.GetValue(null) as Vector3?;
-            if (anchorField != null) return anchorField.GetValue(null) as Vector3?;
-
-            if (!player)
-            {
-                var playerObject = GameObject.Find("Player");
-                if (playerObject) player = playerObject.transform;
-            }
-            return player ? player.position + Vector3.up * playerHeadHeight : (Vector3?)null;
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetOnPlay()
-        {
-            anchorLookedUp = false;
-            anchorProperty = null;
-            anchorField = null;
-        }
+        // Mehmet'in PromptAnchor'ı (önce yansımayla okunuyordu; alan geldiği için artık doğrudan)
+        static Vector3? Anchor() => Player.PlayerInteractor.PromptAnchor;
     }
 }
