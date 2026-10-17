@@ -131,18 +131,38 @@ namespace Deprem.Loop.EditorTools
             RenderScene("menu_main", root =>
             {
                 var menu = root.AddComponent<MainMenu>();
+                typeof(MainMenu).GetField("teamLogo", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/takim_logo.png"));
                 Call(menu, "Awake");
                 var screens = typeof(MainMenu).GetNestedType("Screen", BindingFlags.NonPublic);
                 Call(menu, "Show", System.Enum.Parse(screens, "Main"));
                 var backdrop = Get<UiBackdrop>(menu, "backdrop");
                 if (backdrop) backdrop.SetTexture(HouseBlur());
             });
+            // Arayüz turu 4-5: hareketli arka planın bir anı (yakınlaşmış, yağmur)
+            RenderScene("menu_motion", root =>
+            {
+                var menu = root.AddComponent<MainMenu>();
+                typeof(MainMenu).GetField("teamLogo", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/takim_logo.png"));
+                Call(menu, "Awake");
+                var screens = typeof(MainMenu).GetNestedType("Screen", BindingFlags.NonPublic);
+                Call(menu, "Show", System.Enum.Parse(screens, "Main"));
+                var backdrop = Get<UiBackdrop>(menu, "backdrop");
+                if (!backdrop) return;
+                backdrop.SetTexture(HouseBlur());
+                const float t = 30f;
+                Call(backdrop, "Animate", t, 0.016f);
+                // Arayüz turu 5: yağmur (elektrik oynaması bu anda kapalı)
+                typeof(UiBackdrop).GetField("nextOutage", Flags).SetValue(backdrop, t + 100f);
+                Call(backdrop, "AnimateMotifs", t, 0.016f);
+            });
+
             // Arayüz turu 3: ana menünün emeği geçenler ve içerik uyarısı ekranları
             foreach (var (name, screen) in new[] { ("menu_credits", "Credits"), ("menu_warning", "Warning") })
             {
                 RenderScene(name, root =>
                 {
                     var menu = root.AddComponent<MainMenu>();
+                    typeof(MainMenu).GetField("teamLogo", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/takim_logo.png"));
                     Call(menu, "Awake");
                     var screens = typeof(MainMenu).GetNestedType("Screen", BindingFlags.NonPublic);
                     Call(menu, "Show", System.Enum.Parse(screens, screen));

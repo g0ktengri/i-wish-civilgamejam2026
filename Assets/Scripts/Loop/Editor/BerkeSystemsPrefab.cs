@@ -54,6 +54,7 @@ namespace Deprem.Loop.EditorTools
             (typeof(BagSystem), "bagSprite", "deprem_cantasi"),
             (typeof(MainMenu), "backgroundSprite", "menu_arka_plan"),
             (typeof(MainMenu), "logoSprite", "logo"),
+            (typeof(MainMenu), "teamLogo", "takim_logo"),
         };
 
         // "font" alanı olan bütün UI bileşenleri

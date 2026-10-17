@@ -10,7 +10,11 @@ namespace Deprem.UI
     // Arayüz turu 2 (menü çok sade duruyordu): istenirse tavandan sarkan, hafifçe sallanan pixel lamba ve sıcak ışık
     // konisi (soğuk evde sıcak ışık); Quake() ile kısa sarsıntı: görüntü titrer, lamba savrulur ve titreşir, tavandan
     // pixel moloz düşer, toz hızlanır.
-    public class UiBackdrop : MonoBehaviour
+    // Arayüz turu 4 (Berke: arka plan daha dinamik olsun; EnableMotion, ana menü): evin görüntüsü yavaşça kayıp
+    // yakınlaşır (Ken Burns), fareye göre katmanlar farklı hızda kayar (parallax: ev, lamba, toz).
+    // Arayüz turu 5 (Berke: "bunun gibi birkaç fikir"): UiBackdrop.Motifs.cs'te açılıp kapanan ek motifler: zamanı geri
+    // saran saat, elektrik oynaması, camda yağmur, kalp atışı vinyeti.
+    public partial class UiBackdrop : MonoBehaviour
     {
         const int DustCount = 28;
         const int DebrisCount = 12;
@@ -29,8 +33,14 @@ namespace Deprem.UI
         float coneAlpha;
         float swing = 2.5f;
         float quakeTime = -10f;
+        float quakeDuration = 0.6f;
         float quakeStrength;
         readonly List<(RectTransform rect, Vector2 velocity)> debris = new List<(RectTransform, Vector2)>();
+        bool motion;
+        Image vignette;
+        Vector2 parallax;
+        const float SnapshotMargin = 28f;   // kayma ve parallax için evin görüntüsü ekrandan bu kadar taşar
+        const float KenBurnsPeriod = 46f;   // bir tam kayma turu (sn)
         static Sprite vignetteSprite;
         static Sprite lampSprite;
         static Sprite coneSprite;
@@ -65,13 +75,23 @@ namespace Deprem.UI
 
             if (lampX >= 0f) backdrop.BuildLamp(root, lampX);
 
-            var vignette = UiBuilder.CreateImage(root, "Vignette", Color.white);
+            var vignette = backdrop.vignette = UiBuilder.CreateImage(root, "Vignette", Color.white);
             vignette.sprite = VignetteSprite;
             UiBuilder.Stretch(vignette.rectTransform, Vector2.zero, Vector2.one);
 
             if (withDust) backdrop.BuildDust(root);
             backdrop.BuildDebris(root);
             return backdrop;
+        }
+
+        /// <summary>Arka plan canlı dursun (ana menü): yavaş kayma ve yakınlaşma, fareyle parallax</summary>
+        public void EnableMotion()
+        {
+            if (motion) return;
+            motion = true;
+            var rect = snapshot.rectTransform;
+            rect.offsetMin = new Vector2(-SnapshotMargin, -SnapshotMargin);
+            rect.offsetMax = new Vector2(SnapshotMargin, SnapshotMargin);
         }
 
         /// <summary>Oda görüntüsü taşıyan dokuyu dışarıdan ver (önizleme: kamera yok)</summary>
@@ -109,13 +129,15 @@ namespace Deprem.UI
         {
             layer.SetParent(root, false);
             layer.SetSiblingIndex(lamp ? lamp.GetSiblingIndex() : dim.transform.GetSiblingIndex() + 1);
+
         }
 
         /// <summary>Kısa sarsıntı (0-1): görüntü titrer, lamba savrulur, moloz düşer, toz hızlanır</summary>
-        public void Quake(float strength)
+        public void Quake(float strength, float duration = 0.6f)
         {
             quakeTime = Time.unscaledTime;
             quakeStrength = Mathf.Clamp01(strength);
+            quakeDuration = Mathf.Max(0.1f, duration);
             swing = Mathf.Max(swing, 4f + 10f * quakeStrength);
             int count = Mathf.RoundToInt(DebrisCount * (0.4f + 0.6f * quakeStrength));
             for (int i = 0; i < debris.Count; i++)
@@ -208,7 +230,7 @@ namespace Deprem.UI
             if (!canvasRect) return;
             float height = Mathf.Max(1f, canvasRect.rect.height);
             float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f), t = Time.unscaledTime;
-            float shaking = Mathf.Clamp01(1f - (t - quakeTime) / 0.6f) * quakeStrength;
+            float shaking = Mathf.Clamp01(1f - (t - quakeTime) / quakeDuration) * quakeStrength;
 
             float dustSpeed = 1f + 5f * shaking;
             foreach (var (rect, speed, phase, sway) in dust)
@@ -221,17 +243,21 @@ namespace Deprem.UI
             }
 
             root.anchoredPosition = shaking > 0f
-                ? new Vector2(Mathf.Round(Random.Range(-4f, 4f) * shaking), Mathf.Round(Random.Range(-3f, 3f) * shaking))
+                ? new Vector2(Mathf.Round(Random.Range(-7f, 7f) * shaking), Mathf.Round(Random.Range(-5f, 5f) * shaking))
+
                 : Vector2.zero;
+            if (motion) Animate(t, dt);
+            AnimateMotifs(t, dt);
 
             if (lamp)
             {
                 swing = Mathf.MoveTowards(swing, 2.5f, dt * 2.5f);
                 lamp.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 1.6f) * swing);
                 // Sarsıntıda ve ara ara ışık titrer (elektrik oynuyor)
-                bool flicker = shaking > 0.05f
+                bool flicker = PowerOut || (shaking > 0.05f
                     ? Random.value < 0.35f
-                    : Mathf.Repeat(t, 7.3f) < 0.12f && Mathf.Repeat(t * 31f, 1f) < 0.5f;
+                    : Mathf.Repeat(t, 7.3f) < 0.12f && Mathf.Repeat(t * 31f, 1f) < 0.5f);
+
                 var color = cone.color;
                 color.a = flicker ? coneAlpha * 0.35f : coneAlpha;
                 cone.color = color;
@@ -247,6 +273,35 @@ namespace Deprem.UI
                 debris[i] = (rect, velocity);
                 if (rect.anchoredPosition.y < -height - 20f) rect.gameObject.SetActive(false);
             }
+        }
+
+        // Ken Burns ve parallax (gerçek zaman: menü açıkken oyun durur)
+        void Animate(float t, float dt)
+        {
+            // Yavaş kayma ve yakınlaşma: doku penceresi 1,0-1,12 arası yakınlaşır, sağ-sol ve hafif yukarı-aşağı gezer
+            float phase = t * Mathf.PI * 2f / KenBurnsPeriod;
+            float zoom = 1.06f + 0.06f * Mathf.Sin(phase * 0.5f);
+            float size = 1f / zoom;
+            float free = 1f - size;
+            float x = free * (0.5f + 0.5f * Mathf.Sin(phase));
+            float y = free * (0.5f + 0.35f * Mathf.Sin(phase * 0.7f + 1.3f));
+            snapshot.uvRect = new Rect(x, y, size, size);
+
+            // Parallax: fare ekranın ortasından ne kadar uzaksa katmanlar ters yöne o kadar kayar (yumuşak)
+            Vector2 target = Vector2.zero;
+            var mouse = UnityEngine.InputSystem.Mouse.current;
+            if (mouse != null && Screen.width > 0 && Screen.height > 0)
+            {
+                var p = mouse.position.ReadValue();
+                target = new Vector2(Mathf.Clamp(p.x / Screen.width - 0.5f, -0.5f, 0.5f),
+                    Mathf.Clamp(p.y / Screen.height - 0.5f, -0.5f, 0.5f)) * -2f;
+            }
+            parallax = Vector2.Lerp(parallax, target, 1f - Mathf.Exp(-3f * dt));
+            snapshot.rectTransform.anchoredPosition = parallax * (SnapshotMargin * 0.6f);
+            if (lamp) lamp.anchoredPosition = new Vector2(0f, -8f) + parallax * 6f;
+            foreach (var (rect, _, _, _) in dust)
+                rect.anchoredPosition += parallax * 10f;
+
         }
 
         void OnDestroy()
@@ -323,6 +378,7 @@ namespace Deprem.UI
         }
 
         // 64 x 64: ortası saydam, kenarlara doğru koyulaşan siyah (çift doğrusal, yumuşak)
+
         static Sprite VignetteSprite
         {
             get

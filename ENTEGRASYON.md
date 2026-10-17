@@ -72,6 +72,28 @@ Dört test geçiyor; Play'de denenmedi.
   - Portmantonun kapakları artık sola, mutfağa bakıyor. Yine kameraya doğru devrilip kapıyı kapatıyor.
   - Yeni önizlemeler: `Logs/house_preview_giris_dis.png`, `_giris_portmanto.png`.
 
+### Arayüz turu 4–5: canlı ana menü arka planı ve ekip logosu (Berke)
+
+Berke Play'de denedi; dört test geçiyor.
+
+- **Hareket (`UiBackdrop.EnableMotion`):**
+  - Evin bulanık görüntüsü yavaşça kayıp yakınlaşıyor (Ken Burns, ~46 sn'lik tur).
+  - Fareye göre katmanlar farklı hızda kayıyor (parallax: ev, lamba, toz).
+- **Motifler (`UI/UiBackdrop.Motifs.cs`, ana menüde Inspector'dan açılıp kapanır):**
+  - Camda yağmur.
+  - 20–30 sn'de bir elektrik oynaması: lamba ve oda birkaç kez söner, yarım saniye karanlık kalır.
+  - Kenar kararması kalp atışı ritmiyle hafifçe daralıp gevşiyor.
+  - Denenip kaldırılanlar: duvar saati, far ışığı süpürmesi.
+- **Arka planda deprem:** her üçüncü titreme (15 sn'de bir) gerçek bir sarsıntı.
+  - 1,8 sn sürüyor: görüntü ve lamba sert sallanır, moloz düşer, başlık titrer.
+  - `quake.rumble` 0,5 düzeyinde çalıyor (`bigQuakeSeconds`, `bigQuakeVolume`).
+  - Aradakiler hafif.
+- **Ekip logosu:** `Assets/Art/UI/takim_logo.png`. Ekibin gönderdiği siyah-beyaz logodan saydam, krem renkli; 112 px.
+  - Sol altta, 56 px yükseklikte, %45 opaklıkta (`MainMenu.teamLogo`, `teamLogoHeight`, `teamLogoAlpha`).
+  - Başlığın yerine geçen `logoSprite`'tan ayrı.
+  - "Civil Game Jam 2026" yazısı sol üste taşındı.
+- Önizleme: `Logs/hud_preview_menu_main.png`, `_menu_motion.png`.
+
 ### Intro: Berke'nin play testi düzeltmeleri (senin klasörlerinde izinle)
 
 Dört test geçiyor; Play'de son hali denenmedi.

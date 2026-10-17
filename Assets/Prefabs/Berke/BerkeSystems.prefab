@@ -496,10 +496,18 @@ MonoBehaviour:
   normalColor: {r: 0.82, g: 0.78, b: 0.7, a: 1}
   highlightColor: {r: 1, g: 0.82, b: 0.4, a: 1}
   tremorInterval: 5
+  bigQuakeSeconds: 1.8
+  bigQuakeVolume: 0.5
   centerShade: 0.6
   sortingOrder: 120
+  powerFlickerMotif: 1
+  rainMotif: 1
+  heartbeatMotif: 1
   backgroundSprite: {fileID: 0}
   logoSprite: {fileID: 0}
+  teamLogo: {fileID: 21300000, guid: 05864002f44128747aa651804af71593, type: 3}
+  teamLogoHeight: 56
+  teamLogoAlpha: 0.45
 --- !u!114 &994702159011302593
 MonoBehaviour:
   m_ObjectHideFlags: 0

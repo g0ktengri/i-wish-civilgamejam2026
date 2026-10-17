@@ -16,7 +16,8 @@ namespace Deprem.UI
     // HUD paneli yok. Ortalı başlık ekranı: lamba başlığın üstünde, altında iki yanı süslü alt başlık, çıplak ve büyük
     // satırlar (MenuList plain: seçili satırda iki yanda elmas, altında ortadan açılan ince çatlak); ortadaki sütun
     // yumuşak koyu bantla okunur, iki yanda ev görünür. Metinler (uyarı, emeği geçenler, onay) ortada, üstte ve altta
-    // kısa çizgiyle; tuş ipuçları sağ altta düz yazı, jam adı sol altta.
+    // kısa çizgiyle; tuş ipuçları sağ altta düz yazı, jam adı sol üstte, ekip logosu sol altta.
+
     public class MainMenu : MonoBehaviour
     {
         enum Screen { Hidden, Warning, Main, ConfirmNew, Controls, Credits }
@@ -33,17 +34,38 @@ namespace Deprem.UI
         [SerializeField] float rowHeight = 36f;
         [SerializeField] Color normalColor = new Color(0.82f, 0.78f, 0.7f);
         [SerializeField] Color highlightColor = new Color(1f, 0.82f, 0.4f);
-        [Tooltip("Başlık bu aralıkla (sn) kısa bir an titrer (deprem)")]
+        [Tooltip("Başlık bu aralıkla (sn) kısa bir an titrer (deprem); her üçüncüsü gerçek bir sarsıntı")]
         [SerializeField] float tremorInterval = 5f;
+        [Tooltip("Arka plandaki sarsıntının süresi (sn)")]
+        [SerializeField] float bigQuakeSeconds = 1.8f;
+        [Tooltip("Sarsıntıdaki uğultu sesinin düzeyi (0: sessiz)")]
+        [SerializeField] float bigQuakeVolume = 0.5f;
+
         [Tooltip("Ortadaki sütunun arkasındaki koyu bandın en koyu yeri (0-1)")]
         [SerializeField] float centerShade = 0.6f;
         [SerializeField] int sortingOrder = 120;
+
+        [Header("Arka plan motifleri (arayüz turu 5)")]
+        [Tooltip("Ara ara elektrik oynar: lamba ve oda kısa kısa söner")]
+        [SerializeField] bool powerFlickerMotif = true;
+        [Tooltip("Camda yağmur: ince soğuk çizgiler çaprazlama yağar")]
+        [SerializeField] bool rainMotif = true;
+        [Tooltip("Kenar kararması kalp atışı ritmiyle daralıp gevşer")]
+        [SerializeField] bool heartbeatMotif = true;
+
 
         [Header("Görseller (Assets/Art/UI, prefab kurulurken bağlanır)")]
         [Tooltip("menu_arka_plan.png, 960 x 540: menü arka planı")]
         [SerializeField] Sprite backgroundSprite;
         [Tooltip("logo.png: oyunun adı; varsa yazı yerine gösterilir (kendi boyutunda)")]
         [SerializeField] Sprite logoSprite;
+        [Tooltip("takim_logo.png: ekibin logosu, sol altta (başlığın yerine geçmez)")]
+        [SerializeField] Sprite teamLogo;
+        [Tooltip("Ekip logosunun yüksekliği (referans pikseli)")]
+        [SerializeField] float teamLogoHeight = 56f;
+        [Tooltip("Ekip logosunun opaklığı (0-1)")]
+        [SerializeField] float teamLogoAlpha = 0.45f;
+
 
         CanvasGroup group;
         UiBackdrop backdrop;
@@ -252,6 +274,8 @@ namespace Deprem.UI
 
         // Başlık ara ara kısa bir an titrer (deprem); oyun dururken de (gerçek zaman). Her titremenin başında arka plan
         // sarsılır (moloz, toz, lamba); her üçüncüsü daha güçlü
+        // Arayüz turu 5 (Berke: arka planda arada deprem olsun): her üçüncü titreme gerçek bir sarsıntı: uzun sürer
+        // (bigQuakeSeconds), görüntü ve lamba sert sallanır, moloz düşer, uğultu sesi gelir; aradakiler hafif
         void Tremor()
         {
             if (!titleGroup || screen == Screen.Hidden) return;
@@ -261,11 +285,12 @@ namespace Deprem.UI
             if (cycle != tremorCycle)
             {
                 tremorCycle = cycle;
-                if (backdrop) backdrop.Quake(strong ? 1f : 0.45f);
+                if (backdrop) backdrop.Quake(strong ? 1f : 0.3f, strong ? bigQuakeSeconds : 0.5f);
+                if (strong) Sfx.Play("quake.rumble", bigQuakeVolume);
             }
             float t = Time.unscaledTime % interval;
-            float amount = strong ? 3f : 2f;
-            titleGroup.anchoredPosition = t < (strong ? 0.6f : 0.35f)
+            float amount = strong ? 4f * Mathf.Clamp01(1f - t / bigQuakeSeconds) + 1f : 2f;
+            titleGroup.anchoredPosition = t < (strong ? bigQuakeSeconds : 0.35f)
                 ? titleHome + new Vector2(Mathf.Round(Random.Range(-amount, amount)), Mathf.Round(Random.Range(-amount, amount) * 0.75f))
                 : titleHome;
         }
@@ -341,7 +366,15 @@ namespace Deprem.UI
                 background.sprite = backgroundSprite;
                 UiBuilder.Stretch(background.rectTransform, Vector2.zero, Vector2.one);
             }
-            else backdrop = UiBackdrop.Create(canvas.transform, new Color(0.34f, 0.45f, 0.68f), 0.42f, true, 0.5f);
+            else
+            {
+                backdrop = UiBackdrop.Create(canvas.transform, new Color(0.34f, 0.45f, 0.68f), 0.42f, true, 0.5f);
+                backdrop.EnableMotion(); // arayüz turu 4: yavaş kayma, parallax, far ışığı
+                // Arayüz turu 5: ek motifler (Inspector'dan açılıp kapanır)
+                if (powerFlickerMotif) backdrop.EnablePowerFlicker();
+                if (rainMotif) backdrop.EnableRain();
+                if (heartbeatMotif) backdrop.EnableHeartbeat();
+            }
 
             // Ortadaki sütun okunsun diye ortası koyu, iki yana açılan bant (lambanın altında: ışığı bandın üstünde)
             shade = UiBuilder.CreateImage(canvas.transform, "CenterShade", new Color(0.01f, 0.02f, 0.04f, centerShade));
@@ -393,13 +426,30 @@ namespace Deprem.UI
             UiBuilder.Stretch(bodyText.rectTransform, Vector2.zero, Vector2.one);
             bodyRoot.gameObject.SetActive(false);
 
-            // Sol altta soluk jam adı, sağ altta tuş ipuçları
+            // Sol üstte soluk jam adı, sağ altta tuş ipuçları
             footerText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Footer", font, 14,
-                new Color(normalColor.r, normalColor.g, normalColor.b, 0.55f), TextAnchor.LowerLeft));
-            footerText.rectTransform.anchorMin = footerText.rectTransform.anchorMax = Vector2.zero;
-            footerText.rectTransform.pivot = Vector2.zero;
+                new Color(normalColor.r, normalColor.g, normalColor.b, 0.55f), TextAnchor.UpperLeft));
+            footerText.rectTransform.anchorMin = footerText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            footerText.rectTransform.pivot = new Vector2(0f, 1f);
             footerText.rectTransform.sizeDelta = new Vector2(260f, 24f);
-            footerText.rectTransform.anchoredPosition = new Vector2(14f, 10f);
+            footerText.rectTransform.anchoredPosition = new Vector2(16f, -12f);
+
+            // Sol altta ekibin logosu (krem, koyu konturlu gölge)
+
+            if (teamLogo)
+            {
+                var emblem = UiBuilder.CreateImage(canvas.transform, "TeamLogo", new Color(1f, 1f, 1f, teamLogoAlpha));
+                emblem.sprite = teamLogo;
+                var rect = emblem.rectTransform;
+                rect.anchorMin = rect.anchorMax = Vector2.zero;
+                rect.pivot = Vector2.zero;
+                float height = teamLogoHeight;
+                rect.sizeDelta = new Vector2(height * teamLogo.rect.width / Mathf.Max(1f, teamLogo.rect.height), height);
+                rect.anchoredPosition = new Vector2(16f, 12f);
+                var shadow = emblem.gameObject.AddComponent<Shadow>();
+                shadow.effectColor = new Color(0f, 0f, 0f, 0.6f * teamLogoAlpha);
+                shadow.effectDistance = new Vector2(2f, -2f);
+            }
 
             hintText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Hints", font, hintFontSize,
                 new Color(normalColor.r, normalColor.g, normalColor.b, 0.85f), TextAnchor.LowerRight));
