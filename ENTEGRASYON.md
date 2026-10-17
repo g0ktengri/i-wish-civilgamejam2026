@@ -41,6 +41,21 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 
 - **Berke smoke testi:** `Deprem.Loop.EditorTools.BerkeSmokeTest.Run` (menü: Tools > Deprem > Berke: Smoke Test). Ne dener: üç minigame'i prefab'daki ayarlarla insan gibi oynar (vida, kilit, 40 rastgele yerleşimde taşı-yerleştir), keşke cümlelerini ve dinamik metin anahtarlarını iki dilde, çanta modellerinin bağlı olduğunu kontrol eder. Senin üç testinle birlikte çalıştırabilirsin; çıktı "[BerkeTest] SONUÇ: hepsi geçti".
 
+### Play testi 20: M29–M32 (Berke)
+
+- **M29 ruh balonu:** `SpiritBubble` artık ruh çiziminin başının tepesine bağlı (`SpiritVisual.HeadTop`, evin önüne yansıtılmış sprite'tan; kuyruk başın 0,25 m üstünde, yansıtma ölçeğiyle). Ekranın üstüne taşarsa balon aşağıda kalıyor (üst kenardan 8 px pay).
+- **M30 ruh bekleme:** `SpiritVisual` dururken `ruh_bekleme_1..8` (6 fps), hareket ederken `ruh_1..8` (10 fps). İki takım aynı hizada (baş x ≈ 65 px), aynı pivot. Prefab kurucu ikisini de bağlıyor (`SpiritPhase.spiritIdleFrames`).
+- **M31 bedene dönüş:** süre bitince `SpiritPhase` hemen `MainQuake`'e geçmiyor:
+  - sayaç durur, ruh HUD'u kapanır (`Running = false`), açık minigame başarısız kapanır (`MinigameHost.CloseIfOpen`), ruh balonu gizlenir, girdi ve F etkileşimi kilitlenir (`SpiritController.Locked`);
+  - ruh, `GameObject.Find("Player")` konumuna + (0,6, 0,35) (yatan bedenin ortası) 0,8 sn'de hızlanarak uçar, sonra 0,35 sn'de küçülüp solar;
+  - en sonda `GameState.SetPhase(MainQuake)`. Senin kalkma animasyonun bunun hemen ardından başlıyor. Faz dışarıdan değişirse (ör. test) dönüş iptal olur, ruh kapanır.
+- **M32 ayarlar (`UI/SettingsMenu`, BerkeSystems prefab'ında):** ana menüde "Bölüm seç"ten sonra, duraklatmada "Devam et"ten sonra "Ayarlar".
+  - Genel ses, müzik, efekt → `Sfx.MasterVolume / MusicVolume / EffectsVolume`; ekran sarsıntısı → `QuakeCameraShake.Strength`. Hepsi %10 adımlı (A/D ya da oklar; onay / tık bir adım ileri, %100'den sonra 0).
+  - Tam ekran açık/kapalı, çözünürlük (ekranın desteklediği çözünürlükler arasında döner), dil, kontroller (ana menüdeki kontrol metni), geri.
+  - Kayıt: `SettingsStore` dört değeri PlayerPrefs'e yazar, oyun açılınca (`AfterSceneLoad`) yükleyip senin statiklerine verir. Tam ekranı ve çözünürlüğü Unity kendisi hatırlıyor; dili `Texts` saklıyor.
+  - Esc ayarları kapatır; aynı karede duraklatma ya da ana menü o tuşu işlemez (`SettingsMenu.ClosedFrame`).
+- Dört test geçiyor; ruhun dönüşü ve ayarlar testlerde yok, Play'de denenmedi. Önizleme: `Logs/hud_preview_settings.png`.
+
 ### Play testi 19: M27 aile okları, M28 minigame teması (Berke)
 
 - **M27 (`ObjectiveHud`):**

@@ -11,6 +11,8 @@ namespace Deprem.UI
     // EventSystem'siz basit dikey menü: W/S ya da oklar ile seç, F/Enter/Space ile onayla,
     // fareyle üzerine gel ve tıkla. Satır metinleri texts.csv anahtarlarından gelir.
     // M25: seçim değişince ui.move, onayda ui.click (Deprem.Audio.Sfx).
+    // M32: ayarlanabilir satır (AddAdjustable): A/D ya da sol/sağ ok değeri değiştirir, onay / tık bir adım ileri;
+    // satır metni her yenilemede değerden yeniden yazılır.
     public class MenuList
     {
         class Entry
@@ -18,7 +20,9 @@ namespace Deprem.UI
             public Text Label;
             public string Key;
             public object[] Args;
+            public Func<object[]> ArgsProvider;
             public Action Action;
+            public Action<int> Adjust;
         }
 
         readonly RectTransform parent;
@@ -62,13 +66,24 @@ namespace Deprem.UI
             Refresh();
         }
 
+        // args: her yenilemede metne verilecek değerler (null = düz metin); adjust(-1 / +1)
+        public void AddAdjustable(string key, Func<object[]> args, Action<int> adjust)
+        {
+            Add(key, null);
+            var entry = entries[entries.Count - 1];
+            entry.ArgsProvider = args;
+            entry.Adjust = adjust;
+            Refresh();
+        }
+
         public void Refresh()
         {
             for (int i = 0; i < entries.Count; i++)
             {
                 var entry = entries[i];
-                entry.Label.text = entry.Args != null && entry.Args.Length > 0
-                    ? Texts.Format(entry.Key, entry.Args)
+                var args = entry.ArgsProvider != null ? entry.ArgsProvider() : entry.Args;
+                entry.Label.text = args != null && args.Length > 0
+                    ? Texts.Format(entry.Key, args)
                     : Texts.Get(entry.Key);
                 entry.Label.color = i == selected ? highlight : normal;
             }
@@ -103,10 +118,22 @@ namespace Deprem.UI
 
             bool clicked = mouse != null && mouse.leftButton.wasPressedThisFrame && hovered >= 0;
             if (clicked) selected = hovered;
+            var current = entries[selected];
+            if (current.Adjust != null)
+            {
+                int direction = UiInput.Left() ? -1 : UiInput.Right() || clicked || UiInput.Confirm() ? 1 : 0;
+                if (direction != 0)
+                {
+                    Sfx.Play("ui.move");
+                    current.Adjust(direction);
+                    Refresh();
+                }
+                return;
+            }
             if (clicked || UiInput.Confirm())
             {
                 Sfx.Play("ui.click");
-                entries[selected].Action?.Invoke();
+                current.Action?.Invoke();
             }
         }
     }

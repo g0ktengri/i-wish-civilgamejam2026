@@ -49,6 +49,8 @@ namespace Deprem.UI
         {
             if (paused)
             {
+                // Ayarlar açıkken (ya da Esc ile bu karede kapandıysa) duraklatma tuşları işlemez
+                if (SettingsMenu.IsOpen || SettingsMenu.ClosedFrame == Time.frameCount) return;
                 if (UiInput.Back())
                 {
                     Sfx.Play("ui.back");
@@ -85,6 +87,7 @@ namespace Deprem.UI
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
                 menu.Add("menu.resume", () => SetPaused(false));
+                menu.Add("menu.settings", () => { if (SettingsMenu.Instance) SettingsMenu.Instance.Open(Refresh); });
                 menu.Add("menu.language", () => Texts.ToggleLanguage());
                 menu.Add("menu.main_menu", ReturnToMenu);
                 Refresh();

@@ -29,7 +29,10 @@ namespace Deprem.Spirit
 
         // Sadece minigame paneli ekrandayken durur (ENTEGRASYON M9). Event saymak yerine panele bakılır:
         // açılamayan minigame'de ya da event sırası karışınca ruh takılı kalmaz.
-        public bool MovementEnabled => GameState.Phase == GamePhase.Spirit && !Minigames.MinigameHost.AnyOpen;
+        public bool MovementEnabled => GameState.Phase == GamePhase.Spirit && !Minigames.MinigameHost.AnyOpen && !Locked;
+
+        /// <summary>M31: ruh bedene dönerken girdi kapalı (SpiritPhase yönetir)</summary>
+        public bool Locked { get; set; }
 
         public void SetVisual(Transform target) => visual = target;
 

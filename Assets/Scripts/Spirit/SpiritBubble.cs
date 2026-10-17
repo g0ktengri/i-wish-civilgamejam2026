@@ -9,8 +9,12 @@ namespace Deprem.Spirit
     // Oyunun ortak balon stilini kullanır (UiBuilder.CreateSpeechBubble). SpiritPhase ekler ve konuşturur.
     public class SpiritBubble : MonoBehaviour
     {
-        [Tooltip("Balonun ruhun üstündeki yüksekliği (m)")]
+        [Tooltip("Ruh çizimi yoksa balonun ruhun üstündeki yüksekliği (m)")]
         [SerializeField] float height = 0.45f;
+        [Tooltip("M29: balonun kuyruğu başın tepesinden bu kadar yukarıda (m)")]
+        [SerializeField] float headGap = 0.25f;
+        [Tooltip("Ekranın üst kenarından en az bu kadar pay (referans pikseli)")]
+        [SerializeField] float screenMargin = 8f;
         [Tooltip("Balon fontu; boşsa ortak UI fontu. SpiritPhase verir (Mehmet'in balon fontu DepremBalon)")]
         [SerializeField] Font font;
         [SerializeField] int fontSize = 18;
@@ -19,6 +23,7 @@ namespace Deprem.Spirit
 
         Canvas canvas;
         UiBubble bubble;
+        SpiritVisual visual;
 
         // İlk Say'den önce çağrılır (balon o anda kurulur)
         public void SetFont(Font bubbleFont, int size)
@@ -68,12 +73,19 @@ namespace Deprem.Spirit
         {
             var cam = Camera.main;
             if (cam == null) return;
+            // M29: balon ruh çiziminin başının üstünde (ruhun ortasında karakterin üstüne biniyordu)
+            if (!visual) visual = GetComponentInChildren<SpiritVisual>();
+            var anchor = visual ? visual.HeadTop + Vector3.up * headGap * visual.ProjectedScale
+                                : transform.position + Vector3.up * height;
             // Viewport üzerinden: kamera düşük çözünürlüklü dokuya çizerken de (UI.PixelScreen) doğru yer
-            var viewport = cam.WorldToViewportPoint(transform.position + Vector3.up * height);
+            var viewport = cam.WorldToViewportPoint(anchor);
             var screen = new Vector3(viewport.x * Screen.width, viewport.y * Screen.height, viewport.z);
             var canvasRect = (RectTransform)canvas.transform;
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out var local))
-                bubble.Root.anchoredPosition = local; // kökün pivotu kuyruğun ucu
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out var local)) return;
+            // Ekranın üstüne taşarsa aşağıda kalsın (kökün pivotu kuyruğun ucu, balon yukarı doğru büyür)
+            float top = canvasRect.rect.height * 0.5f - screenMargin - bubble.Root.rect.height;
+            local.y = Mathf.Min(local.y, top);
+            bubble.Root.anchoredPosition = local;
         }
 
         void EnsureUi()

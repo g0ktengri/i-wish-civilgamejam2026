@@ -124,6 +124,16 @@ menu.language,Dil: Türkçe,Language: English
 menu.quit,Çıkış,Quit
 menu.resume,Devam et,Resume
 menu.main_menu,Ana menü,Main menu
+menu.settings,Ayarlar,Settings
+settings.master,Genel ses: < %{0} >,Master volume: < {0}% >
+settings.music,Müzik: < %{0} >,Music: < {0}% >
+settings.effects,Efektler: < %{0} >,Effects: < {0}% >
+settings.shake,Ekran sarsıntısı: < %{0} >,Screen shake: < {0}% >
+settings.fullscreen,Tam ekran: < {0} >,Fullscreen: < {0} >
+settings.resolution,Çözünürlük: < {0} >,Resolution: < {0} >
+settings.on,Açık,On
+settings.off,Kapalı,Off
+settings.hint,W/S: seç · A/D: değiştir · Esc: geri,W/S: select · A/D: change · Esc: back
 
 # Mehmet: konuşma balonları (deprem akışı)
 bubble.ignore_foreshock,"Amaan, ne olacak ki... Uyumaya devam.","Oh, it's nothing... Back to sleep."

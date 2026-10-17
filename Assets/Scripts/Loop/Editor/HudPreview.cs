@@ -119,6 +119,14 @@ namespace Deprem.Loop.EditorTools
                     Deprem.Localization.Texts.Get("bag.Flashlight"), "flashlight");
             });
 
+            // M32: ayarlar menüsü
+            RenderScene("settings", root =>
+            {
+                var settings = root.AddComponent<SettingsMenu>();
+                Call(settings, "Awake");
+                settings.Open(null);
+            });
+
             RenderScene("spirit", root =>
             {
                 var spirit = root.AddComponent<SpiritHud>();

@@ -223,6 +223,12 @@ namespace Deprem.Minigames
             GameEvents.RaiseMinigameClosed(id, success);
         }
 
+        /// <summary>Açık minigame varsa başarısız kapatır (ruh fazı süresi bitip ruh bedene dönerken)</summary>
+        public void CloseIfOpen()
+        {
+            if (IsOpen) Close(false);
+        }
+
         void HandlePhaseChanged(GamePhase phase)
         {
             if (IsOpen && phase != GamePhase.Spirit) Close(false);

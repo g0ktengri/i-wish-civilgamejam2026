@@ -4,7 +4,8 @@ using UnityEngine;
 namespace Deprem.Spirit
 {
     // Ruh fazı: faz Spirit olunca ruhu yatağın yanında çıkarır ve sayacı başlatır.
-    // Süre minigame sırasında da akar. Süre bitince ana depreme geçer.
+    // Süre minigame sırasında da akar. Süre bitince ruh yatakta yatan bedene uçar, küçülüp solar (M31), sonra ana
+    // depreme geçilir (beden yataktan kalkma animasyonuyla kalkar; Mehmet).
     // Ruh objesini kendisi kurar; sahnede tek bir objede durması yeter.
     public class SpiritPhase : MonoBehaviour
     {
@@ -23,6 +24,16 @@ namespace Deprem.Spirit
         [SerializeField] SpiritController spiritPrefab;
         [Tooltip("Ekip çizimi ruh_N.png (prefab kurulurken Art/Characters'tan bağlanır); yoksa parlayan küre")]
         [SerializeField] Texture2D[] spiritFrames;
+        [Tooltip("M30: dururken ekip çizimi ruh_bekleme_N.png (prefab kurulurken bağlanır)")]
+        [SerializeField] Texture2D[] spiritIdleFrames;
+
+        [Header("Bedene dönüş (M31)")]
+        [Tooltip("Ruhun bedene uçuşu (sn, yavaş başlar hızlanır)")]
+        [SerializeField] float returnFlySeconds = 0.8f;
+        [Tooltip("Bedenin üstünde küçülüp solma (sn)")]
+        [SerializeField] float returnFadeSeconds = 0.35f;
+        [Tooltip("Yatan bedenin ortası, oyuncunun kökünden (yatan görsel pivotun yanında uzanır)")]
+        [SerializeField] Vector3 bodyCenterOffset = new Vector3(0.6f, 0.35f, 0f);
         [Tooltip("Ruhun konuşma balonunun fontu: oyuncu ve aile balonlarıyla aynı (DepremBalon), prefab kurulurken bağlanır")]
         [SerializeField] Font bubbleFont;
         [SerializeField] int bubbleFontSize = 18;
@@ -37,6 +48,7 @@ namespace Deprem.Spirit
         SpiritController spirit;
         float remaining;
         bool running;
+        Coroutine returning;
 
         // Ruh fazını daha önce görmüş mü (sahne yeniden yüklense de kalır): ilk sefer uzun, sonra kısa konuşur
         static bool seenBefore;
@@ -61,21 +73,63 @@ namespace Deprem.Spirit
             TimeLeft = remaining;
             GameEvents.RaiseSpiritTimeChanged(remaining);
 
-            // Faz değişince HandlePhaseChanged ruhu kapatır
-            if (remaining <= 0f) GameState.SetPhase(GamePhase.MainQuake);
+            // Süre bitti: ruh bedene döner, sonra faz değişir (HandlePhaseChanged ruhu kapatır)
+            if (remaining <= 0f && returning == null) returning = StartCoroutine(ReturnToBody());
         }
 
         void HandlePhaseChanged(GamePhase phase)
         {
             if (phase == GamePhase.Spirit) Begin();
-            else if (running) End();
+            else if (running || returning != null) End();
+        }
+
+        // M31: sayaç durur, HUD kapanır (Running = false), açık minigame kapanır; ruh bedene doğru hızlanarak uçar,
+        // bedenin üstünde küçülüp solar, sonra ana depreme geçilir
+        System.Collections.IEnumerator ReturnToBody()
+        {
+            running = false;
+            Running = false;
+            spirit.Locked = true;
+            var interactor = spirit.GetComponent<SpiritInteractor>();
+            if (interactor) interactor.enabled = false;
+            var bubble = spirit.GetComponent<SpiritBubble>();
+            if (bubble) bubble.Hide();
+            if (Minigames.MinigameHost.Instance) Minigames.MinigameHost.Instance.CloseIfOpen();
+
+            var player = GameObject.Find("Player");
+            var start = spirit.transform.position;
+            var body = player ? player.transform.position + bodyCenterOffset : start;
+            body.z = start.z;
+            var visual = spirit.GetComponentInChildren<SpiritVisual>();
+            for (float t = 0f; t < returnFlySeconds; t += Time.deltaTime)
+            {
+                float k = t / returnFlySeconds;
+                spirit.transform.position = Vector3.Lerp(start, body, k * k); // ease-in
+                yield return null;
+            }
+            spirit.transform.position = body;
+            for (float t = 0f; t < returnFadeSeconds; t += Time.deltaTime)
+            {
+                float k = t / returnFadeSeconds;
+                spirit.transform.localScale = Vector3.one * Mathf.Lerp(1f, 0.25f, k);
+                if (visual) visual.SetFade(1f - k);
+                yield return null;
+            }
+            returning = null;
+            GameState.SetPhase(GamePhase.MainQuake);
         }
 
         void Begin()
         {
             if (!spirit) spirit = CreateSpirit();
             spirit.transform.position = SpawnPosition();
-            spirit.GetComponent<SpiritInteractor>().InstantSecure = instantSecureWithoutMinigame;
+            spirit.transform.localScale = Vector3.one;
+            spirit.Locked = false;
+            var spiritInteractor = spirit.GetComponent<SpiritInteractor>();
+            spiritInteractor.enabled = true;
+            spiritInteractor.InstantSecure = instantSecureWithoutMinigame;
+            var spiritVisual = spirit.GetComponentInChildren<SpiritVisual>();
+            if (spiritVisual) spiritVisual.SetFade(1f);
             spirit.gameObject.SetActive(true);
 
             remaining = duration;
@@ -99,6 +153,8 @@ namespace Deprem.Spirit
 
         void End()
         {
+            if (returning != null) StopCoroutine(returning);
+            returning = null;
             running = false;
             Running = false;
             TimeLeft = 0f;
@@ -131,7 +187,7 @@ namespace Deprem.Spirit
             Transform body;
             if (spiritFrames != null && spiritFrames.Length > 0)
             {
-                body = SpiritVisual.Create(root.transform, spiritFrames).transform;
+                body = SpiritVisual.Create(root.transform, spiritFrames, spiritIdleFrames).transform;
             }
             else
             {

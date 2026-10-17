@@ -36,5 +36,17 @@ namespace Deprem.UI
             var keyboard = Keyboard.current;
             return keyboard != null && (keyboard.sKey.wasPressedThisFrame || keyboard.downArrowKey.wasPressedThisFrame);
         }
+
+        public static bool Left()
+        {
+            var keyboard = Keyboard.current;
+            return keyboard != null && (keyboard.aKey.wasPressedThisFrame || keyboard.leftArrowKey.wasPressedThisFrame);
+        }
+
+        public static bool Right()
+        {
+            var keyboard = Keyboard.current;
+            return keyboard != null && (keyboard.dKey.wasPressedThisFrame || keyboard.rightArrowKey.wasPressedThisFrame);
+        }
     }
 }

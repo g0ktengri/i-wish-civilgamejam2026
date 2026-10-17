@@ -59,7 +59,7 @@ namespace Deprem.Loop.EditorTools
         static readonly Type[] FontUsers =
         {
             typeof(WishScreen), typeof(SpiritHud), typeof(MinigameHost), typeof(PromptHud),
-            typeof(FinalScreen), typeof(PauseMenu), typeof(MainMenu), typeof(ObjectiveHud), typeof(BagHud),
+            typeof(FinalScreen), typeof(PauseMenu), typeof(MainMenu), typeof(ObjectiveHud), typeof(BagHud), typeof(SettingsMenu),
         };
 
         // Ortak UI stili (Assets/Resources/UiStyle.asset): alan → Assets/Art/UI dosyası
@@ -94,6 +94,7 @@ namespace Deprem.Loop.EditorTools
                 root.AddComponent<BagHud>();
                 root.AddComponent<FinalScreen>();
                 root.AddComponent<PauseMenu>();
+                root.AddComponent<SettingsMenu>();
                 root.AddComponent<MainMenu>();
                 root.AddComponent<PixelScreen>();
 
@@ -148,24 +149,35 @@ namespace Deprem.Loop.EditorTools
             return so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        // Ruh animasyonu: Assets/Art/Characters/ruh_1..N.png (ekip çizimi, 128 x 128)
+        // Ruh animasyonu: Assets/Art/Characters/ruh_1..N.png (hareket) ve ruh_bekleme_1..N.png (M30; ekip çizimi, 128 x 128)
         static void BindSpiritFrames(SpiritPhase phase)
         {
+            var so = new SerializedObject(phase);
+            int move = SetFrames(so, "spiritFrames", LoadFrames("ruh"));
+            int idle = SetFrames(so, "spiritIdleFrames", LoadFrames("ruh_bekleme"));
+            so.ApplyModifiedPropertiesWithoutUndo();
+            Debug.Log($"[BerkeSystemsPrefab] Ruh kareleri: {move} hareket, {idle} bekleme");
+        }
+
+        static Texture2D[] LoadFrames(string prefix)
+        {
             const string folder = "Assets/Art/Characters";
-            var frames = AssetDatabase.FindAssets("ruh_ t:Texture2D", new[] { folder })
+            return AssetDatabase.FindAssets(prefix + "_ t:Texture2D", new[] { folder })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(path => (path, name: Path.GetFileNameWithoutExtension(path)))
-                .Where(p => p.name.StartsWith("ruh_") && int.TryParse(p.name.Substring(4), out _))
-                .OrderBy(p => int.Parse(p.name.Substring(4)))
+                .Where(p => p.name.StartsWith(prefix + "_") && int.TryParse(p.name.Substring(prefix.Length + 1), out _))
+                .OrderBy(p => int.Parse(p.name.Substring(prefix.Length + 1)))
                 .Select(p => AssetDatabase.LoadAssetAtPath<Texture2D>(p.path))
                 .Where(t => t)
                 .ToArray();
-            var so = new SerializedObject(phase);
-            var property = so.FindProperty("spiritFrames");
+        }
+
+        static int SetFrames(SerializedObject so, string field, Texture2D[] frames)
+        {
+            var property = so.FindProperty(field);
             property.arraySize = frames.Length;
             for (int i = 0; i < frames.Length; i++) property.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
-            so.ApplyModifiedPropertiesWithoutUndo();
-            Debug.Log($"[BerkeSystemsPrefab] Ruh kareleri: {frames.Length}");
+            return frames.Length;
         }
 
         static void BindArt(GameObject root)

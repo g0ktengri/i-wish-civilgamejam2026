@@ -82,6 +82,7 @@ namespace Deprem.UI
                     }
                     return;
                 case Screen.Main:
+                    if (SettingsMenu.IsOpen || SettingsMenu.ClosedFrame == Time.frameCount) return;
                     menu.Tick();
                     return;
                 default:
@@ -125,6 +126,7 @@ namespace Deprem.UI
                 case Screen.Main:
                     menu.Add("menu.new_game", () => StartLoop(1));
                     menu.Add("menu.chapter_select", () => Show(Screen.Chapters));
+                    menu.Add("menu.settings", OpenSettings);
                     menu.Add("menu.controls", () => Show(Screen.Controls));
                     menu.Add("menu.credits", () => Show(Screen.Credits));
                     menu.Add("menu.language", () => Texts.ToggleLanguage());
@@ -171,6 +173,12 @@ namespace Deprem.UI
                     break;
             }
             menu.Refresh();
+        }
+
+        // M32: ayarlar ana menünün üstünde açılır; kapanınca ana menü yenilenir (dil değişmiş olabilir)
+        void OpenSettings()
+        {
+            if (SettingsMenu.Instance) SettingsMenu.Instance.Open(Refresh);
         }
 
         static void StartLoop(int loop)
