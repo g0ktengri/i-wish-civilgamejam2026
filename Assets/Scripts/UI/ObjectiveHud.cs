@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Deprem.Core;
 using Deprem.Localization;
@@ -7,11 +6,11 @@ using UnityEngine.UI;
 
 namespace Deprem.UI
 {
-    // Kurtarma fazının hedefi (ENTEGRASYON M11, M14):
-    // - Faz Rescue olunca ortada 3 sn büyük yazı: "Ailen tehlikede! Onları bul ve kabine götür"
-    // - Sol üstte hedef, altında "Aile: bulunan x/3 · kabinde y/3", altında kabin açıklaması (birkaç sn)
-    // - Ekran dışında kalan, henüz bulunmamış aile üyelerine ekran kenarında ok (Marker_Father vb.);
+    // Kurtarma fazının hedefi (ENTEGRASYON M11, M14), sade hali (Berke'nin play testi: çok kalabalıktı):
+    // - Sol üstte tek satır: "Aileni kabine götür · 0/3" (kabine giren / toplam)
+    // - Ekran dışında kalan, henüz bulunmamış aile üyesine ekran kenarında küçük, yarı saydam ok;
     //   herkes bulununca kabine ok (Marker_CabinEntrance)
+    // Büyük "Ailen tehlikede" yazısı ve kabin açıklaması kalktı: oyuncunun balonu ve kabin tabelası söylüyor.
     public class ObjectiveHud : MonoBehaviour
     {
         static readonly (FamilyMemberId id, string marker)[] Family =
@@ -23,23 +22,16 @@ namespace Deprem.UI
         const string CabinMarker = "Marker_CabinEntrance";
 
         [SerializeField] Font font;
-        [SerializeField] int fontSize = 14;
-        [SerializeField] int infoFontSize = 12;
-        [SerializeField] int bannerFontSize = 28;
+        [SerializeField] int fontSize = 13;
+        [SerializeField] int arrowFontSize = 10;
         [SerializeField] Color color = Color.white;
-        [SerializeField] Color infoColor = new Color(0.8f, 0.85f, 0.9f);
-        [SerializeField] Color arrowColor = new Color(1f, 0.85f, 0.4f);
-        [SerializeField] Color cabinArrowColor = new Color(0.45f, 0.9f, 0.55f);
-
-        [Header("Süreler (sn)")]
-        [SerializeField] float bannerSeconds = 3f;
-        [Tooltip("Kabin açıklamasının ekranda kalma süresi")]
-        [SerializeField] float infoSeconds = 7f;
-        [SerializeField] float fadeSeconds = 0.6f;
+        [SerializeField] Color arrowColor = new Color(1f, 0.85f, 0.4f, 0.8f);
+        [SerializeField] Color cabinArrowColor = new Color(0.45f, 0.9f, 0.55f, 0.8f);
 
         [Header("Oklar")]
         [Tooltip("Okun ekran kenarından uzaklığı (referans pikseli)")]
-        [SerializeField] float arrowMargin = 36f;
+        [SerializeField] float arrowMargin = 26f;
+        [SerializeField] float arrowSize = 18f;
         [SerializeField] int sortingOrder = 55;
 
         class Arrow
@@ -54,12 +46,8 @@ namespace Deprem.UI
 
         CanvasGroup group;
         RectTransform canvasRect;
+        RectTransform panel;
         Text objectiveText;
-        Text familyText;
-        CanvasGroup infoGroup;
-        Text infoText;
-        CanvasGroup bannerGroup;
-        Text bannerText;
         readonly List<Arrow> arrows = new List<Arrow>();
         readonly HashSet<FamilyMemberId> inCabin = new HashSet<FamilyMemberId>();
         bool rescue;
@@ -70,40 +58,16 @@ namespace Deprem.UI
             canvasRect = (RectTransform)canvas.transform;
             group = canvas.GetComponent<CanvasGroup>();
 
-            var panel = CreateCornerPanel(canvas.transform, "Objective", -12f, 52f);
+            panel = UiBuilder.CreatePanel(canvas.transform, "Objective").rectTransform;
+            panel.anchorMin = panel.anchorMax = new Vector2(0f, 1f);
+            panel.pivot = new Vector2(0f, 1f);
+            panel.anchoredPosition = new Vector2(12f, -12f);
+            panel.sizeDelta = new Vector2(220f, 26f);
             objectiveText = UiBuilder.CreateText(panel, "Text", font, fontSize, color);
-            UiBuilder.Stretch(objectiveText.rectTransform, new Vector2(0f, 0.5f), Vector2.one);
-            familyText = UiBuilder.CreateText(panel, "Family", font, infoFontSize, infoColor);
-            UiBuilder.Stretch(familyText.rectTransform, Vector2.zero, new Vector2(1f, 0.5f));
-
-            var info = CreateCornerPanel(canvas.transform, "ShelterInfo", -68f, 44f);
-            infoGroup = info.gameObject.AddComponent<CanvasGroup>();
-            infoText = UiBuilder.CreateText(info, "Text", font, infoFontSize, infoColor);
-            UiBuilder.Stretch(infoText.rectTransform, Vector2.zero, Vector2.one);
-            infoText.rectTransform.offsetMin = new Vector2(8f, 2f);
-            infoText.rectTransform.offsetMax = new Vector2(-8f, -2f);
-
-            var banner = UiBuilder.CreatePanel(canvas.transform, "Banner");
-            var bannerRect = banner.rectTransform;
-            bannerRect.anchorMin = bannerRect.anchorMax = new Vector2(0.5f, 0.62f);
-            bannerRect.sizeDelta = new Vector2(620f, 64f);
-            bannerGroup = banner.gameObject.AddComponent<CanvasGroup>();
-            bannerText = UiBuilder.CreateText(bannerRect, "Text", font, bannerFontSize, color);
-            UiBuilder.Stretch(bannerText.rectTransform, Vector2.zero, Vector2.one);
+            UiBuilder.Stretch(objectiveText.rectTransform, Vector2.zero, Vector2.one);
+            objectiveText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             group.alpha = 0f;
-            infoGroup.alpha = 0f;
-            bannerGroup.alpha = 0f;
-        }
-
-        RectTransform CreateCornerPanel(Transform parent, string name, float y, float height)
-        {
-            var rect = UiBuilder.CreatePanel(parent, name).rectTransform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(12f, y);
-            rect.sizeDelta = new Vector2(320f, height);
-            return rect;
         }
 
         void OnEnable()
@@ -124,22 +88,16 @@ namespace Deprem.UI
 
         void HandlePhaseChanged(GamePhase phase)
         {
-            StopAllCoroutines();
             rescue = phase == GamePhase.Rescue;
             group.alpha = rescue ? 1f : 0f;
-            infoGroup.alpha = 0f;
-            bannerGroup.alpha = 0f;
             if (!rescue)
             {
                 foreach (var arrow in arrows) arrow.Root.gameObject.SetActive(false);
                 return;
             }
-
             inCabin.Clear();
             BuildArrows();
             Refresh();
-            StartCoroutine(Show(bannerGroup, bannerSeconds));
-            StartCoroutine(Show(infoGroup, infoSeconds));
         }
 
         void HandleFamilyChanged(FamilyMemberId id) => Refresh();
@@ -206,12 +164,12 @@ namespace Deprem.UI
             var root = new GameObject($"Arrow_{labelKey}", typeof(RectTransform)).GetComponent<RectTransform>();
             root.SetParent(canvasRect, false);
             root.anchorMin = root.anchorMax = new Vector2(0.5f, 0.5f);
-            root.sizeDelta = new Vector2(48f, 48f);
+            root.sizeDelta = Vector2.one * arrowSize * 1.5f;
 
-            // Ok: görseli UiStyle.arrow (sağa bakan), yoksa iki kareden ok ucu
+            // Ok: görseli UiStyle.arrow (sağa bakan), yoksa iki kareden küçük ok ucu
             var head = new GameObject("Head", typeof(RectTransform)).GetComponent<RectTransform>();
             head.SetParent(root, false);
-            head.sizeDelta = new Vector2(32f, 32f);
+            head.sizeDelta = Vector2.one * arrowSize;
             var style = UiStyle.Current;
             if (style && style.arrow)
             {
@@ -223,17 +181,17 @@ namespace Deprem.UI
             else
             {
                 var tip = UiBuilder.CreateImage(head, "Tip", tint);
-                tip.rectTransform.sizeDelta = new Vector2(14f, 14f);
-                tip.rectTransform.anchoredPosition = new Vector2(6f, 0f);
+                tip.rectTransform.sizeDelta = Vector2.one * arrowSize * 0.45f;
+                tip.rectTransform.anchoredPosition = new Vector2(arrowSize * 0.18f, 0f);
                 tip.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
                 var shaft = UiBuilder.CreateImage(head, "Shaft", tint);
-                shaft.rectTransform.sizeDelta = new Vector2(16f, 6f);
-                shaft.rectTransform.anchoredPosition = new Vector2(-6f, 0f);
+                shaft.rectTransform.sizeDelta = new Vector2(arrowSize * 0.5f, arrowSize * 0.18f);
+                shaft.rectTransform.anchoredPosition = new Vector2(-arrowSize * 0.18f, 0f);
             }
 
-            var label = UiBuilder.CreateText(root, "Label", font, infoFontSize, tint);
-            label.rectTransform.sizeDelta = new Vector2(80f, 16f);
-            label.rectTransform.anchoredPosition = new Vector2(0f, -22f);
+            var label = UiBuilder.CreateText(root, "Label", font, arrowFontSize, tint);
+            label.rectTransform.sizeDelta = new Vector2(60f, 12f);
+            label.rectTransform.anchoredPosition = new Vector2(0f, -arrowSize * 0.85f);
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             root.gameObject.SetActive(false);
@@ -257,29 +215,10 @@ namespace Deprem.UI
             return count;
         }
 
-        IEnumerator Show(CanvasGroup target, float seconds)
-        {
-            yield return Fade(target, 0f, 1f);
-            yield return new WaitForSeconds(seconds);
-            yield return Fade(target, 1f, 0f);
-        }
-
-        IEnumerator Fade(CanvasGroup target, float from, float to)
-        {
-            for (float t = 0f; t < fadeSeconds; t += Time.deltaTime)
-            {
-                target.alpha = Mathf.Lerp(from, to, t / fadeSeconds);
-                yield return null;
-            }
-            target.alpha = to;
-        }
-
         void Refresh()
         {
-            objectiveText.text = Texts.Get("objective.rescue");
-            familyText.text = Texts.Format("objective.family", FoundCount(), FamilyTotal(), inCabin.Count);
-            infoText.text = Texts.Get("objective.shelter_info");
-            bannerText.text = Texts.Get("objective.banner");
+            objectiveText.text = Texts.Format("objective.compact", inCabin.Count, FamilyTotal());
+            panel.sizeDelta = new Vector2(Mathf.Max(160f, objectiveText.preferredWidth + 24f), panel.sizeDelta.y);
             foreach (var arrow in arrows) arrow.Label.text = Texts.Get(arrow.LabelKey);
         }
     }

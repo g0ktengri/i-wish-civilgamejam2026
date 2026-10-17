@@ -12,6 +12,9 @@ prompt.duck_cover_find,Burada olmaz! Parlayan masanın altına geç,Not here! Ge
 prompt.interact,F: Etkileşim,F: Interact
 prompt.secure,F: Sabitle,F: Secure
 prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
+spirit.intro_1,Ne oluyor?! Kendi bedenimi görüyorum...,What's happening?! I can see my own body...
+spirit.intro_2,Deprem gelmeden evi hazırlamalıyım!,I have to prepare the house before the quake hits!
+spirit.again,Yine buradayım... Hızlı olmalıyım.,Here again... I have to be quick.
 prompt.cancel,Esc: Vazgeç,Esc: Cancel
 prompt.main_menu,F: Ana menü,F: Main menu
 prompt.pick_up,F: Al,F: Pick up
@@ -19,6 +22,7 @@ prompt.put_in_bag,F: Çantaya koy,F: Put in bag
 hud.carrying,Taşınan: {0},Carrying: {0}
 hud.bag,Çanta,Bag
 bag.added,{0} deprem çantasında,{0} is in the emergency bag
+objective.compact,Aileni kabine götür · {0}/{1},Get your family to the shelter · {0}/{1}
 objective.rescue,Aileni bul ve deprem kabinine götür,Find your family and get them into the earthquake shelter
 objective.shelter_info,Merdiven altındaki deprem kabini: ailen içine girerse güvende.,The earthquake shelter under the stairs: your family is safe inside.
 objective.banner,Ailen tehlikede! Onları bul ve kabine götür,Your family is in danger! Find them and get them to the shelter

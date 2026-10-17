@@ -7,12 +7,19 @@ namespace Deprem.Loop
     // Sadece Editor ve Development Build'de görünür; oyuncuya gösterilmez.
     public class LoopDebugPanel : MonoBehaviour
     {
-        [SerializeField] bool visible = true;
+        [Tooltip("Başta gizli; F1 ile açılıp kapanır (oyun ekranını kalabalıklaştırıyordu)")]
+        [SerializeField] bool visible;
         [SerializeField] Rect area = new Rect(10, 10, 260, 520);
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         static readonly GamePhase[] phases =
             { GamePhase.Foreshock, GamePhase.Spirit, GamePhase.MainQuake, GamePhase.Rescue };
+
+        void Update()
+        {
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (keyboard != null && keyboard.f1Key.wasPressedThisFrame) visible = !visible;
+        }
 
         void OnGUI()
         {

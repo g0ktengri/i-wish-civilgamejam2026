@@ -71,6 +71,11 @@
   - Metinler `texts.csv` `# Mehmet` başlığında: `bubble.deja_vu`, `bubble.deja_vu_again`, `bubble.door_jammed`.
   - Play'de elle denenmesi gerekenler: merdivenden çıkınca artçının zamanı, masaların sarı konturu, salon kapısının TV devrilince kilitlenmesi, döngü 1'de rafın görselin önünde kalması.
   - **Düzeltme (Berke'nin play testi):** Bütün masa parçalarına kontur koymak çekmeceyi ve ayakları dolu sarı gösteriyordu. Artık sadece üst tabla ince konturlu (`kontur_masa.mat`: kalınlık 0,015, daha güçlü nabız) ve masanın altında yumuşak sıcak bir ışık (`SafeSpot.underGlow`) yanıyor.
+- **Berke'nin play testi 4:**
+  - Kenar ışığı ilk sürüme döndü (2 piksel tam güç), bir tık hafif: `gain` 0,28, en fazla 1.
+  - Kurtarma arayüzü sadeleşti: büyük "Ailen tehlikede" yazısı ve kabin açıklaması kalktı (oyuncunun balonu ve kabin tabelası zaten söylüyor). Sol üstte tek satır "Aileni kabine götür · 0/3" (kabine giren / toplam). Oklar küçük (18 px) ve yarı saydam. `LoopDebugPanel` başta gizli, F1 ile açılır.
+  - Keşke geçişi: iris (çizgi film gibi duruyordu) yerine cam kırılması. Kayıp anında ekran görüntüsü alınır, oyun donar (`timeScale 0`), karakterin olduğu noktadan beyaz çatlaklar, sarsıntı ve kısa beyaz parlama; sonra parçalar (`ShardGraphic`, ışın × halka bölmesi) dönerek dökülür, arkada siyah. Ses eklenince cam kırılma sesi tam bu anda olmalı.
+  - Ruh fazına girince ruh konuşur (`SpiritBubble`): ilk sefer "Ne oluyor?! Kendi bedenimi görüyorum..." + "Deprem gelmeden evi hazırlamalıyım!", sonrakilerde "Yine buradayım... Hızlı olmalıyım."
 - **Berke'nin play testi 3 (Mehmet'in izniyle onun klasörlerinde de):**
   - Kenar ışığı yanlış anlaşılmıştı, hafif olmalıydı: `CharacterRimLight.gain` 0,18, en fazla 0,45; shader'da en dış piksel tam, içteki yarım güçte.
   - `FamilyMember.failDelay` 4 sn (5,5 uzun kaldı). Ezilen üye (`PinUnder`) devrilen eşyanın ön kenarının hemen önünde yatar: gardırobun altında görünmez oluyordu. Kayıp ışığı gölgesiz ve alçakta.

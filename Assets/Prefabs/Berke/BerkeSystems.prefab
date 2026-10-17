@@ -75,7 +75,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51e5fd1fec10a6b418256bd3c200c78c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Loop.LoopDebugPanel
-  visible: 1
+  visible: 0
   area:
     serializedVersion: 2
     x: 10
@@ -94,8 +94,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82602726594590944beda558a6ebb708, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.WishScreen
-  slowMotionScale: 0.3
-  irisSeconds: 1.4
+  crackHoldSeconds: 0.55
+  shardFallSeconds: 1.3
+  crackRays: 11
+  crackShake: 6
+  crackColor: {r: 1, g: 1, b: 1, a: 0.85}
   fadeToBlack: 1.6
   playerObjectName: Player
   wishDelay: 0.9
@@ -292,17 +295,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.ObjectiveHud
   font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
-  fontSize: 14
-  infoFontSize: 12
-  bannerFontSize: 28
+  fontSize: 13
+  arrowFontSize: 10
   color: {r: 1, g: 1, b: 1, a: 1}
-  infoColor: {r: 0.8, g: 0.85, b: 0.9, a: 1}
-  arrowColor: {r: 1, g: 0.85, b: 0.4, a: 1}
-  cabinArrowColor: {r: 0.45, g: 0.9, b: 0.55, a: 1}
-  bannerSeconds: 3
-  infoSeconds: 7
-  fadeSeconds: 0.6
-  arrowMargin: 36
+  arrowColor: {r: 1, g: 0.85, b: 0.4, a: 0.8}
+  cabinArrowColor: {r: 0.45, g: 0.9, b: 0.55, a: 0.8}
+  arrowMargin: 26
+  arrowSize: 18
   sortingOrder: 55
 --- !u!114 &4821030744705693417
 MonoBehaviour:

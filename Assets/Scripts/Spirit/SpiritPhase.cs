@@ -33,6 +33,9 @@ namespace Deprem.Spirit
         float remaining;
         bool running;
 
+        // Ruh fazını daha önce görmüş mü (sahne yeniden yüklense de kalır): ilk sefer uzun, sonra kısa konuşur
+        static bool seenBefore;
+
         public static bool Running { get; private set; }
         public static float TimeLeft { get; private set; }
         public static float Duration { get; private set; } = 60f;
@@ -76,6 +79,13 @@ namespace Deprem.Spirit
             running = true;
             Running = true;
             GameEvents.RaiseSpiritTimeChanged(remaining);
+
+            // Berke'nin play testi: ruh formuna geçince karakter bir şey demeli
+            var bubble = spirit.GetComponent<SpiritBubble>();
+            if (bubble == null) bubble = spirit.gameObject.AddComponent<SpiritBubble>();
+            if (seenBefore) bubble.Say(("spirit.again", 2.5f));
+            else bubble.Say(("spirit.intro_1", 2.8f), ("spirit.intro_2", 3f));
+            seenBefore = true;
         }
 
         void End()
@@ -137,6 +147,7 @@ namespace Deprem.Spirit
             Running = false;
             TimeLeft = 0f;
             Duration = 60f;
+            seenBefore = false;
         }
     }
 }

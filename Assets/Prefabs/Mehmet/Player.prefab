@@ -289,8 +289,8 @@ MonoBehaviour:
   body: {fileID: 7844497210284148813}
   rimMaterial: {fileID: 2100000, guid: da210e0a404c6294697f4dc86ff671b9, type: 2}
   pixels: 2
-  gain: 0.18
-  maxStrength: 0.45
+  gain: 0.28
+  maxStrength: 1
   refreshInterval: 0.5
 --- !u!114 &704763786387298917
 MonoBehaviour:
