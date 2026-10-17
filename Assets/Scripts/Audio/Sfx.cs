@@ -22,6 +22,9 @@ namespace Deprem.Audio
         public static void PlayMusic(string key, float fadeSeconds = 1f) => Backend?.PlayMusic(key, fadeSeconds);
 
         public static void StopMusic(float fadeSeconds = 1f) => Backend?.StopMusic(fadeSeconds);
+
+        /// <summary>Kurtarma süresinin gerilimi 0..1 (RescueTimer): uzak uğultu yükselir, kalp atışı hızlanır</summary>
+        public static void SetTension(float value) => Backend?.SetTension(value);
     }
 
     internal interface ISoundBackend
@@ -29,5 +32,6 @@ namespace Deprem.Audio
         void Play(string key, float volume, Vector3? position);
         void PlayMusic(string key, float fadeSeconds);
         void StopMusic(float fadeSeconds);
+        void SetTension(float value);
     }
 }

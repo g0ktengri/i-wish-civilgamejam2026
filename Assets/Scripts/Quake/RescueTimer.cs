@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Deprem.Audio;
 using Deprem.Core;
 using Deprem.Player;
 using UnityEngine;
@@ -117,6 +118,7 @@ namespace Deprem.Quake
             SetState(TimerState.Idle);
             QuakeCameraShake.AmbientIntensity = 0f;
             if (lights != null) lights.PulseEmergency(0f);
+            Sfx.SetTension(0f);
             if (barRoot != null) barRoot.SetActive(false);
         }
 
@@ -139,6 +141,7 @@ namespace Deprem.Quake
                     float tension = Mathf.Clamp01(1f - Remaining / tensionWindow);
                     QuakeCameraShake.AmbientIntensity = tension * 0.15f;
                     if (lights != null) lights.PulseEmergency(tension);
+                    Sfx.SetTension(tension); // uzak uğultu yükselir, son 15 sn kalp atışı
                     if (Remaining <= 0f) SetState(TimerState.Grace);
                     break;
 
@@ -146,7 +149,12 @@ namespace Deprem.Quake
                     // Sadece uğultu ve hafif sallantı; bu sürede kabine giren kurtulur
                     QuakeCameraShake.AmbientIntensity = graceShake;
                     if (lights != null) lights.PulseEmergency(1f);
-                    if (stateTime >= hiddenTolerance) SetState(TimerState.FinalShock);
+                    Sfx.SetTension(1f); // GDD: gizli toleransta sadece uğultu
+                    if (stateTime >= hiddenTolerance)
+                    {
+                        SetState(TimerState.FinalShock);
+                        Sfx.Play("quake.big");
+                    }
                     break;
 
                 case TimerState.FinalShock:

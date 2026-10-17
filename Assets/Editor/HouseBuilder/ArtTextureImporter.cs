@@ -23,6 +23,13 @@ namespace Deprem.HouseBuilder
             ("UI/konusma_balonu.png", SliceBorder), ("UI/hud_ipucu.png", SliceBorder), ("UI/hud_tus.png", KeyCapSliceBorder),
         };
 
+        /// <summary>Pixel fontlar kenar yumuşatmasız (Hinted Raster): balon yazısı bulanıklaşmasın</summary>
+        private void OnPreprocessAsset()
+        {
+            if (!assetPath.StartsWith(ArtRoot + "Fonts/") || !(assetImporter is TrueTypeFontImporter font)) return;
+            font.fontRenderingMode = FontRenderingMode.HintedRaster;
+        }
+
         private void OnPreprocessTexture()
         {
             if (!assetPath.StartsWith(ArtRoot)) return;

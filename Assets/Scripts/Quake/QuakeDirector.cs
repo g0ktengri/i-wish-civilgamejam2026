@@ -75,8 +75,11 @@ namespace Deprem.Quake
         [SerializeField] private float playerPlaneZ = 1f;
         [Tooltip("Şilte üstü (HouseLayout yatak, Play testi 9'da büyüdü)")]
         [SerializeField] private float bedHeight = 0.66f;
-        [Tooltip("Kalkınca yatağın ortasından bu kadar sağda durur (odanın güvenli masasının önü)")]
-        [SerializeField] private float standUpOffsetX = 1.2f;
+        [Tooltip("Kalkınca yatağın ortasından bu kadar sağda durur. Kalkma çizimi yattığı yerde ayağa kalkıyor " +
+                 "(PlayerVisual'daki yatan ve ayakta kaymaları aynı x); 0 dışı değer kalkarken yana kaydırır")]
+        [SerializeField] private float standUpOffsetX = 0f;
+        [Tooltip("Yatağın ortasından bu kadar önde (kameraya doğru, m) yatar: ön kenarda, sarkan bacağı şilte örtmez")]
+        [SerializeField] private float bedEdgeOffsetZ = 0.75f;
         [SerializeField] private Key standUpKey = Key.F;
         [SerializeField] private Key walkLeftKey = Key.A;
         [SerializeField] private Key walkRightKey = Key.D;
@@ -598,7 +601,7 @@ namespace Deprem.Quake
         {
             if (player == null) return;
             var position = bed != null ? bed.position : player.transform.position;
-            player.LieDown(position + Vector3.up * bedHeight);
+            player.LieDown(position + Vector3.up * bedHeight + Vector3.back * bedEdgeOffsetZ);
         }
 
         private IEnumerator GetUp()

@@ -20,6 +20,22 @@ namespace Deprem.Player
         private const string MaterialPath = "Assets/Generated/Player/player_placeholder.mat";
         private const string PlayerName = "Player";
         private const string CameraName = "PlayerCamera";
+        /// <summary>
+        /// Balon fontu (Play testi 13: Pixelify Sans balonda zor okunuyordu). Pixelify Sans'ın e ve E harfleri
+        /// VT323 biçiminde yeniden çizilmiş hali; Tools/bubble_font.py üretir.
+        /// </summary>
+        public const string BubbleFontPath = "Assets/Art/Fonts/DepremBalon-Regular.ttf";
+        private const int BubbleFontSize = 18;
+
+        /// <summary>Oyuncu ve aile balonları aynı fontu ve boyu kullanır</summary>
+        public static void ConfigureBubble(SpeechBubble bubble)
+        {
+            var so = new SerializedObject(bubble);
+            var font = AssetDatabase.LoadAssetAtPath<Font>(BubbleFontPath);
+            so.FindProperty("font").objectReferenceValue = font;
+            if (font != null) so.FindProperty("fontSize").intValue = BubbleFontSize;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
 
         // GDD: perspektif, FOV 20-30, ekranda en fazla 8-10 m
         private const float FieldOfView = 25f;
@@ -60,7 +76,8 @@ namespace Deprem.Player
             root.AddComponent<CapsuleCollider>();
             root.AddComponent<PlayerController>();
             root.AddComponent<PlayerInteractor>();
-            root.AddComponent<SpeechBubble>();
+            ConfigureBubble(root.AddComponent<SpeechBubble>());
+            root.AddComponent<PlayerFootsteps>();
 
             // Görsel kök ayakta: ölçek (yön çevirme, eğilme) ayak hizasından uygulanır
             var visual = new GameObject("Visual");
@@ -98,6 +115,7 @@ namespace Deprem.Player
             SetFrames(so, "idleFrames", LoadFrames("oyuncu_bekleme"));
             SetFrames(so, "crouchFrames", LoadFrames("oyuncu_egilme"));
             SetFrames(so, "deathFrames", LoadFrames("oyuncu_olme")); // kendi ölümüyle kaybedince
+            SetFrames(so, "getUpFrames", LoadFrames("oyuncu_kalkma")); // 6 kare, 1 yatıyor ... 6 ayakta
             var flashlightFrames = LoadFrames("oyuncu_fenerle_kosma");
             SetFrames(so, "flashlightRunFrames", flashlightFrames); // kurtarma fazında fener yanarken
             // Huzme her karede fenerin ucundan çıksın: uç çizimden bulunur

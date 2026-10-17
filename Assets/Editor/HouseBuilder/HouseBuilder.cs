@@ -56,6 +56,7 @@ namespace Deprem.HouseBuilder
             // Döngüyü Berke'nin LoopManager'ı (BerkeSystems prefab'ı) başlatıyor; geliştirme başlatıcısı kapalı
             Deprem.Quake.QuakeSetup.SetupInScene(scene, 0);
             Deprem.Family.FamilySetup.SetupInScene(scene);
+            Deprem.Audio.AudioSetup.SetupInScene(scene);
             var volumes = Deprem.Visual.VolumeSetup.SetupInScene(scene);
             BagItemModels.Generate(); // Berke'nin BagSupply'ı prefab'ları kullanır (ENTEGRASYON, Play testi 10)
             BerkeSystemsSetup.SetupInScene(scene);

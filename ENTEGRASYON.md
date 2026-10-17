@@ -560,6 +560,14 @@ Mehmet'in yorumu: "Oyun içi balonlardaki yazı bazen tarzından dolayı okunmuy
 
   - Ruh fazı tik-takını, eşya sabitlenme ve çanta onay sesini ben event'lerden çalıyorum; bunları sen çağırma (iki kez çalar).
 
+**Mehmet tarafı: 1–2 yapıldı** (Play'de dinlenmedi).
+- **Balon fontu:** `Assets/Art/Fonts/DepremBalon-Regular.ttf`. Bu, Pixelify Sans'ın kendisi; sadece zor okunan `e` ve `E` harfleri VT323'teki gibi düz biçimde, Pixelify'ın piksel ızgarasında yeniden çizildi. `Tools/bubble_font.py` üretiyor (fontTools); lisans Pixelify'ın OFL'si, korunan font adı yok. Oyuncunun ve ailenin balonlarında 18 boyunda. HUD ve keşke ekranı değişmedi. `SpiritBubble` da aynı fontu kullansın istersen: `UiBuilder.CreateSpeechBubble(..., font: DepremBalon, fontSize: 18)`. İstersen bütün HUD'da da kullanılabilir (`UiStyle.font`). `Art/Fonts` altındaki fontlar artık kenar yumuşatmasız içe aktarılıyor (Hinted Raster; Pixelify zaten öyleydi). Karşılaştırma: Tools > Deprem > Balon Fontu Önizlemesi (`Logs/bubble_font_preview.png`).
+- **Ses sistemi:** `AudioSystem.prefab` (Main'de), `AudioDirector` + `SoundBank`. Tablodaki 40 anahtarın hepsinin sesi var, seninkiler dahil. Sesler kodla üretiliyor (`Editor/Audio/AudioSetup.cs`, sabit tohum), Main kurulurken yenileniyor. Hazır ses gelirse `Assets/Audio/<anahtar>.wav` (birden çok: `<anahtar>_2.wav`) koyup evi yeniden kurmak yeter.
+- `wish.shatter`: senin notuna göre cam yerine **çatlama** sesi oldu: sıklaşan çıtırtılar, derin yarılma, uzun yankı.
+- Duraklatma: döngüler ve dünyadaki sesler durur, ekran sesleri (menü tıkları, müzik) çalmaya devam eder.
+- **Yataktan kalkma animasyonu** (sanatçıdan 6 kare, `Art/Characters/oyuncu_kalkma_1..6.png`; sanatçı yan yatırarak çizmiş, PNG'ler 90° döndürülmüş hali). 1. kare sırtüstü yatıyor, bir bacağı yataktan sarkık, baş yastıkta. Yatarken artık döndürülmüş ayakta durma karesi yerine bu görünüyor. Oyuncu yatağın ön kenarında yatıyor (yatak ortasından 0,75 m önde), sarkan bacağı şilte örtmesin diye. Kalkış ~1,2 sn: doğrulur, kenara oturur, kalkıp öne, karakter düzlemine çıkar. Kalkınca yatağın tam önünde durur (x = yatak ortası; eskiden +1,2), yüzü sağa dönük. Bu sürede `IsLying` hâlâ doğru, yeni `IsGettingUp`. Önizleme: Tools > Deprem > Yataktan Kalkma Önizlemesi.
+- Ayrıca: ayak sesleri ve yere iniş (`PlayerFootsteps`), ana depremde rastgele gıcırtı ve düşen parçalar, kurtarmada gerilime göre yükselen uğultu ve son 15 sn kalp atışı, süre bitince büyük artçı (`quake.big`).
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).

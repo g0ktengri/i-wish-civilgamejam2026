@@ -15,6 +15,8 @@ namespace Deprem.Player
         [SerializeField] private float headHeight = 2.1f;
         [Tooltip("Yatarken balonun yüksekliği (yatakta 2,1 m çok yukarıda kalıyordu)")]
         [SerializeField] private float lyingHeadHeight = 1.15f;
+        [Tooltip("Balon yazısının fontu; boşsa ortak UI fontu (Play testi 13: Pixelify Sans balonda zor okunuyordu)")]
+        [SerializeField] private Font font;
         [Tooltip("Play testi 11: 14 çok küçüktü, okunmuyordu")]
         [SerializeField] private int fontSize = 18;
         [SerializeField] private float maxTextWidth = 260f;
@@ -98,7 +100,7 @@ namespace Deprem.Player
         {
             if (canvas != null) return;
             canvas = UiBuilder.CreateCanvas(transform, "SpeechBubbleCanvas", 30);
-            bubble = UiBuilder.CreateSpeechBubble(canvas.transform, null, fontSize);
+            bubble = UiBuilder.CreateSpeechBubble(canvas.transform, font, fontSize);
             bubble.gameObject.SetActive(false);
         }
     }

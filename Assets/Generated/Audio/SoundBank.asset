@@ -1,0 +1,227 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 944a89b0042d88648a70b901ad79bc4d, type: 3}
+  m_Name: SoundBank
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.Audio.SoundBank
+  entries:
+  - key: quake.rumble
+    clips:
+    - {fileID: 8300000, guid: 3b5e3fc7bc82d524098d2aff8265485a, type: 3}
+    volume: 0.9
+    pitch: {x: 1, y: 1}
+  - key: quake.foreshock
+    clips:
+    - {fileID: 8300000, guid: 0b72434874886b347ae35be5ce679c7d, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: quake.impact
+    clips:
+    - {fileID: 8300000, guid: 7684e1fe26030ce49899a8e92af3f636, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: quake.aftershock
+    clips:
+    - {fileID: 8300000, guid: bc5ff0c66a369f94197c641ba3b2db4f, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: quake.big
+    clips:
+    - {fileID: 8300000, guid: 24d66821fa9f1cb478c1fca0e95ac317, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: quake.creak
+    clips:
+    - {fileID: 8300000, guid: 69051ea59a1af0349bb4c124b04f562a, type: 3}
+    - {fileID: 8300000, guid: fa0521cd7d89724469ae72b5e9cb128a, type: 3}
+    - {fileID: 8300000, guid: dadb4f14921599f46affea5c8b83814b, type: 3}
+    volume: 0.75
+    pitch: {x: 0.9, y: 1.1}
+  - key: quake.debris
+    clips:
+    - {fileID: 8300000, guid: 6b436819d71e07840b0570cc69cf2466, type: 3}
+    - {fileID: 8300000, guid: d8d96626a35feff43b61007bd177fe10, type: 3}
+    - {fileID: 8300000, guid: 349566f8be9602940b727b4eaa96fd0f, type: 3}
+    - {fileID: 8300000, guid: 3649fbc5a8b98cd4694bff9f181f8687, type: 3}
+    volume: 0.7
+    pitch: {x: 0.85, y: 1.15}
+  - key: item.crash
+    clips:
+    - {fileID: 8300000, guid: 3d5123d6bc5497346a25f648551797bf, type: 3}
+    - {fileID: 8300000, guid: c73f091f49a765745b5244d795c08aa2, type: 3}
+    volume: 1
+    pitch: {x: 0.9, y: 1.05}
+  - key: glass.break
+    clips:
+    - {fileID: 8300000, guid: 9880249360a70d64fab3b04e206d7671, type: 3}
+    - {fileID: 8300000, guid: 867951e8cc59aa5428b82ee1eb069d4d, type: 3}
+    volume: 0.85
+    pitch: {x: 0.95, y: 1.1}
+  - key: power.off
+    clips:
+    - {fileID: 8300000, guid: 93c21b124dab4af498e08dc0e23f0e41, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: ambience.night
+    clips:
+    - {fileID: 8300000, guid: 00e8636f7cf83164a9bc9338728e23c0, type: 3}
+    volume: 0.5
+    pitch: {x: 1, y: 1}
+  - key: ambience.dark
+    clips:
+    - {fileID: 8300000, guid: 49fcf3842972a924683c5fae3f476d9c, type: 3}
+    volume: 0.6
+    pitch: {x: 1, y: 1}
+  - key: rescue.heartbeat
+    clips:
+    - {fileID: 8300000, guid: f566dec9da52aa34a9536984879a2a56, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: player.hit
+    clips:
+    - {fileID: 8300000, guid: 995ababfe1edc3d48b9e19e6805a22f2, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: player.step
+    clips:
+    - {fileID: 8300000, guid: 73c0e45d616b8184c9915833671d21d8, type: 3}
+    - {fileID: 8300000, guid: f45443f01e5038945b4d32398cb7bf12, type: 3}
+    - {fileID: 8300000, guid: e21a2e93ef88f7240a8c37f42a9e05bf, type: 3}
+    - {fileID: 8300000, guid: 6ab453c3d4e333a47951454c913b5606, type: 3}
+    volume: 0.6
+    pitch: {x: 0.9, y: 1.1}
+  - key: player.land
+    clips:
+    - {fileID: 8300000, guid: 678d7341bd1376d48acb874145e6f256, type: 3}
+    volume: 1
+    pitch: {x: 0.95, y: 1.05}
+  - key: cabin.door
+    clips:
+    - {fileID: 8300000, guid: 1f47860a8edfdb84baf0cbf7d9d63f16, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: spirit.ambience
+    clips:
+    - {fileID: 8300000, guid: 53bd457076dda7546b5a5f9d147f65ae, type: 3}
+    volume: 0.7
+    pitch: {x: 1, y: 1}
+  - key: spirit.tick
+    clips:
+    - {fileID: 8300000, guid: 93a7ffdd68806d74f9b8b4e8d4477d15, type: 3}
+    volume: 0.6
+    pitch: {x: 1, y: 1}
+  - key: spirit.tock
+    clips:
+    - {fileID: 8300000, guid: 117867a4657b95d4da05f33e0d84c4af, type: 3}
+    volume: 0.6
+    pitch: {x: 1, y: 1}
+  - key: item.secured
+    clips:
+    - {fileID: 8300000, guid: 35341d2023788434b82832a4beb36e3e, type: 3}
+    volume: 0.8
+    pitch: {x: 1, y: 1}
+  - key: bag.collect
+    clips:
+    - {fileID: 8300000, guid: 7f3c18540ce3cfb4d9c8e0ebe0674efa, type: 3}
+    volume: 0.7
+    pitch: {x: 1, y: 1}
+  - key: family.rescued
+    clips:
+    - {fileID: 8300000, guid: 52025f0a7f6914d4387f0593418616a2, type: 3}
+    volume: 0.7
+    pitch: {x: 1, y: 1}
+  - key: ui.move
+    clips:
+    - {fileID: 8300000, guid: 2b8b92ec22ce9cc46a09ebb86f545cd8, type: 3}
+    volume: 0.35
+    pitch: {x: 1, y: 1}
+  - key: ui.click
+    clips:
+    - {fileID: 8300000, guid: e5b029a4313ee874f93212690db5bb4e, type: 3}
+    volume: 0.45
+    pitch: {x: 1, y: 1}
+  - key: ui.back
+    clips:
+    - {fileID: 8300000, guid: f26d612b6d14f4846b4822c79b10b350, type: 3}
+    volume: 0.45
+    pitch: {x: 1, y: 1}
+  - key: minigame.screw
+    clips:
+    - {fileID: 8300000, guid: 6f8bcb88fcab16d4ba0f4db2a8bc69b6, type: 3}
+    - {fileID: 8300000, guid: 895ba6deb966cd54db3cb988124f4a43, type: 3}
+    - {fileID: 8300000, guid: 9b40b51fcbe74a6489f18912c20e0aa3, type: 3}
+    volume: 0.55
+    pitch: {x: 0.92, y: 1.08}
+  - key: minigame.bracket
+    clips:
+    - {fileID: 8300000, guid: ef3b5aa7eea7bc347ab6b14604b07f4e, type: 3}
+    volume: 0.8
+    pitch: {x: 1, y: 1}
+  - key: minigame.latch
+    clips:
+    - {fileID: 8300000, guid: 10357b2913136594a9500cc9f4b04b7f, type: 3}
+    volume: 0.7
+    pitch: {x: 1, y: 1}
+  - key: minigame.miss
+    clips:
+    - {fileID: 8300000, guid: 61077165d1bee244794504348dd80b6b, type: 3}
+    volume: 0.5
+    pitch: {x: 1, y: 1}
+  - key: minigame.pickup
+    clips:
+    - {fileID: 8300000, guid: 69fedf84c2fc8884e9ca85ff132e98d0, type: 3}
+    volume: 0.5
+    pitch: {x: 1, y: 1}
+  - key: minigame.drop
+    clips:
+    - {fileID: 8300000, guid: b22b91c0f6c5fc944aeb626aabf84fc0, type: 3}
+    volume: 0.6
+    pitch: {x: 1, y: 1}
+  - key: minigame.fail
+    clips:
+    - {fileID: 8300000, guid: ad34a78e54e17bd4385673902c2414c3, type: 3}
+    volume: 0.6
+    pitch: {x: 1, y: 1}
+  - key: wish.shatter
+    clips:
+    - {fileID: 8300000, guid: ffc744cef3c5bb144aa4ea4b7dcf32c3, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: wish.note
+    clips:
+    - {fileID: 8300000, guid: 2fa04560187c4cd498c177eae3fbc94d, type: 3}
+    volume: 0.8
+    pitch: {x: 1, y: 1}
+  - key: wish.type
+    clips:
+    - {fileID: 8300000, guid: 3a6c721d8b725514f835f6d619c74c34, type: 3}
+    volume: 0.25
+    pitch: {x: 0.9, y: 1.1}
+  - key: wish.rewind
+    clips:
+    - {fileID: 8300000, guid: 033c7cc003f072547929f857a905864f, type: 3}
+    volume: 0.8
+    pitch: {x: 1, y: 1}
+  - key: final.check
+    clips:
+    - {fileID: 8300000, guid: 60babb5ba41c0554d890f954fff363e8, type: 3}
+    volume: 0.6
+    pitch: {x: 1, y: 1}
+  - key: music.final
+    clips:
+    - {fileID: 8300000, guid: 262f465589e2b1f43a7200a0c2a7a6d3, type: 3}
+    volume: 1
+    pitch: {x: 1, y: 1}
+  - key: music.menu
+    clips:
+    - {fileID: 8300000, guid: 233f0ff1d8ac537458ac194671b93c8c, type: 3}
+    volume: 0.8
+    pitch: {x: 1, y: 1}

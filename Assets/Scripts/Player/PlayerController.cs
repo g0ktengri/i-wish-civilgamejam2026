@@ -36,6 +36,16 @@ namespace Deprem.Player
         [SerializeField] private float radius = 0.25f;
         [SerializeField] private float groundCheckDistance = 0.08f;
 
+        [Header("Yataktan kalkma")]
+        [Tooltip("Kalkma animasyonunun süresi (sn); 0 = anında")]
+        [SerializeField] private float getUpDuration = 1.2f;
+        [Tooltip("Gövde bu andan (0..1) itibaren aşağı iner: kenara otururken bacaklar yataktan sarkar")]
+        [SerializeField, Range(0f, 0.9f)] private float getUpDropStart = 0.15f;
+        [Tooltip("Sürenin ilk bu kadarında (0..1) yatağın kenarında oturur, sonra öne (karakter düzlemine) çıkar")]
+        [SerializeField, Range(0f, 0.9f)] private float getUpHold = 0.45f;
+        [Tooltip("Yatarken ve kalkınca baktığı yön: çizimde baş solda (yastık), kalkınca sağa döner (1)")]
+        [SerializeField] private int getUpFacing = 1;
+
         [Header("Tuşlar")]
         [SerializeField] private Key leftKey = Key.A;
         [SerializeField] private Key rightKey = Key.D;
@@ -52,6 +62,26 @@ namespace Deprem.Player
         public bool IsCrouching { get; private set; }
         public bool IsOnPath => path != null;
         public bool IsLying { get; private set; }
+        /// <summary>Kalkma animasyonu sürüyor (bu sırada IsLying hâlâ doğru)</summary>
+        public bool IsGettingUp => getUpTime >= 0f;
+        /// <summary>Kalkma animasyonunun zamanı 0..1 (kareler buna göre)</summary>
+        public float GetUpProgress => IsGettingUp ? Mathf.Clamp01(getUpTime / Mathf.Max(0.01f, getUpDuration)) : 0f;
+        /// <summary>Gövdenin yataktan ayakta durduğu yüksekliğe (ve yana) ne kadar indiği 0..1</summary>
+        public float GetUpBlend => Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(getUpDropStart, 1f, GetUpProgress));
+        /// <summary>Gövdenin yataktan öne, karakter düzlemine ne kadar çıktığı 0..1 (oturma bitince başlar)</summary>
+        public float GetUpDepthBlend => Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(getUpHold, 1f, GetUpProgress));
+        /// <summary>Kalkış sırasında kökün olması gereken yer</summary>
+        public Vector3 GetUpPosition
+        {
+            get
+            {
+                float b = GetUpBlend;
+                return new Vector3(Mathf.Lerp(getUpFrom.x, getUpTo.x, b), Mathf.Lerp(getUpFrom.y, getUpTo.y, b),
+                    Mathf.Lerp(getUpFrom.z, getUpTo.z, GetUpDepthBlend));
+            }
+        }
+        /// <summary>Yatarken görselin baktığı yön</summary>
+        public int GetUpFacing => getUpFacing >= 0 ? 1 : -1;
         /// <summary>1 sağ, -1 sol</summary>
         public int Facing { get; private set; } = 1;
         /// <summary>-1..1, animasyon için</summary>
@@ -79,6 +109,10 @@ namespace Deprem.Player
         private int pathIndex;
         private float pathSpeed;
         private Action pathDone;
+
+        private float getUpTime = -1f;
+        private Vector3 getUpFrom, getUpTo;
+        private Action getUpDone;
 
         private void Awake()
         {
@@ -133,6 +167,11 @@ namespace Deprem.Player
             if (IsOnPath)
             {
                 StepPath(dt);
+                return;
+            }
+            if (IsGettingUp)
+            {
+                StepGetUp(dt);
                 return;
             }
             if (IsLying) return;
@@ -239,6 +278,7 @@ namespace Deprem.Player
         public void LieDown(Vector3 position)
         {
             if (IsOnPath) EndPath(false);
+            CancelGetUp();
             InputEnabled = false;
             IsLying = true;
             IsCrouching = false;
@@ -252,14 +292,45 @@ namespace Deprem.Player
         }
 
         /// <summary>
-        /// Yataktan kalkar: karakter düzleminde, yatağın önünde ayakta belirir. Kendi kendine yürümez;
-        /// girdiyi açmak çağıranın işi (sprite gelince araya "kalkma" animasyonu girer).
+        /// Yataktan kalkar: kalkma animasyonu süresince (getUpDuration) önce yatakta doğrulur, sonra gövde
+        /// yataktan karakter düzlemine, standPosition'a iner; bitince onDone. Kendi kendine yürümez; girdiyi
+        /// açmak çağıranın işi.
         /// </summary>
         public void GetUp(Vector3 standPosition, Action onDone = null)
         {
-            if (!IsLying) return;
-            Teleport(standPosition);
-            onDone?.Invoke();
+            if (!IsLying || IsGettingUp) return;
+            if (getUpDuration <= 0f)
+            {
+                Teleport(standPosition);
+                Facing = GetUpFacing;
+                onDone?.Invoke();
+                return;
+            }
+            getUpFrom = body.position;
+            getUpTo = standPosition;
+            getUpDone = onDone;
+            getUpTime = 0f;
+        }
+
+        private void StepGetUp(float dt)
+        {
+            getUpTime += dt;
+            if (getUpTime < getUpDuration)
+            {
+                body.MovePosition(GetUpPosition);
+                return;
+            }
+            var done = getUpDone;
+            CancelGetUp();
+            Teleport(getUpTo);
+            Facing = GetUpFacing; // çizimde kalkınca yatağa dönük; birden ters yöne dönmesin
+            done?.Invoke();
+        }
+
+        private void CancelGetUp()
+        {
+            getUpTime = -1f;
+            getUpDone = null;
         }
 
         /// <summary>Yerinden oynamadan bir yöne döner (1 = sağ, -1 = sol); örneğin bir şeye bakarken.</summary>
@@ -271,6 +342,7 @@ namespace Deprem.Player
         public void Teleport(Vector3 position)
         {
             if (IsOnPath) EndPath(false);
+            CancelGetUp(); // ör. döngü başında: yarım kalan kalkış biter
             if (IsLying)
             {
                 IsLying = false;

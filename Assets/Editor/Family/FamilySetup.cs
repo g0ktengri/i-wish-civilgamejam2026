@@ -116,6 +116,7 @@ namespace Deprem.Family
 
             // Seslenme balonu: başının biraz üstünde
             var bubble = go.AddComponent<Deprem.Player.SpeechBubble>();
+            Deprem.Player.PlayerSetup.ConfigureBubble(bubble);
             var bubbleSo = new SerializedObject(bubble);
             bubbleSo.FindProperty("headHeight").floatValue = def.Height + 0.35f;
             bubbleSo.ApplyModifiedPropertiesWithoutUndo();

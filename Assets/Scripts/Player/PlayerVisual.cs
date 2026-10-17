@@ -44,6 +44,14 @@ namespace Deprem.Player
         [Tooltip("Çömelme çiziminin son karedeki ölçeği (en, boy). Çizim ~1,3 m; masalar 0,78 m. Play testi 7: masanın " +
                  "çok üstünde kalıyordu; play testi 8: 0,82 × 0,58 cüce gibiydi. 0,72 ile ~0,92 m, masanın arkasından baş görünür")]
         [SerializeField] private Vector2 crouchedScale = new Vector2(0.95f, 0.72f);
+        [Tooltip("Yatakta yatma ve kalkma (oyuncu_kalkma_N: 1 sırtüstü yatıyor, bir bacağı yataktan sarkık; baş solda, " +
+                 "yastıkta ... 6 ayakta). Sanatçı yan yatırarak çizmiş; PNG'ler 90° döndürülmüş hali")]
+        [SerializeField] private Texture2D[] getUpFrames;
+        [Tooltip("Yatan karenin kökten kayması (m): baş yastıkta, sırt (76-78. satır) şiltenin üstünde")]
+        [SerializeField] private Vector2 lyingArtOffset = new Vector2(-0.37f, -0.75f);
+        [Tooltip("Son (ayakta) karenin kökten kayması (m): ayaklar (115. satır) yerde, ayak ortası (x 78) kökte. " +
+                 "Kalkarken yatan kaymadan buna geçer; bitince normal karelere sıçramadan döner")]
+        [SerializeField] private Vector2 standArtOffset = new Vector2(-0.37f, -0.16f);
         [Tooltip("Bu yatay hızın altında duruyor sayılır (m/s)")]
         [SerializeField] private float moveThreshold = 0.2f;
 
@@ -61,6 +69,8 @@ namespace Deprem.Player
         public bool HasFlashlightTip { get; private set; }
         /// <summary>Fenerin ucu, oyuncu kökünün yerel uzayında (yön ve ölçek dahil)</summary>
         public Vector3 FlashlightTipLocal { get; private set; }
+
+        private bool HasGetUpArt => getUpFrames != null && getUpFrames.Length > 0;
 
         private void Awake()
         {
@@ -97,13 +107,23 @@ namespace Deprem.Player
                 width = Mathf.Lerp(1f, crouchedScale.x, t);
                 height = Mathf.Lerp(1f, crouchedScale.y, t);
             }
-            visual.localScale = new Vector3(player.Facing * width, height, 1f);
-            // Yer tutucu: yatarken yan yatır, baş solda (yatağın başlığı), gövde pivotun ortasında ve
-            // şiltenin üstünde (pivot = şilte üstü). Sprite gelince "yatakta uyuma" animasyonu.
-            visual.localRotation = player.IsLying ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
-            visual.localPosition = player.IsLying
-                ? new Vector3(player.StandingHeight * 0.5f, lyingThickness * 0.5f, 0f)
-                : Vector3.zero;
+            if (HasGetUpArt && player.IsLying)
+            {
+                // Yatan ve kalkan çizim: baş yastıkta (solda). Kök şilteden yere inerken kayma da aynı oranda
+                // değişir; çizim yerinde durur, gövde sıçramaz.
+                visual.localScale = new Vector3(player.GetUpFacing, 1f, 1f);
+                visual.localRotation = Quaternion.identity;
+                visual.localPosition = Vector2.Lerp(lyingArtOffset, standArtOffset, player.GetUpBlend);
+            }
+            else
+            {
+                visual.localScale = new Vector3(player.Facing * width, height, 1f);
+                // Kalkma çizimi yoksa: yatarken yan yatır, baş solda (yatağın başlığı), gövde şiltenin üstünde
+                visual.localRotation = player.IsLying ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
+                visual.localPosition = player.IsLying
+                    ? new Vector3(player.StandingHeight * 0.5f, lyingThickness * 0.5f, 0f)
+                    : Vector3.zero;
+            }
 
             Animate(Time.deltaTime);
         }
@@ -123,7 +143,14 @@ namespace Deprem.Player
             int flashlightIndex = -1;
 
             Texture2D texture;
-            if (player.IsCrouching && crouchFrames != null && crouchFrames.Length > 0)
+            if (HasGetUpArt && player.IsLying)
+            {
+                int frame = player.IsGettingUp
+                    ? Mathf.Min(Mathf.FloorToInt(player.GetUpProgress * getUpFrames.Length), getUpFrames.Length - 1)
+                    : 0;
+                texture = getUpFrames[frame];
+            }
+            else if (player.IsCrouching && crouchFrames != null && crouchFrames.Length > 0)
             {
                 int frame = Mathf.Min(Mathf.FloorToInt(crouchTime * crouchFps), crouchFrames.Length - 1);
                 texture = crouchFrames[frame];
