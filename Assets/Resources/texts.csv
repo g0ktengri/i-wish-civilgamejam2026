@@ -42,30 +42,20 @@ minigame.taken,Alındı!,Got it!
 # Keşke ekranları: wish = cümle, info = altındaki bilgi, final = final listesindeki hali
 wish.ignored_foreshock,Keşke dikkate alsaydım,I wish I had taken it seriously
 info.ignored_foreshock,Küçük sarsıntılar daha büyüğünün habercisi olabilir. Yatağının üstünde düşebilecek eşya bulundurma.,Small tremors can warn of a bigger one. Keep nothing above your bed that could fall.
-final.ignored_foreshock,Sarsıntıyı ciddiye aldım,I took the tremor seriously
 
 wish.duck_cover,Keşke çök-kapan-tutun yapsaydım,"I wish I had dropped, covered and held on"
 info.duck_cover,"Sarsıntı sırasında koşma. Sağlam bir eşyanın yanında çök, başını ve enseni koru, tutun.","Don't run during shaking. Drop next to something sturdy, cover your head and neck, hold on."
-final.duck_cover,Çök-kapan-tutun yaptım,"I dropped, covered and held on"
 
 wish.secure_items,Keşke eşyaları sabitleseydim,I wish I had secured the furniture
 wish.secure_item,Keşke {0} sabitleseydim,I wish I had secured the {0}
 info.secure_items,"Dolap, kitaplık ve TV gibi devrilebilecek eşyaları duvara sabitle.","Anchor furniture that can tip over, like cabinets, bookcases and TVs, to the wall."
-final.secure_items,Eşyaları sabitledim,I secured the furniture
 
 wish.bag,Keşke deprem çantası hazırlasaydım,I wish I had packed an emergency bag
 info.bag,"Çantanda su, el feneri, ilk yardım malzemesi, düdük ve önemli belgelerin kopyaları olsun.","Keep water, a flashlight, first aid supplies, a whistle and copies of important documents in your bag."
-final.bag,Deprem çantamı hazırladım,I packed my emergency bag
 
 wish.aftershock,Keşke artçıda da çök-kapan yapsaydım,I wish I had taken cover in the aftershock too
 info.aftershock,Artçı sarsıntılar da tehlikelidir; her sarsıntıda aynı şeyi yap.,Aftershocks are dangerous too; do the same thing every time it shakes.
-final.aftershock,Artçılarda da korundum,I stayed safe in the aftershocks too
 
-final.title,Deprem hazırlık listen,Your earthquake checklist
-final.bonus_water,Yanıma su aldım,I packed water
-final.bonus_whistle,Yanıma düdük aldım,I packed a whistle
-final.call,Bu listeden birini bugün sen yap.,Do one thing from this list today.
-final.afad,Daha fazlası için: www.afad.gov.tr,Learn more: www.afad.gov.tr
 
 # Eşya adları, keşke cümlesindeki halleriyle (Türkçe: belirtme hali)
 item.BedShelf,yatağın üstündeki rafı,shelf above the bed
@@ -88,7 +78,6 @@ bag.Whistle,Düdük,Whistle
 game.title,Keşke,I Wish
 menu.back,Geri,Back
 menu.paused,Duraklatıldı,Paused
-controls.short,"A/D: Yürü · Space: Zıpla · S: Eğil, Çök-Kapan-Tutun · F: Etkileşim · Esc: Duraklat","A/D: Walk · Space: Jump · S: Crouch, Drop-Cover-Hold On · F: Interact · Esc: Pause"
 controls.body,"A / D: Yürü
 Space: Zıpla
 S: Eğil
@@ -121,7 +110,6 @@ Mehmet Kerim Artan: Game Developer, Game Designer
 Unity 6.3 LTS · URP · Cinemachine"
 menu.new_game,Yeni oyun,New game
 menu.chapter_select,Bölüm seç,Chapter select
-menu.chapter,Bölüm {0},Chapter {0}
 menu.controls,Kontroller,Controls
 menu.credits,Emeği geçenler,Credits
 menu.language,Dil: Türkçe,Language: English
@@ -143,7 +131,6 @@ minigame.tutorial.continue,F: Devam,F: Next
 minigame.stamp.secured,SABİTLENDİ,SECURED
 minigame.stamp.taken,ALINDI,TAKEN
 spirit.carry_to_bag,Çantaya götür,Take it to the bag
-minigame.tutorial.next,"F ya da tık: devam","F or click: next"
 minigame.tutorial.carry_grab,Eşyayı fareyle tut ve sürükle,Hold the item with the mouse and drag it
 minigame.tutorial.carry_gap,Duvara değmeden boşluktan geçir; değersen başa döner,Pass it through the gap without touching the wall; if you touch it you start over
 minigame.tutorial.carry_drop,Yeşil alana bırak,Drop it on the green area

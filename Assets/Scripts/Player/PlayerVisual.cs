@@ -176,7 +176,8 @@ namespace Deprem.Player
             // Diz çökme: Kneeling açıkken kareler ileri, kapanınca geri oynar
             bool hasKneelArt = kneelFrames != null && kneelFrames.Length > 0;
             float kneelStep = hasKneelArt ? dt * kneelFps / Mathf.Max(1, kneelFrames.Length - 1) : 1f;
-            kneelBlend = Mathf.MoveTowards(kneelBlend, Kneeling && !player.IsLying ? 1f : 0f, kneelStep);
+            // Basılı tutarken yürürse diz çökmüş kareyle kaymasın: yürürken kalkar
+            kneelBlend = Mathf.MoveTowards(kneelBlend, Kneeling && !player.IsLying && !moving ? 1f : 0f, kneelStep);
 
             Texture2D texture;
             if (hasKneelArt && kneelBlend > 0f && !player.IsLying)

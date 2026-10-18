@@ -52,6 +52,27 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Proje temizliği ve bug taraması (Berke)
+
+- **Silinenler (hiçbir yerden referans almıyordu):**
+  - Unity URP şablonundan kalanlar: `Assets/TutorialInfo/` (Readme editörü, ikon, layout), `Assets/Readme.asset`, `Assets/Scenes/SampleScene.unity`.
+  - **`ProjectSettings/EditorBuildSettings.asset` (senin dosyan):** SampleScene build listesinden çıkarıldı, yoksa `GameBuild` silinen sahneyi arardı. Build'de artık sadece `Main.unity` var. Başka ayar değişmedi.
+  - `SampleSceneProfile.asset` silinmedi: PC ve Mobile URP asset'leri kullanıyor.
+  - `Localization/LocalizedText.cs`: hiçbir sahnede ya da prefab'ta yoktu.
+  - `texts.csv`'de kodda hiç geçmeyen 13 anahtar: eski final listesi (`final.title`, `final.ignored_foreshock`…`final.afad`), `controls.short`, `menu.chapter`, `minigame.tutorial.next`.
+- **Kontrol:**
+  - Yetim `.meta` ya da meta'sız asset yok.
+  - `Tools/check-compile.ps1` (batchmode, kesin) derleme hatası ve uyarısı yok.
+  - Prefab ve Main yeniden kuruldu; dört test geçiyor.
+- **Bulunan ve düzeltilen bug:** taşı kaldırırken (F basılı) yürüyünce oyuncu diz çökmüş kareyle kayıyordu. Artık yürürken doğruluyor (`PlayerVisual`).
+- **İncelenip sorunsuz bulunanlar:**
+  - Gece atlama ve kayıt: her gece başında gerçek gece numarası kaydediliyor; eski kayıttaki 2. gece 3'e çevriliyor.
+  - Bölüm seç.
+  - Keşke ekranını tuşla geçme: aynı basış hem bitirip hem devam ettirmiyor.
+  - Kapı kilidi.
+  - Harita ve hedef paneli yerleşimi.
+- `BerkeSystems.prefab` yeniden kurulunca senin yeni alanların (`earlyReturnDelay`, `studioLogoDelay`, `minResolutionWidth`, `maxResolutionRows`) varsayılanlarıyla prefab'a yazıldı; değerler kodla aynı.
+
 ### Kapı ve taş kaldırma (Berke, senin dosyalarında)
 
 Berke'nin play testinden. Dört test geçiyor; Play'de denenmedi.

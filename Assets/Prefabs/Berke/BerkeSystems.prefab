@@ -159,6 +159,7 @@ MonoBehaviour:
   duration: 50
   durationPerLoss: 10
   maxDuration: 80
+  earlyReturnDelay: 1.8
   spawnPoint: {fileID: 0}
   spawnMarkerName: Marker_PlayerBed
   spawnOffset: {x: 0, y: 0.1, z: 0}
@@ -507,6 +508,7 @@ MonoBehaviour:
   memorialTitleFontSize: 22
   memorialLineHeight: 30
   memorialHighlightKey: memorial.16
+  studioLogoDelay: 4.5
   centeredClosingFontSize: 40
   centeredSubFontSize: 30
 --- !u!114 &6176068554381073379
@@ -549,6 +551,8 @@ MonoBehaviour:
   highlightColor: {r: 1, g: 0.82, b: 0.4, a: 1}
   backgroundColor: {r: 0.01, g: 0.02, b: 0.05, a: 0.8}
   sortingOrder: 125
+  minResolutionWidth: 1024
+  maxResolutionRows: 10
 --- !u!114 &857125433868889309
 MonoBehaviour:
   m_ObjectHideFlags: 0
