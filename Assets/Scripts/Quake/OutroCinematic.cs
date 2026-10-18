@@ -68,6 +68,12 @@ namespace Deprem.Quake
         [SerializeField] private float backdropHalfHeight = 3.92f;
         [Tooltip("İlk kadrajın sağ kenarı (dünya x): ilk üç mezar sığar, dördüncü dışarıda")]
         [SerializeField] private float firstFrameRight;
+        [Tooltip("Mehmet'in isteği: daha yakından. Kameranın yarı yüksekliği (m; görselin tamamı 3,92)")]
+        [SerializeField] private float viewHalfHeight = 2.5f;
+        [Tooltip("Kameranın dikey ortası (dünya y): mezarlar ve karakter kadrajda")]
+        [SerializeField] private float viewCenterY;
+        [Tooltip("Yürürken kamera karakteri izler; karakter kadraj ortasının bu oranda solunda kalır")]
+        [SerializeField, Range(0f, 0.8f)] private float followLead = 0.25f;
         [Tooltip("Karakterin yürüdüğü çizgi (ayak, dünya y)")]
         [SerializeField] private float walkY;
 
@@ -87,7 +93,7 @@ namespace Deprem.Quake
         [SerializeField] private float walkFps = 6f;
         [SerializeField] private float bendFps = 7f;
         [Tooltip("Mezarın bu kadar solunda durur (m): diz çökünce el mezarın önüne gelir")]
-        [SerializeField] private float standOffset = 0.75f;
+        [SerializeField] private float standOffset = 0.6f;
         [Tooltip("Her mezardaki balonun süresi (sn)")]
         [SerializeField] private float graveTalkTime = 4.2f;
         [Tooltip("Üç mezardan sonra 'bitti' sanılan sessizlik (sn)")]
@@ -126,6 +132,21 @@ namespace Deprem.Quake
                 if (grave.rose != null) grave.rose.SetActive(false);
         }
 
+        // Geliştirici kısayolu (Mehmet'in isteği): oyun sürerken Ctrl+Shift+O oyunu kazanılmış sayar, outro hemen
+        // başlar. Sadece editörde ve development build'de.
+        private void Update()
+        {
+            if (!Application.isEditor && !Debug.isDebugBuild) return;
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (keyboard == null || !keyboard.oKey.wasPressedThisFrame) return;
+            if (!keyboard.ctrlKey.isPressed || !keyboard.shiftKey.isPressed) return;
+            // Ana menüde (faz yok, zaman durmuş) ve keşke ekranında (Failed) çalışmaz
+            if (Outro.IsPlaying || GameState.Phase == GamePhase.None || GameState.Phase == GamePhase.Failed ||
+                GameState.Phase == GamePhase.Won) return;
+            Debug.Log("[Outro] Geliştirici kısayolu: oyun kazanıldı sayıldı, outro başlıyor");
+            GameState.WinLoop();
+        }
+
         private void HandleGameWon()
         {
             StopAllCoroutines();
@@ -145,17 +166,19 @@ namespace Deprem.Quake
             TakeCamera();
             Audio.Sfx.PlayMusic("music.final", 2f);
             actor.gameObject.SetActive(true);
-            float halfWidth = backdropHalfHeight * cam.aspect;
-            float startX = firstFrameRight - halfWidth * 2f - 1f;
-            SetCameraX(firstFrameRight - halfWidth);
+            float halfWidth = HalfWidth;
+            // Görselin sol kenarının hemen dışından girer; kamera onu izleyip ilk kadraja (üç mezar) varınca durur
+            float startX = backdropEdges.x - 0.8f;
+            float firstFrameX = firstFrameRight - halfWidth;
             actor.position = new Vector3(startX, walkY, actor.position.z);
+            SetCameraX(FollowX(firstFrameX));
             SetFrame(walkFrames[0], 1f);
 
             StartCoroutine(Fade(1f, 0f, fadeInTime));
             float firstStop = graves[0].x - standOffset;
             awarenessOpen = true;
             Outro.RaiseAwarenessStarted((firstStop - startX) / walkSpeed);
-            yield return WalkTo(firstStop);
+            yield return WalkTo(firstStop, firstFrameX);
             awarenessOpen = false;
             Outro.RaiseAwarenessEnded();
 
@@ -170,7 +193,7 @@ namespace Deprem.Quake
             // Bitti sanılır; sonra kamera sağa kayar, karakter kendi mezarına yürür
             yield return Idle(falseEndPause);
             var last = graves[graves.Length - 1];
-            StartCoroutine(PanCamera(backdropEdges.y - halfWidth, panTime));
+            StartCoroutine(PanCamera(last.x - halfWidth * 0.2f, panTime)); // son mezar ortanın biraz sağında
             yield return WalkTo(last.x - standOffset);
             yield return PlaceRose(last, rise: false);
             yield return Vanish();
@@ -205,7 +228,8 @@ namespace Deprem.Quake
 
         // ------------------------------------------------------------------ Karakter
 
-        private IEnumerator WalkTo(float x)
+        /// <param name="followUntil">NaN değilse kamera karakteri izler, bu x'te durur</param>
+        private IEnumerator WalkTo(float x, float followUntil = float.NaN)
         {
             float frameTime = 0f;
             int frame = 0;
@@ -214,6 +238,7 @@ namespace Deprem.Quake
                 var p = actor.position;
                 p.x = Mathf.MoveTowards(p.x, x, walkSpeed * Time.deltaTime);
                 actor.position = p;
+                if (!float.IsNaN(followUntil)) SetCameraX(FollowX(followUntil));
                 frameTime += Time.deltaTime * walkFps;
                 frame = (int)frameTime % walkFrames.Length;
                 SetFrame(walkFrames[frame], 1f);
@@ -286,17 +311,26 @@ namespace Deprem.Quake
             var brain = cam.GetComponent<CinemachineBrain>();
             if (brain != null) brain.enabled = false;
             cam.orthographic = true;
-            cam.orthographicSize = backdropHalfHeight;
+            cam.orthographicSize = ViewHalfHeight;
             cam.transform.rotation = Quaternion.identity;
         }
+
+        // Yakın kadraj görselin yüksekliğini aşmasın
+        private float ViewHalfHeight => Mathf.Min(viewHalfHeight, backdropHalfHeight);
+        private float HalfWidth => ViewHalfHeight * (cam != null ? cam.aspect : 16f / 9f);
+
+        /// <summary>Yürürken: karakter ortanın biraz solunda; kamera limit x'i geçmez</summary>
+        private float FollowX(float limit) => Mathf.Min(actor.position.x + HalfWidth * followLead, limit);
 
         private void SetCameraX(float x)
         {
             if (cam == null) return;
             // Görselin dışına taşmasın
-            float halfWidth = backdropHalfHeight * cam.aspect;
+            float halfWidth = HalfWidth, halfHeight = ViewHalfHeight;
             x = Mathf.Clamp(x, backdropEdges.x + halfWidth, backdropEdges.y - halfWidth);
-            cam.transform.position = new Vector3(x, backdropCenterY, transform.position.z - 10f);
+            float bottom = backdropCenterY - backdropHalfHeight, top = backdropCenterY + backdropHalfHeight;
+            float y = Mathf.Clamp(viewCenterY, bottom + halfHeight, top - halfHeight);
+            cam.transform.position = new Vector3(x, y, transform.position.z - 10f);
         }
 
         private IEnumerator PanCamera(float toX, float seconds)

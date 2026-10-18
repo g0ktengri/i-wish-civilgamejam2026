@@ -105,14 +105,14 @@ Mouse: Minigames
 Esc: Pause"
 credits.body,"Civil Game Jam 2026
 
-Meliz Dönmezer: 2D Artist
+Melis Dönmezer: 2D Artist
 Duygu İrem El: 2D Artist, 2D Animator
 Berke Yaşar: Game Codder
 Mehmet Kerim Artan: Game Developer, Game Designer
 
 Unity 6.3 LTS · URP · Cinemachine","Civil Game Jam 2026
 
-Meliz Dönmezer: 2D Artist
+Melis Dönmezer: 2D Artist
 Duygu İrem El: 2D Artist, 2D Animator
 Berke Yaşar: Game Codder
 Mehmet Kerim Artan: Game Developer, Game Designer
@@ -167,6 +167,25 @@ outro.grave.father,"Baba... Seni koruyamadım. Keşke kitaplığı duvara sabitl
 outro.grave.mother,"Anne... Seni koruyamadım. Keşke gardırobu sabitleseydim, keşke ilk yardım çantamız olsaydı.","Mom... I couldn't protect you. I wish I had secured the wardrobe, I wish we'd had a first aid kit."
 outro.grave.sibling,"Kardeşim... Karanlıkta seni bulamadım. Keşke bir el fenerim olsaydı.","Little one... I couldn't find you in the dark. I wish I'd had a flashlight."
 outro.grave.self,"Keşke o gece ilk sarsıntıda kalkabilseydim...","I wish I had gotten up at the first tremor that night..."
+# Mehmet: outro bitince geçmiş depremleri anma (tarih ve yer; can kayıpları AFAD'dan doğrulanmadan yazılmadı)
+memorial.title,Depremlerde hayatını kaybedenleri saygıyla anıyoruz,In memory of those we lost to earthquakes
+memorial.01,27 Aralık 1939 · Erzincan,27 December 1939 · Erzincan
+memorial.02,19 Ağustos 1966 · Varto,19 August 1966 · Varto
+memorial.03,28 Mart 1970 · Gediz,28 March 1970 · Gediz
+memorial.04,6 Eylül 1975 · Lice,6 September 1975 · Lice
+memorial.05,24 Kasım 1976 · Çaldıran,24 November 1976 · Çaldıran
+memorial.06,30 Ekim 1983 · Erzurum-Kars,30 October 1983 · Erzurum-Kars
+memorial.07,13 Mart 1992 · Erzincan,13 March 1992 · Erzincan
+memorial.08,1 Ekim 1995 · Dinar,1 October 1995 · Dinar
+memorial.09,27 Haziran 1998 · Adana-Ceyhan,27 June 1998 · Adana-Ceyhan
+memorial.10,17 Ağustos 1999 · Gölcük,17 August 1999 · Gölcük
+memorial.11,12 Kasım 1999 · Düzce,12 November 1999 · Düzce
+memorial.12,1 Mayıs 2003 · Bingöl,1 May 2003 · Bingöl
+memorial.13,23 Ekim 2011 · Van,23 October 2011 · Van
+memorial.14,24 Ocak 2020 · Elazığ,24 January 2020 · Elazığ
+memorial.15,30 Ekim 2020 · İzmir,30 October 2020 · İzmir
+memorial.16,6 Şubat 2023 · Kahramanmaraş,6 February 2023 · Kahramanmaraş
+memorial.everyone,ve kaybettiğimiz herkes,and everyone we lost
 menu.hint.cancel,Esc: Vazgeç,Esc: Cancel
 controls.hint.change,F: Tuşu değiştir,F: Change key
 controls.press,Bir tuşa bas…,Press a key…

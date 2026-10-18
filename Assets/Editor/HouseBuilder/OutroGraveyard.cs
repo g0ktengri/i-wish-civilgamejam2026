@@ -15,13 +15,24 @@ namespace Deprem.HouseBuilder
         private const string MaterialFolder = "Assets/Generated/House/Materials";
         private const string BackdropPath = "Assets/Art/Decor/mezarlik.png";
         private const string RosePath = "Assets/Art/Decor/gul.png";
+        private const string TeddyPath = "Assets/Art/Decor/ayicik.png";
+        // Kardeşin mezar taşı (x 1480-1550, tümseğe 505'te oturur): ayı taşın sol dibinde
+        private const float TeddyColumn = 1490f, TeddyBottomRow = 516f;
         private const string CharacterFolder = "Assets/Art/Characters";
 
         // Görselin ölçüleri ve mezarlar (piksel, sol üstten)
         private const float ImageWidth = 2006f, ImageHeight = 784f, PixelsPerMeter = 100f;
         private static readonly float[] GraveColumns = { 1215f, 1364f, 1513f, 1878f };
-        private const float WalkRow = 600f;        // karakterin ayakları (mezarların önü)
-        private const float RoseRow = 545f;        // tümseğin önü
+        // Karakterin ayakları: mezarların hemen önü (Mehmet'in isteği: daha yakın; 600 uzaktı, tümseğin dibi 548)
+        private const float WalkRow = 572f;
+        // Görselin tamamı 3,92; 2,5 fazla yakındı (Mehmet), arası
+        private const float ViewHalfHeight = 3.2f;
+        // Mehmet'in isteği: zemin az, gökyüzü biraz daha çok (455 aşağıdaydı)
+        private const float ViewCenterRow = 410f;
+        // Karakter 128 px kare = 2 m'nin bu katı (Mehmet'in isteği: küçük duruyordu)
+        private const float ActorScale = 1.35f;
+        // Mehmet'in isteği: tümseğin ucuna değil ortasına (545 ön kenardı)
+        private const float RoseRow = 522f;
         private const float FirstFrameRight = 1700f; // ilk kadrajın sağ kenarı: 4. mezar (1845'ten başlar) dışarıda
 
         private static readonly string[] BubbleKeys =
@@ -57,8 +68,8 @@ namespace Deprem.HouseBuilder
             quad.name = "Visual";
             Object.DestroyImmediate(quad.GetComponent<Collider>());
             quad.transform.SetParent(actor, false);
-            quad.transform.localPosition = new Vector3(0f, 1f - 2f / 64f, 0f);
-            quad.transform.localScale = new Vector3(2f, 2f, 1f);
+            quad.transform.localPosition = new Vector3(0f, (1f - 2f / 64f) * ActorScale, 0f);
+            quad.transform.localScale = new Vector3(2f * ActorScale, 2f * ActorScale, 1f);
             var actorRenderer = quad.GetComponent<MeshRenderer>();
             actorRenderer.sharedMaterial = UnlitMaterial("outro_karakter", $"{CharacterFolder}/oyuncu_gul_yurume_1.png", transparent: true);
             actorRenderer.shadowCastingMode = ShadowCastingMode.Off;
@@ -67,10 +78,10 @@ namespace Deprem.HouseBuilder
             var bubbleSo = new SerializedObject(bubble);
             bubbleSo.FindProperty("font").objectReferenceValue =
                 AssetDatabase.LoadAssetAtPath<Font>("Assets/Art/Fonts/DepremBalon-Regular.ttf");
-            bubbleSo.FindProperty("headHeight").floatValue = 1.95f;
+            bubbleSo.FindProperty("headHeight").floatValue = 1.95f * ActorScale;
             bubbleSo.ApplyModifiedPropertiesWithoutUndo();
 
-            // Güller: tümseğin önünde yatık (sap sağa)
+            // Güller: tümseğin ortasında yatık (sap sağa)
             var roseMaterial = UnlitMaterial("outro_gul", RosePath, transparent: true);
             var rose = AssetDatabase.LoadAssetAtPath<Texture2D>(RosePath);
             float roseHeight = rose != null ? rose.height / 80f : 0.38f;
@@ -89,7 +100,7 @@ namespace Deprem.HouseBuilder
                 roseQuad.name = "Rose_" + i;
                 Object.DestroyImmediate(roseQuad.GetComponent<Collider>());
                 roseQuad.transform.SetParent(root, false);
-                roseQuad.transform.localPosition = new Vector3(X(GraveColumns[i]) - 0.05f, Y(RoseRow), 1f);
+                roseQuad.transform.localPosition = new Vector3(X(GraveColumns[i]) + 0.05f, Y(RoseRow), 1f);
                 roseQuad.transform.localRotation = Quaternion.Euler(0f, 0f, 48f);
                 roseQuad.transform.localScale = new Vector3(roseWidth, roseHeight, 1f);
                 var roseRenderer = roseQuad.GetComponent<MeshRenderer>();
@@ -102,16 +113,47 @@ namespace Deprem.HouseBuilder
                 grave.FindPropertyRelative("rose").objectReferenceValue = roseQuad;
                 grave.FindPropertyRelative("bubbleKey").stringValue = BubbleKeys[i];
             }
+            BuildTeddy(root);
+
             so.FindProperty("backdropEdges").vector2Value = new Vector2(Origin.x - width * 0.5f, Origin.x + width * 0.5f);
             so.FindProperty("backdropCenterY").floatValue = Origin.y + height * 0.5f;
             so.FindProperty("backdropHalfHeight").floatValue = height * 0.5f;
             so.FindProperty("firstFrameRight").floatValue = Origin.x + X(FirstFrameRight);
             so.FindProperty("walkY").floatValue = Origin.y + Y(WalkRow);
+            // Yakın kadraj (Mehmet'in isteği): 6,4 m yükseklik, dikey ortası mezarların biraz üstü (karakterin başı sığar)
+            so.FindProperty("viewHalfHeight").floatValue = ViewHalfHeight;
+            so.FindProperty("viewCenterY").floatValue = Origin.y + Y(ViewCenterRow);
+            // Diz çökünce el pivotun (88-64)/64 m sağında, büyüyünce o kadar daha sağda: el gülün yanına gelsin
+            so.FindProperty("standOffset").floatValue = 24f / 64f * ActorScale;
             SetFrames(so.FindProperty("walkFrames"), "oyuncu_gul_yurume_", 8);
             SetFrames(so.FindProperty("bendFrames"), "oyuncu_gul_koyma_", 5);
             SetFrames(so.FindProperty("bendEmptyFrames"), "oyuncu_koyma_", 5);
             SetFrames(so.FindProperty("idleFrames"), "oyuncu_bekleme_", 2);
             so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
+        /// Mehmet'in isteği: kardeşin mezar taşının dibinde küçük oyuncak ayı (baştan orada; gülün arkasında).
+        /// 30 px yüksek, 100 px = 1 m (görselle aynı ölçek); gece sahnesinde parlamasın diye hafif koyu.
+        /// </summary>
+        private static void BuildTeddy(Transform root)
+        {
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TeddyPath);
+            if (texture == null) return;
+            var teddy = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            teddy.name = "Teddy";
+            Object.DestroyImmediate(teddy.GetComponent<Collider>());
+            teddy.transform.SetParent(root, false);
+            float w = texture.width / PixelsPerMeter, h = texture.height / PixelsPerMeter;
+            teddy.transform.localPosition = new Vector3(X(TeddyColumn), Y(TeddyBottomRow) + h * 0.5f, 1.5f);
+            teddy.transform.localScale = new Vector3(w, h, 1f);
+            var renderer = teddy.GetComponent<MeshRenderer>();
+            var mat = UnlitMaterial("outro_ayicik", TeddyPath, transparent: true);
+            mat.SetColor("_BaseColor", new Color(0.78f, 0.8f, 0.9f));
+            EditorUtility.SetDirty(mat);
+            renderer.sharedMaterial = mat;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
         }
 
         private static float X(float column) => column / PixelsPerMeter - ImageWidth / PixelsPerMeter * 0.5f;

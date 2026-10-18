@@ -282,6 +282,53 @@ namespace Deprem.Loop.EditorTools
                 Get<Text>(final, "hintText").text = Deprem.Localization.Texts.Get("prompt.main_menu");
             });
 
+            // Outro (Mehmet): mezarlıkta yürürken gökyüzündeki farkındalık cümlesi (arka plan OutroPreview görüntüsü)
+            backgroundOverride = "Logs/outro_1_yuruyus.png";
+            RenderScene("final_awareness", root =>
+            {
+                var final = root.AddComponent<FinalScreen>();
+                Call(final, "Awake");
+                Get<CanvasGroup>(final, "awarenessGroup").alpha = 1f;
+                var line = Get<Text>(final, "awarenessLine");
+                line.text = WishLines.Advice(LoseReason.NoDuckCoverHold, ItemId.None);
+                line.color = new Color(1f, 0.82f, 0.4f);
+            });
+            backgroundOverride = null;
+
+            // Outro bitince: geçmiş depremleri anma, liste kayarken
+            RenderScene("final_memorial", root =>
+            {
+                var final = root.AddComponent<FinalScreen>();
+                Call(final, "Awake");
+                Get<CanvasGroup>(final, "group").alpha = 1f;
+                var title = Get<Text>(final, "memorialTitle");
+                title.text = Deprem.Localization.Texts.Get("memorial.title");
+                title.color = new Color(0.96f, 0.92f, 0.84f);
+                Call(final, "BuildMemorialList");
+            }, (root, camera) =>
+            {
+                var list = Get<RectTransform>(root.GetComponent<FinalScreen>(), "memorialList");
+                list.anchoredPosition = new Vector2(0f, 160f);
+            });
+
+            // Outrodan sonra kapanış: ekranın ortasında, büyük, sığacak boyda
+            RenderScene("final_closing_outro", root =>
+            {
+                var final = root.AddComponent<FinalScreen>();
+                Call(final, "Awake");
+                Get<CanvasGroup>(final, "group").alpha = 1f;
+                Call(final, "CenterClosing");
+                Get<UiTitle>(final, "closingText").Text = Deprem.Localization.Texts.Get("final.closing");
+                Get<RectTransform>(final, "closingArea").GetComponent<CanvasGroup>().alpha = 1f;
+                var sub = Get<Text>(final, "subText");
+                sub.text = Deprem.Localization.Texts.Get("final.closing_sub");
+                sub.color = new Color(1f, 0.82f, 0.4f);
+                var site = Get<Text>(final, "siteText");
+                site.text = Deprem.Localization.Texts.Get("final.site");
+                site.color = new Color(0.96f, 0.92f, 0.84f, 0.6f);
+                Get<Text>(final, "hintText").text = Deprem.Localization.Texts.Get("prompt.main_menu");
+            });
+
             // M56, M57: sinema bantları ve "geç" (Cinematic sınıfı yokken elle açılır, halka yarı dolu)
             RenderScene("cinematic", root =>
             {
@@ -426,7 +473,7 @@ namespace Deprem.Loop.EditorTools
                 var background = UiBuilder.CreateCanvas(root.transform, "Background", -100);
                 var image = UiBuilder.CreateChild<RawImage>(background.transform, "House");
                 UiBuilder.Stretch(image.rectTransform, Vector2.zero, Vector2.one);
-                const string house = "Logs/house_preview_game.png";
+                string house = backgroundOverride ?? "Logs/house_preview_game.png";
                 if (File.Exists(house))
                 {
                     var texture = new Texture2D(2, 2);
@@ -497,5 +544,8 @@ namespace Deprem.Loop.EditorTools
             target.GetType().GetMethod(method, Flags).Invoke(target, args);
 
         static T Get<T>(object target, string field) => (T)target.GetType().GetField(field, Flags).GetValue(target);
+
+        // Mehmet: outro önizlemesi evin değil mezarlığın üstünde
+        static string backgroundOverride;
     }
 }

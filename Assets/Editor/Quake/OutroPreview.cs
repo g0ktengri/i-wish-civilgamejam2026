@@ -37,22 +37,28 @@ namespace Deprem.Quake
             var bendEmpty = Get<Texture2D[]>(outro, "bendEmptyFrames");
 
             const int width = 1920, height = 1080;
-            float halfWidth = halfHeight * width / (float)height;
-            float firstX = firstRight - halfWidth, lastX = edges.y - halfWidth;
+            float viewHalf = Mathf.Min(Get<float>(outro, "viewHalfHeight"), halfHeight);
+            float viewY = Mathf.Clamp(Get<float>(outro, "viewCenterY"), centerY - halfHeight + viewHalf, centerY + halfHeight - viewHalf);
+            float lead = Get<float>(outro, "followLead");
+            float halfWidth = viewHalf * width / (float)height;
+            float Clamp(float x) => Mathf.Clamp(x, edges.x + halfWidth, edges.y - halfWidth);
+            float firstX = Clamp(firstRight - halfWidth), lastX = Clamp(graves[3].x - halfWidth * 0.2f);
 
+            // Yürürken kamera karakteri izler (ilk kadraja varmadan, mezarlığın solunda)
             foreach (var g in graves) g.rose.SetActive(false);
-            Place(actor, renderer, firstRight - halfWidth * 1.4f, walkY, walk[2]);
-            Shot("outro_1_yuruyus", firstX, centerY, halfHeight, width, height);
+            float walkX = edges.x + halfWidth * 1.2f;
+            Place(actor, renderer, walkX, walkY, walk[2]);
+            Shot("outro_1_yuruyus", Clamp(Mathf.Min(walkX + halfWidth * lead, firstX)), viewY, viewHalf, width, height);
 
             graves[0].rose.SetActive(true);
             Place(actor, renderer, graves[1].x - standOffset, walkY, bend[bend.Length - 1]);
-            Shot("outro_2_egilme", firstX, centerY, halfHeight, width, height);
+            Shot("outro_2_egilme", firstX, viewY, viewHalf, width, height);
 
             graves[1].rose.SetActive(true);
             graves[2].rose.SetActive(true);
             Place(actor, renderer, graves[3].x - standOffset, walkY, bendEmpty[bendEmpty.Length - 1]);
             graves[3].rose.SetActive(true);
-            Shot("outro_3_son_mezar", lastX, centerY, halfHeight, width, height);
+            Shot("outro_3_son_mezar", lastX, viewY, viewHalf, width, height);
             Debug.Log("[OutroPreview] Kaydedildi: Logs/outro_*.png");
         }
 

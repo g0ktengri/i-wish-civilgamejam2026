@@ -1631,7 +1631,7 @@ Mehmet'in yorumu (özet):
 ### Emeği geçenler ve kulaklık notu (`texts.csv`, senin dosyan; Mehmet'in isteğiyle)
 
 - **`credits.body`:** Mehmet'in yazdığı unvanlarla, iki dilde aynı:
-  - Meliz Dönmezer: 2D Artist
+  - Melis Dönmezer: 2D Artist (yazımı düzeltildi: Meliz değil Melis)
   - Duygu İrem El: 2D Artist, 2D Animator
   - Berke Yaşar: Game Codder
   - Mehmet Kerim Artan: Game Developer, Game Designer
@@ -1733,18 +1733,42 @@ public static class Outro
   - önizleme: `Deprem.Quake.OutroPreview.Render` → `Logs/outro_1_yuruyus.png`, `outro_2_egilme.png`, `outro_3_son_mezar.png`.
 - [x] **`texts.csv`:** `outro.grave.father/mother/sibling/self` eklendi.
 - **Süreler:** ilk mezara yürüyüş yaklaşık 12,5 sn (`AwarenessStarted` bu süreyi verir); bütün outro yaklaşık 1 dakika.
-- **`FinalScreen.cs` (senin dosyan), geçiş için küçük değişiklik:** `Outro.Available` ise eski akış `GameWon`'da değil `Outro.Finished`'da başlıyor (bekleme ve kararma olmadan). Böylece şimdiden baştan sona oynanıyor; senin işin bitince bu kısmı kendi akışınla değiştir.
-- **Not:** sanatçıdan yürüme çizimi yok; koşma kareleri yavaş oynuyor. Yürüme kareleri gelirse `walkFrames`'e bağlanır.
+- **Güller** tümseğin ucunda değil ortasında (Mehmet'in isteği).
+- **Karakter** mezarlıkta 1,35 kat büyük ve mezarların hemen önünde yürüyor (Mehmet'in isteği).
+- **Outro kamerası daha yakın** (Mehmet'in isteği):
+  - Görselin tamamı (7,84 m) yerine 6,4 m yükseklik. 5 m fazla yakındı.
+  - Kamera biraz yukarıda: zemin az, gökyüzü biraz daha çok.
+  - Karakter mezarlığın sol kenarından girer, kamera onu izleyip ilk üç mezarın kadrajında durur; 4. mezar yine dışarıda.
+  - İlk mezara yürüyüş yaklaşık 16 sn.
+- **Kardeşin mezar taşının dibinde küçük oyuncak ayı:** `Art/Decor/ayicik.png`, 30 px; outro başından beri orada.
+- **Anma listesi:**
+  - Üstten çıkan satır başlığa yapışık duruyordu: liste alanı başlıktan uzaklaştı.
+  - Satırlar alt ve üst kenarda solarak girip çıkıyor.
+- **Anma listesinde** 6 Şubat 2023 satırı sarı (oyun bu depremle ilgili; `FinalScreen.memorialHighlightKey`).
+- **Kapanış:** outrodan sonra ekranın ortasında, büyük (40/30 punto); sığmazsa küçülür ya da iki satıra iner (`FinalScreen.CenterClosing`). Önizleme: `hud_preview_final_closing_outro`.
+- **Geliştirici kısayolu:** oyun sürerken (menüde ve keşke ekranında değil) **Ctrl+Shift+O**. Oyunu kazanılmış sayar, outro hemen başlar. Sadece editörde ve development build'de çalışır.
+- **Not:** sanatçıdan yürüme çizimi yok; koşma kareleri yavaş oynuyor. Yürüme kareleri gelirse `walkFrames`'e bağlanır. (Sadece sakin kareleri oynatmak denendi, daha kötü durdu, geri alındı.)
 
-**Berke:**
+**Berke:** (Berke müsait olmadığı için aşağıdakileri Mehmet yaptı; senin dosyaların, bilgin olsun)
 
-- [ ] **`FinalScreen`:**
+- **Yapılan (`FinalScreen.cs`):**
+  - `Outro.Available` ise eski akış başlamıyor.
+  - **`AwarenessStarted(sn)`:** mezarlığın gökyüzünde, sinema bandının altında hafif koyu bir şerit. Söylenen keşkeler tek tek gelir, çatlayıp bugüne döner (senin `Shatter`'ın), söner. En fazla 3 cümle, süre yetmezse daha az (`awarenessMaxLines`, `awarenessMinLineTime`).
+  - **`AwarenessEnded`:** şerit söner.
+  - **`Finished`:** siyah ekranda "Depremlerde hayatını kaybedenleri saygıyla anıyoruz". Altında 16 deprem 12 sn'de alttan yukarı kayar (`memorialScrollTime`), en sonda "ve kaybettiğimiz herkes". Sonra mevcut kapanış (`Closing()`): büyük cümle, AFAD, ana menü.
+  - Outro yoksa eski akış aynen duruyor.
+- **`texts.csv`:** `memorial.title`, `memorial.01..16` (tarih ve yer), `memorial.everyone`. **Can kayıpları yazılmadı:** AFAD'dan doğrulanınca satırlara eklenebilir.
+- **`HudPreview`:** `final_awareness` (mezarlık önizlemesinin üstünde) ve `final_memorial`.
+
+Başta yazdığım görev listesi (artık yapıldı):
+
+- [x] **`FinalScreen`:**
   - `Outro.Available` ise `GameWon`'da eski akışı başlatma, outro olaylarını bekle. Değilse (test sahnesi) eski akış aynen kalsın.
-- [ ] **`AwarenessStarted(sn)`: yürüyüş sırasında farkındalık mesajları.**
+- [x] **`AwarenessStarted(sn)`: yürüyüş sırasında farkındalık mesajları.**
   - Arka plan siyah değil, mezarlık görünsün. Okunsun diye üstte yumuşak koyu bir şerit yeterli.
   - Ekranın üst kısmında, tek tek: söylenen keşke çatlayıp bugüne dönsün (senin `Shatter`'ın). En fazla 3-4 cümle, verilen sürenin içinde bitsin.
   - `AwarenessEnded`'da sönsün.
-- [ ] **`Finished`: siyah ekranda geçmiş depremleri anma.**
+- [x] **`Finished`: siyah ekranda geçmiş depremleri anma.**
   - Başlık: "Depremlerde hayatını kaybedenleri anıyoruz" gibi.
   - Altında hızlı, yukarı kayan liste: yıl, yer, can kaybı.
   - Önerdiğim depremler:
@@ -1754,8 +1778,8 @@ public static class Outro
     - 2003 Bingöl, 2011 Van, 2020 Elazığ, 2020 İzmir, 6 Şubat 2023 Kahramanmaraş.
   - **Can kayıplarını AFAD'ın resmi kaynağından al, tahminle yazma.** Emin olunmayan sayı yerine sadece yıl ve yer kalsın.
   - Sonra mevcut kapanış ("Deprem geldiğinde keşkelerin olmasın. Bugün hazırlan."), AFAD satırı, "F: Ana menü".
-- [ ] `texts.csv`: `memorial.*` satırları (TR/EN).
-- [ ] `HudPreview`: farkındalık şeridi (mezarlık arka planıyla) ve anma ekranı önizlemeleri.
+- [x] `texts.csv`: `memorial.*` satırları (TR/EN).
+- [x] `HudPreview`: farkındalık şeridi (mezarlık arka planıyla) ve anma ekranı önizlemeleri.
 
 ---
 
