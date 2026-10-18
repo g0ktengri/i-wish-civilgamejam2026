@@ -33,6 +33,8 @@ namespace Deprem.UI
         [SerializeField] float repeatPace = 3f;
         [Tooltip("Jüri temposu: ilk kez görülen keşke de bu kat hızlı akar (1 = eski hız)")]
         [SerializeField] float firstPace = 1.5f;
+        [Tooltip("Jüri sürümü: yazı sürerken bir tuş bütün ekranı bu hızla bitirir (ikinci tuş devam eder)")]
+        [SerializeField] float rushPace = 40f;
         [Tooltip("M52: ölüm siyahının üstüne keşke ekranının siyahı bu sürede gelir (ekran zaten kararmışsa fark edilmez)")]
         [SerializeField] float blackTakeover = 0.5f;
         [Tooltip("M52: yazılar ve çatlak siyahın içinden bu sürede belirir")]
@@ -116,6 +118,7 @@ namespace Deprem.UI
         CanvasGroup group;
         CanvasGroup content;
         float pace = 1f;
+        bool rush;
 
         Image background;
         Image focus;
@@ -190,6 +193,7 @@ namespace Deprem.UI
         IEnumerator Show(string wish, string info)
         {
             canContinue = false;
+            rush = false;
             rewinding = false;
             ClearTexts();
             background.enabled = true;
@@ -210,7 +214,7 @@ namespace Deprem.UI
             SplitWish(wish, out string head, out string rest);
             content.alpha = 0f;
             StartCoroutine(FadeContent(contentFadeIn));
-            yield return new WaitForSecondsRealtime(wishDelay / pace);
+            yield return WaitPaced(wishDelay / pace);
             Sfx.Play("wish.note");
             if (!string.IsNullOrEmpty(head))
             {
@@ -220,9 +224,9 @@ namespace Deprem.UI
             }
             yield return TypeWish(rest);
             yield return Crack();
-            yield return new WaitForSecondsRealtime(infoDelay / pace);
+            yield return WaitPaced(infoDelay / pace);
             yield return Type(infoText, info, infoCharsPerSecond * pace);
-            yield return new WaitForSecondsRealtime(hintDelay / pace);
+            yield return WaitPaced(hintDelay / pace);
             hintText.text = Texts.Get("wish.continue"); // M59: herhangi bir tuş
             hintText.enabled = true;
             canContinue = true;
@@ -363,6 +367,23 @@ namespace Deprem.UI
             rest = "..." + rest.Substring(prefix.Length).TrimStart();
         }
 
+        // Jüri sürümü (Mehmet'in görev listesi): yazı sürerken ilk tuş bütün ekranı bitmiş haline getirir (kalan yazılar,
+        // beklemeler ve çatlak çok hızlı geçer); ipucu çıkınca ikinci tuş devam eder
+        bool RushPressed()
+        {
+            if (!rush && ContinuePressed())
+            {
+                rush = true;
+                pace = Mathf.Max(pace, rushPace);
+            }
+            return rush;
+        }
+
+        IEnumerator WaitPaced(float seconds)
+        {
+            for (float t = 0f; t < seconds && !RushPressed(); t += Time.unscaledDeltaTime) yield return null;
+        }
+
         // Daktilo: her harf büyükten oturur (vuruş), yazı hafif sarsılır; noktalar daha yavaş
         IEnumerator TypeHead(string text)
         {
@@ -377,7 +398,7 @@ namespace Deprem.UI
                     float k = Mathf.Clamp01(t / (interval * 0.5f));
                     headRect.localScale = Vector3.one * Mathf.Lerp(1.12f, 1f, k);
                     headRect.anchoredPosition = headHome + Random.insideUnitCircle * letterShake * 1.5f * (1f - k);
-                    if (ContinuePressed())
+                    if (RushPressed())
                     {
                         headText.text = text;
                         headRect.localScale = Vector3.one;
@@ -397,7 +418,7 @@ namespace Deprem.UI
             for (float t = 0f; t < headHold / pace; t += Time.unscaledDeltaTime)
             {
                 headRect.anchoredPosition = headHome + new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
-                if (ContinuePressed()) break;
+                if (RushPressed()) break;
                 yield return null;
             }
             headRect.anchoredPosition = headHome;
@@ -412,6 +433,7 @@ namespace Deprem.UI
                 float k = 1f - (1f - t / moveSeconds) * (1f - t / moveSeconds);
                 headRect.anchoredPosition = Vector2.Lerp(headHome, end, k);
                 headRect.localScale = Vector3.one * Mathf.Lerp(1f, headEndScale, k);
+                if (RushPressed()) break;
                 yield return null;
             }
             headRect.anchoredPosition = end;
@@ -436,7 +458,7 @@ namespace Deprem.UI
                 {
                     float shake = c == ' ' ? 0f : letterShake * (1f - t / wait);
                     wishRect.anchoredPosition = wishHome + Random.insideUnitCircle * shake;
-                    if (ContinuePressed())
+                    if (RushPressed())
                     {
                         wishText.text = text;
                         wishRect.anchoredPosition = wishHome;
@@ -616,7 +638,7 @@ namespace Deprem.UI
                 float wait = c == ',' || c == ';' ? interval * 5f : c == '.' || c == '!' || c == '?' ? interval * 8f : interval;
                 for (float t = 0f; t < wait; t += Time.unscaledDeltaTime)
                 {
-                    if (ContinuePressed())
+                    if (RushPressed())
                     {
                         target.text = text;
                         yield break;

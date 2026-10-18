@@ -437,7 +437,8 @@ namespace Deprem.Loop.EditorTools
                 Need($"advice.{lesson}"); // M47: final ekranında bugüne dönmüş hali
             }
             foreach (var key in new[] { "advice.secure_item", "final.closing", "final.closing_sub", "final.site",
-                         "controls.header.spirit", "controls.reset", "controls.reset_done", "menu.continue" })
+                         "controls.header.spirit", "controls.reset", "controls.reset_done", "menu.continue", "menu.chapter_select",
+                         "menu.chapter.start", "menu.chapter.duck_cover", "menu.chapter.spirit", "menu.chapter.final" })
                 Need(key);
             foreach (var key in new[] { "wish.prefix", "wish.rewind", "prompt.continue", "minigame.lock.hint",
                          "minigame.carry.hint", "minigame.screw.hint" })

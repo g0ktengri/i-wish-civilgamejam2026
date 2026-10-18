@@ -134,6 +134,10 @@ menu.hint.back,Esc: Geri,Esc: Back
 menu.hint.change,A/D: Değiştir,A/D: Change
 menu.subtitle,Bir deprem hikâyesi,An earthquake story
 menu.jam,Civil Game Jam 2026,Civil Game Jam 2026
+menu.chapter.start,Başlangıç,Beginning
+menu.chapter.duck_cover,Çök-kapan,Drop and cover
+menu.chapter.spirit,Ruh fazı,Spirit phase
+menu.chapter.final,Final,Finale
 minigame.tutorial.continue,F: Devam,F: Next
 minigame.stamp.secured,SABİTLENDİ,SECURED
 minigame.stamp.taken,ALINDI,TAKEN

@@ -20,7 +20,7 @@ namespace Deprem.UI
 
     public class MainMenu : MonoBehaviour
     {
-        enum Screen { Hidden, Warning, Main, ConfirmNew, Controls, Credits }
+        enum Screen { Hidden, Warning, Main, ConfirmNew, Controls, Credits, Chapters }
 
         static bool warningShown;
         static Sprite shadeSprite;
@@ -192,11 +192,21 @@ namespace Deprem.UI
                         if (SaveGame.Exists) Show(Screen.ConfirmNew);
                         else StartNewGame();
                     });
+                    menu.Add("menu.chapter_select", () => Show(Screen.Chapters)); // jüri sürümü: her yere saniyeler içinde
                     menu.Add("menu.settings", OpenSettings);
                     menu.Add("menu.controls", () => { if (SettingsMenu.Instance) SettingsMenu.Instance.OpenControls(Refresh); });
                     menu.Add("menu.credits", () => Show(Screen.Credits));
                     menu.Add("menu.language", () => Texts.ToggleLanguage());
                     menu.Add("menu.quit", Quit);
+                    break;
+                case Screen.Chapters:
+                    // Jüri sürümü (Mehmet'in görev listesi): başlangıç (intro), çök-kapan (döngü 3), ruh fazı (döngü 4),
+                    // final (Outro.Request: son döngüyü başlatır, outroyu kendisi açar)
+                    menu.Add("menu.chapter.start", StartNewGame);
+                    menu.Add("menu.chapter.duck_cover", () => StartLoop(3));
+                    menu.Add("menu.chapter.spirit", () => StartLoop(4));
+                    menu.Add("menu.chapter.final", StartFinal);
+                    menu.Add("menu.back", () => Show(Screen.Main));
                     break;
                 case Screen.ConfirmNew:
                     menu.Add("menu.new_confirm_yes", StartNewGame);
@@ -231,6 +241,10 @@ namespace Deprem.UI
                 case Screen.Credits:
                     bodyText.text = Texts.Get("credits.body");
                     SetHints(Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
+                    break;
+                case Screen.Chapters:
+                    bodyText.text = string.Empty;
+                    SetHints(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
                     break;
                 case Screen.ConfirmNew:
                     bodyText.text = Texts.Get("menu.new_confirm");
@@ -342,6 +356,12 @@ namespace Deprem.UI
             Minigames.MinigameHost.ClearTutorials(); // M61: minigame öğreticileri yeniden
             WishLines.ClearHistory();
             StartLoop(1);
+        }
+
+        static void StartFinal()
+        {
+            warningShown = true;
+            Quake.Outro.Request();
         }
 
         static void StartLoop(int loop)

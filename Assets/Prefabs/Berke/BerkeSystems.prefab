@@ -103,6 +103,7 @@ MonoBehaviour:
   fadeToBlack: 1.6
   repeatPace: 3
   firstPace: 1.5
+  rushPace: 40
   blackTakeover: 0.5
   contentFadeIn: 0.7
   focusInSeconds: 0.7

@@ -222,7 +222,7 @@ namespace Deprem.Loop.EditorTools
             });
 
             // Arayüz turu 3: ana menünün emeği geçenler ve içerik uyarısı ekranları
-            foreach (var (name, screen) in new[] { ("menu_credits", "Credits"), ("menu_warning", "Warning") })
+            foreach (var (name, screen) in new[] { ("menu_credits", "Credits"), ("menu_warning", "Warning"), ("menu_chapters", "Chapters") })
             {
                 RenderScene(name, root =>
                 {

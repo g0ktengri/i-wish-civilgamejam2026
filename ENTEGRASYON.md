@@ -1839,12 +1839,12 @@ Başta yazdığım görev listesi (artık yapıldı):
 
 **İş listesi (dosya sahibine bakmadan yapabilirsin; benim dosyalarımda değiştirdiklerini buraya not et):**
 
-- [ ] **1. Ana menüde "Bölüm seç"** ("Devam et" ile yan yana):
+- [x] **1. Ana menüde "Bölüm seç"** ("Devam et" ile yan yana):
   - Başlangıç: `LoopManager.StartFromLoop(1)`, intro oynar.
   - Çök-Kapan: döngü 3.
   - Ruh Fazı: döngü 4.
   - Final: `Deprem.Quake.Outro.Request()`. Menüdeyken son döngüyü başlatır ve outroyu kendisi açar (Ctrl+Shift+O da bunu kullanıyor).
-- [ ] **2. Etkileşimsiz anlarda "Boşluk (basılı tut): Geç":**
+- [ ] **2. Etkileşimsiz anlarda "Boşluk (basılı tut): Geç":** (Berke denedi, beğenmedi; sadece keşke ekranı, aşağıda)
   - Geçilecek yerler:
     - döngü 1-2'nin senaryolu ölümleri;
     - ölümden sonra keşke ekranına kadar bekleme;
@@ -1855,6 +1855,13 @@ Başta yazdığım görev listesi (artık yapıldı):
 - [x] **3. Döngü 1-2 kısalsın:** senin "Jüri temposu" commit'lerinde yapıldı. İstersen `QuakeDirector.deathLinger` (2,6 sn, ölümden keşke ekranına bekleme) 1,6'ya inebilir.
 - [ ] **4. Build:** `Editor/Quake/GameBuild.cs` (`Tools/Deprem/Windows build'i al`) `Build/Keske`'ye Windows build'i alıyor. Jüriye bu gidecek; teslimden önce baştan sona bir kez oynanmalı.
 - **Hedef:** ilk kez oynayan biri geçmelerle ruh fazına ~2,5 dakikada, sona ~5 dakikada varsın. "Bölüm seç" ile her yere saniyeler içinde gidilsin.
+
+**Yapılan (Berke):** dört test geçiyor; Play'de denenmedi.
+
+- **1. Bölüm seç (`MainMenu`):** ana menüde "Yeni oyun"un altında. Başlangıç (yeni oyun, intro), Çök-kapan (döngü 3), Ruh fazı (döngü 4), Final (`Outro.Request()`), Geri. Önizleme: `Logs/hud_preview_menu_chapters.png`.
+- **2. Geçmeler: kaldırıldı (Berke'nin kararı).** Ölümleri, döngü 1'i ve anma listesini Boşlukla geçmek denendi, kötü durdu; senin `QuakeDirector`'ına ve `FinalScreen`'e dokunulmadı.
+  - **Sadece keşke ekranı (`WishScreen`):** isteyen hızlı geçebilir. Yazı sürerken Boşluk ya da başka bir tuş (Esc hariç) bütün ekranı bitmiş haline getiriyor (kalan yazılar, beklemeler, çatlak `rushPace` = 40 kat hızlı); ipucu çıkınca ikinci tuş devam ediyor.
+- **4. Build:** daha alınmadı; teslimden önce `Tools/Deprem/Windows build'i al` ile alınıp baştan sona bir kez oynanacak.
 
 **Geliştirici kısayolları ve kayıt build'i (bilgi için):**
 
