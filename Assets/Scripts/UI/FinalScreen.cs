@@ -72,7 +72,21 @@ namespace Deprem.UI
         void HandleGameWon()
         {
             StopAllCoroutines();
+            // Mehmet (outro geçişi, Berke düzenleyecek): mezarlık outrosu varsa final, outro bitip ekran kararınca başlar
+            if (Quake.Outro.Available)
+            {
+                Quake.Outro.Finished -= HandleOutroFinished;
+                Quake.Outro.Finished += HandleOutroFinished;
+                return;
+            }
             StartCoroutine(Play());
+        }
+
+        void HandleOutroFinished()
+        {
+            Quake.Outro.Finished -= HandleOutroFinished;
+            StopAllCoroutines();
+            StartCoroutine(Play(afterOutro: true));
         }
 
         void Update()
@@ -82,14 +96,15 @@ namespace Deprem.UI
             if (LoopManager.Instance) LoopManager.Instance.ReturnToMenu();
         }
 
-        IEnumerator Play()
+        // afterOutro: ekran zaten siyah, müzik outroyla başladı; bekleme yok
+        IEnumerator Play(bool afterOutro = false)
         {
             canLeave = false;
             Clear();
 
-            Audio.Sfx.PlayMusic("music.final"); // M25
-            yield return new WaitForSecondsRealtime(startDelay);
-            for (float t = 0f; t < fadeTime; t += Time.unscaledDeltaTime)
+            if (!afterOutro) Audio.Sfx.PlayMusic("music.final"); // M25
+            if (!afterOutro) yield return new WaitForSecondsRealtime(startDelay);
+            for (float t = 0f; t < (afterOutro ? 0.3f : fadeTime); t += Time.unscaledDeltaTime)
             {
                 group.alpha = t / fadeTime;
                 yield return null;

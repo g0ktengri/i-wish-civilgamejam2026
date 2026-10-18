@@ -162,6 +162,11 @@ advice.aftershock,"Artçıda da çök, kapan, tutun.",Take cover in the aftersho
 final.closing,Deprem geldiğinde keşkelerin olmasın.,"When the earthquake comes, have no regrets."
 final.closing_sub,Bugün hazırlan.,Prepare today.
 final.site,afad.gov.tr,afad.gov.tr
+# Mehmet: outro, mezarlıkta karakterin balonları (soldan sağa: baba, anne, kardeş, kendisi)
+outro.grave.father,"Baba... Seni koruyamadım. Keşke kitaplığı duvara sabitleseydim.","Dad... I couldn't protect you. I wish I had anchored the bookcase to the wall."
+outro.grave.mother,"Anne... Seni koruyamadım. Keşke gardırobu sabitleseydim, keşke ilk yardım çantamız olsaydı.","Mom... I couldn't protect you. I wish I had secured the wardrobe, I wish we'd had a first aid kit."
+outro.grave.sibling,"Kardeşim... Karanlıkta seni bulamadım. Keşke bir el fenerim olsaydı.","Little one... I couldn't find you in the dark. I wish I'd had a flashlight."
+outro.grave.self,"Keşke o gece ilk sarsıntıda kalkabilseydim...","I wish I had gotten up at the first tremor that night..."
 menu.hint.cancel,Esc: Vazgeç,Esc: Cancel
 controls.hint.change,F: Tuşu değiştir,F: Change key
 controls.press,Bir tuşa bas…,Press a key…

@@ -1722,16 +1722,19 @@ public static class Outro
 
 **Mehmet:**
 
-- [ ] Görseller:
-  - `Mezarlik.png` arka plan;
-  - `Eğilme ve koyma alma` 5 kare → `oyuncu_koyma_1..5.png`;
-  - `Gül.png` küçük pixel gül (elde ve mezarda).
-- [ ] `OutroCinematic`:
-  - mezarlığı HouseBuilder evin uzağında kurar; kamerayı kadraja alır (önce 3 mezar, sonra sağa kayar);
-  - elinde gülle yürüyen karakter; eğilme ve koyma; mezarlarda kalan güller;
-  - balonlar; 4. mezar; karakterin silinmesi; kararma;
-  - olaylar ve geçme.
-- [ ] `texts.csv`'ye balon satırları: `outro.grave.mother`, `.father`, `.sibling`, `outro.grave.self` (TR/EN; senin dosyan, haber veriyorum).
+- [x] **Görseller:**
+  - `Art/Decor/mezarlik.png`;
+  - `Art/Characters/oyuncu_koyma_1..5.png` (eğilip koyma);
+  - `Art/Decor/gul.png` (30 px);
+  - elinde gülle `oyuncu_gul_yurume_1..8` ve `oyuncu_gul_koyma_1..5`: fenerli koşma karelerinde fener silindi, yumruğa gül kondu.
+- [x] **`OutroCinematic` (`Scripts/Quake`) ve `OutroGraveyard` (`Editor/HouseBuilder`):**
+  - mezarlık evin 100 m solunda, kamera bu sırada ortografik;
+  - mezarlar soldan sağa: baba, anne, kardeş, kendisi;
+  - önizleme: `Deprem.Quake.OutroPreview.Render` → `Logs/outro_1_yuruyus.png`, `outro_2_egilme.png`, `outro_3_son_mezar.png`.
+- [x] **`texts.csv`:** `outro.grave.father/mother/sibling/self` eklendi.
+- **Süreler:** ilk mezara yürüyüş yaklaşık 12,5 sn (`AwarenessStarted` bu süreyi verir); bütün outro yaklaşık 1 dakika.
+- **`FinalScreen.cs` (senin dosyan), geçiş için küçük değişiklik:** `Outro.Available` ise eski akış `GameWon`'da değil `Outro.Finished`'da başlıyor (bekleme ve kararma olmadan). Böylece şimdiden baştan sona oynanıyor; senin işin bitince bu kısmı kendi akışınla değiştir.
+- **Not:** sanatçıdan yürüme çizimi yok; koşma kareleri yavaş oynuyor. Yürüme kareleri gelirse `walkFrames`'e bağlanır.
 
 **Berke:**
 

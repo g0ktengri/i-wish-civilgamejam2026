@@ -279,6 +279,7 @@ namespace Deprem.HouseBuilder
             BuildLights(Child(root.transform, "Lights"));
             BuildMarkers(Child(root.transform, "Markers"));
             BuildSafeSpots(Child(root.transform, "SafeSpots"), decor);
+            OutroGraveyard.Build(root.transform); // oyun sonu: evin uzağında mezarlık (OutroCinematic)
 
             AssetDatabase.SaveAssets();
             return root;
