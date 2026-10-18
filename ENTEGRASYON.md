@@ -52,6 +52,36 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Jüri temposu: 5 dakikada final (Berke)
+
+Jüri oyunu ~5 dk oynayacak; final (outro) görülsün diye oyun kısaldı ve kolaylaştı. Hepsi `[SerializeField]`, geri almak tek değer. Dört test geçiyor; Play'de baştan sona denenmedi.
+
+- **Gece akışı (`LoopManager`, `skipScriptedSecondNight`):**
+  - Senaryolu 2. gece (çök-kapan bilinmiyor, tavan çöker) atlanıyor. 1. geceden (döngü 1) sonra doğrudan çök-kapanlı serbest gece (döngü 3) geliyor.
+  - Serbest gecede `FamilyHitByItem`, `MissingBagItem` ya da `RescueTimeout` ile kaybedilirse sonraki gece ruh fazıyla açılıyor (döngü 4). Çök-kapan yapılmazsa döngü 3 tekrarlanıyor.
+  - Eski kayıtta döngü 2 varsa "Devam et" döngü 3'ten açıyor.
+  - Senin tarafında değişen bir şey yok: `CurrentLoop` değerleri aynı, sadece 2 atlanıyor. `QuakeDirector`'daki döngü 2 dalı artık çalışmıyor; silmene gerek yok.
+- **El feneri ve ilk yardım ilk geceden evde (`BagSystem.suppliesFromFirstNight` → `BagLessonGate.AlwaysAvailable`):** ders beklenmiyor. Kurtarmada bedenle alınabiliyor (M64), ruh fazında çantaya taşınabiliyor. `BagLessons` aynen duruyor.
+- **Hız:**
+  - Ruh fazı 50 → 35 sn (kayıp başına +3, en fazla 45).
+  - Ruhun hızı 5 → 7.
+  - Minigame: vida başına tur 1,5 → 1, taşı-yerleştir boşluğu 64 → 78, damgadan sonra kapanma 0,6 → 0,45 sn.
+  - Keşke ekranı ilk seferde de 1,5 kat hızlı, tekrar edende 3 kat (`firstPace`, `repeatPace`).
+- **Sol üstte kareli harita (`MiniMap`, CS 1.6 radarı gibi ama 2D):**
+  - Evin kesiti 0,5 m'lik küçük karelerden; oyuncunun odası açık renkli, oyuncu krem nokta (ruh fazında ruh mavi, yataktaki beden soluk).
+  - Ana deprem: güvenli masalar yeşil.
+  - Ruh fazı: kırmızı konturlu (önemli) eşyalar kırmızı, el feneri ve ilk yardım turuncu, çanta sarı (taşırken büyür).
+  - Kurtarma: aile üyeleri oklarla aynı renkte (saklanan kardeş görünmez), kabin beyaz, alınmamış malzemeler turuncu.
+  - Hedef paneli ve aile okları haritanın altına kaydı; sinematikte gizleniyor.
+  - Odalar senin `RoomVisibility`'nden: ona sadece okunur `Areas` özelliği ekledim (3 satır, başka değişiklik yok).
+  - Önizleme: `Logs/hud_preview_spirit.png` (sol üst).
+- **Senden istek (senin kodun, süreler):**
+  - **İntro kısalsın (`IntroCinematic`):** şu an konuşmalar tek başına ~21 sn, üstüne yavaş yürüyüş (`walkSpeedMultiplier` 0,55) ve kararmalar.
+    - Öneri: yürüyüş 0,55 → 0,9; balon süreleri ~%30 kısa; `father_2` ve `player_3` çıkarılabilir; kararmalar 1,8 / 1,4 / 2 → 1 / 0,8 / 1,2.
+  - **Öncü sarsıntı ve ana deprem arası (`QuakeDirector`):** `foreshockDelay` 2 → 1, 1. gecede `scriptedWaitBeforeMainQuake` 5 → 3, `standUpWindow` 8 → 6, `waitAfterStandUp` 3 → 1,5.
+  - **Kurtarma süresi (`RescueTimer`):** ilk serbest gecede yetişmiyorsa biraz uzat.
+  - **Güvenlik ağı:** jüri build'i development build olursa Ctrl+Shift+O outro kısayolu takılınca kullanılabilir.
+
 ### Yeni karakter çizimleri: kardeş bekleme, yeni anne, kardeş ölü (Berke, senin klasöründe izinle)
 
 Hepsi önceki gibi 1920 px'ten 15 px'lik ekip pikseliyle 128 px'e indirildi; zip'ler repoya konmadı.

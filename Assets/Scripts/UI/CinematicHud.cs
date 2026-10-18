@@ -41,7 +41,7 @@ namespace Deprem.UI
         // Gizlenen oyun içi HUD kanvasları (PromptHud, ObjectiveHud, BagHud, SpiritHud'un kurduğu adlarla). Sadece bunlar:
         // bütün sistemler aynı BerkeSystems objesinde, onun altındaki her kanvası kapatmak PixelScreen'i (oyunun
         // görüntüsü) de kapatıp ekranı siyah bırakıyordu. Kendi kodları alpha'larıyla oynamaya devam eder.
-        static readonly string[] HudCanvases = { "PromptCanvas", "ObjectiveCanvas", "BagHudCanvas", "SpiritHudCanvas" };
+        static readonly string[] HudCanvases = { "PromptCanvas", "ObjectiveCanvas", "BagHudCanvas", "SpiritHudCanvas", "MiniMapCanvas" };
 
         public static bool Playing => Cinematic.IsPlaying;
         static bool Skippable => Cinematic.CanSkip;

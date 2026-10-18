@@ -14,11 +14,11 @@ namespace Deprem.Spirit
     {
         [Header("Süre")]
         [Tooltip("M55 (Mehmet'in play testi 28): ilk ruh çıkışının süresi (sn); her kayıpta artar")]
-        [SerializeField] float duration = 50f; // M63: 35 → 50
+        [SerializeField] float duration = 35f; // M63: 35 → 50; jüri temposu: 50 → 35
         [Tooltip("Her kayıpta (GameState.FailedAttempts) eklenen süre (sn)")]
-        [SerializeField] float durationPerLoss = 5f;
+        [SerializeField] float durationPerLoss = 3f; // jüri temposu: 5 → 3
         [Tooltip("Sürenin üst sınırı (sn)")]
-        [SerializeField] float maxDuration = 75f; // M63: 60 → 75
+        [SerializeField] float maxDuration = 45f; // M63: 60 → 75; jüri temposu: 75 → 45
 
         [Header("Çıkış noktası")]
         [Tooltip("Boşsa aşağıdaki isimdeki işaret noktası aranır")]

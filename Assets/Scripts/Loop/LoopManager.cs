@@ -11,6 +11,10 @@ namespace Deprem.Loop
     // Döngü ilerlemesi: her döngünün öğrettiği tek bir ders vardır (lessonPerLoop).
     // O dersle kaybedilirse sonraki döngüye geçilir; başka bir sebeple kaybedilirse
     // aynı döngü tekrarlanır. Döngü 5 her zaman tekrarlanır.
+    //
+    // Jüri temposu (jüri oyunu ~5 dk oynayacak, final görülsün): senaryolu 2. gece (çök-kapan bilinmiyor, tavan
+    // çöker) atlanır; 1. geceden sonra doğrudan çök-kapanlı serbest gece (döngü 3) gelir. Orada aileden biri
+    // ölürse, malzeme eksikse ya da süre biterse sonraki gece ruh fazıyla (döngü 4) açılır.
     public class LoopManager : MonoBehaviour
     {
         // Sahne yeniden yüklenirken hangi döngüden başlanacağını taşır
@@ -35,6 +39,17 @@ namespace Deprem.Loop
             LoseReason.NoDuckCoverHold,  // 2: Keşke çök-kapan-tutun yapsaydım
             LoseReason.FamilyHitByItem,  // 3: Keşke eşyaları sabitleseydim
             LoseReason.MissingBagItem,   // 4: Keşke deprem çantası hazırlasaydım
+        };
+
+        [Header("Jüri temposu")]
+        [Tooltip("Senaryolu 2. gece atlanır: 1. geceden sonra doğrudan çök-kapanlı serbest gece (döngü 3)")]
+        [SerializeField] bool skipScriptedSecondNight = true;
+        [Tooltip("Serbest gecede (döngü 3) bu sebeplerle kaybedilirse sonraki gece ruh fazıyla açılır (döngü 4)")]
+        [SerializeField] LoseReason[] spiritOpeningReasons =
+        {
+            LoseReason.FamilyHitByItem,
+            LoseReason.MissingBagItem,
+            LoseReason.RescueTimeout,
         };
 
         int nextLoop;
@@ -111,6 +126,7 @@ namespace Deprem.Loop
         // M42: ana menüdeki "Devam et": kayıttaki döngü ve keşke sayısı geri yüklenir (çatlak büyüklüğü, gizli +10 sn)
         public void ContinueFromSave(int loop, int failedAttempts)
         {
+            if (skipScriptedSecondNight && loop == 2) loop = 3; // eski kayıt atlanan geceye düşmesin
             GameState.RestoreProgress(loop, failedAttempts);
             Restart(loop);
         }
@@ -152,6 +168,12 @@ namespace Deprem.Loop
 
         int NextLoopAfter(int loop, LoseReason reason)
         {
+            if (skipScriptedSecondNight)
+            {
+                if (loop == 1) return 3;
+                if (loop == 2) return 3;
+                if (loop == 3 && System.Array.IndexOf(spiritOpeningReasons, reason) >= 0) return 4;
+            }
             int index = loop - 1;
             bool learnedLesson = index >= 0 && index < lessonPerLoop.Length && lessonPerLoop[index] == reason;
             return learnedLesson ? Mathf.Min(loop + 1, GameConstants.LoopCount) : loop;

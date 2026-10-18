@@ -62,7 +62,14 @@ namespace Deprem.Bag
         public float InteractRange => interactRange;
         public Vector3 CarryOffset => carryOffset;
 
-        void Awake() => Instance = this;
+        [Tooltip("Jüri temposu: el feneri ve ilk yardım ilk geceden evde, alınabilir (ders beklenmez)")]
+        [SerializeField] bool suppliesFromFirstNight = true;
+
+        void Awake()
+        {
+            Instance = this;
+            BagLessonGate.AlwaysAvailable = suppliesFromFirstNight;
+        }
 
         void OnDestroy()
         {

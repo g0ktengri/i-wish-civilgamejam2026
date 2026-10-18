@@ -86,6 +86,9 @@ namespace Deprem.Visual
 
         private bool Visible(int i) => revealed[i] || (spiritMode && spiritSeen[i]);
 
+        /// <summary>Odaların kesitteki dikdörtgenleri (Berke'nin sol üstteki haritası çizer; sadece okunur)</summary>
+        public IReadOnlyList<Area> Areas => areas ?? System.Array.Empty<Area>();
+
         /// <summary>Oda örtüleri (Berke'nin ana menüsü arka plan görüntüsünü çekerken bunları bir anlığına gizler)</summary>
         public IEnumerable<Renderer> Covers
         {

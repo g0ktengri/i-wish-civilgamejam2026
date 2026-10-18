@@ -154,6 +154,8 @@ namespace Deprem.UI
         void LateUpdate()
         {
             if (!rescue) return;
+            // Jüri temposu: sol üstteki haritanın altında
+            panel.anchoredPosition = new Vector2(UiBuilder.HudMargin, -UiBuilder.HudMargin - MiniMap.ReservedHeight);
             var cam = Camera.main;
             bool everyoneFound = FoundCount() >= FamilyTotal();
             foreach (var arrow in arrows)
@@ -237,6 +239,11 @@ namespace Deprem.UI
             // Sol alttaki çanta panelinin üstüne düşüyorsa panelin üstüne kaydır
             if (edge.x < -size.x * 0.5f + safeBagZone.x && edge.y < -size.y * 0.5f + safeBagZone.y + inset)
                 edge.y = -size.y * 0.5f + safeBagZone.y + inset;
+            // Sol üstteki harita ve altındaki hedef paneline düşüyorsa onların altına kaydır
+            float mapBottom = size.y * 0.5f - UiBuilder.HudMargin - MiniMap.ReservedHeight - panel.sizeDelta.y - inset;
+            if (MiniMap.ReservedHeight > 0f && edge.x < -size.x * 0.5f + UiBuilder.HudMargin + MiniMap.ReservedWidth + inset &&
+                edge.y > mapBottom)
+                edge.y = mapBottom;
             arrow.Root.anchoredPosition = edge + unit * pushDistance * pulse; // hedefe doğru "it"
             arrow.Head.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(unit.y, unit.x) * Mathf.Rad2Deg);
             // Rozet okun arkasında (kenardan içeride)

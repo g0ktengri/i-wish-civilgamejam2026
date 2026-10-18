@@ -105,6 +105,7 @@ namespace Deprem.Loop.EditorTools
                 BindBagModels(root.AddComponent<BagSystem>());
                 root.AddComponent<PromptHud>();
                 root.AddComponent<ObjectiveHud>();
+                root.AddComponent<MiniMap>(); // jüri temposu: sol üstte kareli harita
                 root.AddComponent<BagHud>();
                 root.AddComponent<FinalScreen>();
                 root.AddComponent<PauseMenu>();

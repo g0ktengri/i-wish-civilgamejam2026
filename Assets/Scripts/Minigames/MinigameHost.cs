@@ -45,7 +45,7 @@ namespace Deprem.Minigames
         [SerializeField] Color successFlashColor = new Color(1f, 1f, 1f, 0.55f);
         [SerializeField] float successFlashSeconds = 0.18f;
         [Tooltip("Damga basıldıktan sonra panel bu kadar sonra kapanır")]
-        [SerializeField] float successSeconds = 0.6f;
+        [SerializeField] float successSeconds = 0.45f; // jüri temposu: 0,6 → 0,45
         [SerializeField] Color stampColor = new Color(0.56f, 0.92f, 0.5f);
         [Tooltip("Mehmet'in play testi: eğik pixel yazıda B harfi bozuluyor, \"SAGİTLENDİ\" okunuyordu; düz")]
         [SerializeField] float stampAngle = 0f;
@@ -56,7 +56,7 @@ namespace Deprem.Minigames
         [Header("Vida sıkma")]
         // Vida sayısı ve düzeni eşyaya göre (VariantFor): 2-3 vida. Eskiden 4 vida yetişmiyordu, 1 vida çok kolaydı
         [Tooltip("Her vida için tornavidayla gereken tur (play testi 16: 1,25'ten biraz arttı)")]
-        [SerializeField] float screwTurnsPerScrew = 1.5f;
+        [SerializeField] float screwTurnsPerScrew = 1f; // jüri temposu: 1,5 → 1
         [Tooltip("Bundan hızlı çevirince uç vidadan kayar (tur / sn; 0 = kapalı). Play testi 16: uç arada kopuyordu, kapalı")]
         [SerializeField] float screwMaxTurnsPerSecond = 0f;
         [Tooltip("Ters yönde dönmenin geri alma katsayısı (1 = aynı hızda gevşer)")]
@@ -67,7 +67,7 @@ namespace Deprem.Minigames
         [Header("Taşı ve yerleştir")]
         [SerializeField] float carrySnapRadius = 14f;
         [Tooltip("Duvardaki boşluğun yüksekliği (eşya 48; kayan boşluk +10)")]
-        [SerializeField] float carryGapHeight = 64f;
+        [SerializeField] float carryGapHeight = 78f; // jüri temposu: 64 → 78
 
         [Header("Görseller (Assets/Art/UI, prefab kurulurken bağlanır)")]
         [SerializeField] MinigameArt art = new MinigameArt();

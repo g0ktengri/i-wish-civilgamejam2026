@@ -30,7 +30,9 @@ namespace Deprem.UI
         [Tooltip("Ekranın kararma süresi (gerçek sn)")]
         [SerializeField] float fadeToBlack = 1.6f;
         [Tooltip("M60: aynı keşke ikinci kez geliyorsa yazı, bekleme, çatlak ve geri sarma bu kadar kat hızlı")]
-        [SerializeField] float repeatPace = 2.5f;
+        [SerializeField] float repeatPace = 3f;
+        [Tooltip("Jüri temposu: ilk kez görülen keşke de bu kat hızlı akar (1 = eski hız)")]
+        [SerializeField] float firstPace = 1.5f;
         [Tooltip("M52: ölüm siyahının üstüne keşke ekranının siyahı bu sürede gelir (ekran zaten kararmışsa fark edilmez)")]
         [SerializeField] float blackTakeover = 0.5f;
         [Tooltip("M52: yazılar ve çatlak siyahın içinden bu sürede belirir")]
@@ -180,7 +182,7 @@ namespace Deprem.UI
         {
             StopAllCoroutines();
             // M60 (Mehmet'in play testi 31): aynı keşke daha önce gösterildiyse ekran hızlı akar
-            pace = WishLines.WasShown(reason, item) ? Mathf.Max(1f, repeatPace) : 1f;
+            pace = WishLines.WasShown(reason, item) ? Mathf.Max(firstPace, repeatPace) : Mathf.Max(1f, firstPace);
             WishLines.Record(reason, item); // M47: final ekranı için
             StartCoroutine(Show(WishLines.Wish(reason, item), WishLines.Info(reason)));
         }

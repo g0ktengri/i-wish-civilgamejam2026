@@ -8,8 +8,9 @@ namespace Deprem.Spirit
     // Evin sınırları dışına çıkamaz (HouseBounds varsa kat sınırları). Minigame açıkken durur.
     public class SpiritController : MonoBehaviour
     {
-        [SerializeField] float speed = 5f;
-        [SerializeField] float acceleration = 25f;
+        // Jüri temposu: ruh fazı kısaldı, ruh da hızlandı (5 → 7, ivme 25 → 35)
+        [SerializeField] float speed = 7f;
+        [SerializeField] float acceleration = 35f;
 
         [Header("Sınırlar")]
         [Tooltip("Açıksa sınırlar aşağıdaki isimdeki ev objesinin renderer'larından hesaplanır")]

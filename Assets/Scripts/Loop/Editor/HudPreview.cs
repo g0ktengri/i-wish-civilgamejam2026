@@ -379,6 +379,24 @@ namespace Deprem.Loop.EditorTools
                 typeof(SpiritHud).GetField("shownCarry", Flags).SetValue(spirit, BagItemId.Flashlight);
                 Call(spirit, "RefreshStaticTexts");
 
+                // Jüri temposu: sol üstteki kareli harita. Önizlemede Main açık değil: odalar Main'deki değerlerle
+                var layout = new GameObject("PreviewRooms").AddComponent<Deprem.Visual.RoomVisibility>();
+                layout.transform.SetParent(root.transform, false);
+                Deprem.Visual.RoomVisibility.Area Room(string key, float x0, float x1, float floor, float ceiling) =>
+                    new Deprem.Visual.RoomVisibility.Area { key = key, x0 = x0, x1 = x1, floorY = floor, ceilingY = ceiling };
+                layout.Configure(new[]
+                {
+                    Room("oyuncu", 0f, 6f, 0f, 3.5f), Room("koridor", 6f, 18f, 0f, 3.5f), Room("salon", 18f, 27f, 0f, 3.5f),
+                    Room("mutfak", 27f, 32.5f, 0f, 3.5f), Room("kardes", 0f, 7f, 3.75f, 7f), Room("sahanlik", 7f, 18f, 3.75f, 7f),
+                    Room("ebeveyn", 18f, 27f, 3.75f, 7f),
+                }, new Deprem.Visual.RoomVisibility.Link[0], new Deprem.Player.HouseDoor[0]);
+                var previewPlayer = new GameObject("Player");
+                previewPlayer.transform.SetParent(root.transform, false);
+                previewPlayer.transform.position = new Vector3(3.2f, 0f, 0f);
+                var map = root.AddComponent<MiniMap>();
+                Call(map, "Awake");
+                typeof(MiniMap).GetMethod("Refresh", Flags).Invoke(map, new object[] { GamePhase.Spirit });
+
                 GameState.AddBagItem(BagItemId.FirstAidKit);
                 var bag = root.AddComponent<BagHud>();
                 Call(bag, "Awake"); // Awake çantadaki malzemelerle kurar

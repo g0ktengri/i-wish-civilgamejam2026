@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 1714028265692669343}
   - component: {fileID: 7179508923403737285}
   - component: {fileID: 1766816693970637449}
+  - component: {fileID: 2258792382466652170}
   - component: {fileID: 4821030744705693417}
   - component: {fileID: 6846049828846937271}
   - component: {fileID: 6176068554381073379}
@@ -66,6 +67,8 @@ MonoBehaviour:
   autoContinueDelay: 3
   reloadSceneOnRestart: 1
   lessonPerLoop: 01000000020000000300000004000000
+  skipScriptedSecondNight: 1
+  spiritOpeningReasons: 030000000400000006000000
 --- !u!114 &6677620427549865778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,7 +101,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.WishScreen
   fadeToBlack: 1.6
-  repeatPace: 2.5
+  repeatPace: 3
+  firstPace: 1.5
   blackTakeover: 0.5
   contentFadeIn: 0.7
   focusInSeconds: 0.7
@@ -151,9 +155,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec33bfa992b1d5740ae086db755ca236, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Spirit.SpiritPhase
-  duration: 50
-  durationPerLoss: 5
-  maxDuration: 75
+  duration: 35
+  durationPerLoss: 3
+  maxDuration: 45
   spawnPoint: {fileID: 0}
   spawnMarkerName: Marker_PlayerBed
   spawnOffset: {x: 0, y: 0.1, z: 0}
@@ -268,16 +272,16 @@ MonoBehaviour:
   contentTint: {r: 0.9, g: 0.94, b: 1, a: 1}
   successFlashColor: {r: 1, g: 1, b: 1, a: 0.55}
   successFlashSeconds: 0.18
-  successSeconds: 0.6
+  successSeconds: 0.45
   stampColor: {r: 0.56, g: 0.92, b: 0.5, a: 1}
   stampAngle: 0
   stampPopSeconds: 0.14
-  screwTurnsPerScrew: 1.5
+  screwTurnsPerScrew: 1
   screwMaxTurnsPerSecond: 0
   screwReversePenalty: 1
   screwMinRadius: 18
   carrySnapRadius: 14
-  carryGapHeight: 64
+  carryGapHeight: 78
   art:
     panel: {fileID: 0}
     screwBackground: {fileID: 0}
@@ -358,6 +362,7 @@ MonoBehaviour:
   waterIcon: {fileID: 0}
   whistleIcon: {fileID: 0}
   bagSprite: {fileID: 0}
+  suppliesFromFirstNight: 1
 --- !u!114 &7179508923403737285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -411,6 +416,36 @@ MonoBehaviour:
   farAlpha: 0.5
   markerLift: 0.35
   sortingOrder: 55
+--- !u!114 &2258792382466652170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6629230742301011747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eae6169ecec33a449d2827ff9b72dc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.MiniMap
+  sortingOrder: 54
+  cellSize: 0.5
+  cellPixels: 3
+  padding: 6
+  roomColor: {r: 0.24, g: 0.27, b: 0.35, a: 1}
+  wallColor: {r: 0.46, g: 0.49, b: 0.58, a: 1}
+  currentRoomColor: {r: 0.46, g: 0.54, b: 0.68, a: 1}
+  playerColor: {r: 0.96, g: 0.92, b: 0.84, a: 1}
+  spiritColor: {r: 0.6, g: 0.86, b: 1, a: 1}
+  importantColor: {r: 1, g: 0.34, b: 0.28, a: 1}
+  supplyColor: {r: 1, g: 0.58, b: 0.2, a: 1}
+  bagColor: {r: 1, g: 0.86, b: 0.36, a: 1}
+  safeColor: {r: 0.55, g: 0.92, b: 0.55, a: 1}
+  cabinColor: {r: 1, g: 1, b: 1, a: 1}
+  fatherColor: {r: 1, g: 0.82, b: 0.4, a: 1}
+  motherColor: {r: 1, g: 0.6, b: 0.52, a: 1}
+  siblingColor: {r: 0.58, g: 0.88, b: 0.6, a: 1}
+  pulseSpeed: 5
 --- !u!114 &4821030744705693417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -462,6 +497,17 @@ MonoBehaviour:
   adviceColor: {r: 1, g: 0.82, b: 0.4, a: 1}
   creamColor: {r: 0.96, g: 0.92, b: 0.84, a: 1}
   sortingOrder: 110
+  awarenessMaxLines: 3
+  awarenessMinLineTime: 3.4
+  awarenessFontSize: 22
+  awarenessSortingOrder: 99
+  memorialScrollTime: 12
+  memorialFontSize: 18
+  memorialTitleFontSize: 22
+  memorialLineHeight: 30
+  memorialHighlightKey: memorial.16
+  centeredClosingFontSize: 40
+  centeredSubFontSize: 30
 --- !u!114 &6176068554381073379
 MonoBehaviour:
   m_ObjectHideFlags: 0
