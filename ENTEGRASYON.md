@@ -1689,6 +1689,71 @@ Mehmet'in yorumu (özet):
    - **Depremde:** avize sarkaç gibi sallanır, ışığı ve gölgeler onunla gider; sarsıntı bitince yavaşça durur. Abajur ve ampul titremeyle kısılır, elektrik kesilince söner.
    - Kabin tabelasının yazısı artık her çizimde fontun güncel atlasını alıyor (`Visual/WorldTextAtlas`).
 
+### Outro (mezarlık): görev dağılımı
+
+**Akış (oyun kazanılınca, `GameEvents.GameWon`):**
+
+1. Kabin kapanır (2 sn), ekran kararır, mezarlık açılır (`Mezarlik.png`).
+2. Kamerada ilk 3 mezar var, 4. mezar kadrajın dışında.
+3. Ana karakter soldan elinde gülle sağa yürür. **Yürürken farkındalık mesajları ekranda** (Berke).
+4. Mezarlara gelince eğilir, gülü tek tek bırakır. Her mezarda balon:
+   - "Anne... seni koruyamadım."
+   - baba ve kardeş için de benzeri, keşke cümleleriyle.
+5. Bitti sanılırken kamera sağa kayar, karakter 4. mezara yürür, oraya da gül bırakır: "Keşke o gece kalkabilseydim..."
+6. Karakter silinir: onun da öldüğü anlaşılır.
+7. Ekran kararır. **Geçmiş depremleri anma:** kısa, hızlı kayan liste (Berke). Sonra kapanış cümlesi, AFAD ve ana menü.
+
+**Arayüz (Mehmet yazar, `Deprem.Quake.Outro`, `Assets/Scripts/Quake/OutroCinematic.cs`):**
+
+```csharp
+public static class Outro
+{
+    public static bool Available { get; }                // sahnede outro var mı (yoksa eski final akışın çalışsın)
+    public static bool IsPlaying { get; }
+    public static event Action<float> AwarenessStarted;  // yürüyüş başladı; parametre: ilk mezara kadar kalan sn
+    public static event Action AwarenessEnded;           // karakter mezarlara vardı: mesajları söndür
+    public static event Action Finished;                 // karakter silindi, ekran tam siyah: anma başlasın
+}
+```
+
+- Outro `Cinematic.Begin(true, skip)` ile başlar: sinema bantları ve "Geç" ipucu senin `CinematicHud`'unda zaten var.
+- Geçilirse doğrudan siyaha geçilir; `AwarenessEnded` ve `Finished` yine gelir.
+- `music.final`'ı outro başlatır.
+
+**Mehmet:**
+
+- [ ] Görseller:
+  - `Mezarlik.png` arka plan;
+  - `Eğilme ve koyma alma` 5 kare → `oyuncu_koyma_1..5.png`;
+  - `Gül.png` küçük pixel gül (elde ve mezarda).
+- [ ] `OutroCinematic`:
+  - mezarlığı HouseBuilder evin uzağında kurar; kamerayı kadraja alır (önce 3 mezar, sonra sağa kayar);
+  - elinde gülle yürüyen karakter; eğilme ve koyma; mezarlarda kalan güller;
+  - balonlar; 4. mezar; karakterin silinmesi; kararma;
+  - olaylar ve geçme.
+- [ ] `texts.csv`'ye balon satırları: `outro.grave.mother`, `.father`, `.sibling`, `outro.grave.self` (TR/EN; senin dosyan, haber veriyorum).
+
+**Berke:**
+
+- [ ] **`FinalScreen`:**
+  - `Outro.Available` ise `GameWon`'da eski akışı başlatma, outro olaylarını bekle. Değilse (test sahnesi) eski akış aynen kalsın.
+- [ ] **`AwarenessStarted(sn)`: yürüyüş sırasında farkındalık mesajları.**
+  - Arka plan siyah değil, mezarlık görünsün. Okunsun diye üstte yumuşak koyu bir şerit yeterli.
+  - Ekranın üst kısmında, tek tek: söylenen keşke çatlayıp bugüne dönsün (senin `Shatter`'ın). En fazla 3-4 cümle, verilen sürenin içinde bitsin.
+  - `AwarenessEnded`'da sönsün.
+- [ ] **`Finished`: siyah ekranda geçmiş depremleri anma.**
+  - Başlık: "Depremlerde hayatını kaybedenleri anıyoruz" gibi.
+  - Altında hızlı, yukarı kayan liste: yıl, yer, can kaybı.
+  - Önerdiğim depremler:
+    - 1939 Erzincan, 1966 Varto, 1970 Gediz, 1975 Lice, 1976 Çaldıran, 1983 Erzurum-Kars;
+    - 1992 Erzincan, 1995 Dinar, 1998 Adana-Ceyhan;
+    - 17 Ağustos 1999 Gölcük, 12 Kasım 1999 Düzce;
+    - 2003 Bingöl, 2011 Van, 2020 Elazığ, 2020 İzmir, 6 Şubat 2023 Kahramanmaraş.
+  - **Can kayıplarını AFAD'ın resmi kaynağından al, tahminle yazma.** Emin olunmayan sayı yerine sadece yıl ve yer kalsın.
+  - Sonra mevcut kapanış ("Deprem geldiğinde keşkelerin olmasın. Bugün hazırlan."), AFAD satırı, "F: Ana menü".
+- [ ] `texts.csv`: `memorial.*` satırları (TR/EN).
+- [ ] `HudPreview`: farkındalık şeridi (mezarlık arka planıyla) ve anma ekranı önizlemeleri.
+
 ---
 
 **Mehmet tarafı (Play testi 4): 1–7 yapıldı** (Play'de son kontrol bekliyor). Ayrıca oyuncunun koşma animasyonu (sanatçıdan 8 kare, `Assets/Art/Characters/oyuncu_kosma_1..8.png`) bağlandı; bekleme ve eğilme çizimi gelene kadar duruşta 3. kare. `Marker_Bag` artık kabinin önünde (x ≈ 13,2).
