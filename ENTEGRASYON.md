@@ -1771,12 +1771,17 @@ public static class Outro
   - Karakter mezarlığın sol kenarından girer, kamera onu izleyip ilk üç mezarın kadrajında durur; 4. mezar yine dışarıda.
   - İlk mezara yürüyüş yaklaşık 16 sn.
 - **Kardeşin mezar taşının dibinde küçük oyuncak ayı:** `Art/Decor/ayicik.png`, 30 px; outro başından beri orada.
+- **Outroyu kodla açmak:** `Outro.Request()` her yerden çalışır. Oyun sürerken hemen; ana menüde ya da keşke ekranındayken önce son döngü başlar, faz gelince oyun kazanılmış sayılır. Ctrl+Shift+O da bunu çağırıyor.
 - **Anma listesi:**
   - Üstten çıkan satır başlığa yapışık duruyordu: liste alanı başlıktan uzaklaştı.
   - Satırlar alt ve üst kenarda solarak girip çıkıyor.
 - **Anma listesinde** 6 Şubat 2023 satırı sarı (oyun bu depremle ilgili; `FinalScreen.memorialHighlightKey`).
 - **Kapanış:** outrodan sonra ekranın ortasında, büyük (40/30 punto); sığmazsa küçülür ya da iki satıra iner (`FinalScreen.CenterClosing`). Önizleme: `hud_preview_final_closing_outro`.
-- **Geliştirici kısayolu:** oyun sürerken (menüde ve keşke ekranında değil) **Ctrl+Shift+O**. Oyunu kazanılmış sayar, outro hemen başlar. Sadece editörde ve development build'de çalışır.
+- **Geliştirici kısayolları** (`Quake/DevShortcuts`): trailer çekimi ve hızlı deneme için. Sadece editörde ve development build'de çalışır.
+  - **Ctrl+Shift+1..5:** o döngüden başla (1: intro ve raf, 3: çök-kapan, 4: ruh fazı).
+  - **Ctrl+Shift+O:** oyunu kazanılmış say, outro başlasın (oyun sürerken; menüde ve keşke ekranında değil).
+  - **Ctrl+Shift+H:** HUD'u gizle/göster. Gizlenenler: ipucu, hedef okları, çanta, ruh ve kurtarma sayaçları, çök-kapan çubuğu. Balonlar ve ekranlar kalır.
+  - **Ctrl+Shift+G:** hızlı sarma (4x) aç/kapat.
 - **Not:** sanatçıdan yürüme çizimi yok; koşma kareleri yavaş oynuyor. Yürüme kareleri gelirse `walkFrames`'e bağlanır. (Sadece sakin kareleri oynatmak denendi, daha kötü durdu, geri alındı.)
 
 **Berke:** (Berke müsait olmadığı için aşağıdakileri Mehmet yaptı; senin dosyaların, bilgin olsun)
@@ -1810,6 +1815,39 @@ Başta yazdığım görev listesi (artık yapıldı):
   - Sonra mevcut kapanış ("Deprem geldiğinde keşkelerin olmasın. Bugün hazırlan."), AFAD satırı, "F: Ana menü".
 - [x] `texts.csv`: `memorial.*` satırları (TR/EN).
 - [x] `HudPreview`: farkındalık şeridi (mezarlık arka planıyla) ve anma ekranı önizlemeleri.
+
+### Jüri sürümü: görev dağılımı (Berke)
+
+**Neden:** jüriler oyunları 5 dakika kadar oynuyormuş. Şu haliyle ilk kez oynayan biri sona 8-12 dakikada varıyor. Ruh fazını ve mezarlık outrosunu (en güçlü kısımlarımız) görmeden bırakır.
+
+**Tam sürüm saklı:** jüri temposundan önceki hal (outro, anma, avize dahil) git'te `tam-surum-v1` etiketinde (`77a7d26`). İleride oradan devam edilebilir; jüri işleri main'de sürsün.
+
+**Senin "Jüri temposu" commit'lerin bunların çoğunu yaptı** (2. gece atlanıyor, öncü ve ana deprem arası kısa, ruh fazı 35 sn, keşke ekranı hızlı). Kalanlar:
+
+**İş listesi (dosya sahibine bakmadan yapabilirsin; benim dosyalarımda değiştirdiklerini buraya not et):**
+
+- [ ] **1. Ana menüde "Bölüm seç"** ("Devam et" ile yan yana):
+  - Başlangıç: `LoopManager.StartFromLoop(1)`, intro oynar.
+  - Çök-Kapan: döngü 3.
+  - Ruh Fazı: döngü 4.
+  - Final: `Deprem.Quake.Outro.Request()`. Menüdeyken son döngüyü başlatır ve outroyu kendisi açar (Ctrl+Shift+O da bunu kullanıyor).
+- [ ] **2. Etkileşimsiz anlarda "Boşluk (basılı tut): Geç":**
+  - Geçilecek yerler:
+    - döngü 1-2'nin senaryolu ölümleri;
+    - ölümden sonra keşke ekranına kadar bekleme;
+    - keşke ekranının daktilo yazısı (basınca yazı bitmiş haliyle gelsin);
+    - anma listesi.
+  - **İpucu ve halka hazır:** `Cinematic.Begin(canSkip: true, onSkip)` ile başlatılan her şey için `CinematicHud` ipucunu ve dolan halkayı zaten gösteriyor. Intro ve outro böyle çalışıyor.
+  - **Ölüm anları benim kodumda:** `QuakeDirector.HitByDebris`, `CollapseOnBed`, `deathLinger` (2,6 sn). Gerekirse orada `Cinematic.Begin(true, …)` aç, notunu yaz.
+- [x] **3. Döngü 1-2 kısalsın:** senin "Jüri temposu" commit'lerinde yapıldı. İstersen `QuakeDirector.deathLinger` (2,6 sn, ölümden keşke ekranına bekleme) 1,6'ya inebilir.
+- [ ] **4. Build:** `Editor/Quake/GameBuild.cs` (`Tools/Deprem/Windows build'i al`) `Build/Keske`'ye Windows build'i alıyor. Jüriye bu gidecek; teslimden önce baştan sona bir kez oynanmalı.
+- **Hedef:** ilk kez oynayan biri geçmelerle ruh fazına ~2,5 dakikada, sona ~5 dakikada varsın. "Bölüm seç" ile her yere saniyeler içinde gidilsin.
+
+**Geliştirici kısayolları ve kayıt build'i (bilgi için):**
+
+- `Quake/DevShortcuts`: Ctrl+Shift+1..5 döngü, O outro, H HUD gizle, G 4x hızlı sar.
+- Editörde, development build'de ya da build `-dev` ile açılınca çalışır. `GameBuild` build klasörüne `Kayit_icin_ac.bat` yazar: tam ekran 1920x1080 ve `-dev` (trailer çekimi için).
+- Oyuncunun normal exe'sinde kısayollar yok.
 
 ---
 

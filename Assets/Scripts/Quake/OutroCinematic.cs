@@ -24,6 +24,32 @@ namespace Deprem.Quake
         /// <summary>Karakter silindi, ekran tam siyah: geçmiş depremleri anma başlasın</summary>
         public static event Action Finished;
 
+        /// <summary>
+        /// Outroyu her yerden açar (bölüm seçimindeki "Final", geliştirici kısayolu Ctrl+Shift+O): oyun sürerken hemen;
+        /// ana menüde ya da keşke ekranındayken önce son döngü başlar, faz gelince oyun kazanılmış sayılır.
+        /// </summary>
+        public static void Request()
+        {
+            if (IsPlaying || GameState.Phase == GamePhase.Won) return;
+            if (GameState.Phase == GamePhase.None || GameState.Phase == GamePhase.Failed)
+            {
+                if (Loop.LoopManager.Instance == null) return;
+                Pending = true;
+                Loop.LoopManager.Instance.StartFromLoop(GameConstants.LoopCount);
+                return;
+            }
+            WinNow();
+        }
+
+        internal static bool Pending { get; private set; }
+
+        internal static void WinNow()
+        {
+            Pending = false;
+            if (Time.timeScale == 0f) Time.timeScale = 1f; // öğretici ya da duraklatma zamanı durdurmuşsa
+            GameState.WinLoop();
+        }
+
         internal static void RaiseAwarenessStarted(float seconds) => AwarenessStarted?.Invoke(seconds);
         internal static void RaiseAwarenessEnded() => AwarenessEnded?.Invoke();
         internal static void RaiseFinished() => Finished?.Invoke();
@@ -33,6 +59,7 @@ namespace Deprem.Quake
         {
             Available = false;
             IsPlaying = false;
+            Pending = false;
             AwarenessStarted = null;
             AwarenessEnded = null;
             Finished = null;
@@ -132,19 +159,11 @@ namespace Deprem.Quake
                 if (grave.rose != null) grave.rose.SetActive(false);
         }
 
-        // Geliştirici kısayolu (Mehmet'in isteği): oyun sürerken Ctrl+Shift+O oyunu kazanılmış sayar, outro hemen
-        // başlar. Sadece editörde ve development build'de.
+        // Outro.Request menüden istendiyse: yeni döngünün fazı gelince oyun kazanılmış sayılır
         private void Update()
         {
-            if (!Application.isEditor && !Debug.isDebugBuild) return;
-            var keyboard = UnityEngine.InputSystem.Keyboard.current;
-            if (keyboard == null || !keyboard.oKey.wasPressedThisFrame) return;
-            if (!keyboard.ctrlKey.isPressed || !keyboard.shiftKey.isPressed) return;
-            // Ana menüde (faz yok, zaman durmuş) ve keşke ekranında (Failed) çalışmaz
-            if (Outro.IsPlaying || GameState.Phase == GamePhase.None || GameState.Phase == GamePhase.Failed ||
-                GameState.Phase == GamePhase.Won) return;
-            Debug.Log("[Outro] Geliştirici kısayolu: oyun kazanıldı sayıldı, outro başlıyor");
-            GameState.WinLoop();
+            if (Outro.Pending && GameState.Phase != GamePhase.None && GameState.Phase != GamePhase.Failed &&
+                GameState.Phase != GamePhase.Won) Outro.WinNow();
         }
 
         private void HandleGameWon()
