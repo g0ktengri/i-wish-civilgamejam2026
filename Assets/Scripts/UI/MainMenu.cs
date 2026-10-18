@@ -65,6 +65,11 @@ namespace Deprem.UI
         [SerializeField] float teamLogoHeight = 56f;
         [Tooltip("Ekip logosunun opaklığı (0-1)")]
         [SerializeField] float teamLogoAlpha = 0.45f;
+        [Tooltip("kulaklik.png: uyarı ekranında \"kulaklıkla oynayınız\" ikonu (Mehmet'in isteği; kendi boyutunda)")]
+        [SerializeField] Sprite headphonesSprite;
+        [Tooltip("kulaklik_dalga.png: kulaklığın iki yanındaki ses dalgaları, ikonla aynı tuvalde; nabız gibi atar")]
+        [SerializeField] Sprite headphonesWavesSprite;
+        [SerializeField] float headphonesWavePulse = 3f;
 
 
         CanvasGroup group;
@@ -79,6 +84,9 @@ namespace Deprem.UI
         Image logo;
         RectTransform bodyRoot;
         Text bodyText;
+        RectTransform headphonesRoot;
+        Image headphonesWaves;
+        Text headphonesText;
         Text hintText;
         Text footerText;
         RectTransform items;
@@ -119,6 +127,10 @@ namespace Deprem.UI
         void Update()
         {
             Tremor();
+            // Kulaklığın ses dalgaları nabız gibi atar
+            if (headphonesWaves && screen == Screen.Warning)
+                headphonesWaves.color = new Color(1f, 1f, 1f,
+                    0.35f + 0.65f * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * headphonesWavePulse)));
             switch (screen)
             {
                 case Screen.Hidden:
@@ -234,9 +246,18 @@ namespace Deprem.UI
             // metnin altına iner
             bool hasBody = !string.IsNullOrEmpty(bodyText.text);
             bodyRoot.gameObject.SetActive(hasBody);
-            if (warning) UiBuilder.Stretch(bodyRoot, new Vector2(0.14f, 0.38f), new Vector2(0.86f, 0.62f));
+            // Uyarıda: üstte içerik uyarısı, ortada kulaklık (ses dalgalı), altta "kulaklıkla oynayınız"
+            headphonesRoot.gameObject.SetActive(warning);
+            headphonesText.text = warning ? Texts.Get("content_headphones") : string.Empty;
+            if (warning) UiBuilder.Stretch(bodyText.rectTransform, new Vector2(0f, 0.66f), new Vector2(1f, 0.94f));
+            else UiBuilder.Stretch(bodyText.rectTransform, Vector2.zero, Vector2.one);
+            // Emeği geçenler 7 satır (Mehmet'in listesi): alan daha uzun, çizgiler yazının üstüne binmesin
+            bool credits = screen == Screen.Credits;
+            if (warning) UiBuilder.Stretch(bodyRoot, new Vector2(0.14f, 0.32f), new Vector2(0.86f, 0.68f));
+            else if (credits) UiBuilder.Stretch(bodyRoot, new Vector2(0.12f, 0.2f), new Vector2(0.88f, 0.59f));
             else UiBuilder.Stretch(bodyRoot, new Vector2(0.18f, screen == Screen.ConfirmNew ? 0.4f : 0.3f), new Vector2(0.82f, 0.56f));
-            UiBuilder.Stretch(items, new Vector2(0.3f, 0.04f), new Vector2(0.7f, hasBody ? (screen == Screen.ConfirmNew ? 0.36f : 0.26f) : 0.56f));
+            UiBuilder.Stretch(items, new Vector2(0.3f, 0.04f),
+                new Vector2(0.7f, hasBody ? (screen == Screen.ConfirmNew ? 0.36f : credits ? 0.17f : 0.26f) : 0.56f));
 
             footerText.text = Texts.Get("menu.jam");
             PlaceTitleDetails();
@@ -440,6 +461,30 @@ namespace Deprem.UI
             bodyText = UiBuilder.Outlined(UiBuilder.CreateText(bodyRoot, "Text", font, bodyFontSize, normalColor));
             UiBuilder.Stretch(bodyText.rectTransform, Vector2.zero, Vector2.one);
             bodyRoot.gameObject.SetActive(false);
+
+            // Uyarı ekranı: kulaklık ikonu, ses dalgaları ve "kulaklıkla oynayınız" (Mehmet'in isteği)
+            headphonesRoot = CreateRect(bodyRoot, "Headphones");
+            UiBuilder.Stretch(headphonesRoot, Vector2.zero, new Vector2(1f, 0.66f));
+            if (headphonesSprite)
+            {
+                var icon = UiBuilder.CreateImage(headphonesRoot, "Icon", Color.white);
+                icon.sprite = headphonesSprite;
+                icon.raycastTarget = false;
+                icon.rectTransform.anchorMin = icon.rectTransform.anchorMax = new Vector2(0.5f, 0.62f);
+                icon.rectTransform.sizeDelta = headphonesSprite.rect.size; // referans pikselinde kendi boyutu
+            }
+            if (headphonesWavesSprite)
+            {
+                headphonesWaves = UiBuilder.CreateImage(headphonesRoot, "Waves", Color.white);
+                headphonesWaves.sprite = headphonesWavesSprite;
+                headphonesWaves.raycastTarget = false;
+                headphonesWaves.rectTransform.anchorMin = headphonesWaves.rectTransform.anchorMax = new Vector2(0.5f, 0.62f);
+                headphonesWaves.rectTransform.sizeDelta = headphonesWavesSprite.rect.size;
+            }
+            headphonesText = UiBuilder.Outlined(UiBuilder.CreateText(headphonesRoot, "Text", font, bodyFontSize,
+                new Color(normalColor.r, normalColor.g, normalColor.b, 0.85f)));
+            UiBuilder.Stretch(headphonesText.rectTransform, new Vector2(0f, 0.04f), new Vector2(1f, 0.3f));
+            headphonesRoot.gameObject.SetActive(false);
 
             // Sol üstte soluk jam adı, sağ altta tuş ipuçları
             footerText = UiBuilder.Outlined(UiBuilder.CreateText(canvas.transform, "Footer", font, 14,

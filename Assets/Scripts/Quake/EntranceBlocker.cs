@@ -34,9 +34,15 @@ namespace Deprem.Quake
         }
 
         // Play testi 32: kurtarmada devrik dolap geri dikilmiş görünüyordu. Ne olursa olsun kurtarma fazında yerde kalır.
+        // Play testi 33: ruh fazında (döngü 4+) dik duruyordu. Ruh fazında da devrik; ana depremde yeniden devrilmez.
+        private void Start()
+        {
+            if (GameState.Phase == GamePhase.Spirit) SetFallen();
+        }
+
         private void HandlePhaseChanged(GamePhase phase)
         {
-            if (phase != GamePhase.Rescue || HasFallen) return;
+            if (phase != GamePhase.Rescue && phase != GamePhase.Spirit || HasFallen) return;
             if (IsFalling) return; // düşüş bitince HasFallen olur
             SetFallen();
         }

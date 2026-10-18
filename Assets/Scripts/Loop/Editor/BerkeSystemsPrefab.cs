@@ -25,7 +25,9 @@ namespace Deprem.Loop.EditorTools
         const string FontFolder = "Assets/Art/Fonts";
         // HUD, menü, keşke ekranı Pixelify Sans; konuşma balonları Mehmet'in DepremBalon'u (play testi 13).
         // Klasörde iki font olduğu için adla seçilir (alfabetik ilk font DepremBalon'du).
-        const string UiFontPath = FontFolder + "/PixelifySans.ttf";
+        // Mehmet'in play testi 33: Pixelify'da B G gibi, 5 S gibi okunuyordu; aynı font, o harfler düzeltilmiş
+        // (Tools/bubble_font.py üretir)
+        const string UiFontPath = FontFolder + "/DepremMenu-Regular.ttf";
         const string BubbleFontPath = FontFolder + "/DepremBalon-Regular.ttf";
 
         // (bileşen, alan yolu, Assets/Art/UI altındaki dosya adı)
@@ -58,6 +60,8 @@ namespace Deprem.Loop.EditorTools
             (typeof(MainMenu), "backgroundSprite", "menu_arka_plan"),
             (typeof(MainMenu), "logoSprite", "logo"),
             (typeof(MainMenu), "teamLogo", "takim_logo"),
+            (typeof(MainMenu), "headphonesSprite", "kulaklik"),
+            (typeof(MainMenu), "headphonesWavesSprite", "kulaklik_dalga"),
         };
 
         // "font" alanı olan bütün UI bileşenleri

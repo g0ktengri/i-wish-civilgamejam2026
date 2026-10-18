@@ -1628,6 +1628,20 @@ Mehmet'in yorumu (özet):
 - **Babanın ölü karesi de geldi:** `Baba death.png` aynı yöntemle `baba_olu.png` oldu. En alt pikseli 123. satırdaydı, ayak çizgisine (125) 2 px indirildi.
 - **Test:** aile testinde ezilen kardeş, anne ve baba ölü kareleriyle, döndürülmeden; gövdeleri devrilen eşyanın (oyuncak rafı, gardırop, kitaplık) altında ortalı.
 
+### Emeği geçenler ve kulaklık notu (`texts.csv`, senin dosyan; Mehmet'in isteğiyle)
+
+- **`credits.body`:** Mehmet'in yazdığı unvanlarla, iki dilde aynı:
+  - Meliz Dönmezer: 2D Artist
+  - Duygu İrem El: 2D Artist, 2D Animator
+  - Berke Yaşar: Game Codder
+  - Mehmet Kerim Artan: Game Developer, Game Designer
+- **`content_headphones` (yeni satır):** "En iyi deneyim için kulaklıkla oynayınız." (EN: "For the best experience, play with headphones."). `content_warning` yine tek satır.
+- **`MainMenu.cs` (senin dosyan):**
+  - Uyarı ekranında uyarı satırı üstte, ortada pixel kulaklık ikonu (`Assets/Art/UI/kulaklik.png`), iki yanında nabız gibi atan altın ses dalgaları (`kulaklik_dalga.png`, `headphonesWavePulse`), altında kulaklık satırı.
+  - Emeği geçenler ekranında metin taşıyordu; bu ekrana özel daha geniş `bodyRoot` ve satır başlangıcı verildi.
+- **`BerkeSystemsPrefab.cs`:** `headphonesSprite` / `headphonesWavesSprite` bağlandı, prefab yeniden kuruldu.
+- **Önizleme:** iki ekran da `HudPreview` ile alındı, metin sığıyor ve çizgilerle çakışmıyor.
+
 ### Logo: kırmızı yarık yerine deprem çatlağı (Mehmet)
 
 - `Assets/Art/UI/logo.png` değişti (aynı GUID, prefab'a dokunulmadı).
@@ -1635,6 +1649,45 @@ Mehmet'in yorumu (özet):
   - kelime boyunca uzanan iki ince ana çatlak (dal ve köşe çatlakları Mehmet'in isteğiyle çıkarıldı);
   - Ş'de küçük örümcek ağı;
   - harften çıktığı yerde minik çentik, altında birkaç toz zerresi.
+
+### Play testi 33: Mehmet'in düzeltmeleri (senin dosyalarında küçük değişiklikler var, bilgi için)
+
+1. **Kabin tabelası karakterin önüne geçiyordu:** fontun materyali derinliğe bakmıyordu. Tabela artık `Deprem/WorldText` shader'ıyla (`Assets/Shaders/WorldText.shader`) çiziliyor; önünden geçen karakter yazıyı örtüyor.
+2. **Çök-kapan ipucu kamerayla sallanıyordu:** `PlayerInteractor.PromptAnchor` deprem ipuçlarında kameranın sarsıntı kaymasını (`QuakeCameraShake.AppliedOffset`) ekliyor. `PromptHud`'a dokunulmadı; ipucu ekranda sabit duruyor.
+3. **"SABİTLENDİ" damgası "SAGİTLENDİ" gibi okunuyordu:** eğik pixel yazıda B bozuluyordu.
+   - `MinigameHost.stampAngle` -8'den 0'a indi (senin dosyan).
+   - `HudPreview` damga önizlemesi de bu açıyı okuyor.
+   - Prefab yeniden kuruldu.
+4. **İlk çök-kapan, minigame öğreticin gibi anlatılıyor:** yeni `Deprem.Quake.DuckCoverTutorial`.
+   - Ana deprem başlayınca 0,8 sn sonra oyun durur. Vurgu dışı kararır, çerçeve nabız gibi atar, altta adım metni ve "F: Devam" (`minigame.tutorial.continue`) çıkar.
+   - Üç adım: parlayan masa, masaya yürü (oyuncu ve masa), S basılı tut (oyuncu ve çubuk).
+   - Yeni oyunda bir kez gösterilir.
+   - **`PauseMenu.cs` (senin dosyan):** öğretici açıkken duraklatma açılmaz. Öğretici `timeScale`'i bilerek 0 tutar; "timeScale 0'da kalmış" düzeltmesi bu sırada çalışmaz.
+   - **`texts.csv`:** `tutorial.duck_cover.table` / `.walk` / `.hold` eklendi.
+5. **Ölü anne / kardeş görülünce ses yoktu:**
+   - Ölüyü görünce (`ReactToLoss`) her zaman yeni `family.grief` çalar: La minörde inen yaylı ezgi, pad, 8 sn.
+   - Eski kayıp vurgusu, üye daha önce "bulundu" olarak görüldüyse hiç çalmıyordu.
+6. **Ruh fazında giriş kapısındaki portmanto dik duruyordu:** ruh fazında da devrik. Ana depremde yeniden devrilmez.
+7. **Fontta büyük B G gibi, 5 S gibi okunuyordu** (Z ile 2, C ile G de aynıydı):
+   - `Tools/bubble_font.py` bu harfleri iki fontta da Pixelify'ın ızgarasında yeniden çiziyor. Ç ve Ğ de düzeldi.
+   - **`DepremBalon-Regular`** (HUD, balonlar) aynı dosya, aynı GUID.
+   - **Yeni `DepremMenu-Regular.ttf`:** Pixelify'ın kendisi, yalnız bu harfler düzeltilmiş.
+   - **`BerkeSystemsPrefab.UiFontPath` (senin dosyan)** artık `DepremMenu-Regular.ttf`. Menü, keşke ve final ekranı onunla; prefab ve `UiStyle.font` yeniden kuruldu.
+   - Kabin tabelası da bu fontta.
+   - `PixelifySans.ttf` repoda kalıyor; kaynak font o.
+8. **Baba, oyuncu odaya girmeden karanlık odada görünüyordu:**
+   - Devrik eşyanın önüne çekilen üye ve kameraya doğru duran taş, oda örtüsünün önüne taşıyordu.
+   - Odası örtülüyken üyenin bütün görselleri (taş dahil) çizilmiyor, ışığı da sönük. Konuşma balonu ekranda kalıyor.
+9. **Tavan lambaları avize oldu** (Mehmet'in isteği):
+   - Düz kutu yerine tavandan sarkan avize (`Editor/HouseBuilder/CeilingLamp.cs`, kodla üretilen model):
+     - pirinç göbek ve çubuk;
+     - pileli kumaş abajur (`Deprem/LampShade`), içten aydınlanıyor, astarı açık, üst ve alt kenarda pirinç şerit;
+     - ampul, halkalı hale ve yere inen yumuşak ışık huzmesi (`Deprem/LampGlow`).
+   - İkisi de pixel ızgarasına oturtulmuş ve renkleri basamaklı.
+   - **Renk:** koridor, sahanlık ve oyuncunun odasında açık fildişi, diğer odalarda bordo.
+   - **Işık:** ampulün içinde gölgeli nokta ışığı, artı yere sıcak ışık havuzu düşüren aşağı bakan spot.
+   - **Depremde:** avize sarkaç gibi sallanır, ışığı ve gölgeler onunla gider; sarsıntı bitince yavaşça durur. Abajur ve ampul titremeyle kısılır, elektrik kesilince söner.
+   - Kabin tabelasının yazısı artık her çizimde fontun güncel atlasını alıyor (`Visual/WorldTextAtlas`).
 
 ---
 

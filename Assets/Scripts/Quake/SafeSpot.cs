@@ -69,6 +69,38 @@ namespace Deprem.Quake
             return Mathf.Abs(feet.x - center.x) <= halfWidth && Mathf.Abs(feet.y - center.y) < 0.6f;
         }
 
+        /// <summary>Masanın görünen kutusu (zeminden tablanın konturuna); çök-kapan öğreticisi bunu vurgular</summary>
+        public Bounds VisualBounds
+        {
+            get
+            {
+                var p = transform.position;
+                var bounds = new Bounds(p + Vector3.up * 0.4f, new Vector3(halfWidth * 2f, 0.8f, 0.05f));
+                if (outlineRenderers == null) return bounds;
+                foreach (var r in outlineRenderers)
+                    if (r != null) bounds.Encapsulate(r.bounds);
+                return bounds;
+            }
+        }
+
+        /// <summary>Oyuncuya en yakın güvenli nokta (aynı kat önce)</summary>
+        public static SafeSpot Nearest(Vector3 feet)
+        {
+            SafeSpot best = null;
+            float bestScore = float.MaxValue;
+            foreach (var spot in AllSpots)
+            {
+                var d = spot.transform.position - feet;
+                float score = Mathf.Abs(d.x) + 10f * Mathf.Abs(d.y);
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    best = spot;
+                }
+            }
+            return best;
+        }
+
         public static bool AnyContains(Vector3 feet)
         {
             foreach (var spot in AllSpots)

@@ -264,6 +264,11 @@ MonoBehaviour:
     - {fileID: 8300000, guid: def2ffa67ef69234786c650c8007c307, type: 3}
     volume: 0.8
     pitch: {x: 1, y: 1}
+  - key: family.grief
+    clips:
+    - {fileID: 8300000, guid: a927fd884441d2440af1b8cb1141bc2c, type: 3}
+    volume: 0.9
+    pitch: {x: 1, y: 1}
   - key: music.menu
     clips:
     - {fileID: 8300000, guid: 233f0ff1d8ac537458ac194671b93c8c, type: 3}

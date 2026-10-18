@@ -215,6 +215,8 @@ namespace Deprem.Audio
             yield return new Recipe { key = "player.death", volume = 0.9f, make = DeathStinger };
             yield return new Recipe { key = "family.discover", volume = 0.75f, make = DiscoverStinger };
             yield return new Recipe { key = "family.loss", volume = 0.8f, make = LossStinger };
+            // Play testi 33: ölü anne / kardeş görülünce ses yoktu, üzücü bir şey olsun
+            yield return new Recipe { key = "family.grief", volume = 0.9f, make = GriefCue };
             yield return new Recipe { key = "music.menu", volume = 0.6f, make = QuakeMenuMusic }; // Play testi 28: depremi yansıtsın
         }
 
@@ -773,6 +775,47 @@ namespace Deprem.Audio
             Mix(b, Note(4f, 110f, 0.02f, 0.45f, 0.35f), 0.7f, 0.35f);
             Mix(b, Note(4f, 103.83f, 0.3f, 0.4f, 0.3f), 1.4f, 0.25f);
             return Fade(Normalize(Reverb(b, 3f, 0.5f, 0.88f), 0.85f));
+        }
+
+        /// <summary>
+        /// Ölü aile üyesi görülünce: La minörde yavaşça inen yaylı ezgi (Mi, Re, Do, Si, La), altta Am, F, E, Am pad
+        /// ve çello kökü, uzun yankı. 8 sn.
+        /// </summary>
+        private static float[] GriefCue(SoundSynth s)
+        {
+            var b = Buffer(8f);
+            (float at, float hz, float length)[] melody =
+            {
+                (0.3f, 659.25f, 1f), (1.1f, 587.33f, 0.9f), (1.9f, 523.25f, 0.9f), (2.7f, 493.88f, 1.2f), (3.7f, 440f, 3f),
+            };
+            foreach (var (at, hz, length) in melody) Mix(b, Bowed(length + 0.8f, hz), at, 0.22f);
+            (float at, float[] notes)[] chords =
+            {
+                (0f, new[] { 220f, 261.63f, 329.63f }), (1.9f, new[] { 174.61f, 220f, 261.63f }),
+                (2.7f, new[] { 164.81f, 207.65f, 246.94f }), (3.7f, new[] { 220f, 261.63f, 329.63f }),
+            };
+            for (int c = 0; c < chords.Length; c++)
+            {
+                float length = (c + 1 < chords.Length ? chords[c + 1].at - chords[c].at : 3.5f) + 1.2f;
+                foreach (float hz in chords[c].notes)
+                    Mix(b, Note(length, hz, 0.6f, 0.35f, 0.3f), chords[c].at, 0.07f);
+                Mix(b, Note(length, chords[c].notes[0] / 2f, 0.5f, 0.3f, 0.3f), chords[c].at, 0.12f);
+            }
+            return Fade(Normalize(Reverb(b, 3f, 0.45f, 0.88f), 0.85f), 0.01f, 0.6f);
+        }
+
+        /// <summary>Yaylı gibi nota: yavaş atak, gittikçe açılan vibrato, birkaç harmonik, sonda sönüm</summary>
+        private static float[] Bowed(float seconds, float hz)
+        {
+            var b = Buffer(seconds);
+            for (int h = 1; h <= 4; h++)
+            {
+                int k = h;
+                Mix(b, Sine(seconds, t => hz * k * (1f + 0.005f * Mathf.Sin(2f * Mathf.PI * 5.2f * t) * Mathf.Min(1f, t / 0.4f))),
+                    0f, 1f / (0.8f * k * k + 0.2f));
+            }
+            Shape(b, t => Mathf.Min(1f, t / 0.25f) * Mathf.Clamp01((seconds - t) / 0.8f));
+            return LowPass(b, 2400f);
         }
 
         // ------------------------------------------------------------------ Müzik

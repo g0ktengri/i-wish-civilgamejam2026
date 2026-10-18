@@ -60,6 +60,7 @@ MonoBehaviour:
   toppleWindow: {x: 1.5, y: 5}
   duckCoverGrace: 3
   duckCoverTolerance: 0.35
+  duckCoverTutorialDelay: 0.8
   aftershockDuration: 3.5
   aftershockIntensity: 0.5
   aftershockGrace: 2.5

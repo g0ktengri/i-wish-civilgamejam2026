@@ -4,6 +4,7 @@ key,tr,en
 
 # Genel
 content_warning,Bu oyun deprem ve kayıp temalarını içerir.,This game contains themes of earthquakes and loss.
+content_headphones,En iyi deneyim için kulaklıkla oynayınız.,"For the best experience, play with headphones."
 prompt.continue,F: Devam,F: Continue
 wish.rewind,<< Zaman geri sarılıyor...,<< Rewinding time...
 wish.prefix,Keşke,I wish
@@ -104,13 +105,17 @@ Mouse: Minigames
 Esc: Pause"
 credits.body,"Civil Game Jam 2026
 
-Yazılım: Mehmet, Berke
-Sanat: (eklenecek)
+Meliz Dönmezer: 2D Artist
+Duygu İrem El: 2D Artist, 2D Animator
+Berke Yaşar: Game Codder
+Mehmet Kerim Artan: Game Developer, Game Designer
 
 Unity 6.3 LTS · URP · Cinemachine","Civil Game Jam 2026
 
-Programming: Mehmet, Berke
-Art: (to be added)
+Meliz Dönmezer: 2D Artist
+Duygu İrem El: 2D Artist, 2D Animator
+Berke Yaşar: Game Codder
+Mehmet Kerim Artan: Game Developer, Game Designer
 
 Unity 6.3 LTS · URP · Cinemachine"
 menu.new_game,Yeni oyun,New game
@@ -140,6 +145,9 @@ minigame.tutorial.carry_drop,Yeşil alana bırak,Drop it on the green area
 minigame.tutorial.screw_grab,Tornavidanın ucunu vidaya getir ve fareyi basılı tut,Bring the screwdriver tip to a screw and hold the mouse button
 minigame.tutorial.screw_turn,Fareyi vidanın çevresinde saat yönünde çevir,Circle the mouse clockwise around the screw
 minigame.tutorial.screw_bar,Bütün vidaları sık; çubuk dolunca eşya sabitlenir,Tighten every screw; the item is secured when the bar fills
+tutorial.duck_cover.table,"Deprem! Sarsıntıda koşma, kapıya ya da merdivene gitme. Parlayan masa en güvenli yer.","Earthquake! Don't run during the shaking, don't head for the door or the stairs. The glowing table is the safest spot."
+tutorial.duck_cover.walk,A/D ile masanın altına yürü.,Walk under the table with A/D.
+tutorial.duck_cover.hold,"Masanın altında S'ye basılı tut: çök, başını koru, tutun. Sarsıntı bitene kadar bırakma.","Under the table, hold S: drop, cover your head, hold on. Don't let go until the shaking stops."
 spirit.priority,Önce kırmızı konturlu eşyaları sabitle: onlar ailenin üstüne düşecek,"Secure the red-outlined items first: they will fall on your family"
 wish.continue,Devam etmek için bir tuşa bas,Press any key to continue
 info.missing_flashlight,"Kardeşini karanlıkta bulamadın; el fenerin yoktu. Deprem çantanda el feneri olsun.","You couldn't find your sibling in the dark; you had no flashlight. Keep a flashlight in your emergency bag."

@@ -28,7 +28,26 @@ namespace Deprem.Quake
         [Tooltip("Sarsıntı en güçlüyken lambanın sallanma genliği (m)")]
         [SerializeField] private float swayAmount = 0.25f;
 
+        [Header("Avizeler")]
+        [Tooltip("Tavandan sarkan avizeler (pivot tavanda). Sarsıntıda sarkaç gibi sallanır, ışığı da onunla gider; " +
+                 "abajur, ampul, hale ve huzme parlaklığı (_Glow) elektrik ve titremeyle değişir")]
+        [SerializeField] private Transform[] pendants;
+        [Tooltip("Sarsıntı en güçlüyken sallanma açısı (derece)")]
+        [SerializeField] private float swingDegrees = 16f;
+        [Tooltip("Sarkacın açısal hızı (rad/sn); 0,6 m'lik avize için ~4")]
+        [SerializeField] private float swingSpeed = 4f;
+        [Tooltip("Sarsıntı bitince sallanmanın sönme hızı (1/sn)")]
+        [SerializeField] private float swingDamping = 0.45f;
+
         public bool PowerOn { get; private set; } = true;
+
+        private static readonly int GlowId = Shader.PropertyToID("_Glow");
+        private Light[] pendantLights;
+        private float[] pendantBaseIntensities;
+        private Renderer[][] pendantRenderers;
+        private bool[] lampOnPendant;
+        private MaterialPropertyBlock glowBlock;
+        private float swing;
 
         private float[] baseIntensities;
         private float[] emergencyBaseIntensities;
@@ -46,6 +65,59 @@ namespace Deprem.Quake
             fill = fillLight;
         }
 
+        public void ConfigurePendants(Transform[] pendantRoots) => pendants = pendantRoots;
+
+        // Avizelerin ışığı ve _Glow kullanan parçaları (edit mode önizlemesinde Awake'ten önce de çağrılır)
+        private void EnsurePendants()
+        {
+            if (pendantLights != null || pendants == null) return;
+            pendantLights = new Light[pendants.Length];
+            pendantBaseIntensities = new float[pendants.Length];
+            pendantRenderers = new Renderer[pendants.Length][];
+            for (int i = 0; i < pendants.Length; i++)
+            {
+                if (pendants[i] == null) continue;
+                pendantLights[i] = pendants[i].GetComponentInChildren<Light>(true);
+                pendantBaseIntensities[i] = pendantLights[i] != null ? pendantLights[i].intensity : 0f;
+                var glowing = new System.Collections.Generic.List<Renderer>();
+                foreach (var r in pendants[i].GetComponentsInChildren<Renderer>(true))
+                    if (r.sharedMaterial != null && r.sharedMaterial.HasProperty(GlowId)) glowing.Add(r);
+                pendantRenderers[i] = glowing.ToArray();
+            }
+        }
+
+        private void SetPendantGlow(int i, float glow)
+        {
+            if (pendantRenderers[i] == null) return;
+            glowBlock ??= new MaterialPropertyBlock();
+            foreach (var r in pendantRenderers[i])
+            {
+                r.GetPropertyBlock(glowBlock);
+                glowBlock.SetFloat(GlowId, glow);
+                r.SetPropertyBlock(glowBlock);
+            }
+        }
+
+        // Avize sarkaç gibi sallanır: sarsıntı büyürken genlik hızla artar, bitince yavaşça söner (elektrik
+        // kesikken de). Parlaklık ışığın o anki gücünü (titreme) izler.
+        private void Update()
+        {
+            EnsurePendants();
+            if (pendants == null || pendants.Length == 0) return;
+            float shake = QuakeCameraShake.Intensity;
+            swing = shake > swing ? Mathf.MoveTowards(swing, shake, Time.deltaTime * 2.5f) : swing * Mathf.Exp(-swingDamping * Time.deltaTime);
+            for (int i = 0; i < pendants.Length; i++)
+            {
+                if (pendants[i] == null) continue;
+                float phase = Time.time * swingSpeed + i * 1.3f;
+                float angle = Mathf.Sin(phase) * swingDegrees * swing;
+                pendants[i].localRotation = Quaternion.Euler(Mathf.Sin(phase * 0.7f + 0.5f) * angle * 0.3f, 0f, angle);
+                float glow = PowerOn && pendantLights[i] != null && pendantBaseIntensities[i] > 0f
+                    ? pendantLights[i].intensity / pendantBaseIntensities[i] : PowerOn ? 1f : 0f;
+                SetPendantGlow(i, glow);
+            }
+        }
+
         private void Awake()
         {
             baseIntensities = new float[lamps.Length];
@@ -59,6 +131,12 @@ namespace Deprem.Quake
             for (int i = 0; i < emergencyLights.Length; i++) emergencyBaseIntensities[i] = emergencyLights[i].intensity;
             fillBaseIntensity = fill != null ? fill.intensity : 0f;
             ambientBase = RenderSettings.ambientLight;
+            EnsurePendants();
+            lampOnPendant = new bool[lamps.Length];
+            if (pendants != null)
+                for (int i = 0; i < lamps.Length; i++)
+                    foreach (var pendant in pendants)
+                        if (pendant != null && lamps[i].transform.IsChildOf(pendant)) lampOnPendant[i] = true;
             SetPower(true);
         }
 
@@ -88,6 +166,9 @@ namespace Deprem.Quake
             }
             if (ambientBase == default) ambientBase = RenderSettings.ambientLight;
             RenderSettings.ambientLight = on ? ambientBase : ambientBase * ambientPowerOffScale;
+            EnsurePendants();
+            if (pendantRenderers != null)
+                for (int i = 0; i < pendantRenderers.Length; i++) SetPendantGlow(i, on ? 1f : 0f);
             if (on) Flicker(0f);
         }
 
@@ -99,7 +180,8 @@ namespace Deprem.Quake
             {
                 float dim = intensity > 0f ? Random.Range(0f, flickerAmount * intensity) : 0f;
                 lamps[i].intensity = baseIntensities[i] * (1f - dim);
-                // Lamba sallanır: ışık kayar, gölgeler odada gidip gelir
+                // Lamba sallanır: ışık kayar, gölgeler odada gidip gelir (avizedeki ışık avizeyle sallanır, Update)
+                if (lampOnPendant != null && lampOnPendant[i]) continue;
                 var sway = new Vector3(Mathf.Sin(Time.time * 6f + i * 1.7f), 0f, Mathf.Cos(Time.time * 4.5f + i) * 0.5f);
                 lamps[i].transform.localPosition = lampBasePositions[i] + sway * (swayAmount * intensity);
             }

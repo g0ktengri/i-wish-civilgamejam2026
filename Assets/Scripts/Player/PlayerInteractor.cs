@@ -17,8 +17,20 @@ namespace Deprem.Player
         /// ENTEGRASYON M46 (Play testi 24): ekrandaki ipucunun dünya konumu. Etkileşilen objenin tepesinin biraz
         /// üstü; deprem ipuçlarında ("F: Kalk", "S: Çök-Kapan-Tutun") oyuncunun başının üstü. İpucu yoksa null.
         /// Berke'nin ipucu arayüzü bunu ekrana çevirip ipucunu orada gösterir.
+        /// Play testi: deprem ipucu kamerayla sallanıyordu; deprem ipuçlarında kameranın sarsıntı kayması eklenir,
+        /// ipucu ekranda sabit durur (okununca alttaki dünya sallanır, yazı sallanmaz).
         /// </summary>
-        public static Vector3? PromptAnchor { get; private set; }
+        public static Vector3? PromptAnchor
+        {
+            get => anchor.HasValue && steadyAnchor ? anchor.Value + Deprem.Quake.QuakeCameraShake.AppliedOffset : anchor;
+            private set
+            {
+                anchor = value;
+                steadyAnchor = false;
+            }
+        }
+        private static Vector3? anchor;
+        private static bool steadyAnchor;
 
         [Tooltip("İpucu objenin tepesinden bu kadar yukarıda (m)")]
         [SerializeField] private float anchorLift = 0.18f;
@@ -64,6 +76,7 @@ namespace Deprem.Player
             if (!string.IsNullOrEmpty(Deprem.Quake.QuakePrompts.Current))
             {
                 PromptAnchor = feet + Vector3.up * (player.StandingHeight + 0.35f);
+                steadyAnchor = true;
                 return;
             }
             if (OnReversiblePath)

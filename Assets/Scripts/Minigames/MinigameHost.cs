@@ -47,7 +47,8 @@ namespace Deprem.Minigames
         [Tooltip("Damga basıldıktan sonra panel bu kadar sonra kapanır")]
         [SerializeField] float successSeconds = 0.6f;
         [SerializeField] Color stampColor = new Color(0.56f, 0.92f, 0.5f);
-        [SerializeField] float stampAngle = -8f;
+        [Tooltip("Mehmet'in play testi: eğik pixel yazıda B harfi bozuluyor, \"SAGİTLENDİ\" okunuyordu; düz")]
+        [SerializeField] float stampAngle = 0f;
         [SerializeField] float stampPopSeconds = 0.14f;
 
         // GDD: 60 sn'de 5-6 eşya (yol dahil); her minigame yaklaşık 5-7 sn sürmeli

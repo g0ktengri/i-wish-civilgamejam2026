@@ -64,7 +64,7 @@ namespace Deprem.UI
 
             // M38 (donma: oyuncu ve süre birlikte durmuştu): oyun sürerken hiçbir menü açık değilse zaman durmuş olamaz.
             // timeScale 0'da kalmışsa (bir menü geçişinde açık kalmış) düzelt ve Console'a yaz.
-            if (Time.timeScale == 0f && !MainMenu.Visible && !SettingsMenu.IsOpen && CanPause())
+            if (Time.timeScale == 0f && !MainMenu.Visible && !SettingsMenu.IsOpen && !Quake.DuckCoverTutorial.Active && CanPause())
             {
                 Debug.LogWarning($"[PauseMenu] Menü kapalıyken timeScale 0'da kalmış (faz {GameState.Phase}); 1'e alındı.");
                 Time.timeScale = 1f;
@@ -81,6 +81,7 @@ namespace Deprem.UI
         {
             if (minigameClosedFrame == Time.frameCount) return false;
             if (MinigameHost.Instance && MinigameHost.Instance.IsOpen) return false;
+            if (Quake.DuckCoverTutorial.Active) return false; // Mehmet: çök-kapan öğreticisi oyunu kendisi durdurur
             if (CinematicHud.Playing) return true; // M56: intro sırasında da duraklatılır (faz henüz başlamamış olabilir)
             var phase = GameState.Phase;
             return phase != GamePhase.None && phase != GamePhase.Failed && phase != GamePhase.Won;

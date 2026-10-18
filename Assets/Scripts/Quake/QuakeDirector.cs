@@ -52,6 +52,8 @@ namespace Deprem.Quake
         [SerializeField] private float duckCoverGrace = 3f;
         [Tooltip("C kısa süre bırakılırsa affedilir")]
         [SerializeField] private float duckCoverTolerance = 0.35f;
+        [Tooltip("Play testi 33: ilk çök-kapanda sarsıntı başladıktan kaç sn sonra oyun durup öğretici açılır")]
+        [SerializeField] private float duckCoverTutorialDelay = 0.8f;
 
         [Header("Artçılar")]
         [SerializeField] private float aftershockDuration = 3.5f;
@@ -138,6 +140,7 @@ namespace Deprem.Quake
         private bool[] zoneTriggered;
         private bool aftershockRunning;
         private DuckCoverBar duckCoverBar;
+        private DuckCoverTutorial duckCoverTutorial;
         private QuakeEffects effects;
         private float offPathTime;
 
@@ -183,6 +186,7 @@ namespace Deprem.Quake
             zoneTriggered = new bool[aftershockZones.Length];
             if (!TryGetComponent(out duckCoverBar)) duckCoverBar = gameObject.AddComponent<DuckCoverBar>();
             if (player != null) duckCoverBar.Follow(player.transform);
+            if (!TryGetComponent(out duckCoverTutorial)) duckCoverTutorial = gameObject.AddComponent<DuckCoverTutorial>();
             TryGetComponent(out effects);
         }
 
@@ -257,7 +261,11 @@ namespace Deprem.Quake
             // Intro sinematiği: 1. döngünün ilk denemesinde oyuncu okuldan gelip yatar; sonra gece açılır
             bool intro = IntroCinematic.ShouldPlay;
             // Play testi: "Yeni oyun"da çök-kapan ipucu yeniden bir kez gösterilsin (önceki oyunlardan kalan kayıt silinir)
-            if (intro) PlayerPrefs.DeleteKey(DuckCoverLearnedKey);
+            if (intro)
+            {
+                PlayerPrefs.DeleteKey(DuckCoverLearnedKey);
+                PlayerPrefs.DeleteKey(DuckCoverTutorialKey);
+            }
             if (intro) yield return Intro.Play();
             LieInBed();
             if (intro) StartCoroutine(Intro.FadeIn());
@@ -377,7 +385,18 @@ namespace Deprem.Quake
             else
             {
                 bool survived = false;
-                yield return DuckCoverHold(mainQuakeDuration, duckCoverGrace, result => survived = result);
+                // Play testi 33: ilk çök-kapanda minigame öğreticisi gibi adım adım anlatım (oyun durur)
+                float tutorialLead = 0f;
+                if (!DuckCoverLearned && PlayerPrefs.GetInt(DuckCoverTutorialKey, 0) == 0 && duckCoverTutorial != null)
+                {
+                    SafeSpot.ShowAll(true);
+                    yield return new WaitForSeconds(duckCoverTutorialDelay);
+                    tutorialLead = duckCoverTutorialDelay;
+                    yield return duckCoverTutorial.Play(player, SafeSpot.Nearest(player.transform.position));
+                    PlayerPrefs.SetInt(DuckCoverTutorialKey, 1);
+                    PlayerPrefs.Save();
+                }
+                yield return DuckCoverHold(mainQuakeDuration - tutorialLead, duckCoverGrace, result => survived = result);
                 if (!survived)
                 {
                     yield return HitByDebris();
@@ -564,6 +583,8 @@ namespace Deprem.Quake
         // Play testi 27: "S: Çök-Kapan-Tutun" tuş ipucu bir kez başarıyla yapılana kadar gösterilir, sonra gösterilmez
         // (yanlış yerde basınca çıkan uyarı kalır)
         private const string DuckCoverLearnedKey = "tutorial.duck_cover";
+        // Play testi 33: adım adım çök-kapan öğreticisi yeni oyunda bir kez
+        private const string DuckCoverTutorialKey = "tutorial.duck_cover_steps";
         private static bool DuckCoverLearned => PlayerPrefs.GetInt(DuckCoverLearnedKey, 0) == 1;
 
         /// <summary>

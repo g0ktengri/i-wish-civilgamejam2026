@@ -71,6 +71,9 @@ namespace Deprem.HouseBuilder
             var salon = HouseLayout.Room("salon");
             var salonCamera = new Vector3((salon.X0 + salon.X1) * 0.5f, 1.9f, -12f);
             HousePreview.Render("Logs/house_preview_salon.png", null, salonCamera, 1920, 1080);
+            // Kabin tabelası ve koridor avizesi yakından (oyun kamerası mesafesi)
+            var cabinCamera = new Vector3((HouseDims.CabinMin.x + HouseDims.CabinMax.x) * 0.5f, 1.9f, -10f);
+            HousePreview.Render("Logs/house_preview_kabin.png", null, cabinCamera, 1920, 1080);
 
             // Intro: giriş kapısı açık ve portmanto ayakta; sonra portmanto devrilmiş (sahne kaydedildikten sonra)
             var mutfak = HouseLayout.Room("mutfak");
@@ -706,9 +709,11 @@ namespace Deprem.HouseBuilder
             signGo.transform.SetParent(go.transform, false);
             signGo.transform.position = new Vector3((min.x + max.x) * 0.5f, min.y + 1.61f, min.z - 0.005f);
             var sign = signGo.AddComponent<TextMesh>();
-            var signFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/Art/Fonts/PixelifySans.ttf");
+            // Play testi 33: B'si G gibi okunmayan Pixelify türevi (Tools/bubble_font.py)
+            var signFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/Art/Fonts/DepremMenu-Regular.ttf");
             sign.font = signFont != null ? signFont : Deprem.UI.UiBuilder.DefaultFont;
-            signGo.GetComponent<MeshRenderer>().sharedMaterial = sign.font.material;
+            signGo.GetComponent<MeshRenderer>().sharedMaterial = SignMaterial(sign.font);
+            signGo.AddComponent<Deprem.Visual.WorldTextAtlas>(); // atlas değişince doku her çizimde yeniden bağlanır
             sign.text = "DEPREM KABİNİ";
             sign.fontSize = 64;
             sign.characterSize = 0.018f;
@@ -727,6 +732,28 @@ namespace Deprem.HouseBuilder
             beacon.enabled = false;
 
             go.AddComponent<Deprem.Family.CabinBeacon>().Configure(sign, beacon, renderer, 0);
+        }
+
+        /// <summary>
+        /// Tabela yazısı derinliğe bakan shader'la (Deprem/WorldText). Play testi: fontun kendi materyali her şeyin
+        /// üstüne çizildiği için tabela önünden geçen karakterin üstünde görünüyordu.
+        /// </summary>
+        private static Material SignMaterial(Font font)
+        {
+            string path = $"{MaterialFolder}/tabela_yazi.mat";
+            var shader = Shader.Find("Deprem/WorldText");
+            if (shader == null) return font.material;
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            mat.mainTexture = font.material.mainTexture; // CabinBeacon oyunda atlas yenilenince yeniden bağlar
+            mat.color = Color.white;
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         /// <summary>
@@ -1120,7 +1147,8 @@ namespace Deprem.HouseBuilder
         {
             var lamps = new List<Light>();
             var emergency = new List<Light>();
-            var fixtures = new List<Renderer>();
+            var fixtures = new List<Renderer>(); // eski düz kutu lamba; avize gelince boş (HouseLights uyumu için)
+            var pendants = new List<Transform>();
             var fixtureOn = GetMaterial("tavan_lambasi", "Assets/Art/Decor/tavan_lambasi.png", new Color(1f, 0.92f, 0.75f));
             fixtureOn.EnableKeyword("_EMISSION");
             fixtureOn.SetColor("_EmissionColor", new Color(1f, 0.85f, 0.6f) * 2f);
@@ -1169,14 +1197,15 @@ namespace Deprem.HouseBuilder
                     go.transform.SetParent(parent, false);
                     // Tavanın ortasında; kameraya bakan yüzleri önden gelen dolgu ışığı aydınlatır
                     var center = new Vector3(room.X0 + span * (i + 0.5f), room.CeilingY, room.Depth * 0.5f);
-                    go.transform.position = center + Vector3.down * 0.35f;
-                    var light = go.AddComponent<Light>();
-                    light.type = LightType.Point;
-                    light.color = new Color(1f, 0.85f, 0.65f);
-                    light.intensity = 4f;
-                    light.range = Mathf.Max(span, room.Depth) * 1.3f;
-                    light.shadows = LightShadows.Soft;
-                    lamps.Add(light);
+                    go.transform.position = center;
+                    // Mehmet'in isteği: düz kutu yerine tavandan sarkan avize; ışık ampulün içinde (nokta + yere spot)
+                    // Koridor, sahanlık ve oyuncunun odasında açık renk abajur (Mehmet'in isteği), diğerlerinde bordo
+                    bool lightShade = room.Key == "koridor" || room.Key == "sahanlik" || room.Key == "oyuncu";
+                    var lamp = CeilingLamp.Build(go.transform, center, new Color(1f, 0.85f, 0.65f), 3.4f,
+                        Mathf.Max(span, room.Depth) * 1.3f, 3f, room.Height, lightShade);
+                    lamps.Add(lamp.Point);
+                    lamps.Add(lamp.Spot);
+                    pendants.Add(lamp.Pendant);
 
                     // Yansıma ışığı: tavan lambası arka duvara zayıf ulaşır (mesafenin karesiyle söner). Gerçekte duvarı
                     // tavandan ve zeminden seken ışık aydınlatır; bunu arka duvarın önünde gölgesiz, zayıf bir ışıkla
@@ -1192,13 +1221,6 @@ namespace Deprem.HouseBuilder
                     bounceLight.range = Mathf.Max(span, room.Height) * 1.5f;
                     bounceLight.shadows = LightShadows.None;
                     lamps.Add(bounceLight);
-
-                    // Tavandaki lamba gövdesi (ışığın kendi gölgesine girmesin diye gölge vermez)
-                    var fixtureMin = center + new Vector3(-0.2f, -0.12f, -0.2f);
-                    var fixture = AddDecorBox(go.transform, "Fixture", fixtureMin, fixtureMin + new Vector3(0.4f, 0.12f, 0.4f), fixtureOn);
-                    var fixtureRenderer = fixture.GetComponent<MeshRenderer>();
-                    fixtureRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                    fixtures.Add(fixtureRenderer);
                 }
             }
             // Önden zayıf dolgu ışığı: lambalar tavanın ortasındayken karakterlerin ve eşyaların kameraya bakan
@@ -1213,8 +1235,9 @@ namespace Deprem.HouseBuilder
             fillLight.intensity = 0.3f;
             fillLight.shadows = LightShadows.None;
 
-            parent.gameObject.AddComponent<Deprem.Quake.HouseLights>()
-                .Configure(lamps.ToArray(), emergency.ToArray(), fixtures.ToArray(), fixtureOn, fixtureOff, fillLight);
+            var houseLights = parent.gameObject.AddComponent<Deprem.Quake.HouseLights>();
+            houseLights.Configure(lamps.ToArray(), emergency.ToArray(), fixtures.ToArray(), fixtureOn, fixtureOff, fillLight);
+            houseLights.ConfigurePendants(pendants.ToArray());
         }
 
         private static void BuildMarkers(Transform parent)

@@ -120,6 +120,7 @@ namespace Deprem.Family
         private PlayerController player;
         private bool registered;
         private GameObject rock;
+        private bool hiddenByCover;
 
         public static FamilyMember Find(FamilyMemberId memberId)
         {
@@ -154,6 +155,22 @@ namespace Deprem.Family
         private void Start()
         {
             PlaceAtHome();
+        }
+
+        /// <summary>
+        /// Play testi 33: oyuncu odaya girmeden (oda siyah örtülüyken) yerde yatan baba ve üstündeki taş görünüyordu.
+        /// Devrik eşyanın önüne çekilen üye ve kameraya doğru duran taş, örtünün önüne taşıyor. Odası örtülüyken
+        /// üyenin bütün görselleri (taş dahil) çizilmez; konuşma balonu ekranda kalır. Ana menüde (faz yok) dokunulmaz.
+        /// </summary>
+        private void HideInCoveredRoom()
+        {
+            var visibility = Deprem.Visual.RoomVisibility.Instance;
+            bool hide = visibility != null && GameState.Phase != GamePhase.None &&
+                        !visibility.IsVisibleAt(transform.position + Vector3.up * 0.3f);
+            if (!hide && !hiddenByCover) return;
+            hiddenByCover = hide;
+            // Gizliyken her kare: sonradan eklenen taş da gizlensin
+            foreach (var r in GetComponentsInChildren<Renderer>(true)) r.forceRenderingOff = hide;
         }
 
         /// <summary>OnEnable'da çağrılır; edit mode testleri için ayrıca çağrılabilir.</summary>
@@ -380,6 +397,9 @@ namespace Deprem.Family
                 : "bubble.family_missing." + missing.ToString().ToLowerInvariant();
             var bubble = player.GetComponent<SpeechBubble>();
             if (bubble != null) bubble.Say(key, failDelay);
+            // Play testi 33: ölü anne / kardeş görülünce ses yoktu (kayıp vurgusu daha önce "bulundu" olarak çalmış
+            // olabiliyor); ölüyü görünce her zaman üzücü ezgi
+            if (hit) Deprem.Audio.Sfx.Play("family.grief");
             StartCoroutine(Reveal());
         }
 
@@ -621,8 +641,9 @@ namespace Deprem.Family
 
         private void LateUpdate()
         {
+            HideInCoveredRoom();
             if (glow != null)
-                glow.enabled = GameState.Phase == GamePhase.Rescue && State != FamilyState.InCabin && !Hidden;
+                glow.enabled = GameState.Phase == GamePhase.Rescue && State != FamilyState.InCabin && !Hidden && !hiddenByCover;
             if (visual == null) return;
             // Saklanan kardeş görünmez; bulununca ortaya çıkar (kabindeyken EnterCabin gizler)
             if (State != FamilyState.InCabin && visual.gameObject.activeSelf == Hidden) visual.gameObject.SetActive(!Hidden);

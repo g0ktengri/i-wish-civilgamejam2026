@@ -129,7 +129,7 @@ MonoBehaviour:
   hintDelay: 1.5
   rewindCharsPerSecond: 90
   fadeFromBlack: 0.8
-  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
+  font: {fileID: 12800000, guid: fe6e9a1a608442048447a08d3a44112b, type: 3}
   headFontSize: 96
   wishFontSize: 54
   infoFontSize: 23
@@ -270,7 +270,7 @@ MonoBehaviour:
   successFlashSeconds: 0.18
   successSeconds: 0.6
   stampColor: {r: 0.56, g: 0.92, b: 0.5, a: 1}
-  stampAngle: -8
+  stampAngle: 0
   stampPopSeconds: 0.14
   screwTurnsPerScrew: 1.5
   screwMaxTurnsPerSecond: 0
@@ -451,7 +451,7 @@ MonoBehaviour:
   turnDelay: 0.45
   closingDelay: 0.9
   maxLines: 7
-  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
+  font: {fileID: 12800000, guid: fe6e9a1a608442048447a08d3a44112b, type: 3}
   lineFontSize: 20
   closingFontSize: 30
   subFontSize: 22
@@ -474,7 +474,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0335018a73c2c24581ab42f869573bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.PauseMenu
-  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
+  font: {fileID: 12800000, guid: fe6e9a1a608442048447a08d3a44112b, type: 3}
   titleFontSize: 40
   itemFontSize: 20
   rowHeight: 34
@@ -493,7 +493,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10f5eeb71827896438498e57a9c168bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.SettingsMenu
-  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
+  font: {fileID: 12800000, guid: fe6e9a1a608442048447a08d3a44112b, type: 3}
   titleFontSize: 34
   itemFontSize: 19
   bodyFontSize: 17
@@ -514,7 +514,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3feddf75af91414bb4275f5fcd2e6db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.UI.MainMenu
-  font: {fileID: 12800000, guid: 025e8a1173aa3424aa8b3bde5a03c66f, type: 3}
+  font: {fileID: 12800000, guid: fe6e9a1a608442048447a08d3a44112b, type: 3}
   titleFontSize: 72
   subtitleFontSize: 16
   itemFontSize: 24
@@ -536,6 +536,9 @@ MonoBehaviour:
   teamLogo: {fileID: 21300000, guid: 05864002f44128747aa651804af71593, type: 3}
   teamLogoHeight: 56
   teamLogoAlpha: 0.45
+  headphonesSprite: {fileID: 21300000, guid: c0e41a5072fb9474d982a4a0c6d474e8, type: 3}
+  headphonesWavesSprite: {fileID: 21300000, guid: 65662043e9234b045a27f4e78b4647a6, type: 3}
+  headphonesWavePulse: 3
 --- !u!114 &994702159011302593
 MonoBehaviour:
   m_ObjectHideFlags: 0

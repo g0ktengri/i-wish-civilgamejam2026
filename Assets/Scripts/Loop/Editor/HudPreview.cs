@@ -158,7 +158,7 @@ namespace Deprem.Loop.EditorTools
                         var stamp = Get<RectTransform>(host, "stamp");
                         Get<Text>(host, "stampText").text = Deprem.Localization.Texts.Get("minigame.stamp.secured");
                         stamp.gameObject.SetActive(true);
-                        stamp.localRotation = Quaternion.Euler(0f, 0f, -8f);
+                        stamp.localRotation = Quaternion.Euler(0f, 0f, Get<float>(host, "stampAngle"));
                         Get<CanvasGroup>(host, "stampGroup").alpha = 1f;
                     }
                     // Önizlemede ana kamera yok: bulanık oda görüntüsünü ev önizlemesinden taklit et
@@ -228,6 +228,8 @@ namespace Deprem.Loop.EditorTools
                 {
                     var menu = root.AddComponent<MainMenu>();
                     typeof(MainMenu).GetField("teamLogo", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/takim_logo.png"));
+                    typeof(MainMenu).GetField("headphonesSprite", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/kulaklik.png"));
+                    typeof(MainMenu).GetField("headphonesWavesSprite", Flags).SetValue(menu, AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/kulaklik_dalga.png"));
                     Call(menu, "Awake");
                     var screens = typeof(MainMenu).GetNestedType("Screen", BindingFlags.NonPublic);
                     Call(menu, "Show", System.Enum.Parse(screens, screen));
