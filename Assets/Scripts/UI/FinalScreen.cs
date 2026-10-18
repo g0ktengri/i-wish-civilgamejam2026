@@ -69,6 +69,8 @@ namespace Deprem.UI
         [SerializeField] float memorialLineHeight = 30f;
         [Tooltip("Sarı yazılan satır: oyun 6 Şubat 2023 depremiyle ilgili (Mehmet'in isteği)")]
         [SerializeField] string memorialHighlightKey = "memorial.16";
+        [Tooltip("Mehmet: kapanış (AFAD satırı) çıktıktan bu kadar sonra stüdyo logosu kendiliğinden gelir (sn)")]
+        [SerializeField] float studioLogoDelay = 4.5f;
         [Tooltip("Outrodan sonra ortadaki kapanış cümlesinin en büyük boyu (sığmazsa küçülür)")]
         [SerializeField] int centeredClosingFontSize = 40;
         [SerializeField] int centeredSubFontSize = 30;
@@ -286,8 +288,7 @@ namespace Deprem.UI
         void Update()
         {
             if (!canLeave || !UiInput.ConfirmOrClick()) return;
-            canLeave = false;
-            if (LoopManager.Instance) LoopManager.Instance.ReturnToMenu();
+            Leave();
         }
 
         IEnumerator Play()
@@ -339,6 +340,16 @@ namespace Deprem.UI
             yield return FadeText(siteText, new Color(creamColor.r, creamColor.g, creamColor.b, 0.6f), 0.5f);
             hintText.text = Texts.Get("prompt.main_menu");
             canLeave = true;
+            // Mehmet: tuşa basılmasa da bir süre sonra stüdyo logosu gelir, sonra ana menü
+            yield return new WaitForSecondsRealtime(studioLogoDelay);
+            if (canLeave) Leave();
+        }
+
+        // Mehmet: ana menüye dönmeden önce stüdyo logosu (Alter Ego Interactive); ekran siyahken menü yüklenir
+        void Leave()
+        {
+            canLeave = false;
+            Visual.StudioLogo.Play(() => { if (LoopManager.Instance) LoopManager.Instance.ReturnToMenu(); });
         }
 
         // Satır titrer, üstünden çatlak geçer (krem), yazı kırılıp söner; sonra öğüt vurgu renginde büyüyerek gelir

@@ -1864,6 +1864,7 @@ Başta yazdığım görev listesi (artık yapıldı):
 - **4. Build:** daha alınmadı; teslimden önce `Tools/Deprem/Windows build'i al` ile alınıp baştan sona bir kez oynanacak.
 
 **Mehmet → Berke (senin dosyanda değişiklik):** `Spirit/SpiritPhase.Update`: ruh sayacı artık minigame paneli açıkken de durur (`MinigameHost.AnyOpen`, başarı beklemesi dahil); öğreticide zaten duruyordu. Jüri sürümünde minigame süresi ruh süresinden yemesin diye.
+- **Stüdyo logosu (Alter Ego Interactive), oyunun en sonu:** kapanış (AFAD satırı) çıktıktan `studioLogoDelay` = 4,5 sn sonra kendiliğinden (ya da tuşa basınca) `FinalScreen.Leave()` → `Visual.StudioLogo.Play(...)`: ekran kararır, siyahta sadece logo sade fade in / fade out (~6 sn, tuşla geçilir, yazı yok), müzik söner, ekran siyahken ana menüye dönülür. Görsel ekibin orijinal yüksek çözünürlüklü logosu (1225x1479, şekli birebir, siyahta görünsün diye menüdeki gibi krem): `Resources/StudioLogo/alter_ego_logo.png`. Deneme: Ctrl+Shift+L.
 - Ruh süresi de jüri tekrar etmesin diye uzatıldı (kod varsayılanı ve `BerkeSystems.prefab`): 35 → 50 sn, kayıp başına 3 → 10 sn, üst sınır 45 → 80 sn.
 
 **Geliştirici kısayolları ve kayıt build'i (bilgi için):**

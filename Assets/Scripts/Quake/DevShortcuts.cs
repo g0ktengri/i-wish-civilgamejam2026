@@ -11,6 +11,7 @@ namespace Deprem.Quake
     /// development build'de ya da build "-dev" ile açılınca (Build/Keske/Kayit_icin_ac.bat); oyuncuda yok.
     ///   Ctrl+Shift+1..5  o döngüden başla (1: intro ve raf, 3: çök-kapan, 4: ruh fazı)
     ///   Ctrl+Shift+O     oyunu kazanılmış say, outro başlasın
+    ///   Ctrl+Shift+L     stüdyo logosunu oynat (outrodan menüye dönüşteki)
     ///   Ctrl+Shift+H     HUD'u gizle / göster (ipucu, hedef, çanta, sayaçlar; balonlar ve ekranlar kalır)
     ///   Ctrl+Shift+G     hızlı sar (4x) aç / kapat
     /// </summary>
@@ -65,6 +66,7 @@ namespace Deprem.Quake
             }
 
             if (keyboard.oKey.wasPressedThisFrame) StartOutro();
+            if (keyboard.lKey.wasPressedThisFrame) Visual.StudioLogo.Play(null);
             if (keyboard.hKey.wasPressedThisFrame)
             {
                 hudHidden = !hudHidden;
