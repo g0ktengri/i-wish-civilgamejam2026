@@ -156,9 +156,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec33bfa992b1d5740ae086db755ca236, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Spirit.SpiritPhase
-  duration: 35
-  durationPerLoss: 3
-  maxDuration: 45
+  duration: 50
+  durationPerLoss: 10
+  maxDuration: 80
   spawnPoint: {fileID: 0}
   spawnMarkerName: Marker_PlayerBed
   spawnOffset: {x: 0, y: 0.1, z: 0}

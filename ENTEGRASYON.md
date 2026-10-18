@@ -1863,6 +1863,9 @@ Başta yazdığım görev listesi (artık yapıldı):
   - **Sadece keşke ekranı (`WishScreen`):** isteyen hızlı geçebilir. Yazı sürerken Boşluk ya da başka bir tuş (Esc hariç) bütün ekranı bitmiş haline getiriyor (kalan yazılar, beklemeler, çatlak `rushPace` = 40 kat hızlı); ipucu çıkınca ikinci tuş devam ediyor.
 - **4. Build:** daha alınmadı; teslimden önce `Tools/Deprem/Windows build'i al` ile alınıp baştan sona bir kez oynanacak.
 
+**Mehmet → Berke (senin dosyanda değişiklik):** `Spirit/SpiritPhase.Update`: ruh sayacı artık minigame paneli açıkken de durur (`MinigameHost.AnyOpen`, başarı beklemesi dahil); öğreticide zaten duruyordu. Jüri sürümünde minigame süresi ruh süresinden yemesin diye.
+- Ruh süresi de jüri tekrar etmesin diye uzatıldı (kod varsayılanı ve `BerkeSystems.prefab`): 35 → 50 sn, kayıp başına 3 → 10 sn, üst sınır 45 → 80 sn.
+
 **Geliştirici kısayolları ve kayıt build'i (bilgi için):**
 
 - `Quake/DevShortcuts`: Ctrl+Shift+1..5 döngü, O outro, H HUD gizle, G 4x hızlı sar.

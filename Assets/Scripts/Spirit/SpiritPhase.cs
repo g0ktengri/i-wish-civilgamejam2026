@@ -7,18 +7,20 @@ namespace Deprem.Spirit
     // M49 (Mehmet'in play testi 26: ruh birden beliriyordu): ruh yatan bedenin içinden saydamdan görünüre geçerek,
     // küçükten büyüyüp hafifçe dalgalanarak yükselir; beden kısa bir an soğuk ışıkla parlar. Bu sırada oyuncu
     // kontrol edemez, sayaç ve konuşma çıkış bitince başlar. Ses: spirit.rise (ses bankasında yoksa sessiz).
-    // Süre minigame sırasında da akar. Süre bitince ruh yatakta yatan bedene uçar, küçülüp solar (M31), sonra ana
+    // Süre minigame paneli açıkken ve öğretici sürerken durur. Süre bitince ruh yatakta yatan bedene uçar, küçülüp solar (M31), sonra ana
     // depreme geçilir (beden yataktan kalkma animasyonuyla kalkar; Mehmet).
     // Ruh objesini kendisi kurar; sahnede tek bir objede durması yeter.
     public class SpiritPhase : MonoBehaviour
     {
         [Header("Süre")]
         [Tooltip("M55 (Mehmet'in play testi 28): ilk ruh çıkışının süresi (sn); her kayıpta artar")]
-        [SerializeField] float duration = 35f; // M63: 35 → 50; jüri temposu: 50 → 35
+        // Mehmet (jüri sürümü): minigame'de sayaç artık durduğu için süre sadece dolaşmaya gidiyor; jüri tekrar
+        // etmesin diye kısaltmak yerine uzatıldı.
+        [SerializeField] float duration = 50f; // M63: 35 → 50; jüri temposu: 50 → 35; Mehmet: 35 → 50
         [Tooltip("Her kayıpta (GameState.FailedAttempts) eklenen süre (sn)")]
-        [SerializeField] float durationPerLoss = 3f; // jüri temposu: 5 → 3
+        [SerializeField] float durationPerLoss = 10f; // jüri temposu: 5 → 3; Mehmet: 3 → 10
         [Tooltip("Sürenin üst sınırı (sn)")]
-        [SerializeField] float maxDuration = 45f; // M63: 60 → 75; jüri temposu: 75 → 45
+        [SerializeField] float maxDuration = 80f; // M63: 60 → 75; jüri temposu: 75 → 45; Mehmet: 45 → 80
 
         [Header("Çıkış noktası")]
         [Tooltip("Boşsa aşağıdaki isimdeki işaret noktası aranır")]
@@ -89,7 +91,8 @@ namespace Deprem.Spirit
         void Update()
         {
             if (!running) return;
-            if (Minigames.MinigameHost.TutorialActive) return; // M61: minigame öğreticisi sürerken sayaç durur
+            // M61: minigame öğreticisi sürerken sayaç durur. Mehmet (jüri sürümü): minigame paneli açıkken de durur.
+            if (Minigames.MinigameHost.TutorialActive || Minigames.MinigameHost.AnyOpen) return;
 
             remaining = Mathf.Max(0f, remaining - Time.deltaTime);
             TimeLeft = remaining;
