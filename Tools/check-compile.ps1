@@ -1,5 +1,5 @@
 # Unity projesini batchmode'da acip C# derleme hatasi olup olmadigini kontrol eder.
-# Push etmeden once calistirin (CLAUDE.md: "Sadece derlenen kodu push et").
+# Push etmeden once calistirin (ekip kurali: sadece derlenen kodu push et).
 #
 # Kullanim:  powershell -ExecutionPolicy Bypass -File Tools\check-compile.ps1
 # Cikis kodu: 0 = hata yok, 1 = derleme hatasi, 2 = calistirilamadi

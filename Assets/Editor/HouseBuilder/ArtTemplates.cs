@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Deprem.HouseBuilder
 {
     /// <summary>
-    /// Sanatçılar için boş, kılavuz çizgili şablon PNG'ler (GDD: "Claude her asset için doğru boyutta şablon üretebilir").
+    /// Sanatçılar için boş, kılavuz çizgili şablon PNG'ler (GDD: her asset için doğru boyutta şablon).
     /// Boyutlar ev üreticinin ölçülerinden gelir; ev değişince yeniden üretilir. Çıktı: proje kökünde Sablonlar/
     /// (Unity'nin dışında). Klasör düzeni Assets/Art ile aynı; çizilen dosya aynı yolla Assets/Art altına konur.
     /// </summary>
