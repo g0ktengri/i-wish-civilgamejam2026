@@ -604,10 +604,24 @@ namespace Deprem.Family
         public void SetFollowPosition(Vector3 position)
         {
             float dx = position.x - transform.position.x;
-            // Play testi 29: izdeki küçük geri adımlarda bir anlık ters dönme olmasın
-            if (Mathf.Abs(dx) > 0.01f) Facing = dx > 0f ? 1 : -1;
+            // Play testi 29: izdeki küçük geri adımlarda bir anlık ters dönme olmasın. Mehmet: merdivende (oyuncu fizik
+            // adımlarıyla taşınır, iz titrer) kardeş ters dönüp geri geri yürüyordu; artık ters yönde turnDistance kadar
+            // yol almadan dönmez.
+            if (Mathf.Abs(dx) > 0.0001f)
+            {
+                if ((dx > 0f ? 1 : -1) == Facing) reverseTravel = 0f;
+                else if ((reverseTravel += Mathf.Abs(dx)) >= turnDistance)
+                {
+                    Facing = -Facing;
+                    reverseTravel = 0f;
+                }
+            }
             transform.position = position;
         }
+
+        [Tooltip("Takipte yön değiştirmek için ters yönde alınması gereken yol (m)")]
+        [SerializeField] private float turnDistance = 0.12f;
+        private float reverseTravel;
 
         /// <summary>Kabine vardı ama kanaması başladı ve ilk yardım yok: girişin yanında yığılır, seslenir</summary>
         public void CollapseAtCabin(Vector3 position)

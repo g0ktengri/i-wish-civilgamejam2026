@@ -1865,6 +1865,8 @@ Başta yazdığım görev listesi (artık yapıldı):
 
 **Mehmet → Berke (senin dosyanda değişiklik):** `Spirit/SpiritPhase.Update`: ruh sayacı artık minigame paneli açıkken de durur (`MinigameHost.AnyOpen`, başarı beklemesi dahil); öğreticide zaten duruyordu. Jüri sürümünde minigame süresi ruh süresinden yemesin diye.
 - **Stüdyo logosu (Alter Ego Interactive), oyunun en sonu:** kapanış (AFAD satırı) çıktıktan `studioLogoDelay` = 4,5 sn sonra kendiliğinden (ya da tuşa basınca) `FinalScreen.Leave()` → `Visual.StudioLogo.Play(...)`: ekran kararır, siyahta sadece logo sade fade in / fade out (~6 sn, tuşla geçilir, yazı yok), müzik söner, ekran siyahken ana menüye dönülür. Görsel ekibin orijinal yüksek çözünürlüklü logosu (1225x1479, şekli birebir, siyahta görünsün diye menüdeki gibi krem): `Resources/StudioLogo/alter_ego_logo.png`. Deneme: Ctrl+Shift+L.
+- **Ruh fazı erken biter (`SpiritPhase.Update`, `BagSystem.AllSuppliesCollected`):** kırmızı (önemli, `SpiritHighlighter.IsImportant`) eşyaların hepsi sabitlendi, evde alınabilen malzemelerin hepsi çantada ve elde malzeme yoksa ruh "Tamam, ev hazır. Bedenime dönüyorum!" (`spirit.all_done`) der, `earlyReturnDelay` = 1,8 sn sonra bedene döner; süre boşuna beklenmez.
+- **Ayarlar → Çözünürlük (`SettingsMenu`):** sağ / sol yerine F / tıkla liste açılır (büyükten küçüğe, en az 1024 genişlik, en çok 10 satır, şu anki "Seçili"); seçince uygulanır, Esc geri. Yeni metinler: `settings.resolution_title`, `settings.resolution_option`, `settings.resolution_current`.
 - Ruh süresi de jüri tekrar etmesin diye uzatıldı (kod varsayılanı ve `BerkeSystems.prefab`): 35 → 50 sn, kayıp başına 3 → 10 sn, üst sınır 45 → 80 sn.
 
 **Geliştirici kısayolları ve kayıt build'i (bilgi için):**

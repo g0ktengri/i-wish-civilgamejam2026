@@ -65,6 +65,9 @@ namespace Deprem.UI
         [SerializeField] Color backgroundColor = new Color(0.01f, 0.02f, 0.05f, 0.8f);
         [Tooltip("Ana menünün ve duraklatmanın üstünde")]
         [SerializeField] int sortingOrder = 125;
+        [Header("Çözünürlük listesi (Mehmet)")]
+        [SerializeField] int minResolutionWidth = 1024;
+        [SerializeField] int maxResolutionRows = 10;
 
         public static SettingsMenu Instance { get; private set; }
         public static bool IsOpen => Instance && Instance.open;
@@ -80,6 +83,7 @@ namespace Deprem.UI
         MenuList menu;
         bool open;
         bool showingControls;
+        bool showingResolutions;
         bool controlsOnly;
         string listening;
         int listenFrame;
@@ -125,6 +129,7 @@ namespace Deprem.UI
             onClose = closed;
             open = true;
             showingControls = false;
+            showingResolutions = false;
             controlsOnly = false;
             listening = null;
             group.alpha = 1f;
@@ -178,7 +183,12 @@ namespace Deprem.UI
 
         void LeaveControls()
         {
-            if (showingControls && !controlsOnly)
+            if (showingResolutions)
+            {
+                showingResolutions = false;
+                Rebuild();
+            }
+            else if (showingControls && !controlsOnly)
             {
                 showingControls = false;
                 Rebuild();
@@ -239,6 +249,24 @@ namespace Deprem.UI
         void Rebuild()
         {
             menu.Clear();
+            if (showingResolutions)
+            {
+                // Büyükten küçüğe; şu anki çözünürlüğün sağında "Seçili"
+                foreach (var size in ResolutionChoices())
+                {
+                    var choice = size;
+                    menu.AddValue("settings.resolution_option", () => new object[]
+                    {
+                        choice.x, choice.y,
+                        choice.x == Screen.width && choice.y == Screen.height ? Texts.Get("settings.resolution_current") : string.Empty,
+                    }, () => ApplyResolution(choice));
+                    menu.SetIcon(UiIcons.Screen);
+                }
+                menu.Add("menu.back", LeaveControls);
+                menu.SetIcon(UiIcons.Back);
+                Refresh();
+                return;
+            }
             if (showingControls)
             {
                 foreach (var (action, key) in Bindings)
@@ -270,7 +298,8 @@ namespace Deprem.UI
             menu.AddAdjustable("settings.fullscreen", () => new object[] { Texts.Get(Screen.fullScreen ? "settings.on" : "settings.off") },
                 _ => Screen.fullScreen = !Screen.fullScreen);
             menu.SetIcon(UiIcons.Screen);
-            menu.AddAdjustable("settings.resolution", () => new object[] { ResolutionLabel() }, StepResolution);
+            // Mehmet: sağ / sol yerine F / tık ile liste açılır, oyuncu çözünürlüğü doğrudan seçer
+            menu.AddValue("settings.resolution", () => new object[] { ResolutionLabel() }, () => { showingResolutions = true; Rebuild(); });
             menu.SetIcon(UiIcons.Screen);
             menu.AddAdjustable("menu.language", () => null, _ => Texts.ToggleLanguage());
             menu.SetIcon(UiIcons.Globe);
@@ -300,26 +329,42 @@ namespace Deprem.UI
 
         string ResolutionLabel() => $"{Screen.width} x {Screen.height}";
 
-        void StepResolution(int direction)
+        // Mehmet: listede gösterilenler (ekrana sığsın): en az minResolutionWidth genişlikte, büyükten küçüğe, en çok
+        // maxResolutionRows; şu anki çözünürlük her zaman listede
+        List<Vector2Int> ResolutionChoices()
         {
-            var list = Resolutions();
-            int current = list.FindIndex(r => r.x == Screen.width && r.y == Screen.height);
-            if (current < 0) current = list.Count - 1;
-            var next = list[(current + (direction < 0 ? -1 : 1) + list.Count) % list.Count];
-            Screen.SetResolution(next.x, next.y, Screen.fullScreenMode);
+            var all = Resolutions();
+            var list = all.Where(r => r.x >= minResolutionWidth).OrderByDescending(r => r.x * r.y).Take(maxResolutionRows).ToList();
+            if (list.Count == 0) list = all.OrderByDescending(r => r.x * r.y).Take(maxResolutionRows).ToList();
+            var current = new Vector2Int(Screen.width, Screen.height);
+            if (!list.Contains(current))
+            {
+                if (list.Count >= maxResolutionRows) list.RemoveAt(list.Count - 1);
+                list.Add(current);
+                list = list.OrderByDescending(r => r.x * r.y).ToList();
+            }
+            return list;
+        }
+
+        void ApplyResolution(Vector2Int size)
+        {
+            Screen.SetResolution(size.x, size.y, Screen.fullScreenMode);
+            showingResolutions = false;
+            Rebuild();
         }
 
         void Refresh()
         {
             if (!titleText) return;
-            titleText.Text = Texts.Get(showingControls ? "menu.controls" : "menu.settings");
+            titleText.Text = Texts.Get(showingResolutions ? "settings.resolution_title" : showingControls ? "menu.controls" : "menu.settings");
             bodyText.text = string.Empty;
             bodyPanel.gameObject.SetActive(false);
             if (listening != null) footer.Set(Texts.Get("menu.hint.cancel"));
+            else if (showingResolutions) footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.confirm"), Texts.Get("menu.hint.back"));
             else if (showingControls) footer.Set(Texts.Get("menu.hint.select"), Texts.Get("controls.hint.change"), Texts.Get("menu.hint.back"));
             else footer.Set(Texts.Get("menu.hint.select"), Texts.Get("menu.hint.change"), Texts.Get("menu.hint.back"));
-            // Tuş listesi 11 satır: daha yukarıdan başlar
-            UiBuilder.Stretch(items, new Vector2(0.22f, 0.1f), new Vector2(0.78f, showingControls ? 0.82f : 0.78f));
+            // Tuş listesi 11 satır, çözünürlük listesi de uzun: daha yukarıdan başlar
+            UiBuilder.Stretch(items, new Vector2(0.22f, 0.1f), new Vector2(0.78f, showingControls || showingResolutions ? 0.82f : 0.78f));
             menu.Refresh();
         }
 

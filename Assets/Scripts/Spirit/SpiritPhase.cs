@@ -22,6 +22,9 @@ namespace Deprem.Spirit
         [Tooltip("Sürenin üst sınırı (sn)")]
         [SerializeField] float maxDuration = 80f; // M63: 60 → 75; jüri temposu: 75 → 45; Mehmet: 45 → 80
 
+        [Tooltip("Mehmet: her şey bitince (kırmızı eşyalar ve malzemeler) ruh bu kadar sonra bedene döner (sn)")]
+        [SerializeField] float earlyReturnDelay = 1.8f;
+
         [Header("Çıkış noktası")]
         [Tooltip("Boşsa aşağıdaki isimdeki işaret noktası aranır")]
         [SerializeField] Transform spawnPoint;
@@ -66,6 +69,8 @@ namespace Deprem.Spirit
         SpiritController spirit;
         float remaining;
         bool running;
+        bool allDoneSaid;
+        float allDoneTimer;
         Coroutine returning;
         Coroutine emerging;
         Light bodyGlow;
@@ -98,8 +103,31 @@ namespace Deprem.Spirit
             TimeLeft = remaining;
             GameEvents.RaiseSpiritTimeChanged(remaining);
 
+            // Mehmet: kırmızı (önemli) eşyaların hepsi sabitlendi ve malzemelerin hepsi çantada: süre boşuna beklenmez,
+            // ruh kısa bir cümleden sonra bedene döner
+            if (returning == null && remaining > 0f && AllDone())
+            {
+                if (!allDoneSaid)
+                {
+                    allDoneSaid = true;
+                    var bubble = spirit.GetComponent<SpiritBubble>();
+                    if (bubble) bubble.Say(("spirit.all_done", earlyReturnDelay + 0.5f));
+                }
+                allDoneTimer += Time.deltaTime;
+                if (allDoneTimer >= earlyReturnDelay) returning = StartCoroutine(ReturnToBody());
+            }
+
             // Süre bitti: ruh bedene döner, sonra faz değişir (HandlePhaseChanged ruhu kapatır)
             if (remaining <= 0f && returning == null) returning = StartCoroutine(ReturnToBody());
+        }
+
+        static bool AllDone()
+        {
+            foreach (var item in SecurableItem.All)
+                if (item && !item.IsSecured && SpiritHighlighter.IsImportant(item.Id)) return false;
+            if (Bag.BagSystem.Carrying != BagItemId.None) return false;
+            var bag = Bag.BagSystem.Instance;
+            return !bag || bag.AllSuppliesCollected();
         }
 
         void HandlePhaseChanged(GamePhase phase)
@@ -166,6 +194,8 @@ namespace Deprem.Spirit
             float seconds = Mathf.Min(maxDuration, duration + durationPerLoss * losses);
             remaining = seconds;
             Duration = seconds;
+            allDoneSaid = false;
+            allDoneTimer = 0f;
 
             TimeLeft = remaining;
             running = false;

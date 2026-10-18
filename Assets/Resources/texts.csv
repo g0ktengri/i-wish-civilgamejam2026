@@ -17,6 +17,7 @@ prompt.fly,W/A/S/D: Uç,W/A/S/D: Fly
 spirit.intro_1,"Bu ne?! Ben... yatakta yatıyorum. O benim bedenim!","What?! That's me... lying in bed. That's my body!"
 spirit.intro_2,"Deprem gelmeden evi hazırlamalıyım. Çabuk ol!","I have to get the house ready before the quake hits. Hurry!"
 spirit.again,"Yine mi... Tamam. Bu sefer hata yok.","Again... Okay. No mistakes this time."
+spirit.all_done,"Tamam, ev hazır. Bedenime dönüyorum!","Okay, the house is ready. Back to my body!"
 prompt.cancel,Esc: Vazgeç,Esc: Cancel
 prompt.main_menu,F: Ana menü,F: Main menu
 prompt.pick_up,F: Al,F: Pick up
@@ -215,6 +216,9 @@ settings.effects,Efektler: < %{0} >,Effects: < {0}% >
 settings.shake,Ekran sarsıntısı: < %{0} >,Screen shake: < {0}% >
 settings.fullscreen,Tam ekran: < {0} >,Fullscreen: < {0} >
 settings.resolution,Çözünürlük: < {0} >,Resolution: < {0} >
+settings.resolution_title,Çözünürlük,Resolution
+settings.resolution_option,{0} x {1}:{2},{0} x {1}:{2}
+settings.resolution_current,Seçili,Current
 settings.on,Açık,On
 settings.off,Kapalı,Off
 

@@ -104,6 +104,15 @@ namespace Deprem.Bag
             }
         }
 
+        /// <summary>Mehmet: evde alınabilen bütün malzemeler çantada mı (ruh fazı erken biter, SpiritPhase)</summary>
+        public bool AllSuppliesCollected()
+        {
+            foreach (var def in supplies)
+                if (def.enabled && def.id != BagItemId.None && BagLessonGate.IsAvailable(def.id) && !GameState.HasBagItem(def.id))
+                    return false;
+            return true;
+        }
+
         // Taşı-yerleştir'deki çizimi ve çarpışma biçimi (MinigamePixels.CarryItem / CarrySize)
         public static string CarryKindFor(BagItemId id)
         {
