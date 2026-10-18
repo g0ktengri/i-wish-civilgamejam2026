@@ -116,6 +116,7 @@ namespace Deprem.Player
             SetFrames(so, "crouchFrames", LoadFrames("oyuncu_egilme"));
             SetFrames(so, "deathFrames", LoadFrames("oyuncu_olme")); // kendi ölümüyle kaybedince
             SetFrames(so, "getUpFrames", LoadFrames("oyuncu_kalkma")); // 6 kare, 1 yatıyor ... 6 ayakta
+            SetFrames(so, "kneelFrames", LoadFrames("oyuncu_koyma")); // Berke: taş kaldırırken diz çökme (outro kareleri)
             var flashlightFrames = LoadFrames("oyuncu_fenerle_kosma");
             SetFrames(so, "flashlightRunFrames", flashlightFrames); // kurtarma fazında fener yanarken
             // Huzme her karede fenerin ucundan çıksın: uç çizimden bulunur

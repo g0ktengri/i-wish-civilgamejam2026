@@ -286,6 +286,7 @@ namespace Deprem.Family
                 {
                     IsTreating = false;
                     treatTimer = 0f;
+                    SetKneel(false);
                 }
                 else
                 {
@@ -442,6 +443,10 @@ namespace Deprem.Family
                 // İlk yardım: F basılı tutulur (Tick sayar)
                 IsTreating = true;
                 treatTimer = 0f;
+                // Berke'nin play testi: oyuncu babaya dönüp diz çöker, taşı kaldırıyormuş gibi
+                treater = who != null ? who.GetComponent<PlayerVisual>() : null;
+                if (who != null) who.Face(transform.position.x >= who.transform.position.x ? 1 : -1);
+                SetKneel(true);
             }
             else
             {
@@ -449,9 +454,19 @@ namespace Deprem.Family
             }
         }
 
+        private PlayerVisual treater;
+
+        // Taşı kaldıran / yarayı saran oyuncunun diz çökmesi
+        private void SetKneel(bool on)
+        {
+            if (treater != null) treater.Kneeling = on;
+            if (!on) treater = null;
+        }
+
         private void Rescue()
         {
             IsTreating = false;
+            SetKneel(false); // taş kalkarken doğrulur
             if (State == FamilyState.Injured && rock != null)
             {
                 // Kaya kalkar; baba kabine kendisi yürür (FamilyDirector takibe almaz, yürütür)

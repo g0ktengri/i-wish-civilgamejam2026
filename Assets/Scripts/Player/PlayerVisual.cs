@@ -52,6 +52,10 @@ namespace Deprem.Player
         [Tooltip("Son (ayakta) karenin kökten kayması (m): ayaklar (115. satır) yerde, ayak ortası (x 78) kökte. " +
                  "Kalkarken yatan kaymadan buna geçer; bitince normal karelere sıçramadan döner")]
         [SerializeField] private Vector2 standArtOffset = new Vector2(-0.37f, -0.16f);
+        [Tooltip("Berke'nin play testi: babanın ayağındaki taşı kaldırırken (F basılı) eğilir; outrodaki gül bırakma " +
+                 "kareleri (oyuncu_koyma_N, 1 ayakta ... 5 diz çökmüş). Basılı tutarken iner, bırakınca kalkar")]
+        [SerializeField] private Texture2D[] kneelFrames;
+        [SerializeField] private float kneelFps = 12f;
         [Tooltip("Bu yatay hızın altında duruyor sayılır (m/s)")]
         [SerializeField] private float moveThreshold = 0.2f;
 
@@ -84,6 +88,10 @@ namespace Deprem.Player
         private float crouchTime;
         private float deathTime;
         private Texture2D shownTexture;
+        private float kneelBlend;
+
+        /// <summary>Açıkken eğilme kareleriyle diz çöker, kapanınca aynı karelerle kalkar (FamilyMember: taş, yara sarma)</summary>
+        public bool Kneeling { get; set; }
 
         /// <summary>Gösterilen fenerli karede fenerin ucu var mı (PlayerFlashlight huzmeyi oradan çıkarır)</summary>
         public bool HasFlashlightTip { get; private set; }
@@ -165,8 +173,17 @@ namespace Deprem.Player
                                   flashlightRunFrames.Length > 0 && !player.IsLying && !player.IsCrouching;
             int flashlightIndex = -1;
 
+            // Diz çökme: Kneeling açıkken kareler ileri, kapanınca geri oynar
+            bool hasKneelArt = kneelFrames != null && kneelFrames.Length > 0;
+            float kneelStep = hasKneelArt ? dt * kneelFps / Mathf.Max(1, kneelFrames.Length - 1) : 1f;
+            kneelBlend = Mathf.MoveTowards(kneelBlend, Kneeling && !player.IsLying ? 1f : 0f, kneelStep);
+
             Texture2D texture;
-            if (HasGetUpArt && player.IsLying)
+            if (hasKneelArt && kneelBlend > 0f && !player.IsLying)
+            {
+                texture = kneelFrames[Mathf.RoundToInt(kneelBlend * (kneelFrames.Length - 1))];
+            }
+            else if (HasGetUpArt && player.IsLying)
             {
                 int frame = player.IsGettingUp
                     ? Mathf.Min(Mathf.FloorToInt(player.GetUpProgress * getUpFrames.Length), getUpFrames.Length - 1)

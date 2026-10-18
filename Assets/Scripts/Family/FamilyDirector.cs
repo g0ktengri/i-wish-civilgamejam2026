@@ -71,12 +71,14 @@ namespace Deprem.Family
         {
             EnsureRegistered();
             GameEvents.FamilyMemberRescued += OnMemberRescued;
+            HouseDoor.RoomGuard = GuardDoor;
         }
 
         private void OnDisable()
         {
             Interactables.Unregister(cabin);
             GameEvents.FamilyMemberRescued -= OnMemberRescued;
+            if (HouseDoor.RoomGuard == (System.Func<string, string>)GuardDoor) HouseDoor.RoomGuard = null;
         }
 
         public void EnsureRegistered()
@@ -126,6 +128,22 @@ namespace Deprem.Family
         /// durur ve "önce onu kabine bırakmalıyım" der. Bekleyen (Waiting) üyelerin odaları kapalıdır; yaralı baba
         /// takip etmediği için kapsam dışı.
         /// </summary>
+        /// <summary>
+        /// Berke'nin play testi: takipçi varken arkasında bekleyen üye olan odanın kapısı açılmaz (HouseDoor.RoomGuard);
+        /// oyuncu "önce onu kabine bırakmalıyım" der. Kapı zaten açıksa GuardRooms eşikte durdurmaya devam eder.
+        /// </summary>
+        private string GuardDoor(string room)
+        {
+            if (followers.Count == 0 || GameState.Phase != GamePhase.Rescue || string.IsNullOrEmpty(room)) return null;
+            var visibility = Deprem.Visual.RoomVisibility.Instance;
+            if (visibility == null) return null;
+            foreach (var member in FamilyMember.All)
+                if (member.State == FamilyState.Waiting && !followers.Contains(member)
+                    && visibility.RoomKeyAt(member.transform.position) == room)
+                    return "bubble.drop_first." + followers[0].Id.ToString().ToLowerInvariant();
+            return null;
+        }
+
         private void GuardRooms(float dt)
         {
             dropFirstSayTimer -= dt;

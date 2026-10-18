@@ -52,6 +52,19 @@ Berke'nin oyun testinden dört hata. Her biri sahibinin sisteminde; Mehmet'in to
 - **Font:** oyun içi HUD (`PromptHud`, `ObjectiveHud`, `BagHud`, `SpiritHud`, `MinigameHost`) `DepremBalon`; menüler, ayarlar, keşke ve final ekranı Pixelify'da kaldı. `UiStyle.hudFont` / `UiBuilder.HudFont` yeni; senin çubuklar da bunu kullanabilir.
 - Önizleme: `Logs/hud_preview_rescue.png`, `_spirit.png`, `_minigame_*.png`. Dört test geçiyor.
 
+### Kapı ve taş kaldırma (Berke, senin dosyalarında)
+
+Berke'nin play testinden. Dört test geçiyor; Play'de denenmedi.
+
+- **Anne yanımızdayken kardeşin odasının kapısı açılmıyor** (kardeş yanımızdayken annenin odası da):
+  - `HouseDoor`'a `RoomGuard` (static `Func<string, string>`) eklendi. Kapı açılmadan önce arkasındaki odayı sorar; dönen balon anahtarı varsa kapı kapalı kalır ve oyuncu onu söyler.
+  - `FamilyDirector` bunu `OnEnable`'da bağlıyor (`GuardDoor`): takipçi varken arkasında bekleyen (`Waiting`) üye olan oda → `bubble.drop_first.<takipçi>` ("önce onu kabine bırakmalıyım").
+  - Player, Family'yi bilmiyor; bağ tek yönlü. Kapı zaten açıksa senin `GuardRooms`'un eşikte durdurması aynen çalışıyor.
+- **Babanın taşını kaldırırken diz çökme:**
+  - `PlayerVisual`'a `kneelFrames` (outrodaki `oyuncu_koyma_1..5`) ve `Kneeling` eklendi. Açıkken kareler ileri oynayıp diz çökmüş karede kalıyor, kapanınca geri oynayıp kalkıyor.
+  - `FamilyMember`: F basılı tutulmaya başlanınca oyuncu babaya dönüyor ve diz çöküyor. F bırakılınca ya da taş kalkınca doğruluyor. Yara sarmada da aynı.
+  - `PlayerSetup` kareleri bağlıyor; `Player.prefab` yeniden kuruldu (sadece `kneelFrames` ve `kneelFps` eklendi).
+
 ### Jüri temposu: 5 dakikada final (Berke)
 
 Jüri oyunu ~5 dk oynayacak; final (outro) görülsün diye oyun kısaldı ve kolaylaştı. Hepsi `[SerializeField]`, geri almak tek değer. Dört test geçiyor; Play'de baştan sona denenmedi.

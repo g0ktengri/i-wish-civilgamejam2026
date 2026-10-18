@@ -31,6 +31,11 @@ namespace Deprem.Player
         /// <summary>M17: oyuncunun açmaya çalıştığı ama kilitli kalan kapının eşyası (yoksa None).
         /// RescueTimer keşke cümlesinde bu eşyaya öncelik verir.</summary>
         public static ItemId BlockedByItem { get; private set; }
+
+        /// <summary>Berke'nin play testi: anne yanımızdayken kardeşin odasının kapısı hiç açılmasın (eşikte geri
+        /// itilmek yerine). Kapının arkasındaki oda anahtarını alır; açılmamalıysa oyuncunun söyleyeceği balon
+        /// anahtarını, açılabilirse null döner. FamilyDirector bağlar (Player, Family'yi bilmesin diye).</summary>
+        public static System.Func<string, string> RoomGuard { get; set; }
         public string LeftRoom => leftRoom;
         public string RightRoom => rightRoom;
 
@@ -96,6 +101,14 @@ namespace Deprem.Player
                     Deprem.Quake.QuakeDirector.RequestFatalAftershock(LoseReason.RescueTimeout, jammedBy);
                 return;
             }
+            string beyond = player.transform.position.x < transform.position.x ? rightRoom : leftRoom;
+            string guardBubble = RoomGuard?.Invoke(beyond);
+            if (!string.IsNullOrEmpty(guardBubble))
+            {
+                var bubble = player.GetComponent<SpeechBubble>();
+                if (bubble != null) bubble.Say(guardBubble, 3f);
+                return;
+            }
             Open(player.transform.position.x);
         }
 
@@ -118,6 +131,10 @@ namespace Deprem.Player
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetOnPlay() => BlockedByItem = ItemId.None;
+        private static void ResetOnPlay()
+        {
+            BlockedByItem = ItemId.None;
+            RoomGuard = null;
+        }
     }
 }

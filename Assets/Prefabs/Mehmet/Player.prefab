@@ -347,6 +347,13 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 5ce6de27048eee34a8488837f10dd4d3, type: 3}
   lyingArtOffset: {x: -0.37, y: -0.75}
   standArtOffset: {x: -0.37, y: -0.16}
+  kneelFrames:
+  - {fileID: 2800000, guid: 8c76831a0b22f1847b9d3fd60833bd80, type: 3}
+  - {fileID: 2800000, guid: 339d1eaf9ffba284680c92316c82bfa3, type: 3}
+  - {fileID: 2800000, guid: e1d459f7971a74b4fa41e1567517ff2f, type: 3}
+  - {fileID: 2800000, guid: d5ad5820ff9ec2a4c8c79d3e8b866718, type: 3}
+  - {fileID: 2800000, guid: afa18ab167818f642aa39ddf78979547, type: 3}
+  kneelFps: 12
   moveThreshold: 0.2
 --- !u!114 &3980672761434934324
 MonoBehaviour:
