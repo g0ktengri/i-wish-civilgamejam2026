@@ -75,11 +75,11 @@ Jüri oyunu ~5 dk oynayacak; final (outro) görülsün diye oyun kısaldı ve ko
   - Hedef paneli ve aile okları haritanın altına kaydı; sinematikte gizleniyor.
   - Odalar senin `RoomVisibility`'nden: ona sadece okunur `Areas` özelliği ekledim (3 satır, başka değişiklik yok).
   - Önizleme: `Logs/hud_preview_spirit.png` (sol üst).
-- **Senden istek (senin kodun, süreler):**
-  - **İntro kısalsın (`IntroCinematic`):** şu an konuşmalar tek başına ~21 sn, üstüne yavaş yürüyüş (`walkSpeedMultiplier` 0,55) ve kararmalar.
-    - Öneri: yürüyüş 0,55 → 0,9; balon süreleri ~%30 kısa; `father_2` ve `player_3` çıkarılabilir; kararmalar 1,8 / 1,4 / 2 → 1 / 0,8 / 1,2.
-  - **Öncü sarsıntı ve ana deprem arası (`QuakeDirector`):** `foreshockDelay` 2 → 1, 1. gecede `scriptedWaitBeforeMainQuake` 5 → 3, `standUpWindow` 8 → 6, `waitAfterStandUp` 3 → 1,5.
-  - **Kurtarma süresi (`RescueTimer`):** ilk serbest gecede yetişmiyorsa biraz uzat.
+- **Senin dosyalarında süreler (Berke yaptı; sadece değerler, akışa dokunulmadı):**
+  - **`IntroCinematic`:** yürüyüş 0,55 → 0,9; yeni `talkPace` (0,8): bütün balonlar %20 kısa, hiçbir cümle çıkarılmadı; kararmalar 1,8 / 1,4 / 2 → 1 / 0,9 / 1,2.
+  - **`QuakeDirector`:** `foreshockDelay` 2 → 1, `scriptedWaitBeforeMainQuake` 5 → 3, `standUpWindow` 8 → 6, `waitAfterStandUp` 3 → 1,5, `duckCoverGrace` 3 → 4 (çök-kapan daha toleranslı).
+  - **`RescueTimer`:** `bonusPerFailure` 10 → 15 (kayıptan sonraki gecede kurtarma daha rahat); temel süre 75 sn aynı.
+  - `QuakeSystem.prefab` yeniden kuruldu; değişen sadece bu altı değer.
   - **Güvenlik ağı:** jüri build'i development build olursa Ctrl+Shift+O outro kısayolu takılınca kullanılabilir.
 
 ### Yeni karakter çizimleri: kardeş bekleme, yeni anne, kardeş ölü (Berke, senin klasöründe izinle)

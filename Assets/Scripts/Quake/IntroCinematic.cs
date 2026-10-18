@@ -20,7 +20,9 @@ namespace Deprem.Quake
     {
         [Header("Yürüyüş")]
         [Tooltip("Okuldan yorgun gelir: normal yürüme hızının oranı")]
-        [SerializeField] private float walkSpeedMultiplier = 0.55f;
+        [SerializeField] private float walkSpeedMultiplier = 0.9f; // jüri temposu (Berke): 0,55 → 0,9
+        [Tooltip("Jüri temposu (Berke): balonların süresi bu oranla kısalır (1 = eski süre)")]
+        [SerializeField] private float talkPace = 0.8f;
         [Tooltip("Baba ile konuşurken oyuncunun durduğu X (baba salonda, 22,75)")]
         [SerializeField] private float fatherTalkX = 24.4f;
         [Tooltip("Merdivenin önünde durup üst kata seslendiği X")]
@@ -57,9 +59,10 @@ namespace Deprem.Quake
         [SerializeField] private float kitchenViewOffset = 1.5f;
 
         [Header("Kararma")]
-        [SerializeField] private float fadeInTime = 1.8f;
-        [SerializeField] private float fadeOutTime = 1.4f;
-        [SerializeField] private float nightFadeInTime = 2f;
+        // Jüri temposu (Berke): 1,8 / 1,4 / 2 → 1 / 0,9 / 1,2
+        [SerializeField] private float fadeInTime = 1f;
+        [SerializeField] private float fadeOutTime = 0.9f;
+        [SerializeField] private float nightFadeInTime = 1.2f;
 
         /// <summary>1. döngünün ilk denemesi ("Yeni oyun"): intro oynar</summary>
         public static bool ShouldPlay => GameState.CurrentLoop == 1 && GameState.FailedAttempts == 0;
@@ -262,6 +265,7 @@ namespace Deprem.Quake
         private IEnumerator Say(Component speaker, string key, float seconds)
         {
             var bubble = speaker != null ? speaker.GetComponent<SpeechBubble>() : null;
+            seconds *= talkPace;
             if (bubble != null) bubble.Say(key, seconds);
             yield return Wait(seconds + 0.2f);
         }

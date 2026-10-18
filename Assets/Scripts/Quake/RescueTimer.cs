@@ -29,7 +29,7 @@ namespace Deprem.Quake
         [Header("Süre")]
         [Tooltip("GDD: en iyi rotanın süresi x 1,3. İlk testten sonra ayarlanacak.")]
         [SerializeField] private float baseDuration = 75f;
-        [SerializeField] private float bonusPerFailure = 10f;
+        [SerializeField] private float bonusPerFailure = 15f; // jüri temposu (Berke): 10 → 15, kayıptan sonra daha rahat
         [SerializeField] private float maxBonus = 30f;
         [Tooltip("Çubuk bitince büyük artçıdan önceki gizli süre (GDD: 5-8 sn)")]
         [SerializeField] private float hiddenTolerance = 6f;

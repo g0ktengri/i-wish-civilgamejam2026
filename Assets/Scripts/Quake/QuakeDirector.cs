@@ -28,15 +28,15 @@ namespace Deprem.Quake
         }
 
         [Header("Öncü sarsıntı")]
-        [SerializeField] private float foreshockDelay = 2f;
+        [SerializeField] private float foreshockDelay = 1f; // jüri temposu (Berke): 2 → 1
         [SerializeField] private float foreshockDuration = 3f;
         [SerializeField, Range(0f, 1f)] private float foreshockIntensity = 0.3f;
         [Tooltip("Döngü 1-2: öncüden ana depreme kadar bekleme (sn)")]
-        [SerializeField] private float scriptedWaitBeforeMainQuake = 5f;
+        [SerializeField] private float scriptedWaitBeforeMainQuake = 3f; // jüri temposu (Berke): 5 → 3
         [Tooltip("Döngü 3+: 'F: Kalk' için süre; kalkmazsa ana deprem başlar")]
-        [SerializeField] private float standUpWindow = 8f;
+        [SerializeField] private float standUpWindow = 6f; // jüri temposu (Berke): 8 → 6
         [Tooltip("Kalktıktan sonra ana depreme kadar bekleme (sn)")]
-        [SerializeField] private float waitAfterStandUp = 3f;
+        [SerializeField] private float waitAfterStandUp = 1.5f; // jüri temposu (Berke): 3 → 1,5
         [Tooltip("M18: döngü 2'de 'Az önce bunu yaşamadım mı?' balonunun süresi")]
         [SerializeField] private float dejaVuSeconds = 2.5f;
         [Tooltip("Döngü 2: ana deprem başladıktan kaç sn sonra tavan oyuncunun üstüne çöker")]
@@ -49,7 +49,7 @@ namespace Deprem.Quake
         [Tooltip("Eşyalar bu aralıkta, rastgele sırayla devrilir (deprem başından itibaren sn)")]
         [SerializeField] private Vector2 toppleWindow = new Vector2(1.5f, 5f);
         [Tooltip("C uyarısından sonra güvenli noktaya yürüyüp basmak için süre")]
-        [SerializeField] private float duckCoverGrace = 3f;
+        [SerializeField] private float duckCoverGrace = 4f; // jüri temposu (Berke): 3 → 4, daha toleranslı
         [Tooltip("C kısa süre bırakılırsa affedilir")]
         [SerializeField] private float duckCoverTolerance = 0.35f;
         [Tooltip("Play testi 33: ilk çök-kapanda sarsıntı başladıktan kaç sn sonra oyun durup öğretici açılır")]

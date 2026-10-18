@@ -47,18 +47,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3fc58bbd02ea304aa8b00073afccf33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Quake.QuakeDirector
-  foreshockDelay: 2
+  foreshockDelay: 1
   foreshockDuration: 3
   foreshockIntensity: 0.3
-  scriptedWaitBeforeMainQuake: 5
-  standUpWindow: 8
-  waitAfterStandUp: 3
+  scriptedWaitBeforeMainQuake: 3
+  standUpWindow: 6
+  waitAfterStandUp: 1.5
   dejaVuSeconds: 2.5
   scriptedHitDelay: 2.5
   mainQuakeDuration: 7
   mainQuakeIntensity: 1
   toppleWindow: {x: 1.5, y: 5}
-  duckCoverGrace: 3
+  duckCoverGrace: 4
   duckCoverTolerance: 0.35
   duckCoverTutorialDelay: 0.8
   aftershockDuration: 3.5
@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Deprem.Quake.RescueTimer
   baseDuration: 75
-  bonusPerFailure: 10
+  bonusPerFailure: 15
   maxBonus: 30
   hiddenTolerance: 6
   tensionWindow: 15
